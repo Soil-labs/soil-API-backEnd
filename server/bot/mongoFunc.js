@@ -13,48 +13,34 @@ async function findMember(field,airtable=false) {
         res = await Members.findOne({ airtableID: field.airtableID })
 
 
-    return (res)
-}
+    if (res){
 
+        field = {
+            ...field,
+            airtableID: res.airtableID,discordName: res.discordName,
+            discordID: res.discordID,tweets: res.tweets,
+            skills: res.skills,projects: res.projects,
+            discordAvatar: res.discordAvatar,
+        }
+    }
+
+    return (field)
+}
 
 
 async function findMentionUsers(members,airtable=false) {
 
 
-    
-    let memberMongo =  await findMember(members.author,airtable)
+    members.author =  await findMember(members.author,airtable)
 
-
-    if (memberMongo){
-
-        members.author = {
-            ...members.author,
-            airtableID: memberMongo.airtableID,discordName: memberMongo.discordName,
-            discordID: memberMongo.discordID,tweets: memberMongo.tweets,
-            skills: memberMongo.skills,projects: memberMongo.projects,
-            discordAvatar: memberMongo.discordAvatar,
-        }
-    }
 
 
     let user
     for (let i=0;i<members.mentionUsers.length;i++) {
 
         user = members.mentionUsers[i]
-
-        let memberMongo =  await findMember(user,airtable)
-
-
-        if (memberMongo){
-            members.mentionUsers[i] = {
-                ...members.mentionUsers[i],
-                airtableID: memberMongo.airtableID,discordName: memberMongo.discordName,
-                discordID: memberMongo.discordID,tweets: memberMongo.tweets,
-                skills: memberMongo.skills,projects: memberMongo.projects,
-                discordAvatar: memberMongo.discordAvatar,
-
-            }
-        } 
+        
+        members.mentionUsers[i] =  await findMember(user,airtable)
 
     }
 
