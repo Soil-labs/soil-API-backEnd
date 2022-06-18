@@ -14,7 +14,6 @@ const resolvers = require("./graphql/resolvers");
 
 
 // ------------------- Discord ----------------
-const Discord = require('discord.js');
 const client = require("./discordBot_config")
 
 const test_command = require("./commands/test_command")
