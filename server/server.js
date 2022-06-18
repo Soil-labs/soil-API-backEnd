@@ -13,6 +13,14 @@ const typeDefs = require("./graphql/schema");
 const resolvers = require("./graphql/resolvers");
 
 
+// ------------------- Discord ----------------
+const Discord = require('discord.js');
+const client = require("./discordBot_config")
+
+const test_command = require("./commands/test_command")
+// ------------------- Discord ----------------
+
+
  
   
 const app = express();
@@ -105,8 +113,13 @@ app.listen(PORT, function () {
 
 // ------------- Discord ----------------
 
+client.once('ready', () =>{
+  console.log("Bot is online!")
 
 
+  test_command('!s') 
+})
 
 
+client.login(process.env.REACT_APP_BOT_TOKEN)
 // ------------- Discord ----------------
