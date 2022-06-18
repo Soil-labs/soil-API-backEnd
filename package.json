@@ -1,0 +1,32 @@
+{
+  "name": "dau-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@elastic/elasticsearch": "^8.1.0",
+    "@sendgrid/mail": "^7.6.1",
+    "airtable": "^0.11.4",
+    "apollo-server-express": "^2.25.0",
+    "bcrypt": "^5.0.1",
+    "colors": "^1.4.0",
+    "cors": "^2.8.5",
+    "discord-buttons": "^4.0.0-deprecated",
+    "discord-menus": "^1.0.8",
+    "discord.js": "^12.5.3",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "graphql": "^15.5.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.7.9",
+    "morgan": "^1.9.1",
+    "short-uuid": "^4.1.0",
+    "twilio": "^3.74.0",
+    "validator": "^13.6.0"
+  }
+}

@@ -1,0 +1,11 @@
+module.exports = `
+    type ErrorLog {
+        _id:ID!
+        name: String
+        code: String
+        component: String
+        message: String
+        stacktrace: [String]
+        createdAt: String
+        user: User
+    }`

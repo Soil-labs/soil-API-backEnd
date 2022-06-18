@@ -1,0 +1,8 @@
+module.exports = `
+    type Mutation {
+        #  ---------- USER MUTATIONS -------
+        login(fields:loginInput!):User!
+
+
+    }
+`

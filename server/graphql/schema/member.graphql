@@ -1,0 +1,49 @@
+module.exports = `
+    type User {
+        _id:ID!
+        email:String
+        password:String
+        isPasswordRandom: Boolean
+        name:String
+        lastname:String
+        number: String
+        registeredAt: String,
+        token:String
+    }
+
+    
+
+    input loginInput {
+        email:String
+        password:String
+    }
+
+    input updateEmailPassInput {
+        useTokenOrID: TokenOrID # Token or ID
+        _id:ID
+        email:String
+        password:String
+        oldPassword:String
+    }
+
+    input signUpInput { 
+        email:String!
+        password:String!
+        access: USER_ACCESS!
+        role: USER_ROLES!
+        companyID: ID
+        number: String
+        name: String
+        lastname: String
+        walletAddress: String
+        languagePlatform: String
+        FavFSCompany: String
+        flatOrPercentage: String
+        commissionFlat: Int
+        commissionPercentage: Float
+    }
+
+    
+
+
+`

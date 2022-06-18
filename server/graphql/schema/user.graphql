@@ -1,0 +1,50 @@
+module.exports = `
+    type User {
+        _id:ID!
+        email:String
+        password:String
+        isPasswordRandom: Boolean
+        name:String
+        lastname:String
+        number: String
+        registeredAt: String,
+        token:String
+    }
+
+    
+
+    input loginInput {
+        email:String
+        password:String
+    }
+
+    input findTweetsInput {
+        project: String
+        member: String
+    }
+
+    type tweetsOutput {
+        tweet: [tweet]
+        description: String
+        title: String
+        numTweets: Int
+        numMembers: Int
+        membersD: [memberD]
+        champion: [memberD]
+
+    }
+
+    type tweet {
+        content: String
+        registeredAt: String
+        authorAvatarURL: String
+        authorName: String
+    }
+
+    type memberD {
+        discordName: String,
+        avatarURL: String,
+    }
+
+
+`

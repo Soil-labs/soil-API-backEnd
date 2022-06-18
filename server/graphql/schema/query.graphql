@@ -1,0 +1,15 @@
+module.exports = `
+    type Query{
+
+
+          #  ---------- ERROR QUERY (DEV ONLY) -------
+            errors:[ErrorLog]
+
+          
+          #  ---------- USER QUERY -------
+            findTweets(fields:findTweetsInput): tweetsOutput
+
+   
+            
+        }
+`;
