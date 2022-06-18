@@ -6,7 +6,6 @@ const Discord = require('discord.js');
 
 async function sentEmbed(messageEmbed,id) {
 
-  
 
     let user = await client.users.fetch(id)
           
@@ -42,6 +41,7 @@ async function sentEmbed(messageEmbed,id) {
 
 
 
+    if (!messageEmbed.react) return 
 
     messageEmbed.react.forEach(reactN=>{
         messageEm.react(reactN)
