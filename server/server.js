@@ -116,7 +116,7 @@ client.once('ready', () =>{
   console.log("Bot is online!")
 
 
-  test_command(['!s']) 
+  test_command(['!s','!p']) 
 })
 
 

@@ -46,13 +46,18 @@ module.exports =  async (commands) => {
                   return 
             }
 
-            console.log("members = " , members)
 
 
             members = await mongoFunc.findMentionUsers(members,false)
 
 
-            console.log("members 2 = " , members)
+            console.log("categories 2 = " , categories)
+
+
+            categories = await mongoFunc.findCategories_all(categories)
+
+            console.log("categories = " , categories)
+
 
 
     });

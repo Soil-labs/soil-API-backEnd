@@ -3,8 +3,12 @@ const commands = [{
     command: "!skill",
     name: "skills",
     symbol: "*"
+},{
+    command: "!s",
+    name: "skills",
+    symbol: "*"
 }, {
-    command: "!project",
+    command: "!p",
     name: "projects",
     symbol: "^"
 } , {
