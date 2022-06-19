@@ -51,12 +51,12 @@ module.exports =  async (commands) => {
             members = await mongoFunc.findMentionUsers(members,false)
 
 
-            console.log("categories 2 = " , categories)
+            console.log("categories  = " , categories)
 
 
             categories = await mongoFunc.findCategories_all(categories)
 
-            console.log("categories = " , categories)
+            console.log("categories 2-2 = " , categories)
 
 
 

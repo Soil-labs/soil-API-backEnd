@@ -84,10 +84,70 @@ async function findMentionUsers(members,airtable=false) {
         
 }
 
+async function updateCategory(field,category="Skills") {
+
+    let res
+    if (category=="Skills"){
+        res = await Skills.findOneAndUpdate(
+            {content: field.content},
+            {
+                $set: field
+            },
+            {new: true}
+        )
+    }
+    else if (category=="Projects"){
+        res = await Projects.findOneAndUpdate(
+            {content: field.content},
+            {
+                $set: field
+            },
+            {new: true}
+        )
+    }
+
+    field = {
+        ...field,
+        airtableID: res?.airtableID,
+        tweets: res?.tweets,
+        members: res?.members,
+    }
+
+    return (field)     
+}
+
+async function addCategory(fields,category="Skills") {
+
+
+    let newMember
+
+    if (category=="Skills"){
+        newMember = await new Skills({
+            content: fields.content,
+            airtableID: fields.airtableID,
+    
+            registeredAt: new Date(),
+        });
+    }
+    else if (category=="Projects"){
+        newMember = await new Projects({
+            content: fields.content,
+            airtableID: fields.airtableID,
+    
+            registeredAt: new Date(),
+        });
+    }
+
+    console.log("newMember -------= " , newMember,category)
+
+    newMember.save();
+
+    return (newMember)
+        
+}
+
 
 async function updateMember(member) {
-
-
     let res = await Members.findOneAndUpdate(
         {discordID: member.discordID},
         {
@@ -105,9 +165,7 @@ async function updateMember(member) {
         discordAvatar: res.discordAvatar,
     }
 
-    return (member)
-
-        
+    return (member)     
 }
 
 async function addMember(member) {
@@ -130,9 +188,13 @@ async function addMember(member) {
         
 }
 
-async function findSkills(field) {
+async function findCategory(field,category="Skills") {
 
-    const res = await Skills.findOne({ content: field.content })
+    let res
+    if (category=="Skills")
+        res = await Skills.findOne({ content: field.content })
+    else if (category=="Projects")
+        res = await Projects.findOne({ content: field.content })
 
     if (res){
         field = {
@@ -141,9 +203,31 @@ async function findSkills(field) {
             tweets: res.tweets,
             members: res.members,
         }
-    } 
+        if (!res.airtableID){
+            airtableID_new = await airtableFunc.createCategory(field,category) 
 
-    return (res)
+            field = {
+                ...field,
+                airtableID: airtableID_new,
+            }
+
+            field = updateCategory(field,category)
+        }
+    } 
+    else {
+        airtableID_new = await airtableFunc.createCategory(field,category) 
+        
+        field = {
+            ...field,
+            airtableID: airtableID_new,
+        }
+
+        field = addCategory(field,category)
+    }
+
+    
+
+    return (field)
 }
 
 async function findProjects(field) {
@@ -173,14 +257,13 @@ async function findCategories_all(categories) {
 
     for (let i=0;i<categories.skills.length;i++) {
 
-        categories.skills[i] =  await findSkills(categories.skills[i])
+        categories.skills[i] = await findCategory(categories.skills[i],"Skills")
 
     }
 
     for (let i=0;i<categories.projects.length;i++) {
 
-        categories.projects[i] =  await findProjects(categories.projects[i])
-
+        categories.projects[i] =  await findCategory(categories.projects[i],"Projects")
 
     }
 
@@ -191,4 +274,4 @@ async function findCategories_all(categories) {
 
 
 
-module.exports = {findMentionUsers,updateMember,addMember,findCategories_all};
+module.exports = {findMentionUsers,updateCategory,addCategory,updateMember,addMember,findCategories_all};
