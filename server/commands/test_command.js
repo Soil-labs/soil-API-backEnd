@@ -63,6 +63,8 @@ module.exports =  async (commands) => {
 
             categories.tweet = await airtableFunc.createTweet(categories,members)
 
+            console.log("mongoFunc - test_command - After = " , mongoFunc)
+
 
 
     });

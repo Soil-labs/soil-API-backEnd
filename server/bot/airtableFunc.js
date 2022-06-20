@@ -1,5 +1,5 @@
 const airTable = require("./airTable");
-const mongoFunc_sub = require("./mongoFunc_sub");
+const mongoFunc = require("./mongoFunc_sub");
 
 
 
@@ -9,23 +9,23 @@ async function createTweet(categories,members) {
     // ------------- Create Tweet -------------
     let resultsTweet = await airTable.createTweetAsync(categories,members) 
     // ------------- Create Tweet -------------
-
-    console.log("resultsTweet = " , resultsTweet) 
     
-    let tweet = {
+    categories.tweet = {
         airtableID: resultsTweet.id,
         content: resultsTweet.fields.Content,
         members: resultsTweet.fields.Members,
         skills: resultsTweet.fields.Skills,
+        projects: resultsTweet.fields?.Projects,
     }
-
-    console.log("tweet = " , tweet) 
-
+    mongoFunc.addTweet(categories.tweet,members.author)
 
 
-    mongoFunc_sub.addTweet(tweet,members.author)
 
-    return (tweet)
+    // If the members skills or porjects are updted then we need to make this update also on the other database places 
+
+
+
+    return (categories.tweet)
 }
 
 

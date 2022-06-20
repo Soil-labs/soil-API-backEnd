@@ -45,7 +45,7 @@ async function findMember(member,airtable=false) {
             airtableID: airtableID_new,
         }
 
-        console.log("member - mongoFunc = " , member)
+        // console.log("member - mongoFunc = " , member)
 
         member = addMember(member)
     }
@@ -138,7 +138,7 @@ async function addCategory(fields,category="Skills") {
         });
     }
 
-    console.log("newMember -------= " , newMember,category)
+    // console.log("newMember -------= " , newMember,category)
 
     newMember.save();
 

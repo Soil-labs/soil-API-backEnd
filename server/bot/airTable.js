@@ -43,7 +43,7 @@ function createTweetAsync(categories,members) {
         return skill.airtableID
     })
 
-    console.log("membersAirID = " , membersAirID)
+    // console.log("membersAirID = " , membersAirID)
 
     return new Promise((resolve, reject) => {
 
@@ -80,8 +80,36 @@ function createTweetAsync(categories,members) {
     })
 }
 
+function updateCategory(idUpdateMember,fields,category) {
 
-function updateMemberAsync(idUpdateMember,fields,base) {
+    return new Promise((resolve, reject) => {
+        //upload the file, then call the callback with the location of the file
+
+        base(category).update([
+            {
+                "id": idUpdateMember,
+                "fields": fields
+            },
+        ], function(err, records) {
+            if (err) {
+                console.error("Error updateCategory = ",err);
+                return;
+            }
+            records.forEach(function (record) {
+
+
+                resolve(record.id)
+                
+    
+            });
+        });
+        // resolve(32)
+
+    })
+}
+
+
+function updateMemberAsync(idUpdateMember,fields) {
 
     return new Promise((resolve, reject) => {
         //upload the file, then call the callback with the location of the file
@@ -184,7 +212,7 @@ function createCategoriesAsync(fields,category) {
 }
 function updateCategoriesAsync(idRecord,fields,category,base) {
 
-  console.log("fields 2.3.2 = ",idRecord,fields,category)
+//   console.log("fields 2.3.2 = ",idRecord,fields,category)
 
 
     return new Promise((resolve, reject) => {
