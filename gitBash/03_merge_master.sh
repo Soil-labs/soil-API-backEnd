@@ -12,3 +12,5 @@ git merge $OUTPUT
 git add .
 git commit -m "New Branch Created"
 git push origin master
+
+git checkout origin $OUTPUT
