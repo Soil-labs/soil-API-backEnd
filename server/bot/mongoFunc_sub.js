@@ -56,7 +56,7 @@ async function updateCategory(field,category="Skills") {
     }
 
     return (field)     
-} 
+}  
 
 async function updateMember(member) {
     let res = await Members.findOneAndUpdate(
