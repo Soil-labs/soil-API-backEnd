@@ -10,12 +10,20 @@ async function createTweet(categories,members) {
     let resultsTweet = await airTable.createTweetAsync(categories,members) 
     // ------------- Create Tweet -------------
 
-    tweet = {
-        ...tweet,
-        airtableID: resultsTweet.id
+    console.log("resultsTweet = " , resultsTweet) 
+    
+    let tweet = {
+        airtableID: resultsTweet.id,
+        content: resultsTweet.fields.Content,
+        members: resultsTweet.fields.Members,
+        skills: resultsTweet.fields.Skills,
     }
 
-    mongoFunc_sub.addTweet(tweet,author)
+    console.log("tweet = " , tweet) 
+
+
+
+    mongoFunc_sub.addTweet(tweet,members.author)
 
     return (tweet)
 }

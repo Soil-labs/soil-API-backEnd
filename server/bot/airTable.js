@@ -28,8 +28,19 @@ function createMemberAsync(fields,base) {
 function createTweetAsync(categories,members) {
 
 
-    const membersAirID = members.mentionUsers.map(member =>{
+    let membersAirID = []
+    membersAirID = members.mentionUsers.map(member =>{
         return member.airtableID
+    })
+
+    let skillsAirID = []
+    skillsAirID = categories.skills.map(skill =>{
+        return skill.airtableID
+    })
+
+    let projectsAirID = []
+    projectsAirID = categories.projects.map(skill =>{
+        return skill.airtableID
     })
 
     console.log("membersAirID = " , membersAirID)
@@ -39,7 +50,9 @@ function createTweetAsync(categories,members) {
         let fields = {
             "Content": categories.tweet.content,
             "Author": "@" + members?.author.discordName,
-            // "Members": "@" + members?.author.discordName,
+            "Members": membersAirID,
+            "Skills": skillsAirID,
+            "Projects": projectsAirID,
         }
         
 
