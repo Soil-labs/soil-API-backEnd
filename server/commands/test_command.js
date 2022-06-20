@@ -3,6 +3,7 @@ const NLP = require("../bot/NLP");
 const sentMessage = require("../bot/sentMessage");
 const botFunc = require("../bot/botFunc");
 const mongoFunc = require("../bot/mongoFunc");
+const airtableFunc = require("../bot/airtableFunc");
 
 
 
@@ -51,12 +52,16 @@ module.exports =  async (commands) => {
             members = await mongoFunc.findMentionUsers(members,false)
 
 
-            console.log("categories  = " , categories)
+            // console.log("categories  = " , categories)
 
 
             categories = await mongoFunc.findCategories_all(categories)
 
-            console.log("categories 2-2 = " , categories)
+            // console.log("categories 2-2 = " , categories)
+
+            console.log("mongoFunc - test_command = " , mongoFunc)
+
+            categories.tweet = await airtableFunc.createTweet(categories,members)
 
 
 

@@ -274,4 +274,6 @@ async function findCategories_all(categories) {
 
 
 
-module.exports = {findMentionUsers,updateCategory,addCategory,updateMember,addMember,findCategories_all};
+
+module.exports = {findMentionUsers,updateCategory,addCategory,updateMember,addMember,
+                    findCategories_all};

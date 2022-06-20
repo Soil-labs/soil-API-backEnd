@@ -25,6 +25,49 @@ function createMemberAsync(fields,base) {
     })
 }
 
+function createTweetAsync(categories,members) {
+
+
+    const membersAirID = members.mentionUsers.map(member =>{
+        return member.airtableID
+    })
+
+    console.log("membersAirID = " , membersAirID)
+
+    return new Promise((resolve, reject) => {
+
+        let fields = {
+            "Content": categories.tweet.content,
+            "Author": "@" + members?.author.discordName,
+            // "Members": "@" + members?.author.discordName,
+        }
+        
+
+        base('Tweets').create([
+            {
+                fields,
+            },
+        ], function(err, records) {
+            if (err) {
+                console.error("Error createTweetAsync = ",err);
+                return;
+            }
+    
+            // console.log("records[0]._rawJson.id = ",records[0]._rawJson.id)
+            fields = {
+                airtableID: records[0]._rawJson.id,
+                content: fields.Content,
+                author: fields.Author,
+            }
+
+            resolve(records[0]._rawJson)
+        });
+        // resolve(32)
+
+    })
+}
+
+
 function updateMemberAsync(idUpdateMember,fields,base) {
 
     return new Promise((resolve, reject) => {
@@ -210,54 +253,54 @@ function updateProjectsAsync(idRecord,fields,base) {
 
 
 
-function createTweetAsync(tweet,base,authorID="") {
+// function createTweetAsync(tweet,base,authorID="") {
 
 
-    return new Promise((resolve, reject) => {
-        //upload the file, then call the callback with the location of the file
+//     return new Promise((resolve, reject) => {
+//         //upload the file, then call the callback with the location of the file
 
-        let fields = {
-            "Content": tweet
-        }
+//         let fields = {
+//             "Content": tweet
+//         }
 
-        // if (authorID){
-        //     fields = {
-        //         ...fields,
-        //         "Author": [authorID],
-        //     }
-        // }
+//         // if (authorID){
+//         //     fields = {
+//         //         ...fields,
+//         //         "Author": [authorID],
+//         //     }
+//         // }
         
-        // console.log("fields = ",fields)
+//         // console.log("fields = ",fields)
 
-        base('Tweets').create([
-            {
-                fields,
-            },
-        ], function(err, records) {
-            if (err) {
-                console.error("Error createTweetAsync = ",err);
-                return;
-            }
+//         base('Tweets').create([
+//             {
+//                 fields,
+//             },
+//         ], function(err, records) {
+//             if (err) {
+//                 console.error("Error createTweetAsync = ",err);
+//                 return;
+//             }
     
-            let tweetID
-            records.forEach(function (record) {
+//             let tweetID
+//             records.forEach(function (record) {
     
-                tweetID = record.id
+//                 tweetID = record.id
     
-            });
+//             });
             
 
-            let results = {
-                tweets: records,
-                id: tweetID
-            }
+//             let results = {
+//                 tweets: records,
+//                 id: tweetID
+//             }
 
-            resolve(results)
-        });
-        // resolve(32)
+//             resolve(results)
+//         });
+//         // resolve(32)
 
-    })
-}
+//     })
+// }
 
 
 
