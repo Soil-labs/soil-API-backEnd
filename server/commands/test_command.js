@@ -48,22 +48,25 @@ module.exports =  async (commands) => {
             }
 
 
+          //console.log("members before = " , members)
 
-            members = await mongoFunc.findMentionUsers(members,false)
-
-
-            // console.log("categories  = " , categories)
+            members = await mongoFunc.findMentionUsers(members,false,categories)
 
 
-            categories = await mongoFunc.findCategories_all(categories)
+          //console.log("members after = " , members)
 
-            // console.log("categories 2-2 = " , categories)
+            // console.log("categories - Before = " , categories)
 
-            console.log("mongoFunc - test_command = " , mongoFunc)
 
-            categories.tweet = await airtableFunc.createTweet(categories,members)
+            categories = await mongoFunc.findCategories_all(categories,false,members)
 
-            console.log("mongoFunc - test_command - After = " , mongoFunc)
+          //console.log("categories - After - 2-2 = " , categories)
+
+            // // console.log("mongoFunc - test_command = " , mongoFunc)
+
+            // categories.tweet = await airtableFunc.createTweet(categories,members)
+
+            // // console.log("mongoFunc - test_command - After = " , mongoFunc)
 
 
 

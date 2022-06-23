@@ -44,21 +44,75 @@ async function createMember(member) {
 
 }
 
-async function createCategory(skill,category="Skills") {
+async function updateCategory(field,category="Skills") {
+
 
     fields = {
-        "Name": skill.content,
+        "Name": field?.content,
+        "Discord Name": field?.discordName,
+        "ID": field?.discordID,
+        "Members": field?.members,
+        "Skills": field?.skills,
+        "Projects": field?.projects
+    }
+
+
+    res = await airTable.updateCategoriesAsync(field.airtableID,fields,category)
+
+
+    return { 
+        airtableID: res._rawJson.id,
+        ...res._rawJson.fields,
+
+    }
+
+}
+
+async function createCategory(field,category="Skills",members,categories,updateCategoryFlag) {
+
+
+    // if (updateCategoryFlag===true){
+
+    //     // TODO: Write the function to also read what exist inside the field already and add it there not create it from scratch 
+    //     field.membersAirID = []
+    //     field.membersAirID = members.mentionUsers.map(member =>{
+    //         return member.airtableID
+    //     })
+
+    //     field.skillsAirID = []
+    //     field.skillsAirID = categories.skills.map(skill =>{
+    //         return skill.airtableID
+    //     })
+
+    //     field.projectsAirID = []
+    //     field.projectsAirID = categories.projects.map(skill =>{
+    //         return skill.airtableID
+    //     })
+    // }
+
+
+    fields = {
+        "Name": field?.content,
+        "Discord Name": field?.discordName,
+        "ID": field?.discordID,
+        // "Members": field?.membersAirID,
+        // "Skills": field?.skillsAirID,
+        // "Projects": field?.projectsAirID 
     }
 
 
     res = await airTable.createCategoriesAsync(fields,category)
 
 
-    return res._rawJson.id
+    return { 
+        airtableID: res._rawJson.id,
+        ...res._rawJson.fields,
+
+    }
 
 }
 
 
 
 
-module.exports = {createMember,createCategory,createTweet};
+module.exports = {createMember,createCategory,createTweet,updateCategory};

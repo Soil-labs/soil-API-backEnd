@@ -210,9 +210,9 @@ function createCategoriesAsync(fields,category) {
 
     })
 }
-function updateCategoriesAsync(idRecord,fields,category,base) {
+function updateCategoriesAsync(idRecord,fields,category) {
 
-//   console.log("fields 2.3.2 = ",idRecord,fields,category)
+// //console.log("fields 2.3.2 = ",idRecord,fields,category)
 
 
     return new Promise((resolve, reject) => {

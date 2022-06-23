@@ -137,6 +137,7 @@ let members = {
         discordID: author.id,
         discordName: author.username,
         airtableID: undefined, 
+        mongoDataExist: false,
         tweets: [],
         skills: [],
         projects: [],
@@ -161,6 +162,7 @@ mentions.forEach(mention=>{
         discordID: mention.id,
         discordName: mention.username,
         airtableID: undefined, 
+        mongoDataExist: false,
         tweets: [],
         skills: [],
         projects: [],
@@ -180,6 +182,7 @@ let categories = {
     tweet: {
         content: displayMessage,
         airtableID: undefined, 
+        mongoDataExist: false,
         members: [],
     },
 }

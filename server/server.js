@@ -113,7 +113,7 @@ app.listen(PORT, function () {
 // ------------- Discord ----------------
 
 client.once('ready', () =>{
-  console.log("Bot is online!")
+console.log("Bot is online!")
 
 
   test_command(['!s','!p']) 
