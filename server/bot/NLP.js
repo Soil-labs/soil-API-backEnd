@@ -128,6 +128,8 @@ return res
 function splitCommandAndMention (message,mentions,author){
 
 
+  //console.log("message = " , message)
+
 
 let newMessage = message
 let displayMessage = message
@@ -136,7 +138,6 @@ let members = {
     author: {
         discordID: author.id,
         discordName: author.username,
-        airtableID: undefined, 
         mongoDataExist: false,
         tweets: [],
         skills: [],
@@ -154,6 +155,7 @@ let members = {
 // -------------- Find members ------------
 mentions.forEach(mention=>{
 
+
     newMessage = newMessage.replace(`<@${mention.id}>`,'') // delete the mentions from the message
     displayMessage = displayMessage.replace(`<@${mention.id}>`,'@'+mention.username) // delete the mentions from the message
     
@@ -161,7 +163,6 @@ mentions.forEach(mention=>{
     members.mentionUsers.push({
         discordID: mention.id,
         discordName: mention.username,
-        airtableID: undefined, 
         mongoDataExist: false,
         tweets: [],
         skills: [],
@@ -180,8 +181,7 @@ let categories = {
     skills: [],
     projects: [],
     tweet: {
-        content: displayMessage,
-        airtableID: undefined, 
+        tagName: displayMessage,
         mongoDataExist: false,
         members: [],
     },
@@ -211,8 +211,7 @@ commands.forEach(res => {
 
 
         categories[`${res.name}`].push({
-            content: searchWord,
-            airtableID: undefined, 
+            tagName: searchWord,
             members: [],
             tweets: [],
         })
@@ -233,8 +232,7 @@ commands.forEach(res => {
         newMessageCommands = resSear_newMes.newMessage
 
         categories[`${res.name}`].push({
-            content: searchWord,
-            airtableID: undefined, 
+            tagName: searchWord,
             members: [],
             tweets: [],
         })

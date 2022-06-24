@@ -10,7 +10,7 @@ const SALT_I = 10;
 const skillSchema = mongoose.Schema({
 
   airtableID: String,
-  content: String,
+  tagName: String,
 
 
 

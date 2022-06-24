@@ -10,7 +10,7 @@ const SALT_I = 10;
 const tweetSchema = mongoose.Schema({
 
   airtableID: String,
-  content: String,
+  tagName: String,
 
 
   skills: [String],

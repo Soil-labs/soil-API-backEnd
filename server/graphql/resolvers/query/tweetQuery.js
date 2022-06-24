@@ -24,7 +24,7 @@ module.exports = {
 
       let memberProject, championProject,memberProjectClean,championProjectClean
       if (project && project!=null){
-        projectData = await Projects.findOne({ content: project })
+        projectData = await Projects.findOne({ tagName: project })
 
         
 
@@ -116,13 +116,13 @@ module.exports = {
         
         
 
-        if (tweet.content.slice(0,6)==="!index" || tweet.content.slice(0,4) === "!map"){
+        if (tweet.tagName.slice(0,6)==="!index" || tweet.tagName.slice(0,4) === "!map"){
           if (!membersDiscordNames.includes(tweet.author.replace("@",""))){
             membersDiscordNames.push(tweet.author.replace("@",""))
           }
 
           outputData.push({
-            content: tweet.content,
+            tagName: tweet.tagName,
             registeredAt: tweet.registeredAt,
             authorName: tweet.author.replace("@",""),
           })

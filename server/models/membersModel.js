@@ -33,8 +33,13 @@ const memberSchema = mongoose.Schema({
 
 
   tweets: [String],
-  skills: [String],
-  projects: [String],
+  skills: [{
+    id: mongoose.Schema.ObjectId,
+    authors: [mongoose.Schema.ObjectId],
+    points: Number,
+  }],
+  projects: [mongoose.Schema.ObjectId],
+  archiveProjects: [mongoose.Schema.ObjectId],
 
   registeredAt: Date,
 

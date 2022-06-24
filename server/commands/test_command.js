@@ -14,18 +14,24 @@ module.exports =  async (commands) => {
     
  
       client.on('message', async (message) => {
+
             
 
             const command = NLP.isMessageTriggerCommand(message.content,commands)
 
+          //console.log("command = ",message.content )
+          //console.log("command = ",command )
 
             if (!command) return 
             
+
 
             results = NLP.splitCommandAndMention(message.content,message.mentions.users.first(10),message.author)
 
             let members = results.members
             let categories = results.categories
+
+          //console.log("members = ",members )
 
 
             if ( message.channel.type.toUpperCase().toUpperCase() != 'DM'){
@@ -35,7 +41,7 @@ module.exports =  async (commands) => {
 
               
 
-            if ( message.channel.type.toUpperCase() == 'DM' && members.mentionUsers.length==0 && message.content.indexOf('@')!=-1){
+            if ( message.channel.type.toUpperCase() == 'DM' && members.mentionUsers.length==0 && message.tagName.indexOf('@')!=-1){
                   fields = {
                         color:"#233423",
                         title:"",
@@ -48,17 +54,22 @@ module.exports =  async (commands) => {
             }
 
 
-          //console.log("members before = " , members)
-
-            members = await mongoFunc.findMentionUsers(members,false,categories)
 
 
-          //console.log("members after = " , members)
+            members = await mongoFunc.findMentionUsers(members)
 
-            // console.log("categories - Before = " , categories)
+            console.log("members = " , members)
 
 
-            categories = await mongoFunc.findCategories_all(categories,false,members)
+            categories = await mongoFunc.findCategories_all(categories)
+
+            console.log("categories = " , categories)
+
+            mongoFunc.updateMembers_Skills(members,categories)
+
+
+
+
 
           //console.log("categories - After - 2-2 = " , categories)
 

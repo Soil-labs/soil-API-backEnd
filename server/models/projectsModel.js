@@ -6,7 +6,7 @@ require("dotenv").config();
 const projectSchema = mongoose.Schema({
 
   airtableID: String,
-  content: String,
+  tagName: String, // the Tag Name
 
   members: [String],
   champion: [String],

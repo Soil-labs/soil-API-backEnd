@@ -9,7 +9,7 @@ async function addTweet(fields,author) {
 
     let newTweet = await new Tweet({
         airtableID: fields.airtableID,
-        content: fields.content,
+        tagName: fields.tagName,
         members: fields.members,
         skills: fields.skills,
 
@@ -31,7 +31,7 @@ async function updateCategory(field,category="Skills") {
     let res
     if (category=="Skills"){
         res = await Skills.findOneAndUpdate(
-            {content: field.content},
+            {tagName: field.tagName},
             {
                 $set: field
             },
@@ -40,7 +40,7 @@ async function updateCategory(field,category="Skills") {
     }
     else if (category=="Projects"){
         res = await Projects.findOneAndUpdate(
-            {content: field.content},
+            {tagName: field.tagName},
             {
                 $set: field
             },

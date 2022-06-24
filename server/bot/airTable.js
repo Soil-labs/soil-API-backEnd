@@ -48,7 +48,7 @@ function createTweetAsync(categories,members) {
     return new Promise((resolve, reject) => {
 
         let fields = {
-            "Content": categories.tweet.content,
+            "Content": categories.tweet.tagName,
             "Author": "@" + members?.author.discordName,
             "Members": membersAirID,
             "Skills": skillsAirID,
@@ -69,7 +69,7 @@ function createTweetAsync(categories,members) {
             // console.log("records[0]._rawJson.id = ",records[0]._rawJson.id)
             fields = {
                 airtableID: records[0]._rawJson.id,
-                content: fields.Content,
+                tagName: fields.Content,
                 author: fields.Author,
             }
 

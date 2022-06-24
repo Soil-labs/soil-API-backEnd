@@ -12,7 +12,7 @@ async function createTweet(categories,members) {
     
     categories.tweet = {
         airtableID: resultsTweet.id,
-        content: resultsTweet.fields.Content,
+        tagName: resultsTweet.fields.Content,
         members: resultsTweet.fields.Members,
         skills: resultsTweet.fields.Skills,
         projects: resultsTweet.fields?.Projects,
@@ -48,7 +48,7 @@ async function updateCategory(field,category="Skills") {
 
 
     fields = {
-        "Name": field?.content,
+        "Name": field?.tagName,
         "Discord Name": field?.discordName,
         "ID": field?.discordID,
         "Members": field?.members,
@@ -92,7 +92,7 @@ async function createCategory(field,category="Skills",members,categories,updateC
 
 
     fields = {
-        "Name": field?.content,
+        "Name": field?.tagName,
         "Discord Name": field?.discordName,
         "ID": field?.discordID,
         // "Members": field?.membersAirID,
