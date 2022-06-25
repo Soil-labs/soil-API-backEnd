@@ -1,16 +1,43 @@
 module.exports = `
-    type User {
-        _id:ID!
-        email:String
-        password:String
-        isPasswordRandom: Boolean
-        name:String
-        lastname:String
-        number: String
+    
+    
+    
+    type Members {
+        _id: ID
+        discordName: String
+        discordID: String
+        discordAvatar: String
+
+        tweets: [String],
+        skills: [Skills],
+        projects: [String],
+        archiveProjects: [String],
+
         registeredAt: String,
-        token:String
+
     }
     
 
+    type skillsType {
+        id: String,
+        authors: [Members],
+        points: Float,
+    }
+
+
+    input findMemberInput {
+        discordName: String
+        discordID: String
+        discordAvatar: String
+    }
+
+
+    input add_member_skill_Input {
+        skillID: String
+        memberID: String
+        authorID: String
+    }
+
+    
 
 `

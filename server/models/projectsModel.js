@@ -5,21 +5,55 @@ require("dotenv").config();
 
 const projectSchema = mongoose.Schema({
 
-  airtableID: String,
   tagName: String, // the Tag Name
-
-  members: [String],
-  champion: [String],
-  tweets: [String],
-  skills: [String],
-
-
   title: String,
   description: String,
 
+  champion: mongoose.Schema.ObjectId,
+
+  team: [{
+    members: mongoose.Schema.ObjectId,
+    roleID: mongoose.Schema.ObjectId
+  }],
+
+  role: [{
+    title: String,
+    description: String,
+    skill: [{
+      skillID: mongoose.Schema.ObjectId,
+      level: Number,
+      numEndorsement: Number,
+      comment: String
+    }],
+    archive: Boolean,
+    dateRangeStart: Date,
+    dateRangeEnd: Date,
+    hoursPerWeek: Number,
+    budget: {
+      token: String,
+      perHour: String,
+    }
+  }],
 
 
-  registeredAt: Date,
+  tweets: [{
+    content: String,
+    author: mongoose.Schema.ObjectId,
+  }],
+
+  collaborationLinks: {
+    title: String,
+    link: String,
+  },
+
+  budget: {
+    token: String,
+    perHour: String,
+  },
+  dates: {
+    kickOff: Date,
+    complition: Date,
+  }
 
 
 });

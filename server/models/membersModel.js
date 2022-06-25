@@ -9,8 +9,6 @@ const SALT_I = 10;
 
 const memberSchema = mongoose.Schema({
 
-  airtableID: String,
-
   discordName: {
     type: String,
     maxlength: 100,
@@ -20,14 +18,14 @@ const memberSchema = mongoose.Schema({
 
   
 
-  discussion: {
-    topic: String,
-    phase: Number,
-    authorName: String,
-    command: String,
-    tweet: String,
-  },
-  discussExtraData: String,
+  // discussion: {
+  //   topic: String,
+  //   phase: Number,
+  //   authorName: String,
+  //   command: String,
+  //   tweet: String,
+  // },
+  // discussExtraData: String,
 
 
 

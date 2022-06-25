@@ -2,6 +2,7 @@ module.exports = `
     type Mutation {
         #  ---------- USER MUTATIONS -------
         login(fields:loginInput!):User!
+        add_member_skill(fields:add_member_skill_Input!):Members
 
 
     }

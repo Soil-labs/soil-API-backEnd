@@ -1,0 +1,81 @@
+module.exports = `
+    
+
+    type Project {
+        _id: ID
+        tagName: String
+        title: String
+        description: String
+
+        champion: Members
+
+        team: [teamType]
+
+        role: [roleType]
+
+
+        tweets: [tweetsType]
+
+        collaborationLinks: collaborationLinksType
+
+        budget: budgetType
+
+        dates: datesType
+
+    }
+
+
+    type teamType {
+        members: Members
+        roleID: String
+    }
+
+    type skillRoleType {
+        skillID: Skills
+        level: String
+        numEndorsement: String
+        comment: String
+    }
+
+    type budgetType {
+        token: String
+        perHour: String
+    }
+
+
+
+    type roleType {
+        title: String
+        description: String
+
+        skill: [skillRoleType]
+
+        archive: Boolean
+        dateRangeStart: Date
+        dateRangeEnd: Date
+        hoursPerWeek: Number
+        budget: budgetType
+    }
+
+    
+    type tweetsType {
+        content: String
+        author: Members
+    }
+
+    type collaborationLinksType {
+        title: String
+        link: String
+    }
+
+    type datesType {
+        kickOff: Date
+        complition: Date
+    }
+
+
+    
+
+    
+
+`

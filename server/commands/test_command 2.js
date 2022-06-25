@@ -3,7 +3,6 @@ const NLP = require("../bot/NLP");
 const sentMessage = require("../bot/sentMessage");
 const botFunc = require("../bot/botFunc");
 const mongoFunc = require("../bot/mongoFunc");
-const airtableFunc = require("../bot/airtableFunc");
 
 
 
@@ -14,24 +13,18 @@ module.exports =  async (commands) => {
     
  
       client.on('message', async (message) => {
-
             
 
             const command = NLP.isMessageTriggerCommand(message.content,commands)
 
-          //console.log("command = ",message.content )
-          //console.log("command = ",command )
 
             if (!command) return 
             
-
 
             results = NLP.splitCommandAndMention(message.content,message.mentions.users.first(10),message.author)
 
             let members = results.members
             let categories = results.categories
-
-          //console.log("members = ",members )
 
 
             if ( message.channel.type.toUpperCase().toUpperCase() != 'DM'){
@@ -41,7 +34,7 @@ module.exports =  async (commands) => {
 
               
 
-            if ( message.channel.type.toUpperCase() == 'DM' && members.mentionUsers.length==0 && message.tagName.indexOf('@')!=-1){
+            if ( message.channel.type.toUpperCase() == 'DM' && members.mentionUsers.length==0 && message.content.indexOf('@')!=-1){
                   fields = {
                         color:"#233423",
                         title:"",
@@ -55,29 +48,15 @@ module.exports =  async (commands) => {
 
 
 
+            members = await mongoFunc.findMentionUsers(members,false)
 
-            members = await mongoFunc.findMentionUsers(members)
 
-          //console.log("members = " , members)
+          //console.log("categories 2 = " , categories)
 
 
             categories = await mongoFunc.findCategories_all(categories)
 
           //console.log("categories = " , categories)
-
-            mongoFunc.updateMembers_Skills(members,categories)
-
-
-
-
-
-          //console.log("categories - After - 2-2 = " , categories)
-
-            // // console.log("mongoFunc - test_command = " , mongoFunc)
-
-            // categories.tweet = await airtableFunc.createTweet(categories,members)
-
-            // // console.log("mongoFunc - test_command - After = " , mongoFunc)
 
 
 

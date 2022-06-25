@@ -1,9 +1,11 @@
 const { Query } = require('./query');
 const { Mutation } = require('./mutation');
-const { User } = require('./objectResolvers/userResolver');
+const { Members } = require('./objectResolvers/memberResolver');
+const { Skills } = require('./objectResolvers/skillsResolver');
 
 module.exports = {
     Query,
     Mutation,
-    User
+    Members,
+    Skills,
 }

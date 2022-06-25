@@ -213,7 +213,7 @@ async function addCategory(fields,category="Skills") {
         });
     }
 
-//   console.log("newMember = " , newMember)
+// //console.log("newMember = " , newMember)
 
     // console.log("newMember -------= " , newMember,category)
 
@@ -398,7 +398,7 @@ async function update_member_skill(skill,member,author) {
 
     // console.log("updatedSkills = " , makeAnUpdate,updatedSkills)
 
-    console.log("skill = " , skill)
+  //console.log("skill = " , skill)
 
     let updateMembers = skill.members
     if (skillExist === true){

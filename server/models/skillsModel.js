@@ -9,13 +9,12 @@ const SALT_I = 10;
 
 const skillSchema = mongoose.Schema({
 
-  airtableID: String,
   tagName: String,
 
 
 
-  tweets: [String],
-  members: [String],
+  tweets: [mongoose.Schema.ObjectId],
+  members: [mongoose.Schema.ObjectId],
 
   registeredAt: Date,
 

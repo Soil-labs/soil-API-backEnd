@@ -1,0 +1,19 @@
+module.exports = `
+    
+    type Skills {
+        _id: ID
+        tagName: String,
+
+        tweets: [String],
+        members: [Members],
+        authors: [Members],
+
+        registeredAt: String,
+    }
+
+    input findSkillInput {
+        tagName: String
+    }
+    
+
+`

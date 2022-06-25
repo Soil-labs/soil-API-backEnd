@@ -1,4 +1,4 @@
-// const {deleteAllUsers} = require("./mutation/userMutation");
+const {add_member_skill} = require("./mutation/memberMutation");
 
 
 
@@ -6,7 +6,7 @@ module.exports = {
   Mutation: {
     // ------------- USER MUTATION -----------------
 
-    // deleteAllUsers,
+    add_member_skill,
 
     // ------------- USER MUTATION -----------------
 
