@@ -3,6 +3,8 @@ module.exports = `
         #  ---------- USER MUTATIONS -------
         login(fields:loginInput!):User!
         add_member_skill(fields:add_member_skill_Input!):Members
+        updateProject(fields:updateProjectInput!):Project
+        newTweetPorject(fields:newTweetPorjectInput!):tweetsProject
 
 
     }

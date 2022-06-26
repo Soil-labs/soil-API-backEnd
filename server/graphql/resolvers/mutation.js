@@ -1,4 +1,5 @@
 const {add_member_skill} = require("./mutation/memberMutation");
+const {updateProject} = require("./mutation/projectsMutation");
 
 
 
@@ -7,6 +8,7 @@ module.exports = {
     // ------------- USER MUTATION -----------------
 
     add_member_skill,
+    updateProject,
 
     // ------------- USER MUTATION -----------------
 

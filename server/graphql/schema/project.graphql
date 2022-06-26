@@ -16,7 +16,7 @@ module.exports = `
 
         tweets: [tweetsType]
 
-        collaborationLinks: collaborationLinksType
+        collaborationLinks: [collaborationLinksType]
 
         budget: budgetType
 
@@ -31,7 +31,7 @@ module.exports = `
     }
 
     type skillRoleType {
-        skillID: Skills
+        skill: Skills
         level: String
         numEndorsement: String
         comment: String
@@ -48,12 +48,12 @@ module.exports = `
         title: String
         description: String
 
-        skill: [skillRoleType]
+        skills: [skillRoleType]
 
         archive: Boolean
-        dateRangeStart: Date
-        dateRangeEnd: Date
-        hoursPerWeek: Number
+        dateRangeStart: String
+        dateRangeEnd: String
+        hoursPerWeek: Int
         budget: budgetType
     }
 
@@ -69,10 +69,102 @@ module.exports = `
     }
 
     type datesType {
-        kickOff: Date
-        complition: Date
+        kickOff: String
+        complition: String
     }
 
+    type tweetsProject {
+
+        numTweets: Int
+        tweets: [tweetS]
+    }
+
+    type tweetS {
+        content: String,
+        author: String,
+    }
+
+    
+    input newTweetPorjectInput {
+
+        projectID: ID
+        newTweet: tweetInput
+    }
+
+    input tweetInput {
+        content: String,
+        author: String,
+    }
+
+
+
+    input updateProjectInput {
+        _id: ID
+        tagName: String
+        title: String
+        description: String
+
+        champion: String
+
+        team: [teamInput]
+
+        role: [roleInput]
+
+        collaborationLinks: [collaborationLinksInput]
+
+        budget: budgetInput
+
+        dates: datesInput
+
+    }
+
+    input teamInput {
+        members: String
+        roleID: String
+    }
+
+    input skillRoleInput {
+        skill: String
+        level: String
+        numEndorsement: String
+        comment: String
+    }
+
+    input budgetInput {
+        token: String
+        perHour: String
+    }
+
+
+
+    input roleInput {
+        title: String
+        description: String
+
+        skills: [skillRoleInput]
+
+        archive: Boolean
+        dateRangeStart: String
+        dateRangeEnd: String
+        hoursPerWeek: Int
+        budget: budgetInput
+    }
+
+    
+    input tweetsInput {
+        content: String
+        author: String
+    }
+
+    input collaborationLinksInput {
+        title: String
+        link: String
+    }
+
+    input datesInput {
+        kickOff: String
+        complition: String
+    }
 
     
 

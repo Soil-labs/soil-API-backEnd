@@ -19,16 +19,14 @@ const projectSchema = mongoose.Schema({
   role: [{
     title: String,
     description: String,
-    skill: [{
-      skillID: mongoose.Schema.ObjectId,
-      level: Number,
-      numEndorsement: Number,
-      comment: String
+    skills: [{
+      skill: mongoose.Schema.ObjectId,
+      level: String,
     }],
     archive: Boolean,
     dateRangeStart: Date,
     dateRangeEnd: Date,
-    hoursPerWeek: Number,
+    hoursPerWeek: String,
     budget: {
       token: String,
       perHour: String,
@@ -41,10 +39,10 @@ const projectSchema = mongoose.Schema({
     author: mongoose.Schema.ObjectId,
   }],
 
-  collaborationLinks: {
+  collaborationLinks: [{
     title: String,
     link: String,
-  },
+  }],
 
   budget: {
     token: String,
