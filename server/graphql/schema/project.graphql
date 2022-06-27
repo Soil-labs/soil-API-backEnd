@@ -61,6 +61,7 @@ module.exports = `
     type tweetsType {
         content: String
         author: Members
+        registeredAt: String
     }
 
     type collaborationLinksType {
@@ -76,22 +77,14 @@ module.exports = `
     type tweetsProject {
 
         numTweets: Int
-        tweets: [tweetS]
+        tweets: [tweetsType]
     }
 
-    type tweetS {
-        content: String,
-        author: String,
-    }
 
     
     input newTweetPorjectInput {
 
         projectID: ID
-        newTweet: tweetInput
-    }
-
-    input tweetInput {
         content: String,
         author: String,
     }

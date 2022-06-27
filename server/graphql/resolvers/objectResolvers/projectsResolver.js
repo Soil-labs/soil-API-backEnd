@@ -86,7 +86,7 @@ module.exports = {
   
             //   memberData = await Members.findOne({_id: members})
 
-            console.log("skills - roleResolver = " , skills)
+          //console.log("skills - roleResolver = " , skills)
   
   
               return skills;
@@ -112,11 +112,70 @@ module.exports = {
   
             //   memberData = await Members.findOne({_id: members})
 
-            console.log("skill - roleResolver = " , skill)
+          //console.log("skill - roleResolver = " , skill)
   
             skillData = await Skills.findOne({_id: skill})
   
               return skillData;
+  
+           } catch (err) {
+              throw new ApolloError(
+                 err.message,
+                 err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                 {
+                    component: 'userResolver > members',
+                    user: context.req.user?._id,
+                 }
+              );
+           }
+        },
+   },
+
+
+   tweetsProject: {
+      tweets: async (parent, args, context, info) => {
+      //  console.log("parent - tweets = " , parent.tweets)
+  
+           try {
+      //         const author = parent.author;
+
+      //  console.log("author = " , author)
+
+              
+  
+            //   memberData = await Members.findOne({_id: author})
+  
+  
+              return parent.tweets;
+  
+           } catch (err) {
+              throw new ApolloError(
+                 err.message,
+                 err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                 {
+                    component: 'userResolver > tweetsProject > tweets ',
+                    user: context.req.user?._id,
+                 }
+              );
+           }
+        },
+   },
+
+   tweetsType: {
+      author: async (parent, args, context, info) => {
+       console.log("parent -  tweetsType - author= " , parent)
+  
+           try {
+              const author = parent.author;
+
+      //  console.log("author = " , author)
+
+              
+  
+              memberData = await Members.findOne({_id: author})
+  
+  
+              return memberData;
   
            } catch (err) {
               throw new ApolloError(

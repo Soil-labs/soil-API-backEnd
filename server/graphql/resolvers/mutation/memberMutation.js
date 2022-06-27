@@ -3,7 +3,7 @@ const { Skills } = require("../../../models/skillsModel");
 
 
 module.exports = {
-  add_member_skill: async (parent, args, context, info) => {
+  addSkillToMember: async (parent, args, context, info) => {
    
 
     const {skillID,memberID,authorID} = args.fields;

@@ -32,7 +32,7 @@ module.exports = `
     }
 
 
-    input add_member_skill_Input {
+    input addSkillToMember_Input {
         skillID: String
         memberID: String
         authorID: String

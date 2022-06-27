@@ -37,6 +37,7 @@ const projectSchema = mongoose.Schema({
   tweets: [{
     content: String,
     author: mongoose.Schema.ObjectId,
+    registeredAt: Date,
   }],
 
   collaborationLinks: [{
