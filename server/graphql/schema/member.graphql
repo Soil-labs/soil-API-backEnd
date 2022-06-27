@@ -31,6 +31,12 @@ module.exports = `
         discordAvatar: String
     }
 
+    input addNewMemberInput {
+        discordName: String
+        discordID: String
+        discordAvatar: String
+    }
+
 
     input addSkillToMember_Input {
         skillID: String

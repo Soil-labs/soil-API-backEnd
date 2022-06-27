@@ -2,7 +2,12 @@ module.exports = `
     type Mutation {
         #  ---------- USER MUTATIONS -------
         login(fields:loginInput!):User!
+
+        #  ---------- MEMBER MUTATIONS -------
+        addNewMember(fields:addNewMemberInput!): [Members]
         addSkillToMember(fields:addSkillToMember_Input!):Members
+
+        #  ---------- MEMBER MUTATIONS -------
         updateProject(fields:updateProjectInput!):Project
         newTweetPorject(fields:newTweetPorjectInput!):tweetsProject
 

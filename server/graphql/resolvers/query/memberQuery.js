@@ -32,6 +32,8 @@ module.exports = {
 
       let membersData = await Members.find({ discordName: fields.discordName })
 
+      // query new Node:Member Bluepanda7
+
     //console.log("membersData = ",membersData )
 
       if (!membersData || membersData.length==0 ){
@@ -53,5 +55,7 @@ module.exports = {
       );
     }
   },
+
+  
   
 };

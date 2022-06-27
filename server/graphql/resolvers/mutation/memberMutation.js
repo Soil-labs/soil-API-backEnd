@@ -3,6 +3,41 @@ const { Skills } = require("../../../models/skillsModel");
 
 
 module.exports = {
+  addNewMember: async (parent, args, context, info) => {
+   
+
+    const {discordName,discordID,discordAvatar} = args.fields;
+
+    let fields = {
+      discordName,
+      discordID,
+      discordAvatar,
+      registeredAt: new Date(),
+    };
+
+    try {
+
+      let membersData = await Members.find({ discordName: fields.discordName })
+
+
+      if (!membersData || membersData.length==0 ){
+        membersData = await new Members(fields);
+        
+        membersData.save()
+
+        membersData = [membersData]
+      }
+
+
+      return membersData
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember", user: req.user.id }
+      );
+    }
+  },
   addSkillToMember: async (parent, args, context, info) => {
    
 
