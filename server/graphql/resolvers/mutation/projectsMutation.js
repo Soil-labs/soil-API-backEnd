@@ -1,5 +1,6 @@
 
 const { Projects } = require("../../../models/projectsModel");
+const { Members } = require("../../../models/membersModel");
 
 
 module.exports = {
@@ -29,11 +30,7 @@ module.exports = {
 
     try {
 
-//console.log("args.fields = " , fields)
-
       let projectData = await Projects.findOne({ tagName: fields.tagName })
-
-  //console.log("project = " , projectData)
       if (!projectData){
         projectData = await new Projects(fields);
         
@@ -48,10 +45,19 @@ module.exports = {
             {new: true}
         )
 
-
       }
 
-    //console.log("projectData = " , projectData)
+      if (champion) {
+        let memberData = await Members.findOne({ _id: champion })
+
+        memberDataUpdate = await Members.findOneAndUpdate(
+            {_id: champion},
+            {
+                $set: {projects: memberData.projects.concat(projectData._id)}
+            },
+            {new: true}
+        )
+      }
 
 
 

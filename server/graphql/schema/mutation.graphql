@@ -4,7 +4,8 @@ module.exports = `
         login(fields:loginInput!):User!
 
         #  ---------- MEMBER MUTATIONS -------
-        addNewMember(fields:addNewMemberInput!): [Members]
+        addNewMember(fields:addNewMemberInput!): Members
+        updateMember(fields:updateMemberInput!): Members
         addSkillToMember(fields:addSkillToMember_Input!):Members
 
         #  ---------- MEMBER MUTATIONS -------

@@ -16,28 +16,24 @@ const memberSchema = mongoose.Schema({
   discordID: String,
   discordAvatar: String,
 
-  
-
-  // discussion: {
-  //   topic: String,
-  //   phase: Number,
-  //   authorName: String,
-  //   command: String,
-  //   tweet: String,
-  // },
-  // discussExtraData: String,
-
-
-
 
   tweets: [String],
   skills: [{
     id: mongoose.Schema.ObjectId,
     authors: [mongoose.Schema.ObjectId],
-    points: Number,
+    communityLevel: Number,
+    selfEndorsedLevel: Number,
   }],
   projects: [mongoose.Schema.ObjectId],
   archiveProjects: [mongoose.Schema.ObjectId],
+
+  network: [{
+    memberID: mongoose.Schema.ObjectId,
+    endorcment: [{
+      skillID: mongoose.Schema.ObjectId,
+      registeredAt: Date,
+    }],
+  }],
 
   registeredAt: Date,
 

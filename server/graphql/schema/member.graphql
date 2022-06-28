@@ -10,8 +10,9 @@ module.exports = `
 
         tweets: [String],
         skills: [Skills],
-        projects: [String],
+        projects: [Project],
         archiveProjects: [String],
+        network: [Members],
 
         registeredAt: String,
 
@@ -35,6 +36,30 @@ module.exports = `
         discordName: String
         discordID: String
         discordAvatar: String
+    }
+
+
+    input updateMemberInput {
+        discordName: String
+        discordID: String
+        discordAvatar: String
+    }
+
+    input networkInput {
+        memberID: String
+        endorcment: [endorcmentInput]
+    }
+
+    input endorcmentInput {
+        skillID: String
+        registeredAt: String
+    }
+
+    input skillsUpdateMemberInput {
+        skillID: String
+        authors: String
+        communityLevel: Float
+        selfEndorsedLevel: Float
     }
 
 

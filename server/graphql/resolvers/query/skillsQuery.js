@@ -15,15 +15,27 @@ module.exports = {
     const {tagName} = args.fields;
 
     let fields = {
-      tagName,
       registeredAt: new Date(),
     };
 
+    if (tagName) fields = { ...fields, tagName };
+
+    console.log("fields = " , fields)
     
 
     try {
+      let membersData
+      if (tagName) {
+        console.log("change =1 ")
+        membersData = await Skills.find({ tagName: fields.tagName })
+      } else {
+        console.log("change =2 ")
 
-      let membersData = await Skills.find({ tagName: fields.tagName })
+        membersData = await Skills.find({})
+        console.log("membersData = " , membersData)
+      }
+
+
 
     //console.log("membersData = ",membersData )
 

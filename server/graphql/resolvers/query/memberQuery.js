@@ -24,27 +24,21 @@ module.exports = {
 
     
 
-  //console.log("change = ",fields )
     
-    // console.log("discordName = " , discordName)
-
     try {
 
       let membersData = await Members.find({ discordName: fields.discordName })
 
-      // query new Node:Member Bluepanda7
-
-    //console.log("membersData = ",membersData )
 
       if (!membersData || membersData.length==0 ){
         membersData = await new Members(fields);
         
         membersData.save()
-      //console.log("membersData = " , membersData)
 
         membersData = [membersData]
       }
 
+      console.log("membersData = " , membersData)
 
       return membersData
     } catch (err) {
