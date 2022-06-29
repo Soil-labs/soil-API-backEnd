@@ -12,6 +12,9 @@ module.exports = `
             findSkill(fields:findSkillInput): [Skills]
             findSkills(fields:findSkillInput): [Skills]
 
+            findProjects(fields:findProjectsInput): [Project]
+
+
    
             
         }
