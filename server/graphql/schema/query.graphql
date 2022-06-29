@@ -10,6 +10,7 @@ module.exports = `
             findTweets(fields:findTweetsInput): tweetsOutput
             findMember(fields:findMemberInput): [Members]
             findSkill(fields:findSkillInput): [Skills]
+            findSkills(fields:findSkillInput): [Skills]
 
    
             

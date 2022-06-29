@@ -1,7 +1,7 @@
 
 const { findTweets } = require("./query/tweetQuery");
 const { findMember } = require("./query/memberQuery");
-const { findSkill } = require("./query/skillsQuery");
+const { findSkill,findSkills } = require("./query/skillsQuery");
 
 
 const { errors } = require("./query/errorQuery");
@@ -17,7 +17,7 @@ module.exports = {
     // ------------- USER QUERY -----------------
     findTweets,
     findMember,
-    findSkill,
+    findSkill,findSkills,
 
   },
 };
