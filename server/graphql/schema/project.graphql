@@ -159,8 +159,12 @@ module.exports = `
         complition: String
     }
 
-     input findProjectsInput {
-        test: String
+    input findProjectInput {
+        _id: ID
+        tagName: String
+    }
+    input findProjectsInput {
+        tagName: [String]
     }
 
     

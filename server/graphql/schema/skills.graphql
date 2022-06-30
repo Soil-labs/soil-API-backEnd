@@ -11,6 +11,10 @@ module.exports = `
         registeredAt: String,
     }
 
+    input findSkillsInput {
+        tagName: [String]
+    }
+
     input findSkillInput {
         tagName: String
     }

@@ -8,10 +8,14 @@ module.exports = `
           
           #  ---------- USER QUERY -------
             findTweets(fields:findTweetsInput): tweetsOutput
-            findMember(fields:findMemberInput): [Members]
-            findSkill(fields:findSkillInput): [Skills]
-            findSkills(fields:findSkillInput): [Skills]
+            
+            findMember(fields:findMemberInput): Members
+            findMembers(fields:findMembersInput): [Members]
 
+            findSkill(fields:findSkillInput): Skills
+            findSkills(fields:findSkillsInput): [Skills]
+
+            findProject(fields:findProjectInput): Project
             findProjects(fields:findProjectsInput): [Project]
 
 
