@@ -57,6 +57,8 @@ module.exports = {
             },
             {new: true}
         )
+
+        console.log("memberDataUpdate = " , memberDataUpdate)
       }
 
 
@@ -66,7 +68,7 @@ module.exports = {
       throw new ApolloError(
         err.message,
         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember", user: req.user.id }
+        { component: "tmemberQuery > findMember"}
       );
     }
   },
@@ -141,7 +143,7 @@ module.exports = {
       throw new ApolloError(
         err.message,
         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember", user: req.user.id }
+        { component: "tmemberQuery > findMember"}
       );
     }
   },

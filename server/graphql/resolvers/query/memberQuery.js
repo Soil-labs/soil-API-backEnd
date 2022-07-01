@@ -14,6 +14,7 @@ module.exports = {
        
     const {discordName,_id} = args.fields;
 
+    if (!discordName && !_id) throw new ApolloError( "discordName or _id is required");
     
     try {
 
@@ -25,14 +26,14 @@ module.exports = {
       }
 
 
-      // console.log("memberData = " , memberData)
+      console.log("memberData = " , memberData)
 
       return memberData
     } catch (err) {
       throw new ApolloError(
         err.message,
         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember", user: req.user.id }
+        { component: "tmemberQuery > findMember"}
       );
     }
   },
@@ -61,7 +62,7 @@ module.exports = {
       throw new ApolloError(
         err.message,
         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember", user: req.user.id }
+        { component: "tmemberQuery > findMember"}
       );
     }
   },

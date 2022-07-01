@@ -1,6 +1,7 @@
 // const { User } = require('../../../models/user');
 const { Members } = require('../../../models/membersModel');
 const { Skills } = require('../../../models/skillsModel');
+const { Projects } = require('../../../models/projectsModel');
 
 const { ApolloError } = require('apollo-server-express');
 
@@ -44,17 +45,23 @@ module.exports = {
          }
       },
       projects: async (parent, args, context, info) => {
-         console.log("parent 232= " , parent.projects)
+         console.log("parent 2321= " , parent.projects)
+
+         const projectsIDs = parent.projects;
 
          try {
-            if (!parent.projects || parent.projects.length === 0) {
+
+
+            if (!projectsIDs || projectsIDs.length === 0) {
                return [];
             }
-            const projectsIDs = parent.projects;
+
+            console.log("projectsIDs = " , projectsIDs)
 
 
             projectData = await Projects.find({_id: projectsIDs})
 
+            console.log("projectData = " , projectData)
 
             return projectData;
 

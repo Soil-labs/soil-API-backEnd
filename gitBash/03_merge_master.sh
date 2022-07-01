@@ -13,4 +13,4 @@ git add .
 git commit -m "New Branch Created"
 git push origin master
 
-git checkout $OUTPUT
+# git checkout $OUTPUT

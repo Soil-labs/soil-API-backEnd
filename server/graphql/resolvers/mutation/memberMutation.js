@@ -1,6 +1,7 @@
 const { Members } = require("../../../models/membersModel");
 const { Skills } = require("../../../models/skillsModel");
 
+const {ApolloError} = require("apollo-server-express");
 
 module.exports = {
   addNewMember: async (parent, args, context, info) => {
@@ -8,33 +9,39 @@ module.exports = {
 
     const {discordName,discordID,discordAvatar} = args.fields;
 
+    if (!discordName) throw new ApolloError( "discordName is required");
+    // if (!discordName) return { error: "Discord Name is required" };
+
     let fields = {
       discordName,
-      discordID,
-      discordAvatar,
       registeredAt: new Date(),
     };
+
+    if (discordID) fields.discordID = discordID;
+    if (discordAvatar) fields.discordAvatar = discordAvatar;
+
 
     try {
 
       let membersData = await Members.findOne({ discordName: fields.discordName })
 
+      console.log("membersData = " , membersData)
 
-      if (!membersData || membersData.length==0 ){
+      if (!membersData){
         membersData = await new Members(fields);
         
         membersData.save()
-
-        membersData = [membersData]
+      } else {
+        throw new AppolloError("Member already exists")
       }
 
-
+      asdf
       return membersData
     } catch (err) {
       throw new ApolloError(
         err.message,
         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember", user: req.user.id }
+        { component: "tmemberQuery > addNewMember"}
       );
     }
   },
@@ -44,6 +51,8 @@ module.exports = {
     const {discordName,discordID,discordAvatar,
         skills,projects,archiveProjects,network
       } = args.fields;
+
+    if (!discordName) throw new ApolloError( "discordName is required");
 
     let fields = {
       discordName,
@@ -82,7 +91,7 @@ module.exports = {
       throw new ApolloError(
         err.message,
         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember", user: req.user.id }
+        { component: "tmemberQuery > findMember"}
       );
     }
   },
@@ -91,7 +100,9 @@ module.exports = {
 
     const {skillID,memberID,authorID} = args.fields;
 
-
+    if (!skillID) throw new ApolloError( "skillID is required");
+    if (!memberID) throw new ApolloError( "memberID is required");
+    if (!authorID) throw new ApolloError( "authorID is required");
 
     try {
 
@@ -229,7 +240,7 @@ module.exports = {
       throw new ApolloError(
         err.message,
         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember", user: req.user.id }
+        { component: "tmemberQuery > findMember"}
       );
     }
   },
