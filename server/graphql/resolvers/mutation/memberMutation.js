@@ -51,40 +51,34 @@ module.exports = {
   updateMember: async (parent, args, context, info) => {
    
 
-    const {discordName,discordID,discordAvatar,
-        skills,projects,archiveProjects,network
-      } = args.fields;
+    const {discordName,_id,discordAvatar,discriminator} = args.fields;
 
-    if (!discordName) throw new ApolloError( "discordName is required");
+    if (!_id) throw new ApolloError( "_id is required");
 
     let fields = {
-      discordName,
+      _id,
       registeredAt: new Date(),
     };
 
-    if (discordID) fields =  {...fields,discordID}
     if (discordAvatar) fields =  {...fields,discordAvatar}
-    if (skills) fields =  {...fields,skills}
-    if (projects) fields =  {...fields,projects}
-    if (archiveProjects) fields =  {...fields,archiveProjects}
-    if (network) fields =  {...fields,network}
+    if (discordName) fields =  {...fields,discordName}
+    if (discriminator) fields =  {...fields,discriminator}
+
     
 
     try {
 
-      let membersData = await Members.findOne({ discordName: fields.discordName })
+      let membersData = await Members.findOne({ _id: fields._id })
 
 
-      if (!membersData || membersData.length==0 ){
-        console.log("change =1 ",membersData )
+      if (!membersData ){
         membersData = await new Members(fields);
         
         membersData.save()
 
-        membersData = [membersData]
+        membersData = membersData
       } else {
-        console.log("change = 2" ,membersData)
-        membersData = await Members.findOneAndUpdate({ discordName: fields.discordName }, fields, { new: true });
+        membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
       }
 
       console.log("membersData = " , membersData)

@@ -6,7 +6,6 @@ module.exports = `
         _id: ID
         
         discordName: String
-        discordID: String
         discordAvatar: String
         discriminator: String
 
@@ -40,16 +39,16 @@ module.exports = `
     input addNewMemberInput {
         _id: ID
         discordName: String
-        discordID: String
         discordAvatar: String
         discriminator: String
     }
 
 
     input updateMemberInput {
+        _id: ID
         discordName: String
-        discordID: String
         discordAvatar: String
+        discriminator: String
     }
 
     input networkInput {

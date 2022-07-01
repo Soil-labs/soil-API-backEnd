@@ -18,7 +18,6 @@ const memberSchema = mongoose.Schema({
     type: String,
     maxlength: 100,
   },
-  discordID: String,
   discordAvatar: String,
   discriminator: String,
 
