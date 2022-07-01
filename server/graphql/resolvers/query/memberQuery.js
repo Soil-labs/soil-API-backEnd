@@ -12,18 +12,17 @@ const {
 module.exports = {
   findMember: async (parent, args, context, info) => {
        
-    const {discordName,_id} = args.fields;
+    const {_id} = args.fields;
 
-    if (!discordName && !_id) throw new ApolloError( "discordName or _id is required");
+    if (!_id) {
+      throw new ApolloError("No id provided");
+    }
+
     
     try {
 
-      let memberData
-      if (discordName){
-        memberData = await Members.findOne({ discordName: discordName })
-      } else if (_id){
-        memberData = await Members.findOne({ _id: _id })
-      }
+      let memberData = await Members.findOne({ _id: _id })
+      
 
 
       console.log("memberData = " , memberData)
@@ -40,15 +39,14 @@ module.exports = {
 
   findMembers: async (parent, args, context, info) => {
        
-    const {discordName} = args.fields;
+    const {_id} = args.fields;
 
-    console.log("discordName = " , discordName)
     
     try {
 
       let membersData
-      if (discordName){
-        membersData = await Members.find({ discordName: discordName })
+      if (_id){
+        membersData = await Members.find({ _id: _id })
         console.log("membersData = " , membersData)
       } else{
         membersData = await Members.find({})

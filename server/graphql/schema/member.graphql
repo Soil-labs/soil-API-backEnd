@@ -4,12 +4,12 @@ module.exports = `
     
     type Members {
         _id: ID
-
-        error: String
         
         discordName: String
         discordID: String
         discordAvatar: String
+        discriminator: String
+
 
         tweets: [String],
         skills: [Skills],
@@ -31,17 +31,18 @@ module.exports = `
 
     input findMemberInput {
         _id: ID
-        discordName: String
     }
 
     input findMembersInput {
-        discordName: [String]
+        _id: [ID]
     }
 
     input addNewMemberInput {
+        _id: ID
         discordName: String
         discordID: String
         discordAvatar: String
+        discriminator: String
     }
 
 

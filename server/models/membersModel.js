@@ -9,12 +9,18 @@ const SALT_I = 10;
 
 const memberSchema = mongoose.Schema({
 
+  _id: {
+    type: String,
+    unique: true,
+  },
+
   discordName: {
     type: String,
     maxlength: 100,
   },
   discordID: String,
   discordAvatar: String,
+  discriminator: String,
 
 
   tweets: [String],

@@ -7,23 +7,25 @@ module.exports = {
   addNewMember: async (parent, args, context, info) => {
    
 
-    const {discordName,discordID,discordAvatar} = args.fields;
+  const {discordName,_id,discordAvatar,discriminator} = args.fields;
 
-    if (!discordName) throw new ApolloError( "discordName is required");
-    // if (!discordName) return { error: "Discord Name is required" };
+
+    if (!_id) throw new ApolloError( "_id is required");
 
     let fields = {
-      discordName,
+      _id,
       registeredAt: new Date(),
     };
 
-    if (discordID) fields.discordID = discordID;
+    
+    if (discordName) fields.discordName = discordName;
     if (discordAvatar) fields.discordAvatar = discordAvatar;
+    if (discriminator) fields.discriminator = discriminator;
 
 
     try {
 
-      let membersData = await Members.findOne({ discordName: fields.discordName })
+      let membersData = await Members.findOne({ _id: fields._id })
 
       console.log("membersData = " , membersData)
 
@@ -31,11 +33,12 @@ module.exports = {
         membersData = await new Members(fields);
         
         membersData.save()
-      } else {
-        throw new AppolloError("Member already exists")
-      }
+      } 
+      // else {
+      //   console.log("change = " )
+      //   throw new ApolloError("Member already exists")
+      // }
 
-      asdf
       return membersData
     } catch (err) {
       throw new ApolloError(
