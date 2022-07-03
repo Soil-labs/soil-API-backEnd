@@ -3,6 +3,9 @@ const { Projects } = require("../../../models/projectsModel");
 const { Members } = require("../../../models/membersModel");
 
 
+const {ApolloError} = require("apollo-server-express");
+
+
 module.exports = {
   updateProject: async (parent, args, context, info) => {
    
@@ -26,7 +29,7 @@ module.exports = {
     if (budget) fields =  {...fields,budget}
     if (dates) fields =  {...fields,dates}
 
-
+    console.log("fields = " , fields)
 
     try {
 
@@ -48,17 +51,23 @@ module.exports = {
       }
 
       if (champion) {
-        let memberData = await Members.findOne({ _id: champion })
 
-        memberDataUpdate = await Members.findOneAndUpdate(
-            {_id: champion},
-            {
-                $set: {projects: memberData.projects.concat(projectData._id)}
-            },
-            {new: true}
-        )
+        console.log("champion 232 = " , champion)
+        let memberDataChampion = await Members.findOne({ _id: champion })
 
-        console.log("memberDataUpdate = " , memberDataUpdate)
+        console.log("memberDataChampion 232 = " , memberDataChampion)
+
+
+        if (memberDataChampion){
+          memberDataUpdate = await Members.findOneAndUpdate(
+              {_id: champion},
+              {
+                  $set: {projects: memberDataChampion.projects.concat(projectData._id)}
+              },
+              {new: true}
+          )
+        }
+
       }
 
 

@@ -9,10 +9,10 @@ const projectSchema = mongoose.Schema({
   title: String,
   description: String,
 
-  champion: mongoose.Schema.ObjectId,
+  champion:String,
 
   team: [{
-    members: mongoose.Schema.ObjectId,
+    members: String,
     roleID: mongoose.Schema.ObjectId
   }],
 
