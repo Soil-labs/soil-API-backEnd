@@ -1,6 +1,7 @@
 
 const { Projects } = require("../../../models/projectsModel");
 
+const {ApolloError} = require("apollo-server-express");
 
 module.exports = {
   updateProject: async (parent, args, context, info) => {
