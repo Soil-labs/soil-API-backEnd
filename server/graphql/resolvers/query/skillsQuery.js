@@ -44,7 +44,7 @@ module.exports = {
         
         membersData.save()
 
-        membersData = [membersData]
+        membersData = membersData
       }
 
 

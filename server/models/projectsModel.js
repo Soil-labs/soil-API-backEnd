@@ -36,7 +36,7 @@ const projectSchema = mongoose.Schema({
 
   tweets: [{
     content: String,
-    author: mongoose.Schema.ObjectId,
+    author: String,
     registeredAt: Date,
   }],
 

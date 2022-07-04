@@ -112,6 +112,12 @@ module.exports = {
 
       let skill = await Skills.findOne({ _id: skillID })
 
+
+      if (!member) throw new ApolloError( "member dont exist, you need to first craete the member");
+      if (!authorInfo) throw new ApolloError( "author dont exist, you need to first craete the author");
+      if (!skill) throw new ApolloError( "skill dont exist, you need to first creaet the skill ");
+
+
       // console.log("change = " , skill,authorInfo,member)
 
       let newSkils
