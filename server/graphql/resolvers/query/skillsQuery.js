@@ -24,31 +24,31 @@ module.exports = {
     
 
     try {
-      let membersData
+      let skillData
       if (tagName) {
         // console.log("change =1 ")
-        membersData = await Skills.findOne({ tagName: fields.tagName })
+        skillData = await Skills.findOne({ tagName: fields.tagName })
       } else {
         // console.log("change =2 ")
 
-        membersData = await Skills.find({})
-        // console.log("membersData = " , membersData)
+        skillData = await Skills.find({})
+        // console.log("skillData = " , skillData)
       }
 
 
 
-    console.log("membersData = ",membersData )
+    console.log("skillData = ",skillData )
 
-      if (!membersData || membersData.length==0 ){
-        membersData = await new Skills(fields);
+      if (!skillData || skillData.length==0 ){
+        skillData = await new Skills(fields);
         
-        membersData.save()
+        skillData.save()
 
-        membersData = membersData
+        skillData = skillData
       }
 
 
-      return membersData
+      return skillData
     } catch (err) {
       throw new ApolloError(
         err.message,
