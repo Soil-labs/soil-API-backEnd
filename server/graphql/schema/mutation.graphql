@@ -16,6 +16,10 @@ module.exports = `
         createSkill(fields:createSkillInput): Skills
 
 
+        #  ---------- ROLE MUTATIONS -------
+        newRoleTemplate(fields:createRoleInput): Role
+
+
 
     }
 `

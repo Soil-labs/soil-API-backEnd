@@ -1,0 +1,31 @@
+module.exports = `
+    
+
+    type Role {
+        _id: ID
+        title: String,
+        description: String,
+        skills: [Skills],  
+
+    }
+
+    type skillsTypeRole {
+        skill: String
+    }
+
+
+    
+    input createRoleInput {
+        title: String,
+        description: String,
+        skills: [String],  
+    }
+
+
+
+
+    
+
+    
+
+`
