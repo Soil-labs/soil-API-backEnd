@@ -7,9 +7,7 @@ const roleTemplateSchema = mongoose.Schema({
 
   title: String,
   description: String,
-  skills: [{
-    skill: mongoose.Schema.ObjectId,
-  }],
+  skills: [mongoose.Schema.ObjectId],
 
 });
 

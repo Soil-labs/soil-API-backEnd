@@ -17,7 +17,7 @@ module.exports = `
 
 
         #  ---------- ROLE MUTATIONS -------
-        newRoleTemplate(fields:createRoleInput): Role
+        newRoleTemplate(fields:createRoleInput): RoleTemplate
 
 
 

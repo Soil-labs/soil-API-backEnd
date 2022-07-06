@@ -5,6 +5,8 @@ const { findSkill,findSkills } = require("./query/skillsQuery");
 
 const {findProject,findProjects} = require("./query/projectQuery");
 
+const {findRoleTemplate,findRoleTemplates} = require("./query/roleTemplateQuery");
+
 
 const { errors } = require("./query/errorQuery");
 
@@ -16,12 +18,18 @@ module.exports = {
     errors,
 
 
-    // ------------- USER QUERY -----------------
+    // ------------- PROJECT QUERY -----------------
     findTweets,
+    findProject,findProjects,
+
+    // ------------- MEMBER QUERY -----------------
     findMember,findMembers,
+
+    // ------------- SKILL QUERY -----------------
     findSkill,findSkills,
 
-    findProject,findProjects,
+    // ------------- ROLE TEMPLATE QUERY -----------------
+    findRoleTemplate,findRoleTemplates,
 
   },
 };

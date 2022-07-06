@@ -1,8 +1,8 @@
 module.exports = `
     
 
-    type Role {
-        _id: ID
+    type RoleTemplate {
+        _id: ID!
         title: String,
         description: String,
         skills: [Skills],  
@@ -21,10 +21,13 @@ module.exports = `
         skills: [String],  
     }
 
+    input findRoleTemplateInput {
+        _id: ID
+    }
 
-
-
-    
+    input findRoleTemplatesInput {
+        _id: [ID]
+    }
 
     
 

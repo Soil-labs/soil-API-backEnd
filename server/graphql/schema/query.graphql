@@ -6,17 +6,24 @@ module.exports = `
             errors:[ErrorLog]
 
           
-          #  ---------- USER QUERY -------
+          #  ---------- PROJECT QUERY -------
             findTweets(fields:findTweetsInput): tweetsOutput
+            findProject(fields:findProjectInput): Project
+            findProjects(fields:findProjectsInput): [Project]
             
+          #  ---------- MEMBER QUERY -------
             findMember(fields:findMemberInput): Members
             findMembers(fields:findMembersInput): [Members]
 
+          #  ---------- SKILL QUERY -------
             findSkill(fields:findSkillInput): Skills
             findSkills(fields:findSkillsInput): [Skills]
 
-            findProject(fields:findProjectInput): Project
-            findProjects(fields:findProjectsInput): [Project]
+          #  ---------- QUERY TEMPLATE QUERY -------
+            findRoleTemplate(fields:findRoleTemplateInput): RoleTemplate
+            findRoleTemplates(fields:findRoleTemplatesInput): [RoleTemplate]
+
+
 
 
    

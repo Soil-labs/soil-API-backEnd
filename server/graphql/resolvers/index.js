@@ -6,6 +6,7 @@ const { Project,teamType,roleType,skillRoleType,
     tweetsType,
  } = require('./objectResolvers/projectsResolver');
 const { Skills } = require('./objectResolvers/skillsResolver');
+const { RoleTemplate } = require('./objectResolvers/roleTemplateResolver');
 
 
 module.exports = {
@@ -15,4 +16,5 @@ module.exports = {
     Project,teamType,roleType,skillRoleType,
     tweetsProject,tweetsType,
     Skills,
+    RoleTemplate,
 }
