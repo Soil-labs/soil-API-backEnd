@@ -88,9 +88,16 @@ module.exports = {
     // const {tagName,title,description,champion,team} = args.fields;
     const {projectID,content,author} = JSON.parse(JSON.stringify(args.fields))
 
-    if (!projectID) return {}
-    if (!content) return {}
-    if (!author) return {}
+    
+    if (!projectID) throw new ApolloError( "you need to specify a project ID");
+    if (!content) throw new ApolloError( "you need to specify content");
+    if (!author) throw new ApolloError( "you need to specify author ID");
+
+
+    var ObjectId = require('mongoose').Types.ObjectId;
+
+    if (ObjectId.isValid(projectID)==false) throw new ApolloError( "The project doesn't have a valid mongo ID");
+
     
     let fields = {
       projectID,
@@ -103,10 +110,14 @@ module.exports = {
 
     try {
 
-    //console.log("args.fields = " , fields)
-
 
       let projectData = await Projects.findOne({ _id: fields.projectID })
+
+
+      let memberData = await Members.findOne({ _id: fields.author })
+
+      if (!projectData) throw new ApolloError( "This project dont exist you need to choose antoher project");
+      if (!memberData) throw new ApolloError( "The author dont exist on the database you need to choose antoher author ID");
 
       
       
@@ -116,20 +127,7 @@ module.exports = {
         registeredAt: new Date(),
       })
 
-      // projectData.tweets.push({
-      //   content: fields.content,
-      //   author: fields.author,
-      // })
       
-    //console.log("projectData = " , projectData)
-
-    //   projectDataUpdate = await Projects.findOneAndUpdate(
-    //     {_id: projectData._id},
-    //     {
-    //         $set: fields
-    //     },
-    //     {new: true}
-    // )
 
     projectDataUpdate = await Projects.findOneAndUpdate(
       {_id: projectData._id},
@@ -138,8 +136,6 @@ module.exports = {
       },
       {new: true}
   )
-
-//console.log("projectDataUpdate = " , projectDataUpdate)
 
 
 
