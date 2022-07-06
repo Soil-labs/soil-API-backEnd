@@ -82,7 +82,7 @@ module.exports = `
 
 
     
-    input newTweetPorjectInput {
+    input newTweetProjectInput {
 
         projectID: ID
         content: String,

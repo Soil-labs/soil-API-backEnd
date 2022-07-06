@@ -18,6 +18,10 @@ module.exports = `
     input findSkillInput {
         tagName: String
     }
+
+    input createSkillInput {
+        tagName: String
+    }
     
 
 `

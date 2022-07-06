@@ -25,7 +25,7 @@ module.exports = {
       skillData = await Skills.findOne({ tagName: fields.tagName })
 
 
-      if (!skillData || skillData.length==0 ){
+      if (!skillData ){
         skillData = await new Skills(fields);
         
         skillData.save()

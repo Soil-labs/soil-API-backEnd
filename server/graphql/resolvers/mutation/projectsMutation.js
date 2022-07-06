@@ -82,7 +82,7 @@ module.exports = {
     }
   },
 
-  newTweetPorject: async (parent, args, context, info) => {
+  newTweetProject: async (parent, args, context, info) => {
    
 
     // const {tagName,title,description,champion,team} = args.fields;

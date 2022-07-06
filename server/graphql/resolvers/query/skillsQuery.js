@@ -14,32 +14,27 @@ module.exports = {
 
     const {tagName} = args.fields;
 
+    if (!tagName) throw new ApolloError( "You need to specify the name of the skill");
+
     let fields = {
       registeredAt: new Date(),
     };
 
     if (tagName) fields = { ...fields, tagName };
 
-    // console.log("fields = " , fields)
     
 
     try {
       let skillData
-      if (tagName) {
-        // console.log("change =1 ")
-        skillData = await Skills.findOne({ tagName: fields.tagName })
-      } else {
-        // console.log("change =2 ")
-
-        skillData = await Skills.find({})
-        // console.log("skillData = " , skillData)
-      }
+      
+      
+      skillData = await Skills.findOne({ tagName: fields.tagName }) 
 
 
 
-    console.log("skillData = ",skillData )
+      console.log("skillData = ",skillData )
 
-      if (!skillData || skillData.length==0 ){
+      if (!skillData  ){
         skillData = await new Skills(fields);
         
         skillData.save()

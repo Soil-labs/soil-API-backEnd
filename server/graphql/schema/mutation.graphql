@@ -8,9 +8,13 @@ module.exports = `
         updateMember(fields:updateMemberInput!): Members
         addSkillToMember(fields:addSkillToMember_Input!):Members
 
-        #  ---------- MEMBER MUTATIONS -------
+        #  ---------- PROJECT MUTATIONS -------
         updateProject(fields:updateProjectInput!):Project
-        newTweetPorject(fields:newTweetPorjectInput!):tweetsProject
+        newTweetProject(fields:newTweetProjectInput!):tweetsProject
+
+        #  ---------- SKILL MUTATIONS -------
+        createSkill(fields:createSkillInput): Skills
+
 
 
     }
