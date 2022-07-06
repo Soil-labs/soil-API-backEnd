@@ -38,9 +38,9 @@ module.exports = `
     }
 
     type budgetType {
-        budgetType: String
         token: String
         perHour: String
+        totalBudget: String
     }
 
 

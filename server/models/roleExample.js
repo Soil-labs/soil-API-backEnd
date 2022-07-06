@@ -3,7 +3,7 @@ require("dotenv").config();
 
 
 
-const projectSchema = mongoose.Schema({
+const RoleExampleSchema = mongoose.Schema({
 
   tagName: String, // the Tag Name
   title: String,
@@ -59,5 +59,5 @@ const projectSchema = mongoose.Schema({
 });
 
 
-const Projects = mongoose.model("Projects", projectSchema);
-module.exports = { Projects };
+const RoleExample = mongoose.model("RoleExample", RoleExampleSchema);
+module.exports = { RoleExample };
