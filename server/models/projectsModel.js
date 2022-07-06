@@ -46,6 +46,7 @@ const projectSchema = mongoose.Schema({
   }],
 
   budget: {
+    budgetType: String,
     token: String,
     perHour: String,
   },

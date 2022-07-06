@@ -38,6 +38,7 @@ module.exports = `
     }
 
     type budgetType {
+        budgetType: String
         token: String
         perHour: String
     }
@@ -124,6 +125,7 @@ module.exports = `
     }
 
     input budgetInput {
+        totalBudget: String
         token: String
         perHour: String
     }
