@@ -2,7 +2,7 @@ const {addNewMember,updateMember,addSkillToMember} = require("./mutation/memberM
 const {updateProject,newTweetProject} = require("./mutation/projectsMutation");
 const {createSkill} = require("./mutation/skillMutation")
 const {updateRoleTemplate} = require("./mutation/roleTemplateMutation")
-const {newSkillCategory} = require("./mutation/skillCategoryMutation")
+const {updateSkillCategory} = require("./mutation/skillCategoryMutation")
 
 
 
@@ -25,7 +25,7 @@ module.exports = {
     updateRoleTemplate,
 
     // ------------- SKILL CATEGORY MUTATION -----------------
-    newSkillCategory,
+    updateSkillCategory,
 
     
   },

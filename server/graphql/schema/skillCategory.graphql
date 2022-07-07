@@ -9,7 +9,7 @@ module.exports = `
     }
 
     
-    input newSkillCategoryInput {
+    input updateSkillCategoryInput {
         _id: ID
         name: String,
         description: String,
