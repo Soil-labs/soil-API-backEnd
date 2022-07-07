@@ -20,6 +20,10 @@ module.exports = `
         newRoleTemplate(fields:createRoleInput): RoleTemplate
 
 
+        #  ---------- SKILL CATEGORY MUTATIONS -------
+        newSkillCategory(fields:newSkillCategoryInput): SkillCategory
+
+
 
     }
 `

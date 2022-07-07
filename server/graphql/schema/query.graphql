@@ -24,8 +24,9 @@ module.exports = `
             findRoleTemplates(fields:findRoleTemplatesInput): [RoleTemplate]
 
 
-
-
+          #  ---------- SKILL CATEGORY QUERY -------
+            findSkillCategory(fields:findSkillCategoryInput): SkillCategory
+            findSkillCategories(fields:findSkillCategoriesInput): [SkillCategory]
    
             
         }

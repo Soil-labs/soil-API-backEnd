@@ -1,0 +1,28 @@
+module.exports = `
+    
+
+    type SkillCategory {
+        _id: ID
+        name: String,
+        description: String,
+        skills: [Skills],  
+    }
+
+    
+    input newSkillCategoryInput {
+        _id: ID
+        name: String,
+        description: String,
+        skills: [String],  
+    }
+
+    input findSkillCategoryInput {
+        _id: ID
+    }
+
+    input findSkillCategoriesInput {
+        _id: [ID]
+    }
+    
+
+`
