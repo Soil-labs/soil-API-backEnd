@@ -54,6 +54,7 @@ module.exports = `
 
 
     type roleType {
+        _id: ID
         title: String
         description: String
 
@@ -143,6 +144,7 @@ module.exports = `
 
 
     input roleInput {
+        _id: ID
         title: String
         description: String
 

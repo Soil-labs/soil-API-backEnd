@@ -12,12 +12,18 @@ module.exports = `
 
         tweets: [String],
         skills: [Skills],
-        projects: [Project],
+        projects: [projectMemberType],
         archiveProjects: [String],
         network: [Members],
 
         registeredAt: String,
 
+    }
+
+    type projectMemberType {
+        project: Project,
+        roleID: String,
+        champion: Boolean
     }
     
 

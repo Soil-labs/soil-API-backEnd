@@ -16,6 +16,7 @@ module.exports = `
 
     
     input createRoleInput {
+        _id: ID
         title: String,
         description: String,
         skills: [String],  

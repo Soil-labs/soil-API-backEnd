@@ -47,23 +47,47 @@ module.exports = {
       projects: async (parent, args, context, info) => {
          console.log("parent 2321= " , parent.projects)
 
-         const projectsIDs = parent.projects;
+         const projectsInfo = parent.projects;
 
          try {
 
 
-            if (!projectsIDs || projectsIDs.length === 0) {
+            if (!projectsInfo || projectsInfo.length === 0) {
                return [];
             }
 
-            console.log("projectsIDs = " , projectsIDs)
+            console.log("projectsInfo = " , projectsInfo)
+
+            let position = {}
+
+            let projectID_all = projectsInfo.map((project,idx)=>{
+
+               position[project.projectID] = idx
+               return (project.projectID)
+            
+            })
+
+            projectData = await Projects.find({_id: projectID_all})
+
+            console.log("position = " , position)
+
+            // projectsInfo = projectsInfo.map(project=>{return ({
+            //    project: project.projectID
+            // })})
+
+            let projectData_disp = projectData.map(project=>{
+               return ({
+                  project: project._doc,
+                  roleID: projectsInfo[position[project._id]].roleID,
+                  champion: projectsInfo[position[project._id]].champion,
+               })  
+            })
 
 
-            projectData = await Projects.find({_id: projectsIDs})
+            console.log("projectData_disp = " , projectData_disp)
 
-            console.log("projectData = " , projectData)
-
-            return projectData;
+            return projectData_disp;
+            return {};
 
          } catch (err) {
             throw new ApolloError(

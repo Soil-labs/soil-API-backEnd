@@ -5,30 +5,47 @@ const { RoleTemplate } = require("../../../models/roleTemplateModal");
 const {ApolloError} = require("apollo-server-express");
 
 module.exports = {
-  newRoleTemplate: async (parent, args, context, info) => {
+  updateRoleTemplate: async (parent, args, context, info) => {
    
 
-  const {title,description,skills} = args.fields;
+  const {_id,title,description,skills} = args.fields;
 
 
-    if (!title) throw new ApolloError( "title is required");
+    // if (!title) throw new ApolloError( "title is required");
 
     let fields = {
-      title,
     };
 
     
+    if (_id) fields._id = _id;
+    if (title) fields.title = title;
     if (description) fields.description = description;
     if (skills) fields.skills = skills;
 
 
     try {
 
-        roleData = await new RoleTemplate(fields);
-        
-        roleData.save()
+        if (_id) {
+            let roleTemplateData = await RoleTemplate.findOne({ _id: _id })
+            if (!roleTemplateData) {
+                roleTemplateData = await new RoleTemplate(fields);
+                roleTemplateData.save()
+            } else {
+                roleTemplateData= await RoleTemplate.findOneAndUpdate(
+                    {_id: roleTemplateData._id},
+                    {
+                        $set: fields
+                    },
+                    {new: true}
+                )
+            }
+            return roleTemplateData;
+        } else {
+            let roleTemplateData = await new RoleTemplate(fields);
+            roleTemplateData.save()
+            return roleTemplateData;
+        }
 
-      return roleData
     } catch (err) {
       throw new ApolloError(
         err.message,

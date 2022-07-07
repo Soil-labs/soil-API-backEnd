@@ -52,20 +52,61 @@ module.exports = {
 
       if (champion) {
 
-        console.log("champion 232 = " , champion)
+        // console.log("champion 232 = " , champion)
         let memberDataChampion = await Members.findOne({ _id: champion })
 
-        console.log("memberDataChampion 232 = " , memberDataChampion)
+        // console.log("memberDataChampion 232 = " , memberDataChampion)
 
+        let currentProjects = [...memberDataChampion.projects]
+
+        currentProjects.push({
+          projectID: projectData._id,
+          champion: true,
+        })
 
         if (memberDataChampion){
+
+          console.log("currentProjects = " , currentProjects)
           memberDataUpdate = await Members.findOneAndUpdate(
               {_id: champion},
               {
-                  $set: {projects: memberDataChampion.projects.concat(projectData._id)}
+                  $set: {projects: currentProjects}
               },
               {new: true}
           )
+          console.log("memberDataUpdate = " , memberDataUpdate)
+        }
+
+      }
+
+
+      if (fields.team && fields.team.length > 0) {
+
+        for (let i=0;i<fields.team.length;i++){
+
+          let memberData = await Members.findOne({ _id: fields.team[i].members })
+
+          let currentProjects = [...memberData.projects]
+
+          currentProjects.push({
+            projectID: projectData._id,
+            champion: false,
+            roleID: fields.team[i].roleID,
+          })
+
+          if (memberData){
+
+            console.log("currentProjects = " , currentProjects)
+            memberDataUpdate = await Members.findOneAndUpdate(
+                {_id: fields.team[i].members},
+                {
+                    $set: {projects: currentProjects}
+                },
+                {new: true}
+            )
+            console.log("memberDataUpdate = " , memberDataUpdate)
+          }
+
         }
 
       }
