@@ -28,6 +28,14 @@ module.exports = `
     type teamType {
         members: Members
         roleID: String
+        phase: phaseType
+    }
+
+    enum phaseType {
+        shortlisted
+        engaged
+        committed
+        rejected
     }
 
     type skillRoleType {
@@ -40,11 +48,13 @@ module.exports = `
     type budgetType {
         token: String
         perHour: String
+        totalBudget: String
     }
 
 
 
     type roleType {
+        _id: ID
         title: String
         description: String
 
@@ -82,7 +92,7 @@ module.exports = `
 
 
     
-    input newTweetPorjectInput {
+    input newTweetProjectInput {
 
         projectID: ID
         content: String,
@@ -114,6 +124,8 @@ module.exports = `
     input teamInput {
         members: String
         roleID: String
+        phase: phaseType
+        
     }
 
     input skillRoleInput {
@@ -124,6 +136,7 @@ module.exports = `
     }
 
     input budgetInput {
+        totalBudget: String
         token: String
         perHour: String
     }
@@ -131,6 +144,7 @@ module.exports = `
 
 
     input roleInput {
+        _id: ID
         title: String
         description: String
 

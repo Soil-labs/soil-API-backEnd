@@ -122,6 +122,13 @@ module.exports = {
       let skill = await Skills.findOne({ _id: skillID })
 
 
+      if (!member) throw new ApolloError( "member dont exist, you need to first craete the member");
+      if (!authorInfo) throw new ApolloError( "author dont exist, you need to first craete the author");
+      if (!skill) throw new ApolloError( "skill dont exist, you need to first creaet the skill ");
+
+
+      // console.log("change = " , skill,authorInfo,member)
+
       let newSkils
 
 
@@ -148,14 +155,20 @@ module.exports = {
         }
     })
 
+    console.log("change = 1" )
+
     // ---------- Network Member-----------
     let networkMember
     let flagMemberExist = false
     member.network.forEach(net=>{
-      if (net.memberID.equals(authorID)===true){
+      // console.log("net = " , net,net.memberID == authorID,net.memberID , authorID)
+      // if (net.memberID.equals(authorID)===true){
+          if (net.memberID == authorID){
         flagMemberExist = true
       } 
     })
+    console.log("change = 2" )
+
 
     if (flagMemberExist===false){
       networkMember = member.network.concat({memberID: authorID})
@@ -164,14 +177,16 @@ module.exports = {
     }
     // ---------- Network Member-----------
 
+    console.log("change = 2.5",authorInfo.network )
     // ---------- Network Author-----------
     let networkAuthor
     flagMemberExist = false
     authorInfo.network.forEach(net=>{
-      if (net.memberID.equals(authorID)===true){
+      if (net.memberID == authorID){
         flagMemberExist = true
       } 
     })
+    console.log("change = 2.7" )
 
     if (flagMemberExist===false){
       networkAuthor = authorInfo.network.concat({memberID: member._id})
@@ -181,6 +196,7 @@ module.exports = {
     // ---------- Network Author-----------
 
 
+    console.log("change = 3" )
     
 
     let updateMembers = skill.members
@@ -194,6 +210,8 @@ module.exports = {
         updateMembers.push(member._id)
     }
 
+    console.log("change = 4" ,updatedSkills)
+    console.log("change = 4" ,networkMember)
 
     let newMember,newSkill
     if (makeAnUpdate){
@@ -208,6 +226,8 @@ module.exports = {
             {new: true}
         )
 
+        console.log("change = 5" )
+
         authorInfo = await Members.findOneAndUpdate(
             {_id: authorInfo._id},
             {
@@ -217,6 +237,9 @@ module.exports = {
             },
             {new: true}
         )
+
+          console.log("change = 6" )
+
 
         skill= await Skills.findOneAndUpdate(
             {_id: skill._id},

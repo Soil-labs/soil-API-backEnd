@@ -25,15 +25,20 @@ const memberSchema = mongoose.Schema({
   tweets: [String],
   skills: [{
     id: mongoose.Schema.ObjectId,
-    authors: [mongoose.Schema.ObjectId],
+    authors: [String],
     communityLevel: Number,
     selfEndorsedLevel: Number,
   }],
-  projects: [mongoose.Schema.ObjectId],
+  // projects: [mongoose.Schema.ObjectId],
+  projects: [{
+    projectID: mongoose.Schema.ObjectId,
+    roleID: mongoose.Schema.ObjectId,
+    champion: Boolean,
+  }],
   archiveProjects: [mongoose.Schema.ObjectId],
 
   network: [{
-    memberID: mongoose.Schema.ObjectId,
+    memberID: String,
     endorcment: [{
       skillID: mongoose.Schema.ObjectId,
       registeredAt: Date,

@@ -14,7 +14,7 @@ const skillSchema = mongoose.Schema({
 
 
   tweets: [mongoose.Schema.ObjectId],
-  members: [mongoose.Schema.ObjectId],
+  members: [String],
 
   registeredAt: Date,
 

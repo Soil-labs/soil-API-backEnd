@@ -3,6 +3,9 @@ const { Projects } = require("../../../models/projectsModel");
 const { Members } = require("../../../models/membersModel");
 
 
+const {ApolloError} = require("apollo-server-express");
+
+
 module.exports = {
   updateProject: async (parent, args, context, info) => {
    
@@ -26,7 +29,7 @@ module.exports = {
     if (budget) fields =  {...fields,budget}
     if (dates) fields =  {...fields,dates}
 
-
+    console.log("fields = " , fields)
 
     try {
 
@@ -48,17 +51,64 @@ module.exports = {
       }
 
       if (champion) {
-        let memberData = await Members.findOne({ _id: champion })
 
-        memberDataUpdate = await Members.findOneAndUpdate(
-            {_id: champion},
-            {
-                $set: {projects: memberData.projects.concat(projectData._id)}
-            },
-            {new: true}
-        )
+        // console.log("champion 232 = " , champion)
+        let memberDataChampion = await Members.findOne({ _id: champion })
 
-        console.log("memberDataUpdate = " , memberDataUpdate)
+        // console.log("memberDataChampion 232 = " , memberDataChampion)
+
+        let currentProjects = [...memberDataChampion.projects]
+
+        currentProjects.push({
+          projectID: projectData._id,
+          champion: true,
+        })
+
+        if (memberDataChampion){
+
+          console.log("currentProjects = " , currentProjects)
+          memberDataUpdate = await Members.findOneAndUpdate(
+              {_id: champion},
+              {
+                  $set: {projects: currentProjects}
+              },
+              {new: true}
+          )
+          console.log("memberDataUpdate = " , memberDataUpdate)
+        }
+
+      }
+
+
+      if (fields.team && fields.team.length > 0) {
+
+        for (let i=0;i<fields.team.length;i++){
+
+          let memberData = await Members.findOne({ _id: fields.team[i].members })
+
+          let currentProjects = [...memberData.projects]
+
+          currentProjects.push({
+            projectID: projectData._id,
+            champion: false,
+            roleID: fields.team[i].roleID,
+          })
+
+          if (memberData){
+
+            console.log("currentProjects = " , currentProjects)
+            memberDataUpdate = await Members.findOneAndUpdate(
+                {_id: fields.team[i].members},
+                {
+                    $set: {projects: currentProjects}
+                },
+                {new: true}
+            )
+            console.log("memberDataUpdate = " , memberDataUpdate)
+          }
+
+        }
+
       }
 
 
@@ -73,15 +123,22 @@ module.exports = {
     }
   },
 
-  newTweetPorject: async (parent, args, context, info) => {
+  newTweetProject: async (parent, args, context, info) => {
    
 
     // const {tagName,title,description,champion,team} = args.fields;
     const {projectID,content,author} = JSON.parse(JSON.stringify(args.fields))
 
-    if (!projectID) return {}
-    if (!content) return {}
-    if (!author) return {}
+    
+    if (!projectID) throw new ApolloError( "you need to specify a project ID");
+    if (!content) throw new ApolloError( "you need to specify content");
+    if (!author) throw new ApolloError( "you need to specify author ID");
+
+
+    var ObjectId = require('mongoose').Types.ObjectId;
+
+    if (ObjectId.isValid(projectID)==false) throw new ApolloError( "The project doesn't have a valid mongo ID");
+
     
     let fields = {
       projectID,
@@ -94,10 +151,14 @@ module.exports = {
 
     try {
 
-    //console.log("args.fields = " , fields)
-
 
       let projectData = await Projects.findOne({ _id: fields.projectID })
+
+
+      let memberData = await Members.findOne({ _id: fields.author })
+
+      if (!projectData) throw new ApolloError( "This project dont exist you need to choose antoher project");
+      if (!memberData) throw new ApolloError( "The author dont exist on the database you need to choose antoher author ID");
 
       
       
@@ -107,20 +168,7 @@ module.exports = {
         registeredAt: new Date(),
       })
 
-      // projectData.tweets.push({
-      //   content: fields.content,
-      //   author: fields.author,
-      // })
       
-    //console.log("projectData = " , projectData)
-
-    //   projectDataUpdate = await Projects.findOneAndUpdate(
-    //     {_id: projectData._id},
-    //     {
-    //         $set: fields
-    //     },
-    //     {new: true}
-    // )
 
     projectDataUpdate = await Projects.findOneAndUpdate(
       {_id: projectData._id},
@@ -129,8 +177,6 @@ module.exports = {
       },
       {new: true}
   )
-
-//console.log("projectDataUpdate = " , projectDataUpdate)
 
 
 

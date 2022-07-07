@@ -9,11 +9,16 @@ const projectSchema = mongoose.Schema({
   title: String,
   description: String,
 
-  champion: mongoose.Schema.ObjectId,
+  champion:String,
 
   team: [{
-    members: mongoose.Schema.ObjectId,
-    roleID: mongoose.Schema.ObjectId
+    members: String,
+    roleID: mongoose.Schema.ObjectId,
+    phase: {
+      type: String,
+      enum: ["shortlisted", "engaged","committed","rejected"],
+      default: "shortlisted"
+    },
   }],
 
   role: [{
@@ -36,7 +41,7 @@ const projectSchema = mongoose.Schema({
 
   tweets: [{
     content: String,
-    author: mongoose.Schema.ObjectId,
+    author: String,
     registeredAt: Date,
   }],
 
@@ -46,6 +51,7 @@ const projectSchema = mongoose.Schema({
   }],
 
   budget: {
+    totalBudget: String,
     token: String,
     perHour: String,
   },
