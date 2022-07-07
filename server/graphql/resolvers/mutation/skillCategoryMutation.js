@@ -1,4 +1,4 @@
-const { SkillCategory} = require("../../../models/skillCategoryModel");
+// const { SkillCategory} = require("../../../models/skillCategoryModel");
 
 const {ApolloError} = require("apollo-server-express");
 
