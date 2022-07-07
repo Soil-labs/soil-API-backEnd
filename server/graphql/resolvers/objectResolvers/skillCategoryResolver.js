@@ -1,7 +1,6 @@
 // const { User } = require('../../../models/user');
 
 const { Skills } = require('../../../models/skillsModel');
-const {SkillCategory} = require('../../../models/skillCategoryModel');
 
 const { ApolloError } = require('apollo-server-express');
 

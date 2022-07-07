@@ -1,8 +1,6 @@
 
-const { Skills } = require("../../../models/skillsModel");
-const {Projects} = require("../../../models/projectsModel");
-const {RoleTemplate} = require("../../../models/roleTemplateModal");
-const {SkillCategory} = require("../../../models/skillCategoryModel");
+
+// const {SkillCategory} = require("../../../models/skillCategoryModel");
 
 const {
   ApolloError,
@@ -19,7 +17,9 @@ module.exports = {
     try {
 
 
-      let skillCategoryData = await SkillCategory.findOne({ _id: _id })
+      let skillCategoryData 
+
+      // skillCategoryData = await SkillCategory.findOne({ _id: _id })
 
  
       return skillCategoryData
