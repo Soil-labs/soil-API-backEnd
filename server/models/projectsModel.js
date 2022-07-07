@@ -17,6 +17,7 @@ const projectSchema = mongoose.Schema({
     phase: {
       type: String,
       enum: ["shortlisted", "engaged","committed","rejected"],
+      default: "shortlisted"
     },
   }],
 

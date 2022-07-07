@@ -123,6 +123,8 @@ module.exports = `
     input teamInput {
         members: String
         roleID: String
+        phase: phaseType
+        
     }
 
     input skillRoleInput {
