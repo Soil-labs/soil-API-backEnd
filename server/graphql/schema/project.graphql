@@ -28,6 +28,14 @@ module.exports = `
     type teamType {
         members: Members
         roleID: String
+        phase: phaseType
+    }
+
+    enum phaseType {
+        shortlisted
+        engaged
+        committed
+        rejected
     }
 
     type skillRoleType {
