@@ -21,7 +21,7 @@ module.exports = {
 
       let skillCategoryData = await SkillCategory.findOne({ _id: _id })
 
-
+ 
       return skillCategoryData
     } catch (err) {
       throw new ApolloError(
