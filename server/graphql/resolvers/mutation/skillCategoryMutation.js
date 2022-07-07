@@ -15,7 +15,7 @@ module.exports = {
     let fields = {
       name,
     };
-
+ 
     
     if (skills) fields.skills = skills;
     if (description) fields.description = description;
