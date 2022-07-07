@@ -12,7 +12,7 @@ git push origin $OUTPUT
 git fetch --all
 # git pull --all
 
-git merge origin $git_branch
+git merge origin/$git_branch
 
 # git checkout master
 
