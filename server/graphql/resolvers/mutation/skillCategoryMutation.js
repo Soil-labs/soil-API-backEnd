@@ -1,4 +1,4 @@
-// const { SkillCategory} = require("../../../models/skillCategoryModel");
+const { SkillCategory} = require("../../../models/skillCategoryModel");
 
 const {ApolloError} = require("apollo-server-express");
 
@@ -27,8 +27,8 @@ module.exports = {
 
       let skillCategoryData
 
-        // skillCategoryData = await new SkillCategory(fields);
-        // skillCategoryData.save()
+        skillCategoryData = await new SkillCategory(fields);
+        skillCategoryData.save()
 
       return skillCategoryData
     } catch (err) {
