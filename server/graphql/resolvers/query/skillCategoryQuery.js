@@ -1,6 +1,6 @@
 
 
-const {SkillCategory} = require("../../../models/skillCategoryModel");
+// const {SkillCategory} = require("../../../models/skillCategoryModel");
 
 const {
   ApolloError,
