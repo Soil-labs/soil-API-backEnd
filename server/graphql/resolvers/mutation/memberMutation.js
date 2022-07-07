@@ -1,7 +1,7 @@
 const { Members } = require("../../../models/membersModel");
 const { Skills } = require("../../../models/skillsModel");
-
 const {ApolloError} = require("apollo-server-express");
+const { session } = require("../../../../server/neo4j_config");
 
 module.exports = {
   addNewMember: async (parent, args, context, info) => {
@@ -21,19 +21,28 @@ module.exports = {
     if (discordName) fields.discordName = discordName;
     if (discordAvatar) fields.discordAvatar = discordAvatar;
     if (discriminator) fields.discriminator = discriminator;
-
+    console.log("fields = ", fields);
 
     try {
 
       let membersData = await Members.findOne({ _id: fields._id })
 
-      console.log("membersData = " , membersData)
+      // console.log("membersData = " , membersData)
 
       if (!membersData){
         membersData = await new Members(fields);
         
         membersData.save()
+      
       } 
+      //add member to neo4j
+      session.writeTransaction(tx => 
+        tx.run(
+          `   
+          CREATE (:Member {_id: ${fields._id}, name: '${fields.discordName}', discordName: '${fields.discordName}', discriminator: ${fields.discriminator}, discordAvatar: '${fields.discordAvatar}'})
+          `
+        )
+      )
       // else {
       //   console.log("change = " )
       //   throw new ApolloError("Member already exists")
