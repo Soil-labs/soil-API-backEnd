@@ -22,7 +22,7 @@ module.exports = `
 
     type projectMemberType {
         project: Project,
-        roleID: String,
+        role: roleType,
         champion: Boolean
     }
     

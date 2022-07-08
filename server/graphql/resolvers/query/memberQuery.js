@@ -25,7 +25,7 @@ module.exports = {
       
 
 
-      console.log("memberData = " , memberData)
+      // console.log("memberData = " , memberData)
 
       return memberData
     } catch (err) {
