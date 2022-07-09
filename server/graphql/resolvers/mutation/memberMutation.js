@@ -7,7 +7,7 @@ module.exports = {
   addNewMember: async (parent, args, context, info) => {
    
 
-  const {discordName,_id,discordAvatar,discriminator} = args.fields;
+  const {discordName,_id,discordAvatar,discriminator, bio} = args.fields;
 
 
     if (!_id) throw new ApolloError( "_id is required");
@@ -21,6 +21,7 @@ module.exports = {
     if (discordName) fields.discordName = discordName;
     if (discordAvatar) fields.discordAvatar = discordAvatar;
     if (discriminator) fields.discriminator = discriminator;
+    if (bio) fields.bio = bio;
 
 
     try {
@@ -51,7 +52,7 @@ module.exports = {
   updateMember: async (parent, args, context, info) => {
    
 
-    const {discordName,_id,discordAvatar,discriminator} = args.fields;
+    const {discordName,_id,discordAvatar,discriminator,bio} = args.fields;
 
     if (!_id) throw new ApolloError( "_id is required");
 
@@ -63,6 +64,7 @@ module.exports = {
     if (discordAvatar) fields =  {...fields,discordAvatar}
     if (discordName) fields =  {...fields,discordName}
     if (discriminator) fields =  {...fields,discriminator}
+    if (bio) fields =  {...fields,bio}
 
     
 

@@ -8,6 +8,7 @@ module.exports = `
         discordName: String
         discordAvatar: String
         discriminator: String
+        bio: String
 
 
         tweets: [String],
@@ -47,6 +48,7 @@ module.exports = `
         discordName: String
         discordAvatar: String
         discriminator: String
+        bio: String
     }
 
 
@@ -55,6 +57,7 @@ module.exports = `
         discordName: String
         discordAvatar: String
         discriminator: String
+        bio: String
     }
 
     input networkInput {

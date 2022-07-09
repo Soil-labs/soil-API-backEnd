@@ -20,6 +20,7 @@ const memberSchema = mongoose.Schema({
   },
   discordAvatar: String,
   discriminator: String,
+  bio: String,
 
 
   tweets: [String],
