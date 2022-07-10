@@ -31,7 +31,7 @@ module.exports = {
       skillData = await Skills.findOne( {
           $and: [
             { _id: fields._id },
-            { approvedSkill: "approved" },
+            { state: "approved" },
           ]
       } ) 
 
@@ -39,7 +39,7 @@ module.exports = {
       if (!skillData  ){
         skillData = await new Skills({
           ...fields,
-          approvedSkill: "waiting",
+          state: "waiting",
         });
         
         skillData.save()
@@ -78,7 +78,7 @@ module.exports = {
           membersData = await Skills.find( {
             $and: [
               { _id: fields._id },
-              { approvedSkill: "approved" },
+              { state: "approved" },
             ]
         } )
 
@@ -86,7 +86,7 @@ module.exports = {
       } else {
         console.log("change =2 ")
 
-        membersData = await Skills.find({approvedSkill: "approved"})
+        membersData = await Skills.find({state: "approved"})
         console.log("membersData = " , membersData)
       }
 
@@ -112,7 +112,7 @@ module.exports = {
     try {
       let membersData
 
-        membersData = await Skills.find({approvedSkill: "waiting"})
+        membersData = await Skills.find({state: "waiting"})
 
       
 

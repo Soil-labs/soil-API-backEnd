@@ -6,14 +6,14 @@ const {ApolloError} = require("apollo-server-express");
 module.exports = {
   createSkill: async (parent, args, context, info) => {
    
-  const {tagName} = args.fields;
+  const {name} = args.fields;
 
 
-  if (!tagName) throw new ApolloError( "You need to specify the name of the skill");
+  if (!name) throw new ApolloError( "You need to specify the name of the skill");
 
   let fields = {
-    tagName,
-    approvedSkill: "waiting",
+    name,
+    state: "waiting",
     registeredAt: new Date(),
   };
 
@@ -23,7 +23,7 @@ module.exports = {
 
       let skillData
 
-      skillData = await Skills.findOne({ tagName: fields.tagName })
+      skillData = await Skills.findOne({ name: fields.name })
 
 
       if (!skillData ){
@@ -47,14 +47,14 @@ module.exports = {
   createApprovedSkill: async (parent, args, context, info) => {
     // Be careful only Admins can created preapproved skills
    
-    const {_id} = args.fields;
+    const {name} = args.fields;
   
   
-    if (!_id) throw new ApolloError( "You need to specify the ID of the skill");
+    if (!name) throw new ApolloError( "You need to specify the name of the skill");
   
     let fields = {
-      _id,
-      approvedSkill: "approved",
+      name,
+      state: "approved",
       registeredAt: new Date(),
     };
   
@@ -64,7 +64,7 @@ module.exports = {
   
         let skillData
   
-        skillData = await Skills.findOne({ _id: fields._id })
+        skillData = await Skills.findOne({ name: fields.name })
   
   
         if (!skillData ){
@@ -87,13 +87,13 @@ module.exports = {
     },
   approveOrRejectSkill: async (parent, args, context, info) => {
    
-    const {_id,approvedSkill} = args.fields;
+    const {_id,state} = args.fields;
   
   
     if (!_id) throw new ApolloError( "You need to specify the ID of the skill");
-    if (!approvedSkill) throw new ApolloError( "You need to specify if you approve or reject the skill");
+    if (!state) throw new ApolloError( "You need to specify if you approve or reject the skill");
   
-    if (approvedSkill !== "approved" && approvedSkill !== "rejected") throw new ApolloError( "You need to specify if you approve or reject the skill");
+    if (state !== "approved" && state !== "rejected") throw new ApolloError( "You need to specify if you approve or reject the skill");
   
   
     try {
@@ -110,7 +110,7 @@ module.exports = {
               {_id: _id},
               {
                   $set: {
-                    approvedSkill: approvedSkill,
+                    state: state,
                   }
               },
               {new: true}

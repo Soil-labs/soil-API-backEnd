@@ -34,6 +34,7 @@ module.exports = {
     try {
 
       let projectData = await Projects.findOne({ _id: fields._id })
+      console.log("projectData 1 = " , projectData)
       if (!projectData){
         projectData = await new Projects(fields);
         
@@ -50,6 +51,9 @@ module.exports = {
 
       }
 
+      console.log("projectData 2 = " , projectData)
+
+
       if (champion) {
 
         // console.log("champion 232 = " , champion)
@@ -57,24 +61,27 @@ module.exports = {
 
         // console.log("memberDataChampion 232 = " , memberDataChampion)
 
-        let currentProjects = [...memberDataChampion.projects]
+        if (memberDataChampion) {
 
-        currentProjects.push({
-          projectID: projectData._id,
-          champion: true,
-        })
+          let currentProjects = [...memberDataChampion.projects]
 
-        if (memberDataChampion){
+          currentProjects.push({
+            projectID: projectData._id,
+            champion: true,
+          })
 
-          console.log("currentProjects = " , currentProjects)
-          memberDataUpdate = await Members.findOneAndUpdate(
-              {_id: champion},
-              {
-                  $set: {projects: currentProjects}
-              },
-              {new: true}
-          )
-          console.log("memberDataUpdate = " , memberDataUpdate)
+          if (memberDataChampion){
+
+            console.log("currentProjects = " , currentProjects)
+            memberDataUpdate = await Members.findOneAndUpdate(
+                {_id: champion},
+                {
+                    $set: {projects: currentProjects}
+                },
+                {new: true}
+            )
+            console.log("memberDataUpdate = " , memberDataUpdate)
+          }
         }
 
       }
@@ -86,25 +93,28 @@ module.exports = {
 
           let memberData = await Members.findOne({ _id: fields.team[i].members })
 
-          let currentProjects = [...memberData.projects]
+          if (memberData) {
 
-          currentProjects.push({
-            projectID: projectData._id,
-            champion: false,
-            roleID: fields.team[i].roleID,
-          })
+            let currentProjects = [...memberData.projects]
 
-          if (memberData){
+            currentProjects.push({
+              projectID: projectData._id,
+              champion: false,
+              roleID: fields.team[i].roleID,
+            })
 
-            console.log("currentProjects = " , currentProjects)
-            memberDataUpdate = await Members.findOneAndUpdate(
-                {_id: fields.team[i].members},
-                {
-                    $set: {projects: currentProjects}
-                },
-                {new: true}
-            )
-            console.log("memberDataUpdate = " , memberDataUpdate)
+            if (memberData){
+
+              console.log("currentProjects = " , currentProjects)
+              memberDataUpdate = await Members.findOneAndUpdate(
+                  {_id: fields.team[i].members},
+                  {
+                      $set: {projects: currentProjects}
+                  },
+                  {new: true}
+              )
+              console.log("memberDataUpdate = " , memberDataUpdate)
+            }
           }
 
         }

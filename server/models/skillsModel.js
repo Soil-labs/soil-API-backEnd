@@ -9,14 +9,14 @@ const SALT_I = 10;
 
 const skillSchema = mongoose.Schema({
 
-  tagName: String,
+  name: String,
 
 
 
   tweets: [mongoose.Schema.ObjectId],
   members: [String],
 
-  approvedSkill: {
+  state: {
     type: String,
     enum: ["waiting","rejected","approved"],
     default: "waiting"

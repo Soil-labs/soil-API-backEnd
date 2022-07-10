@@ -7,7 +7,6 @@ module.exports = `
 
           
           #  ---------- PROJECT QUERY -------
-            findTweets(fields:findTweetsInput): tweetsOutput
             findProject(fields:findProjectInput): Project
             findProjects(fields:findProjectsInput): [Project]
             

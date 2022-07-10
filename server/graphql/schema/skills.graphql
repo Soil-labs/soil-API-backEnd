@@ -2,14 +2,14 @@ module.exports = `
     
     type Skills {
         _id: ID
-        tagName: String,
+        name: String,
 
         tweets: [String],
         members: [Members],
         authors: [Members],
 
         registeredAt: String,
-        approvedSkill: approvedSkillEnum,
+        state: approvedSkillEnum,
     }
 
     input findSkillsInput {
@@ -21,12 +21,17 @@ module.exports = `
     }
 
     input createSkillInput {
-        _id: ID
+        name: String
+
+    }
+
+    input createApprovedSkillInput {
+        name: String
     }
 
     input approveOrRejectSkillInput {
         _id: ID
-        approvedSkill: approvedSkillEnum
+        state: approvedSkillEnum
     }
 
     enum approvedSkillEnum {
