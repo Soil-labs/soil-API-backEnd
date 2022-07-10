@@ -13,11 +13,6 @@ const typeDefs = require("./graphql/schema");
 const resolvers = require("./graphql/resolvers");
 
 
-// ------------------- Discord ----------------
-const client = require("./discordBot_config")
-
-const test_command = require("./commands/test_command")
-// ------------------- Discord ----------------
 
 
  
@@ -109,16 +104,3 @@ app.listen(PORT, function () {
 // console.log("DATABASE_MONGO = ", DATABASE_MONGO);
 });
 
-
-// ------------- Discord ----------------
-
-client.once('ready', () =>{
-console.log("Bot is online!")
-
-
-  test_command(['!s','!p']) 
-})
-
-
-client.login(process.env.REACT_APP_BOT_TOKEN)
-// ------------- Discord ----------------
