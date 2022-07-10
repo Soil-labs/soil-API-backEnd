@@ -5,7 +5,6 @@ require("dotenv").config();
 
 const projectSchema = mongoose.Schema({
 
-  tagName: String, // the Tag Name
   title: String,
   description: String,
 

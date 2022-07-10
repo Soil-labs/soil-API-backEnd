@@ -13,15 +13,20 @@ module.exports = `
     }
 
     input findSkillsInput {
-        tagName: [String]
+        _id: [ID]
     }
 
     input findSkillInput {
-        tagName: String
+        _id: ID
     }
 
     input createSkillInput {
-        tagName: String
+        _id: ID
+    }
+
+    input approveOrRejectSkillInput {
+        _id: ID
+        approvedSkill: approvedSkillEnum
     }
 
     enum approvedSkillEnum {

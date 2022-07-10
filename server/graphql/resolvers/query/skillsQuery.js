@@ -12,15 +12,15 @@ module.exports = {
   findSkill: async (parent, args, context, info) => {
    
 
-    const {tagName} = args.fields;
+    const {_id} = args.fields;
 
-    if (!tagName) throw new ApolloError( "You need to specify the name of the skill");
+    if (!_id) throw new ApolloError( "You need to specify the id of the skill");
 
     let fields = {
+      _id,
       registeredAt: new Date(),
     };
 
-    if (tagName) fields = { ...fields, tagName };
 
     
 
@@ -30,17 +30,17 @@ module.exports = {
       
       skillData = await Skills.findOne( {
           $and: [
-            { tagName: fields.tagName },
+            { _id: fields._id },
             { approvedSkill: "approved" },
           ]
       } ) 
 
 
-
-      console.log("skillData = ",skillData )
-
       if (!skillData  ){
-        skillData = await new Skills(fields);
+        skillData = await new Skills({
+          ...fields,
+          approvedSkill: "waiting",
+        });
         
         skillData.save()
 
@@ -60,24 +60,24 @@ module.exports = {
   findSkills: async (parent, args, context, info) => {
    
 
-    const {tagName} = args.fields;
+    const {_id} = args.fields;
 
     let fields = {
     };
 
-    if (tagName) fields = { ...fields, tagName };
+    if (_id) fields = { ...fields, _id };
 
     console.log("fields = " , fields)
     
 
     try {
       let membersData
-      if (tagName) {
+      if (_id) {
         console.log("change =1 ")
 
           membersData = await Skills.find( {
             $and: [
-              { tagName: fields.tagName },
+              { _id: fields._id },
               { approvedSkill: "approved" },
             ]
         } )
@@ -113,7 +113,6 @@ module.exports = {
       let membersData
 
         membersData = await Skills.find({approvedSkill: "waiting"})
-        // console.log("membersData = " , membersData)
 
       
 

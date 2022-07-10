@@ -10,13 +10,13 @@ module.exports = {
   updateProject: async (parent, args, context, info) => {
    
 
-    // const {tagName,title,description,champion,team} = args.fields;
-    const {tagName,title,description,champion,team,role,collaborationLinks,budget,dates} = JSON.parse(JSON.stringify(args.fields))
+    
+    const {_id,title,description,champion,team,role,collaborationLinks,budget,dates} = JSON.parse(JSON.stringify(args.fields))
 
-    if (!tagName) return {}
+    if (!_id) throw new ApolloError("Project id is required");
     
     let fields = {
-      tagName,
+      _id,
       registeredAt: new Date(),
     }
 
@@ -33,7 +33,7 @@ module.exports = {
 
     try {
 
-      let projectData = await Projects.findOne({ tagName: fields.tagName })
+      let projectData = await Projects.findOne({ _id: fields._id })
       if (!projectData){
         projectData = await new Projects(fields);
         
@@ -126,7 +126,6 @@ module.exports = {
   newTweetProject: async (parent, args, context, info) => {
    
 
-    // const {tagName,title,description,champion,team} = args.fields;
     const {projectID,content,author} = JSON.parse(JSON.stringify(args.fields))
 
     
