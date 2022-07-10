@@ -10,13 +10,13 @@ module.exports = {
   updateProject: async (parent, args, context, info) => {
    
 
-    // const {tagName,title,description,champion,team} = args.fields;
-    const {tagName,title,description,champion,team,role,collaborationLinks,budget,dates} = JSON.parse(JSON.stringify(args.fields))
+    
+    const {_id,title,description,champion,team,role,collaborationLinks,budget,dates} = JSON.parse(JSON.stringify(args.fields))
 
-    if (!tagName) return {}
+    // if (!_id) throw new ApolloError("Project id is required");
     
     let fields = {
-      tagName,
+      _id,
       registeredAt: new Date(),
     }
 
@@ -33,22 +33,36 @@ module.exports = {
 
     try {
 
-      let projectData = await Projects.findOne({ tagName: fields.tagName })
-      if (!projectData){
-        projectData = await new Projects(fields);
-        
-        projectData.save()
+      let projectData
+
+      if (_id){
+        projectData = await Projects.findOne({ _id: fields._id })
+
+        console.log("projectData 1 = " , projectData)
+      
+        if (!projectData){
+          projectData = await new Projects(fields);
+          
+          projectData.save()
+        } else {
+
+          projectData= await Projects.findOneAndUpdate(
+              {_id: projectData._id},
+              {
+                  $set: fields
+              },
+              {new: true}
+          )
+
+        }
       } else {
-
-        projectData= await Projects.findOneAndUpdate(
-            {_id: projectData._id},
-            {
-                $set: fields
-            },
-            {new: true}
-        )
-
+        projectData = await new Projects(fields);
       }
+
+      
+
+      console.log("projectData 2 = " , projectData)
+
 
       if (champion) {
 
@@ -57,24 +71,27 @@ module.exports = {
 
         // console.log("memberDataChampion 232 = " , memberDataChampion)
 
-        let currentProjects = [...memberDataChampion.projects]
+        if (memberDataChampion) {
 
-        currentProjects.push({
-          projectID: projectData._id,
-          champion: true,
-        })
+          let currentProjects = [...memberDataChampion.projects]
 
-        if (memberDataChampion){
+          currentProjects.push({
+            projectID: projectData._id,
+            champion: true,
+          })
 
-          console.log("currentProjects = " , currentProjects)
-          memberDataUpdate = await Members.findOneAndUpdate(
-              {_id: champion},
-              {
-                  $set: {projects: currentProjects}
-              },
-              {new: true}
-          )
-          console.log("memberDataUpdate = " , memberDataUpdate)
+          if (memberDataChampion){
+
+            console.log("currentProjects = " , currentProjects)
+            memberDataUpdate = await Members.findOneAndUpdate(
+                {_id: champion},
+                {
+                    $set: {projects: currentProjects}
+                },
+                {new: true}
+            )
+            console.log("memberDataUpdate = " , memberDataUpdate)
+          }
         }
 
       }
@@ -86,25 +103,28 @@ module.exports = {
 
           let memberData = await Members.findOne({ _id: fields.team[i].members })
 
-          let currentProjects = [...memberData.projects]
+          if (memberData) {
 
-          currentProjects.push({
-            projectID: projectData._id,
-            champion: false,
-            roleID: fields.team[i].roleID,
-          })
+            let currentProjects = [...memberData.projects]
 
-          if (memberData){
+            currentProjects.push({
+              projectID: projectData._id,
+              champion: false,
+              roleID: fields.team[i].roleID,
+            })
 
-            console.log("currentProjects = " , currentProjects)
-            memberDataUpdate = await Members.findOneAndUpdate(
-                {_id: fields.team[i].members},
-                {
-                    $set: {projects: currentProjects}
-                },
-                {new: true}
-            )
-            console.log("memberDataUpdate = " , memberDataUpdate)
+            if (memberData){
+
+              console.log("currentProjects = " , currentProjects)
+              memberDataUpdate = await Members.findOneAndUpdate(
+                  {_id: fields.team[i].members},
+                  {
+                      $set: {projects: currentProjects}
+                  },
+                  {new: true}
+              )
+              console.log("memberDataUpdate = " , memberDataUpdate)
+            }
           }
 
         }
@@ -126,7 +146,6 @@ module.exports = {
   newTweetProject: async (parent, args, context, info) => {
    
 
-    // const {tagName,title,description,champion,team} = args.fields;
     const {projectID,content,author} = JSON.parse(JSON.stringify(args.fields))
 
     

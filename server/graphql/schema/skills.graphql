@@ -2,25 +2,42 @@ module.exports = `
     
     type Skills {
         _id: ID
-        tagName: String,
+        name: String,
 
         tweets: [String],
         members: [Members],
         authors: [Members],
 
         registeredAt: String,
+        state: approvedSkillEnum,
     }
 
     input findSkillsInput {
-        tagName: [String]
+        _id: [ID]
     }
 
     input findSkillInput {
-        tagName: String
+        _id: ID
     }
 
     input createSkillInput {
-        tagName: String
+        name: String
+
+    }
+
+    input createApprovedSkillInput {
+        name: String
+    }
+
+    input approveOrRejectSkillInput {
+        _id: ID
+        state: approvedSkillEnum
+    }
+
+    enum approvedSkillEnum {
+        waiting
+        rejected
+        approved
     }
     
 

@@ -11,28 +11,17 @@ const {
 module.exports = {
   findProject: async (parent, args, context, info) => {
    
-    const {tagName,_id} = args.fields;
+    const {_id} = args.fields;
+
+    if (!_id) throw new ApolloError("Project id is required");
 
     try {
 
 
-      let projectData
-
-      if (tagName){
-        projectData = await Projects.findOne({ tagName: tagName })
-      } else if (_id){
-        projectData = await Projects.findOne({ _id: _id })
-      } else {
-        return {}
-      }
+      let projectData = await Projects.findOne({ _id: _id })
 
 
-      // if (tagName) {
-      //   console.log("change =1 ")
-      //   projectData = await Projects.find({ tagName: tagName })
-      // } else {
-      //   return {}
-      // }
+      if (!projectData) throw new ApolloError("Project not found");
 
 
       return projectData
@@ -46,7 +35,7 @@ module.exports = {
   },
   findProjects: async (parent, args, context, info) => {
    
-    const {tagName} = args.fields;
+    const {_id} = args.fields;
 
     
 
@@ -54,11 +43,11 @@ module.exports = {
 
 
       let projectsData
-      if (tagName) {
-        console.log("change =1 ")
-        projectsData = await Projects.find({ tagName: tagName })
+      if (_id) {
+        
+        projectsData = await Projects.find({ _id: _id })
       } else {
-        console.log("change =2 ")
+        
 
         projectsData = await Projects.find({})
       }

@@ -7,7 +7,6 @@ module.exports = `
 
           
           #  ---------- PROJECT QUERY -------
-            findTweets(fields:findTweetsInput): tweetsOutput
             findProject(fields:findProjectInput): Project
             findProjects(fields:findProjectsInput): [Project]
             
@@ -18,6 +17,8 @@ module.exports = `
           #  ---------- SKILL QUERY -------
             findSkill(fields:findSkillInput): Skills
             findSkills(fields:findSkillsInput): [Skills]
+            waitingToAproveSkills(fields:findSkillsInput): [Skills]
+            adminFindAllSkillsEveryState(fields:findSkillsInput): [Skills]
 
           #  ---------- QUERY TEMPLATE QUERY -------
             findRoleTemplate(fields:findRoleTemplateInput): RoleTemplate

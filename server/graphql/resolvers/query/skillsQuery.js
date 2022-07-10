@@ -12,15 +12,15 @@ module.exports = {
   findSkill: async (parent, args, context, info) => {
    
 
-    const {tagName} = args.fields;
+    const {_id} = args.fields;
 
-    if (!tagName) throw new ApolloError( "You need to specify the name of the skill");
+    if (!_id) throw new ApolloError( "You need to specify the id of the skill");
 
     let fields = {
+      _id,
       registeredAt: new Date(),
     };
 
-    if (tagName) fields = { ...fields, tagName };
 
     
 
@@ -28,14 +28,19 @@ module.exports = {
       let skillData
       
       
-      skillData = await Skills.findOne({ tagName: fields.tagName }) 
+      skillData = await Skills.findOne( {
+          $and: [
+            { _id: fields._id },
+            { state: "approved" },
+          ]
+      } ) 
 
-
-
-      console.log("skillData = ",skillData )
 
       if (!skillData  ){
-        skillData = await new Skills(fields);
+        skillData = await new Skills({
+          ...fields,
+          state: "waiting",
+        });
         
         skillData.save()
 
@@ -52,31 +57,102 @@ module.exports = {
       );
     }
   },
-
   findSkills: async (parent, args, context, info) => {
    
 
-    const {tagName} = args.fields;
+    const {_id} = args.fields;
 
     let fields = {
     };
 
-    if (tagName) fields = { ...fields, tagName };
+    if (_id) fields = { ...fields, _id };
 
     console.log("fields = " , fields)
     
 
     try {
       let membersData
-      if (tagName) {
+      if (_id) {
         console.log("change =1 ")
-        membersData = await Skills.find({ tagName: fields.tagName })
+
+          membersData = await Skills.find( {
+            $and: [
+              { _id: fields._id },
+              { state: "approved" },
+            ]
+        } )
+
+
+      } else {
+        console.log("change =2 ")
+
+        membersData = await Skills.find({state: "approved"})
+        console.log("membersData = " , membersData)
+      }
+
+      
+
+
+      return membersData
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findSkill"}
+      );
+    }
+  },
+  adminFindAllSkillsEveryState: async (parent, args, context, info) => {
+   
+
+    const {_id} = args.fields;
+
+    let fields = {
+    };
+
+    if (_id) fields = { ...fields, _id };
+
+    console.log("fields = " , fields)
+    
+
+    try {
+      let membersData
+      if (_id) {
+        console.log("change =1 ")
+
+        membersData = await Skills.find({ _id: fields._id })
+
+
       } else {
         console.log("change =2 ")
 
         membersData = await Skills.find({})
         console.log("membersData = " , membersData)
       }
+
+      
+
+
+      return membersData
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findSkill"}
+      );
+    }
+  },
+  waitingToAproveSkills: async (parent, args, context, info) => {
+   
+
+    let fields = {
+    };
+    
+
+    try {
+      let membersData
+
+        membersData = await Skills.find({state: "waiting"})
 
       
 

@@ -6,13 +6,14 @@ const {ApolloError} = require("apollo-server-express");
 module.exports = {
   createSkill: async (parent, args, context, info) => {
    
-  const {tagName} = args.fields;
+  const {name} = args.fields;
 
 
-  if (!tagName) throw new ApolloError( "You need to specify the name of the skill");
+  if (!name) throw new ApolloError( "You need to specify the name of the skill");
 
   let fields = {
-    tagName,
+    name,
+    state: "waiting",
     registeredAt: new Date(),
   };
 
@@ -22,7 +23,7 @@ module.exports = {
 
       let skillData
 
-      skillData = await Skills.findOne({ tagName: fields.tagName })
+      skillData = await Skills.findOne({ name: fields.name })
 
 
       if (!skillData ){
@@ -43,6 +44,92 @@ module.exports = {
       );
     }
   },
+  createApprovedSkill: async (parent, args, context, info) => {
+    // Be careful only Admins can created preapproved skills
+   
+    const {name} = args.fields;
+  
+  
+    if (!name) throw new ApolloError( "You need to specify the name of the skill");
+  
+    let fields = {
+      name,
+      state: "approved",
+      registeredAt: new Date(),
+    };
+  
+  
+  
+    try {
+  
+        let skillData
+  
+        skillData = await Skills.findOne({ name: fields.name })
+  
+  
+        if (!skillData ){
+          skillData = await new Skills(fields);
+          
+          skillData.save()
+  
+          skillData = skillData
+        }
+  
+  
+        return skillData
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > addNewMember"}
+        );
+      }
+    },
+  approveOrRejectSkill: async (parent, args, context, info) => {
+   
+    const {_id,state} = args.fields;
+  
+  
+    if (!_id) throw new ApolloError( "You need to specify the ID of the skill");
+    if (!state) throw new ApolloError( "You need to specify if you approve or reject the skill");
+  
+    if (state !== "approved" && state !== "rejected") throw new ApolloError( "You need to specify if you approve or reject the skill");
+  
+  
+    try {
+  
+        let skillData
+  
+        skillData = await Skills.findOne({ _id: _id })
+  
+        console.log("skillData = " , skillData)
+  
+        if (skillData ){
+
+          skillData= await Skills.findOneAndUpdate(
+              {_id: _id},
+              {
+                  $set: {
+                    state: state,
+                  }
+              },
+              {new: true}
+          )
+        }
+
+        console.log("skillData 2= " , skillData)
+
+  
+  
+        return skillData
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > addNewMember"}
+        );
+      }
+    },
   
 
 };

@@ -3,7 +3,6 @@ module.exports = `
 
     type Project {
         _id: ID
-        tagName: String
         title: String
         description: String
 
@@ -26,7 +25,7 @@ module.exports = `
 
 
     type teamType {
-        members: Members
+        memberInfo: Members
         roleID: String
         phase: phaseType
     }
@@ -103,7 +102,7 @@ module.exports = `
 
     input updateProjectInput {
         _id: ID
-        tagName: String
+        
         title: String
         description: String
 
@@ -122,7 +121,7 @@ module.exports = `
     }
 
     input teamInput {
-        members: String
+        memberID: String
         roleID: String
         phase: phaseType
         
@@ -175,10 +174,9 @@ module.exports = `
 
     input findProjectInput {
         _id: ID
-        tagName: String
     }
     input findProjectsInput {
-        tagName: [String]
+        _id: [ID]
     }
 
     

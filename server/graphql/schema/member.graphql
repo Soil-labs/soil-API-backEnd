@@ -8,6 +8,10 @@ module.exports = `
         discordName: String
         discordAvatar: String
         discriminator: String
+        bio: String
+
+        hoursPerWeek: Float,
+
 
 
         tweets: [String],
@@ -21,8 +25,8 @@ module.exports = `
     }
 
     type projectMemberType {
-        project: Project,
-        roleID: String,
+        info: Project,
+        role: roleType,
         champion: Boolean
     }
     
@@ -47,6 +51,9 @@ module.exports = `
         discordName: String
         discordAvatar: String
         discriminator: String
+        bio: String
+
+        hoursPerWeek: Float,
     }
 
 
@@ -55,6 +62,9 @@ module.exports = `
         discordName: String
         discordAvatar: String
         discriminator: String
+        bio: String
+
+        hoursPerWeek: Float,
     }
 
     input networkInput {

@@ -3,34 +3,45 @@ const { SkillCategory} = require("../../../models/skillCategoryModel");
 const {ApolloError} = require("apollo-server-express");
 
 module.exports = {
-  newSkillCategory: async (parent, args, context, info) => {
+  updateSkillCategory: async (parent, args, context, info) => {
    
 
-  const {name,description,skills} = args.fields;
+    const {_id,name,description,skills} = args.fields;
 
-  console.log("change = " )
-
-    if (!name) throw new ApolloError( "name is required");
 
     let fields = {
-      name,
     };
  
      
     if (skills) fields.skills = skills;
     if (description) fields.description = description;
-
-    console.log("fields = " , fields)
+    if (name) fields.name = name;
+    if (_id) fields._id = _id;
 
 
     try {
 
-      let skillCategoryData
-
-        skillCategoryData = await new SkillCategory(fields);
-        skillCategoryData.save()
-
-      return skillCategoryData
+        if (_id) {
+            let skillCategoryData = await SkillCategory.findOne({ _id: _id })
+            if (!skillCategoryData) {
+                skillCategoryData = await new SkillCategory(fields);
+                skillCategoryData.save()
+            } else {
+                skillCategoryData= await SkillCategory.findOneAndUpdate(
+                    {_id: skillCategoryData._id},
+                    {
+                        $set: fields
+                    },
+                    {new: true}
+                )
+            }
+            return skillCategoryData;
+        } else {
+            let skillCategoryData = await new SkillCategory(fields);
+            skillCategoryData.save()
+            return skillCategoryData;
+        }
+        
     } catch (err) {
       throw new ApolloError(
         err.message,

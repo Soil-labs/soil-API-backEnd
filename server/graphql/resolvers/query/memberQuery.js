@@ -1,5 +1,4 @@
-const { Projects } = require("../../../models/projectsModel");
-const { Tweet } = require("../../../models/tweetsModel");
+
 const { Members } = require("../../../models/membersModel");
 
 
@@ -25,7 +24,7 @@ module.exports = {
       
 
 
-      console.log("memberData = " , memberData)
+      // console.log("memberData = " , memberData)
 
       return memberData
     } catch (err) {

@@ -5,14 +5,13 @@ require("dotenv").config();
 
 const projectSchema = mongoose.Schema({
 
-  tagName: String, // the Tag Name
   title: String,
   description: String,
 
   champion:String,
 
   team: [{
-    members: String,
+    memberID: String,
     roleID: mongoose.Schema.ObjectId,
     phase: {
       type: String,

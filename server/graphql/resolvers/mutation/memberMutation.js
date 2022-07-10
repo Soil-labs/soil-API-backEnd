@@ -7,7 +7,7 @@ module.exports = {
   addNewMember: async (parent, args, context, info) => {
    
 
-  const {discordName,_id,discordAvatar,discriminator} = args.fields;
+  const {discordName,_id,discordAvatar,discriminator, bio,hoursPerWeek} = args.fields;
 
 
     if (!_id) throw new ApolloError( "_id is required");
@@ -21,7 +21,9 @@ module.exports = {
     if (discordName) fields.discordName = discordName;
     if (discordAvatar) fields.discordAvatar = discordAvatar;
     if (discriminator) fields.discriminator = discriminator;
-    console.log("fields = ", fields);
+    if (bio) fields.bio = bio;
+    if (hoursPerWeek) fields.hoursPerWeek = hoursPerWeek;
+
 
     try {
 
@@ -60,7 +62,7 @@ module.exports = {
   updateMember: async (parent, args, context, info) => {
    
 
-    const {discordName,_id,discordAvatar,discriminator} = args.fields;
+    const {discordName,_id,discordAvatar,discriminator,bio,hoursPerWeek} = args.fields;
 
     if (!_id) throw new ApolloError( "_id is required");
 
@@ -72,6 +74,8 @@ module.exports = {
     if (discordAvatar) fields =  {...fields,discordAvatar}
     if (discordName) fields =  {...fields,discordName}
     if (discriminator) fields =  {...fields,discriminator}
+    if (bio) fields =  {...fields,bio}
+    if (hoursPerWeek) fields =  {...fields,hoursPerWeek}
 
     
 
@@ -79,7 +83,7 @@ module.exports = {
 
       let membersData = await Members.findOne({ _id: fields._id })
 
-
+      console.log("change = 1" )
       if (!membersData ){
         membersData = await new Members(fields);
         
@@ -87,7 +91,9 @@ module.exports = {
 
         membersData = membersData
       } else {
+
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
+        console.log("change = 2" )
       }
 
       console.log("membersData = " , membersData)

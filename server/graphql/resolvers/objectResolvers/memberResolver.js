@@ -45,6 +45,7 @@ module.exports = {
          }
       },
       projects: async (parent, args, context, info) => {
+         // console.log("parent 2321= " , parent)
          console.log("parent 2321= " , parent.projects)
 
          const projectsInfo = parent.projects;
@@ -56,7 +57,7 @@ module.exports = {
                return [];
             }
 
-            console.log("projectsInfo = " , projectsInfo)
+            // console.log("projectsInfo = " , projectsInfo)
 
             let position = {}
 
@@ -69,25 +70,43 @@ module.exports = {
 
             projectData = await Projects.find({_id: projectID_all})
 
-            console.log("position = " , position)
+            // console.log("position = " , position)
 
             // projectsInfo = projectsInfo.map(project=>{return ({
             //    project: project.projectID
             // })})
+         
+            let projectData_disp = []
+            for (let i = 0; i < projectData.length; i++) {
 
-            let projectData_disp = projectData.map(project=>{
-               return ({
-                  project: project._doc,
+               let project = projectData[i]
+
+               let displayData = {
+                  info: project._doc,
                   roleID: projectsInfo[position[project._id]].roleID,
                   champion: projectsInfo[position[project._id]].champion,
-               })  
-            })
+               }
+
+               let roleUser
+
+               displayData.info.role.filter(roleN=>{
+                  if (roleN.id == displayData.roleID) {
+                     roleUser = roleN
+                  }
+               })
+
+               console.log("displayData.project = " , displayData.info.role)
+               console.log("roleUser = " , roleUser)
+
+               if (roleUser) displayData = {...displayData, role: roleUser}
+               
+               projectData_disp.push(displayData) 
+            }
 
 
-            console.log("projectData_disp = " , projectData_disp)
+            // console.log("projectData_disp = " , projectData_disp)
 
             return projectData_disp;
-            return {};
 
          } catch (err) {
             throw new ApolloError(
