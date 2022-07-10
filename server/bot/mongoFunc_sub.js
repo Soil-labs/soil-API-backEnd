@@ -1,28 +1,28 @@
 const { Members } = require("../models/membersModel");
 const { Skills } = require("../models/skillsModel");
 const { Projects } = require("../models/projectsModel");
-const { Tweet } = require("../models/tweetsModel");
+// const { Tweet } = require("../models/tweetsModel");
 
 
 async function addTweet(fields,author) {
 
 
-    let newTweet = await new Tweet({
-        airtableID: fields.airtableID,
-        tagName: fields.tagName,
-        members: fields.members,
-        skills: fields.skills,
+    // let newTweet = await new Tweet({
+    //     airtableID: fields.airtableID,
+    //     tagName: fields.tagName,
+    //     members: fields.members,
+    //     skills: fields.skills,
 
 
 
-        author: author.discordID,
+    //     author: author.discordID,
 
-        registeredAt: new Date(),
-        });
+    //     registeredAt: new Date(),
+    //     });
 
-        newTweet.save();
+    //     newTweet.save();
 
-        return (newTweet)
+    //     return (newTweet)
         
 }
 

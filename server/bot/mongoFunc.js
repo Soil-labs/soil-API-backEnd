@@ -1,7 +1,7 @@
 const { Members } = require("../models/membersModel");
 const { Skills } = require("../models/skillsModel");
 const { Projects } = require("../models/projectsModel");
-const { Tweet } = require("../models/tweetsModel");
+// const { Tweet } = require("../models/tweetsModel");
 
 
 const airtableFunc = require("./airtableFunc");
