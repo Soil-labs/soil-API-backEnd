@@ -36,6 +36,11 @@ const memberSchema = mongoose.Schema({
     projectID: mongoose.Schema.ObjectId,
     roleID: mongoose.Schema.ObjectId,
     champion: Boolean,
+    phase: {
+      type: String,
+      enum: ["shortlisted", "engaged","committed","rejected"],
+      default: "shortlisted"
+    },
   }],
   archiveProjects: [mongoose.Schema.ObjectId],
 

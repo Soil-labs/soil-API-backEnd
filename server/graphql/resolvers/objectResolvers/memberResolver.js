@@ -46,7 +46,7 @@ module.exports = {
       },
       projects: async (parent, args, context, info) => {
          // console.log("parent 2321= " , parent)
-         console.log("parent 2321= " , parent.projects)
+         // console.log("parent 2321= " , parent.projects)
 
          const projectsInfo = parent.projects;
 
@@ -61,30 +61,32 @@ module.exports = {
 
             let position = {}
 
-            let projectID_all = projectsInfo.map((project,idx)=>{
+            let projectID_all = projectsInfo.map((info,idx)=>{
 
-               position[project.projectID] = idx
-               return (project.projectID)
+               position[info.projectID] = idx
+               return (info.projectID)
             
             })
 
             projectData = await Projects.find({_id: projectID_all})
 
-            // console.log("position = " , position)
+            console.log("position = " , position)
+            console.log("projectID_all = " , projectID_all)
+            console.log("projectData = " , projectData)
 
-            // projectsInfo = projectsInfo.map(project=>{return ({
-            //    project: project.projectID
+            // projectsInfo = projectsInfo.map(info=>{return ({
+            //    info: info.projectID
             // })})
          
             let projectData_disp = []
             for (let i = 0; i < projectData.length; i++) {
 
-               let project = projectData[i]
+               let info = projectData[i]
 
                let displayData = {
-                  info: project._doc,
-                  roleID: projectsInfo[position[project._id]].roleID,
-                  champion: projectsInfo[position[project._id]].champion,
+                  info: info._doc,
+                  roleID: projectsInfo[position[info._id]].roleID,
+                  champion: projectsInfo[position[info._id]].champion,
                }
 
                let roleUser
@@ -95,8 +97,9 @@ module.exports = {
                   }
                })
 
-               console.log("displayData.project = " , displayData.info.role)
-               console.log("roleUser = " , roleUser)
+               console.log("projectsInfo[position[info._id]] = " , projectsInfo[position[info._id]])
+               // console.log("displayData.info = " , displayData.info.role,displayData.roleID)
+               // console.log("roleUser = " , roleUser)
 
                if (roleUser) displayData = {...displayData, role: roleUser}
                
@@ -104,7 +107,7 @@ module.exports = {
             }
 
 
-            // console.log("projectData_disp = " , projectData_disp)
+            console.log("projectData_disp = " , projectData_disp)
 
             return projectData_disp;
 

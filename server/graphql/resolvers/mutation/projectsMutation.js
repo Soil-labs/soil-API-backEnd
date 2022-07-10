@@ -57,6 +57,7 @@ module.exports = {
         }
       } else {
         projectData = await new Projects(fields);
+        projectData.save()
       }
 
       
@@ -99,13 +100,18 @@ module.exports = {
 
       if (fields.team && fields.team.length > 0) {
 
+        console.log("change =232 " )
         for (let i=0;i<fields.team.length;i++){
 
-          let memberData = await Members.findOne({ _id: fields.team[i].members })
+          let memberData = await Members.findOne({ _id: fields.team[i].memberID })
+
+          console.log("memberData 11 = " , memberData)
 
           if (memberData) {
 
             let currentProjects = [...memberData.projects]
+
+            console.log("fields.team[i] = " , fields.team[i].roleID)
 
             currentProjects.push({
               projectID: projectData._id,
@@ -117,7 +123,7 @@ module.exports = {
 
               console.log("currentProjects = " , currentProjects)
               memberDataUpdate = await Members.findOneAndUpdate(
-                  {_id: fields.team[i].members},
+                  {_id: fields.team[i].memberID},
                   {
                       $set: {projects: currentProjects}
                   },

@@ -28,8 +28,15 @@ module.exports = `
         info: Project,
         role: roleType,
         champion: Boolean
+        phase: phaseType
     }
     
+    enum phaseType {
+        shortlisted
+        engaged
+        committed
+        rejected
+    }
 
     type skillsType {
         id: String,
