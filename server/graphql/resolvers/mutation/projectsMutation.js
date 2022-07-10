@@ -100,28 +100,24 @@ module.exports = {
 
       if (fields.team && fields.team.length > 0) {
 
-        console.log("change =232 " )
         for (let i=0;i<fields.team.length;i++){
 
           let memberData = await Members.findOne({ _id: fields.team[i].memberID })
 
-          console.log("memberData 11 = " , memberData)
 
           if (memberData) {
 
             let currentProjects = [...memberData.projects]
 
-            console.log("fields.team[i] = " , fields.team[i].roleID)
 
             currentProjects.push({
               projectID: projectData._id,
               champion: false,
               roleID: fields.team[i].roleID,
+              phase: fields.team[i].phase,
             })
 
             if (memberData){
-
-              console.log("currentProjects = " , currentProjects)
               memberDataUpdate = await Members.findOneAndUpdate(
                   {_id: fields.team[i].memberID},
                   {
@@ -129,7 +125,6 @@ module.exports = {
                   },
                   {new: true}
               )
-              console.log("memberDataUpdate = " , memberDataUpdate)
             }
           }
 

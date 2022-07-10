@@ -22,6 +22,17 @@ module.exports = `
 
         registeredAt: String,
 
+        previusProjects: [previusProjectsType],
+
+    }
+
+    type previusProjectsType {
+        title: String,
+        description: String,
+        link: String,
+        picture: String,
+        startDate: String,
+        endDate: String,
     }
 
     type projectMemberType {
@@ -31,12 +42,6 @@ module.exports = `
         phase: phaseType
     }
     
-    enum phaseType {
-        shortlisted
-        engaged
-        committed
-        rejected
-    }
 
     type skillsType {
         id: String,
@@ -61,6 +66,9 @@ module.exports = `
         bio: String
 
         hoursPerWeek: Float,
+
+        previusProjects: [previusProjectsInput],
+
     }
 
 
@@ -72,6 +80,18 @@ module.exports = `
         bio: String
 
         hoursPerWeek: Float,
+
+        previusProjects: [previusProjectsInput],
+
+    }
+
+     input previusProjectsInput {
+        title: String,
+        description: String,
+        link: String,
+        picture: String,
+        startDate: String,
+        endDate: String,
     }
 
     input networkInput {

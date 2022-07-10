@@ -44,6 +44,15 @@ const memberSchema = mongoose.Schema({
   }],
   archiveProjects: [mongoose.Schema.ObjectId],
 
+  previusProjects: [{
+    title: String,
+    description: String,
+    link: String,
+    picture: String,
+    startDate: Date,
+    endDate: Date,
+  }],
+
   network: [{
     memberID: String,
     endorcment: [{

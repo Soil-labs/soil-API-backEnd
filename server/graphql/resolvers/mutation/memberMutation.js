@@ -7,7 +7,7 @@ module.exports = {
   addNewMember: async (parent, args, context, info) => {
    
 
-  const {discordName,_id,discordAvatar,discriminator, bio,hoursPerWeek} = args.fields;
+  const {discordName,_id,discordAvatar,discriminator, bio,hoursPerWeek,previusProjects} = args.fields;
 
 
     if (!_id) throw new ApolloError( "_id is required");
@@ -23,6 +23,7 @@ module.exports = {
     if (discriminator) fields.discriminator = discriminator;
     if (bio) fields.bio = bio;
     if (hoursPerWeek) fields.hoursPerWeek = hoursPerWeek;
+    if (previusProjects) fields.previusProjects = previusProjects;
 
 
     try {
@@ -53,7 +54,7 @@ module.exports = {
   updateMember: async (parent, args, context, info) => {
    
 
-    const {discordName,_id,discordAvatar,discriminator,bio,hoursPerWeek} = args.fields;
+    const {discordName,_id,discordAvatar,discriminator,bio,hoursPerWeek,previusProjects} = args.fields;
 
     if (!_id) throw new ApolloError( "_id is required");
 
@@ -67,6 +68,7 @@ module.exports = {
     if (discriminator) fields =  {...fields,discriminator}
     if (bio) fields =  {...fields,bio}
     if (hoursPerWeek) fields =  {...fields,hoursPerWeek}
+    if (previusProjects) fields =  {...fields,previusProjects}
 
     
 
