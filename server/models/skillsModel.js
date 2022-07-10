@@ -16,6 +16,12 @@ const skillSchema = mongoose.Schema({
   tweets: [mongoose.Schema.ObjectId],
   members: [String],
 
+  approvedSkill: {
+    type: String,
+    enum: ["waiting","rejected","approved"],
+    default: "waiting"
+  },
+
   registeredAt: Date,
 
 

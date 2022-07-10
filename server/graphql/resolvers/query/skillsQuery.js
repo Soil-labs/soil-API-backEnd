@@ -28,7 +28,12 @@ module.exports = {
       let skillData
       
       
-      skillData = await Skills.findOne({ tagName: fields.tagName }) 
+      skillData = await Skills.findOne( {
+          $and: [
+            { tagName: fields.tagName },
+            { approvedSkill: "approved" },
+          ]
+      } ) 
 
 
 
@@ -52,7 +57,6 @@ module.exports = {
       );
     }
   },
-
   findSkills: async (parent, args, context, info) => {
    
 
@@ -70,13 +74,46 @@ module.exports = {
       let membersData
       if (tagName) {
         console.log("change =1 ")
-        membersData = await Skills.find({ tagName: fields.tagName })
+
+          membersData = await Skills.find( {
+            $and: [
+              { tagName: fields.tagName },
+              { approvedSkill: "approved" },
+            ]
+        } )
+
+
       } else {
         console.log("change =2 ")
 
-        membersData = await Skills.find({})
+        membersData = await Skills.find({approvedSkill: "approved"})
         console.log("membersData = " , membersData)
       }
+
+      
+
+
+      return membersData
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findSkill"}
+      );
+    }
+  },
+  waitingToAproveSkills: async (parent, args, context, info) => {
+   
+
+    let fields = {
+    };
+    
+
+    try {
+      let membersData
+
+        membersData = await Skills.find({approvedSkill: "waiting"})
+        // console.log("membersData = " , membersData)
 
       
 

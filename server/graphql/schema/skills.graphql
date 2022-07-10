@@ -9,6 +9,7 @@ module.exports = `
         authors: [Members],
 
         registeredAt: String,
+        approvedSkill: approvedSkillEnum,
     }
 
     input findSkillsInput {
@@ -21,6 +22,12 @@ module.exports = `
 
     input createSkillInput {
         tagName: String
+    }
+
+    enum approvedSkillEnum {
+        waiting
+        rejected
+        approved
     }
     
 

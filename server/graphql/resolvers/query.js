@@ -1,7 +1,7 @@
 
 const { findTweets } = require("./query/tweetQuery");
 const { findMember,findMembers } = require("./query/memberQuery");
-const { findSkill,findSkills } = require("./query/skillsQuery");
+const { findSkill,findSkills,waitingToAproveSkills } = require("./query/skillsQuery");
 
 const {findProject,findProjects} = require("./query/projectQuery");
 
@@ -27,7 +27,7 @@ module.exports = {
     findMember,findMembers,
 
     // ------------- SKILL QUERY -----------------
-    findSkill,findSkills,
+    findSkill,findSkills,waitingToAproveSkills,
 
     // ------------- ROLE TEMPLATE QUERY -----------------
     findRoleTemplate,findRoleTemplates,

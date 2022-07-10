@@ -13,6 +13,7 @@ module.exports = {
 
   let fields = {
     tagName,
+    approvedSkill: "waiting",
     registeredAt: new Date(),
   };
 
@@ -43,6 +44,46 @@ module.exports = {
       );
     }
   },
+  // approveOrRejectSkill: async (parent, args, context, info) => {
+   
+  //   const {tagName} = args.fields;
+  
+  
+  //   if (!tagName) throw new ApolloError( "You need to specify the name of the skill");
+  
+  //   let fields = {
+  //     tagName,
+  //     approvedSkill: "waiting",
+  //     registeredAt: new Date(),
+  //   };
+  
+  
+  
+  //   try {
+  
+  //       let skillData
+  
+  //       skillData = await Skills.findOne({ tagName: fields.tagName })
+  
+  
+  //       if (!skillData ){
+  //         skillData = await new Skills(fields);
+          
+  //         skillData.save()
+  
+  //         skillData = skillData
+  //       }
+  
+  
+  //       return skillData
+  //     } catch (err) {
+  //       throw new ApolloError(
+  //         err.message,
+  //         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+  //         { component: "tmemberQuery > addNewMember"}
+  //       );
+  //     }
+  //   },
   
 
 };
