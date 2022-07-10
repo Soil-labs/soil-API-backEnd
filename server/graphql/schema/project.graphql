@@ -25,7 +25,7 @@ module.exports = `
 
 
     type teamType {
-        members: Members
+        memberInfo: Members
         roleID: String
         phase: phaseType
     }
@@ -121,7 +121,7 @@ module.exports = `
     }
 
     input teamInput {
-        members: String
+        memberID: String
         roleID: String
         phase: phaseType
         

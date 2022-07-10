@@ -82,20 +82,20 @@ module.exports = {
                let project = projectData[i]
 
                let displayData = {
-                  project: project._doc,
+                  info: project._doc,
                   roleID: projectsInfo[position[project._id]].roleID,
                   champion: projectsInfo[position[project._id]].champion,
                }
 
                let roleUser
 
-               displayData.project.role.filter(roleN=>{
+               displayData.info.role.filter(roleN=>{
                   if (roleN.id == displayData.roleID) {
                      roleUser = roleN
                   }
                })
 
-               console.log("displayData.project = " , displayData.project.role)
+               console.log("displayData.project = " , displayData.info.role)
                console.log("roleUser = " , roleUser)
 
                if (roleUser) displayData = {...displayData, role: roleUser}

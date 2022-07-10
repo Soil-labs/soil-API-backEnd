@@ -22,6 +22,8 @@ const memberSchema = mongoose.Schema({
   discriminator: String,
   bio: String,
 
+  hoursPerWeek: Number,
+
 
   tweets: [String],
   skills: [{
@@ -30,7 +32,6 @@ const memberSchema = mongoose.Schema({
     communityLevel: Number,
     selfEndorsedLevel: Number,
   }],
-  // projects: [mongoose.Schema.ObjectId],
   projects: [{
     projectID: mongoose.Schema.ObjectId,
     roleID: mongoose.Schema.ObjectId,

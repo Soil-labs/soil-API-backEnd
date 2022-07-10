@@ -13,7 +13,7 @@ module.exports = {
     
     const {_id,title,description,champion,team,role,collaborationLinks,budget,dates} = JSON.parse(JSON.stringify(args.fields))
 
-    if (!_id) throw new ApolloError("Project id is required");
+    // if (!_id) throw new ApolloError("Project id is required");
     
     let fields = {
       _id,
@@ -33,23 +33,33 @@ module.exports = {
 
     try {
 
-      let projectData = await Projects.findOne({ _id: fields._id })
-      console.log("projectData 1 = " , projectData)
-      if (!projectData){
-        projectData = await new Projects(fields);
-        
-        projectData.save()
+      let projectData
+
+      if (_id){
+        projectData = await Projects.findOne({ _id: fields._id })
+
+        console.log("projectData 1 = " , projectData)
+      
+        if (!projectData){
+          projectData = await new Projects(fields);
+          
+          projectData.save()
+        } else {
+
+          projectData= await Projects.findOneAndUpdate(
+              {_id: projectData._id},
+              {
+                  $set: fields
+              },
+              {new: true}
+          )
+
+        }
       } else {
-
-        projectData= await Projects.findOneAndUpdate(
-            {_id: projectData._id},
-            {
-                $set: fields
-            },
-            {new: true}
-        )
-
+        projectData = await new Projects(fields);
       }
+
+      
 
       console.log("projectData 2 = " , projectData)
 

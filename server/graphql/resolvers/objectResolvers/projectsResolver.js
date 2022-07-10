@@ -54,13 +54,13 @@ module.exports = {
       },
    },
    teamType: {
-      members: async (parent, args, context, info) => {
-         //console.log("parent = " , parent)
+      memberInfo: async (parent, args, context, info) => {
+         console.log("parent = " , parent)
   
            try {
-              const members = parent.members;
+              const memberID = parent.memberID;
   
-              memberData = await Members.findOne({_id: members})
+              memberData = await Members.findOne({_id: memberID})
   
   
               return memberData;

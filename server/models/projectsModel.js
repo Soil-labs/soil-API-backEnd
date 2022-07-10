@@ -11,7 +11,7 @@ const projectSchema = mongoose.Schema({
   champion:String,
 
   team: [{
-    members: String,
+    memberID: String,
     roleID: mongoose.Schema.ObjectId,
     phase: {
       type: String,
