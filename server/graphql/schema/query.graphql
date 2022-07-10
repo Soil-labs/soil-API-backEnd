@@ -18,6 +18,7 @@ module.exports = `
             findSkill(fields:findSkillInput): Skills
             findSkills(fields:findSkillsInput): [Skills]
             waitingToAproveSkills(fields:findSkillsInput): [Skills]
+            adminFindAllSkillsEveryState(fields:findSkillsInput): [Skills]
 
           #  ---------- QUERY TEMPLATE QUERY -------
             findRoleTemplate(fields:findRoleTemplateInput): RoleTemplate

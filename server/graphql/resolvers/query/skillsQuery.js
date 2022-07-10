@@ -102,6 +102,46 @@ module.exports = {
       );
     }
   },
+  adminFindAllSkillsEveryState: async (parent, args, context, info) => {
+   
+
+    const {_id} = args.fields;
+
+    let fields = {
+    };
+
+    if (_id) fields = { ...fields, _id };
+
+    console.log("fields = " , fields)
+    
+
+    try {
+      let membersData
+      if (_id) {
+        console.log("change =1 ")
+
+        membersData = await Skills.find({ _id: fields._id })
+
+
+      } else {
+        console.log("change =2 ")
+
+        membersData = await Skills.find({})
+        console.log("membersData = " , membersData)
+      }
+
+      
+
+
+      return membersData
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findSkill"}
+      );
+    }
+  },
   waitingToAproveSkills: async (parent, args, context, info) => {
    
 
