@@ -33,7 +33,13 @@ module.exports = {
 
         skillData = skillData
       }
-
+      session.writeTransaction(tx => 
+        tx.run(
+          `  
+          MERGE (:Skill {name: '${fields.name}')
+          `
+        )
+      )
 
       return skillData
     } catch (err) {

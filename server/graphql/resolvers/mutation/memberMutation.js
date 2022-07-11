@@ -41,7 +41,7 @@ module.exports = {
       session.writeTransaction(tx => 
         tx.run(
           `   
-          CREATE (:Member {_id: ${fields._id}, name: '${fields.discordName}', discordName: '${fields.discordName}', discriminator: ${fields.discriminator}, discordAvatar: '${fields.discordAvatar}'})
+          MERGE (:Member {_id: ${fields._id}, name: '${fields.discordName}'})
           `
         )
       )

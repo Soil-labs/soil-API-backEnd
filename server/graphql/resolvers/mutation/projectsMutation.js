@@ -1,9 +1,8 @@
 
 const { Projects } = require("../../../models/projectsModel");
 const { Members } = require("../../../models/membersModel");
-
-
 const {ApolloError} = require("apollo-server-express");
+const { session } = require("../../../../server/neo4j_config");
 
 
 module.exports = {
@@ -58,8 +57,15 @@ module.exports = {
       } else {
         projectData = await new Projects(fields);
       }
-
       
+      // Add new project to Neo4j
+      session.writeTransaction(tx => 
+        tx.run(
+          `   
+          MERGE (:Project {_id: '${fields._id}', name: '${fields.title}', description: '${fields.description}', champion: '${fields.champion}'})
+          `
+        )
+      )
 
       console.log("projectData 2 = " , projectData)
 
