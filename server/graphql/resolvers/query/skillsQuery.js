@@ -65,15 +65,13 @@ module.exports = {
     let fields = {
     };
 
-    if (_id) fields = { ...fields, _id };
+    if (_id) fields = { ...fields, _id }; // put the ID inside but only if it exist 
 
-    console.log("fields = " , fields)
     
 
     try {
       let membersData
       if (_id) {
-        console.log("change =1 ")
 
           membersData = await Skills.find( {
             $and: [
@@ -84,10 +82,9 @@ module.exports = {
 
 
       } else {
-        console.log("change =2 ")
-
+        
         membersData = await Skills.find({state: "approved"})
-        console.log("membersData = " , membersData)
+        
       }
 
       
