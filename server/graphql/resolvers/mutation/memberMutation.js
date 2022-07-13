@@ -100,6 +100,51 @@ module.exports = {
       );
     }
   },
+  endorseAttribute: async (parent, args, context, info) => {
+   
+
+    const {_id,attribute} = args.fields;
+
+    if (!_id) throw new ApolloError( "_id is required");
+    if (!attribute) throw new ApolloError( "attribute is required");
+
+    let fields = {
+      _id,
+      attribute,
+    };
+
+    console.log("fields = " , fields)
+
+    
+
+    try {
+
+      // let membersData = await Members.findOne({ _id: fields._id })
+
+      // console.log("change = 1" )
+      // if (!membersData ){
+      //   membersData = await new Members(fields);
+        
+      //   membersData.save()
+
+      //   membersData = membersData
+      // } else {
+
+      //   membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
+      //   console.log("change = 2" )
+      // }
+
+      // console.log("membersData = " , membersData)
+
+      return {}
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
   addSkillToMember: async (parent, args, context, info) => {
    
 

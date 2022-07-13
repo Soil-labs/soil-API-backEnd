@@ -85,6 +85,23 @@ module.exports = `
 
     }
 
+    input endorseAttributeInput {
+        _id: ID
+        attribute: attributeType
+
+    }
+
+    enum attributeType {
+        organization
+        collaboration
+        management
+        ownership
+        flexibility
+        decisiveness
+        empathy
+        leadership
+    }
+
      input previusProjectsInput {
         title: String,
         description: String,

@@ -8,6 +8,9 @@ module.exports = `
         updateMember(fields:updateMemberInput!): Members
         addSkillToMember(fields:addSkillToMember_Input!):Members
 
+        endorseAttribute(fields:endorseAttributeInput!): Members
+
+
         #  ---------- PROJECT MUTATIONS -------
         updateProject(fields:updateProjectInput!):Project
         newTweetProject(fields:newTweetProjectInput!):tweetsProject
