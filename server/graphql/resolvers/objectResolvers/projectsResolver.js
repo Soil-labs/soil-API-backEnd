@@ -104,17 +104,21 @@ module.exports = {
         },
    },
    skillRoleType: {
-      skill: async (parent, args, context, info) => {
+      skillData: async (parent, args, context, info) => {
          //console.log("parent = " , parent)
   
            try {
-              const skill = parent.skill;
+              const _id = parent._id;
   
             //   memberData = await Members.findOne({_id: members})
 
-          //console.log("skill - roleResolver = " , skill)
+          //console.log("_id - roleResolver = " , _id)
   
-            skillData = await Skills.findOne({_id: skill})
+            skillData = await Skills.findOne({
+               $and: [
+                 { _id: _id },
+                 { state: "approved" },
+               ]})
   
               return skillData;
   

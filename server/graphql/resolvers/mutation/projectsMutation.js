@@ -70,6 +70,8 @@ module.exports = {
         // console.log("champion 232 = " , champion)
         let memberDataChampion = await Members.findOne({ _id: champion })
 
+        console.log("memberDataChampion.discrordName = " , memberDataChampion.discrordName)
+
         // console.log("memberDataChampion 232 = " , memberDataChampion)
 
         if (memberDataChampion) {

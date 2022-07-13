@@ -53,6 +53,19 @@ const memberSchema = mongoose.Schema({
     endDate: Date,
   }],
 
+  attributes: {
+    totalVotes: Number,
+
+    organization: Number,
+    collaboration: Number,
+    management: Number,
+    ownership: Number,
+    flexibility: Number,
+    decisiveness: Number,
+    empathy: Number,
+    leadership: Number,
+  },
+
   network: [{
     memberID: String,
     endorcment: [{

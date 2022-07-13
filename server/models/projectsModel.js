@@ -24,7 +24,7 @@ const projectSchema = mongoose.Schema({
     title: String,
     description: String,
     skills: [{
-      skill: mongoose.Schema.ObjectId,
+      _id: mongoose.Schema.ObjectId,
       level: String,
     }],
     archive: Boolean,

@@ -20,7 +20,11 @@ module.exports = {
 
 
 
-            skillData = await Skills.find({_id: skillsID})
+            skillData = await Skills.find({
+               $and: [
+                 { _id: skillsID },
+                 { state: "approved" },
+               ]})
             
 
             skillData_withAuthors = skillData.map((skillD,idx)=>{

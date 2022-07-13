@@ -66,6 +66,35 @@ module.exports = {
       );
     }
   },
+  findProjects_RequireSkill: async (parent, args, context, info) => {
+   
+    const {skillID} = args.fields;
+
+    // console.log("change = " )
+    
+
+    try {
+
+
+      let projectsData
+      projectsData = await Projects.find({ 'role.skills._id':skillID})
+
+      console.log("projectsData = " , projectsData)
+      
+      if (projectsData){
+        return projectsData
+      } else {
+        return [{}]
+      }
+      
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findSkill"}
+      );
+    }
+  },
   
   
 };

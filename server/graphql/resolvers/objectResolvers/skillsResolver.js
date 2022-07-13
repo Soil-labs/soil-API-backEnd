@@ -1,6 +1,5 @@
-// const { User } = require('../../../models/user');
+
 const { Members } = require('../../../models/membersModel');
-const { Skills } = require('../../../models/skillsModel');
 
 const { ApolloError } = require('apollo-server-express');
 
