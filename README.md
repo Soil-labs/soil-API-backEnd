@@ -2,7 +2,7 @@
 
 Welcome to the back-end repository for Soil.
 
-## How to create the Backend:
+## How to Create the Backend:
 
 First, install the dependencies from the root of the project:
 
@@ -10,25 +10,59 @@ First, install the dependencies from the root of the project:
 npm i
 ``` 
 
-Go into the server directory and start nodemon:
+To access the database, you need an .env file:
+
+```bash
+Ask @BluePanda for keys
+```
+
+Go into the server directory and start nodemon. If you do not have `nodemon`, install it with: `sudo npm i -g nodemon`. Once you have `nodemon` installed, run:
+
 ```bash
 cd server
 nodemon server.js
 ``` 
 
-Once you see the message from mongoose/nodemon at the end: `Connected to db` then open up this link (port) in your browswer
+Once you see the message from mongoose/nodemon in the terminal saying: `Connected to db` then open up this link (port) in your browser:
 
 http://localhost:5001/graphql
-- we can query/mutate from the left panel
-- we can review the output in the right panel
+- left panel: for GraphQL queries/mutations
+- right panel: review JSON response output
 
 <br>
 
-# Search for Skills
+# 👩🏻‍💼 Members
+
+# 🧑🏻‍🏭 Projects
+
+Search for 1 or Many Project(s):
+
+```graphql
+query{
+  findProjects(fields:{
+        # _id: "62b7f58a2c02f8750d9624cd",
+  }){
+    _id
+    title
+    description
+    team{
+      memberInfo{
+        discordName
+      }
+    }
+      
+  }
+}
+```
+
+
+# 🏂 Skills
 
 We use GraphQL for searching the databse from the front-end. A query may look something like this by read an ID input from the front-end `const {_id} = args.fields` to then create a query and eventual output like so:
 
-```javascript
+## 🔍 Find 1 or Many Skill(s)
+- Use the `_id` field:
+```graphql
 query{
   findSkills(fields:{
     # _id: "62ca8b55536e11000427f05f"
@@ -87,3 +121,17 @@ Two statuses:
 - `approved` = goes into DB for users to see/use
 - `waiting` = goes to moderator (decide if skill should exist or be deleted)
 
+
+# 🥼 Skill Categories
+
+# 🪅 Role Template
+
+
+
+=======
+# Tech To Make
+
+- Create new user and put 0 for all attributes: `createMember`
+- Read all attributes from query `findMember`
+
+<!-- - Create new API: get user attributes and +1 to person -->

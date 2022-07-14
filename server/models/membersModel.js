@@ -18,6 +18,7 @@ const memberSchema = mongoose.Schema({
     type: String,
     maxlength: 100,
   },
+
   discordAvatar: String,
   discriminator: String,
   bio: String,
@@ -32,11 +33,25 @@ const memberSchema = mongoose.Schema({
     communityLevel: Number,
     selfEndorsedLevel: Number,
   }],
+
   projects: [{
     projectID: mongoose.Schema.ObjectId,
     roleID: mongoose.Schema.ObjectId,
     champion: Boolean,
   }],
+
+  attributes: {
+    totalVotes: Number,
+    organization: Number,
+    collaboration: Number,
+    management: Number,
+    ownership: Number,
+    flexibility: Number,
+    decisiveness: Number,
+    empathy: Number,
+    leadership: Number,
+  },
+  
   archiveProjects: [mongoose.Schema.ObjectId],
 
   network: [{

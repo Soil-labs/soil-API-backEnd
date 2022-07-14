@@ -55,7 +55,7 @@ module.exports = {
    },
    teamType: {
       memberInfo: async (parent, args, context, info) => {
-         console.log("parent = " , parent)
+         // console.log("parent = " , parent)
   
            try {
               const memberID = parent.memberID;
