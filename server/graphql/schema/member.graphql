@@ -24,6 +24,20 @@ module.exports = `
 
         previusProjects: [previusProjectsType],
 
+        attribute: [attributeType],
+
+
+    }
+
+    type attributeType {
+        organization: Int,
+        collaboration: Int,
+        management: Int,
+        ownership: Int,
+        flexibility: Int,
+        decisiveness: Int,
+        empathy: Int,
+        leadership: Int,
     }
 
     type previusProjectsType {
@@ -87,11 +101,11 @@ module.exports = `
 
     input endorseAttributeInput {
         _id: ID
-        attribute: attributeType
+        attribute: attributeEnum
 
     }
 
-    enum attributeType {
+    enum attributeEnum {
         organization
         collaboration
         management

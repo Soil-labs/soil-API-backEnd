@@ -113,13 +113,39 @@ module.exports = {
       attribute,
     };
 
-    console.log("fields = " , fields)
+    // console.log("fields = " , fields)
 
     
 
     try {
 
-      // let membersData = await Members.findOne({ _id: fields._id })
+      let membersData = await Members.findOne({ _id: fields._id })
+
+      if (!membersData ) throw new ApolloError("Member not found")
+
+      let newAttribute
+      if (!membersData.attribute) {
+        newAttribute = {
+          organization: 0,
+          collaboration: 0,
+          management: 0,
+          ownership: 0,
+          flexibility: 0,
+          decisiveness: 0,
+          empathy: 0,
+          leadership: 0,
+        }
+
+        newAttribute[attribute] = 1
+
+        membersData = await Members.findOneAndUpdate({ _id: fields._id }, { attribute: newAttribute }, { new: true });
+      } else {
+        newAttribute = {...membersData.attribute}
+        newAttribute[attribute] = newAttribute[attribute] + 1
+        membersData = await Members.findOneAndUpdate({ _id: fields._id }, { attribute: newAttribute }, { new: true });
+      }
+
+      console.log("newAttribute = " , newAttribute)
 
       // console.log("change = 1" )
       // if (!membersData ){
@@ -134,9 +160,9 @@ module.exports = {
       //   console.log("change = 2" )
       // }
 
-      // console.log("membersData = " , membersData)
+      console.log("membersData.attribute = " , membersData.attribute)
 
-      return {}
+      return membersData
     } catch (err) {
       throw new ApolloError(
         err.message,
