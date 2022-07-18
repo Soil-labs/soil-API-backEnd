@@ -3,7 +3,7 @@
 const { findMember,findMembers } = require("./query/memberQuery");
 const { findSkill,findSkills,waitingToAproveSkills,adminFindAllSkillsEveryState } = require("./query/skillsQuery");
 
-const {findProject,findProjects,findProjects_RequireSkill} = require("./query/projectQuery");
+const {findProject,findProjects,findProjects_RequireSkill,findProjects_RecommendedToUser} = require("./query/projectQuery");
 
 const {findRoleTemplate,findRoleTemplates} = require("./query/roleTemplateQuery");
 const {findSkillCategory,findSkillCategories} = require("./query/skillCategoryQuery");
@@ -20,7 +20,7 @@ module.exports = {
 
 
     // ------------- PROJECT QUERY -----------------
-    findProject,findProjects,findProjects_RequireSkill,
+    findProject,findProjects,findProjects_RequireSkill,findProjects_RecommendedToUser,
 
     // ------------- MEMBER QUERY -----------------
     findMember,findMembers,

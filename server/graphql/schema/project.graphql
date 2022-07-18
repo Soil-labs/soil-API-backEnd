@@ -89,6 +89,11 @@ module.exports = `
         tweets: [tweetsType]
     }
 
+    type projectMatchType {
+        projectData: Project
+        matchPersentage: Float
+        role: roleType
+    }
 
     
     input newTweetProjectInput {
@@ -180,6 +185,9 @@ module.exports = `
     }
     input findProjects_RequireSkillInput {
         skillID: [ID]
+    }
+    input findProjects_RecommendedToUserInput {
+        memberID: ID
     }
 
     
