@@ -149,24 +149,32 @@ module.exports = {
   newTweetProject: async (parent, args, context, info) => {
    
 
-    const {projectID,content,author} = JSON.parse(JSON.stringify(args.fields))
+    let {projectID,content,author,approved} = JSON.parse(JSON.stringify(args.fields))
 
     
     if (!projectID) throw new ApolloError( "you need to specify a project ID");
     if (!content) throw new ApolloError( "you need to specify content");
     if (!author) throw new ApolloError( "you need to specify author ID");
 
+    console.log("approved = " , approved)
+
 
     var ObjectId = require('mongoose').Types.ObjectId;
 
     if (ObjectId.isValid(projectID)==false) throw new ApolloError( "The project doesn't have a valid mongo ID");
 
+
+
+    if (!approved) approved = false;
+
     
     let fields = {
-      projectID,
       content,
       author,
+      approved,
+      registeredAt: new Date(),
     }
+
 
 
 
@@ -174,7 +182,7 @@ module.exports = {
     try {
 
 
-      let projectData = await Projects.findOne({ _id: fields.projectID })
+      let projectData = await Projects.findOne({ _id: projectID })
 
 
       let memberData = await Members.findOne({ _id: fields.author })
@@ -184,29 +192,79 @@ module.exports = {
 
       
       
-      projectData.tweets.push({
-        content: fields.content,
-        author: fields.author,
-        registeredAt: new Date(),
-      })
+      projectData.tweets.push(fields)
 
       
 
-    projectDataUpdate = await Projects.findOneAndUpdate(
-      {_id: projectData._id},
-      {
-          $set: {tweets: projectData.tweets }
-      },
-      {new: true}
-  )
+        projectDataUpdate = await Projects.findOneAndUpdate(
+          {_id: projectData._id},
+          {
+              $set: {tweets: projectData.tweets }
+          },
+          {new: true}
+      )
 
 
+      let newTweetID = projectDataUpdate.tweets[projectDataUpdate.tweets.length-1]._id
 
 
       return { 
+        newTweetID,
         numTweets: projectDataUpdate.tweets.length,
         tweets: projectDataUpdate.tweets
       }
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+
+  approveTweet: async (parent, args, context, info) => {
+   
+
+    const {projectID,tweetID,approved} = JSON.parse(JSON.stringify(args.fields))
+
+    
+    if (!projectID) throw new ApolloError( "you need to specify a project ID");
+    if (!tweetID) throw new ApolloError( "you need to specify a tweet ID");
+    if (approved==null) throw new ApolloError( "you need to specify if the tweet is approved or not");
+
+    
+
+
+    try {
+
+
+      let projectData = await Projects.findOne({ _id: projectID })
+
+      if (!projectData) throw new ApolloError( "This project dont exist you need to choose antoher project");
+
+      projectData.tweets.forEach(tweet => {
+        console.log("tweet = " , tweet)
+        if (tweet._id == tweetID){
+          tweet.approved = approved
+        }
+      })
+
+
+        projectDataUpdate = await Projects.findOneAndUpdate(
+          {_id: projectID},
+          {
+              $set: {tweets: projectData.tweets }
+          },
+          {new: true}
+      )
+
+
+      return projectDataUpdate
+
+      // return { 
+      //   numTweets: projectDataUpdate.tweets.length,
+      //   tweets: projectDataUpdate.tweets
+      // }
     } catch (err) {
       throw new ApolloError(
         err.message,

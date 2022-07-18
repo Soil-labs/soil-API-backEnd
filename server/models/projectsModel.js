@@ -42,6 +42,7 @@ const projectSchema = mongoose.Schema({
     content: String,
     author: String,
     registeredAt: Date,
+    approved: Boolean,approved: Boolean,
   }],
 
   collaborationLinks: [{

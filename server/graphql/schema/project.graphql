@@ -68,9 +68,11 @@ module.exports = `
 
     
     type tweetsType {
+        _id: ID
         content: String
         author: Members
         registeredAt: String
+        approved: Boolean,
     }
 
     type collaborationLinksType {
@@ -84,7 +86,7 @@ module.exports = `
     }
 
     type tweetsProject {
-
+        newTweetID: ID
         numTweets: Int
         tweets: [tweetsType]
     }
@@ -97,10 +99,16 @@ module.exports = `
 
     
     input newTweetProjectInput {
-
         projectID: ID
         content: String,
         author: String,
+        approved: Boolean,
+    }
+
+    input approveTweetInput {
+        projectID: ID
+        tweetID: ID
+        approved: Boolean,
     }
 
 
