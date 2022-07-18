@@ -41,6 +41,7 @@ const memberSchema = mongoose.Schema({
       enum: ["shortlisted", "engaged","committed","rejected"],
       default: "shortlisted"
     },
+    favorite: Boolean,
   }],
   archiveProjects: [mongoose.Schema.ObjectId],
 
