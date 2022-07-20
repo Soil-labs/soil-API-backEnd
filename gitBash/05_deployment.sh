@@ -7,7 +7,7 @@ read MESSAGE
 
 
 if [[ $MESSAGE == "n" || $MESSAGE == "N" ]]; then
-        MESSAGE="f"
+        MESSAGE=$OUTPUT
 fi
 
 echo "${MESSAGE}"

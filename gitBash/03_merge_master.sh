@@ -1,16 +1,26 @@
 OUTPUT=$(git rev-parse --abbrev-ref HEAD)
 echo "${OUTPUT}"
 
+
+echo "Enter the Branch that you want to Merge with "  
+read git_branch  
+
+
+echo "What message you want to commit | If you dont want to write a message just type -> N"
+read MESSAGE
+
+
+if [[ $MESSAGE == "n" || $MESSAGE == "N" ]]; then
+        MESSAGE=$OUTPUT
+fi
+
+echo "${MESSAGE}"
+
 git add .
-git commit -m "before merge with master"
+git commit -m "$MESSAGE"
 git push origin $OUTPUT
 
-git checkout master
+git fetch --all
+# git pull --all
 
-git merge $OUTPUT
-
-git add .
-git commit -m "New Branch Created"
-git push origin master
-
-# git checkout $OUTPUT
+git merge origin/$git_branch
