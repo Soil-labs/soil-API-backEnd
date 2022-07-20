@@ -29,7 +29,7 @@ module.exports = {
     if (budget) fields =  {...fields,budget}
     if (dates) fields =  {...fields,dates}
 
-    console.log("fields = " , fields)
+  //console.log("fields = " , fields)
 
     try {
 
@@ -38,7 +38,7 @@ module.exports = {
       if (_id){
         projectData = await Projects.findOne({ _id: fields._id })
 
-        console.log("projectData 1 = " , projectData)
+      //console.log("projectData 1 = " , projectData)
       
         if (!projectData){
           projectData = await new Projects(fields);
@@ -62,7 +62,7 @@ module.exports = {
 
       
 
-      console.log("projectData 2 = " , projectData)
+    //console.log("projectData 2 = " , projectData)
 
 
       if (champion) {
@@ -70,7 +70,7 @@ module.exports = {
         // console.log("champion 232 = " , champion)
         let memberDataChampion = await Members.findOne({ _id: champion })
 
-        console.log("memberDataChampion.discrordName = " , memberDataChampion.discrordName)
+      //console.log("memberDataChampion.discrordName = " , memberDataChampion.discrordName)
 
         // console.log("memberDataChampion 232 = " , memberDataChampion)
 
@@ -85,7 +85,7 @@ module.exports = {
 
           if (memberDataChampion){
 
-            console.log("currentProjects = " , currentProjects)
+          //console.log("currentProjects = " , currentProjects)
             memberDataUpdate = await Members.findOneAndUpdate(
                 {_id: champion},
                 {
@@ -93,7 +93,7 @@ module.exports = {
                 },
                 {new: true}
             )
-            console.log("memberDataUpdate = " , memberDataUpdate)
+          //console.log("memberDataUpdate = " , memberDataUpdate)
           }
         }
 
@@ -119,7 +119,6 @@ module.exports = {
               phase: fields.team[i].phase,
             })
 
-            if (memberData){
               memberDataUpdate = await Members.findOneAndUpdate(
                   {_id: fields.team[i].memberID},
                   {
@@ -127,7 +126,6 @@ module.exports = {
                   },
                   {new: true}
               )
-            }
           }
 
         }
@@ -156,7 +154,7 @@ module.exports = {
     if (!content) throw new ApolloError( "you need to specify content");
     if (!author) throw new ApolloError( "you need to specify author ID");
 
-    console.log("approved = " , approved)
+  //console.log("approved = " , approved)
 
 
     var ObjectId = require('mongoose').Types.ObjectId;
@@ -243,7 +241,7 @@ module.exports = {
       if (!projectData) throw new ApolloError( "This project dont exist you need to choose antoher project");
 
       projectData.tweets.forEach(tweet => {
-        console.log("tweet = " , tweet)
+      //console.log("tweet = " , tweet)
         if (tweet._id == tweetID){
           tweet.approved = approved
         }

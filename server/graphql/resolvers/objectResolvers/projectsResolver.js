@@ -55,7 +55,7 @@ module.exports = {
    },
    teamType: {
       memberInfo: async (parent, args, context, info) => {
-         console.log("parent = " , parent)
+       //console.log("parent = " , parent)
   
            try {
               const memberID = parent.memberID;
@@ -138,12 +138,12 @@ module.exports = {
 
    tweetsProject: {
       tweets: async (parent, args, context, info) => {
-      //  console.log("parent - tweets = " , parent.tweets)
+      ////console.log("parent - tweets = " , parent.tweets)
   
            try {
       //         const author = parent.author;
 
-      //  console.log("author = " , author)
+      ////console.log("author = " , author)
 
               
   
@@ -167,12 +167,12 @@ module.exports = {
 
    tweetsType: {
       author: async (parent, args, context, info) => {
-       console.log("parent -  tweetsType - author= " , parent)
+     //console.log("parent -  tweetsType - author= " , parent)
   
            try {
               const author = parent.author;
 
-      //  console.log("author = " , author)
+      ////console.log("author = " , author)
 
               
   

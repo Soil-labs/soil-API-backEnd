@@ -9,7 +9,7 @@ const { ApolloError } = require('apollo-server-express');
 module.exports = {
    SkillCategory: {
       skills: async (parent, args, context, info) => {
-         console.log("parent = " , parent)
+       //console.log("parent = " , parent)
 
          try {
             const skillsID = parent.skills;

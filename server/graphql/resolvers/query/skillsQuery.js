@@ -67,13 +67,13 @@ module.exports = {
 
     if (_id) fields = { ...fields, _id };
 
-    console.log("fields = " , fields)
+  //console.log("fields = " , fields)
     
 
     try {
       let membersData
       if (_id) {
-        console.log("change =1 ")
+      //console.log("change =1 ")
 
           membersData = await Skills.find( {
             $and: [
@@ -84,10 +84,10 @@ module.exports = {
 
 
       } else {
-        console.log("change =2 ")
+      //console.log("change =2 ")
 
         membersData = await Skills.find({state: "approved"})
-        console.log("membersData = " , membersData)
+      //console.log("membersData = " , membersData)
       }
 
       
@@ -112,22 +112,22 @@ module.exports = {
 
     if (_id) fields = { ...fields, _id };
 
-    console.log("fields = " , fields)
+  //console.log("fields = " , fields)
     
 
     try {
       let membersData
       if (_id) {
-        console.log("change =1 ")
+      //console.log("change =1 ")
 
         membersData = await Skills.find({ _id: fields._id })
 
 
       } else {
-        console.log("change =2 ")
+      //console.log("change =2 ")
 
         membersData = await Skills.find({})
-        console.log("membersData = " , membersData)
+      //console.log("membersData = " , membersData)
       }
 
       

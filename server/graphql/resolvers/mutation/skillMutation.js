@@ -102,7 +102,7 @@ module.exports = {
   
         skillData = await Skills.findOne({ _id: _id })
   
-        console.log("skillData = " , skillData)
+      //console.log("skillData = " , skillData)
   
         if (skillData ){
 
@@ -117,7 +117,7 @@ module.exports = {
           )
         }
 
-        console.log("skillData 2= " , skillData)
+      //console.log("skillData 2= " , skillData)
 
   
   

@@ -46,13 +46,13 @@ module.exports = {
       let membersData
       if (_id){
         membersData = await Members.find({ _id: _id })
-        console.log("membersData = " , membersData)
+      //console.log("membersData = " , membersData)
       } else{
         membersData = await Members.find({})
       }
 
 
-      console.log("membersData = " , membersData)
+    //console.log("membersData = " , membersData)
 
       return membersData
     } catch (err) {

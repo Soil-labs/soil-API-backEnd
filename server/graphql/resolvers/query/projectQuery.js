@@ -52,7 +52,7 @@ module.exports = {
 
         projectsData = await Projects.find({})
       }
-      console.log("projectsData = " , projectsData)
+    //console.log("projectsData = " , projectsData)
 
 
       
@@ -80,7 +80,7 @@ module.exports = {
       let projectsData
       projectsData = await Projects.find({ 'role.skills._id':skillID})
 
-      console.log("projectsData = " , projectsData)
+    //console.log("projectsData = " , projectsData)
       
       if (projectsData){
         return projectsData
@@ -114,7 +114,7 @@ module.exports = {
       skillsArray = memberData.skills.map(skill => skill.id) // separate all teh skills
 
       // console.log("memberData.skills = " , memberData.skills)
-      console.log("skillsArray = " , skillsArray)
+    //console.log("skillsArray = " , skillsArray)
       
       projectsData = await Projects.find({ 'role.skills._id':skillsArray}) // Find the proejcts that have one of this skills in their roles
 
@@ -124,7 +124,7 @@ module.exports = {
       let projectMatch = []
       for (let i = 0; i < projectsData.length; i++) {
         projectN = projectsData[i]
-        console.log("projectN = " , projectN.role)
+      //console.log("projectN = " , projectN.role)
 
         matchNum = 0
 
@@ -134,9 +134,9 @@ module.exports = {
 
           filteredSkillArray = skillsArray.filter(skill => skill_ProjectRole.includes(skill))
 
-          console.log("skill_ProjectRole = " , skill_ProjectRole, " compare = ",skillsArray)
-          console.log("filteredSkillArray = " , filteredSkillArray)
-          console.log("filteredSkillArray.length = " , filteredSkillArray.length)
+        //console.log("skill_ProjectRole = " , skill_ProjectRole, " compare = ",skillsArray)
+        //console.log("filteredSkillArray = " , filteredSkillArray)
+        //console.log("filteredSkillArray.length = " , filteredSkillArray.length)
 
           if (matchNum < filteredSkillArray.length) {
             matchNum = filteredSkillArray.length

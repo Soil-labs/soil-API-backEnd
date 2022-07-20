@@ -74,9 +74,9 @@ module.exports = {
 
             projectData = await Projects.find({_id: projectID_all})
 
-            console.log("position = " , position)
-            console.log("projectID_all = " , projectID_all)
-            console.log("projectData = " , projectData)
+          //console.log("position = " , position)
+          //console.log("projectID_all = " , projectID_all)
+          //console.log("projectData = " , projectData)
 
             // projectsInfo = projectsInfo.map(info=>{return ({
             //    info: info.projectID
@@ -91,6 +91,7 @@ module.exports = {
                   info: info._doc,
                   roleID: projectsInfo[position[info._id]].roleID,
                   champion: projectsInfo[position[info._id]].champion,
+                  favorite: projectsInfo[position[info._id]].favorite,
                }
 
                let roleUser
@@ -101,17 +102,13 @@ module.exports = {
                   }
                })
 
-               console.log("projectsInfo[position[info._id]] = " , projectsInfo[position[info._id]])
-               // console.log("displayData.info = " , displayData.info.role,displayData.roleID)
-               // console.log("roleUser = " , roleUser)
-
                if (roleUser) displayData = {...displayData, role: roleUser}
                
                projectData_disp.push(displayData) 
             }
 
 
-            console.log("projectData_disp = " , projectData_disp)
+          //console.log("projectData_disp = " , projectData_disp)
 
             return projectData_disp;
 

@@ -6,6 +6,7 @@ module.exports = `
         #  ---------- MEMBER MUTATIONS -------
         addNewMember(fields:addNewMemberInput!): Members
         updateMember(fields:updateMemberInput!): Members
+        addFavoriteProject(fields:addFavoriteProjectInput!): Members
         addSkillToMember(fields:addSkillToMember_Input!):Members
 
         endorseAttribute(fields:endorseAttributeInput!): Members

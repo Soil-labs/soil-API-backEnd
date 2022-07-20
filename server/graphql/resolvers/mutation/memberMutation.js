@@ -1,5 +1,6 @@
 const { Members } = require("../../../models/membersModel");
 const { Skills } = require("../../../models/skillsModel");
+const { Projects } = require("../../../models/projectsModel");
 
 const {ApolloError} = require("apollo-server-express");
 
@@ -26,21 +27,40 @@ module.exports = {
     if (previusProjects) fields.previusProjects = previusProjects;
 
 
+    
+
+
     try {
 
       let membersData = await Members.findOne({ _id: fields._id })
 
-      console.log("membersData = " , membersData)
+    //console.log("membersData = " , membersData)
+    
 
       if (!membersData){
+        let newAttributes = {
+          organization: 0,
+          collaboration: 0,
+          management: 0,
+          ownership: 0,
+          flexibility: 0,
+          decisiveness: 0,
+          empathy: 0,
+          leadership: 0,
+        }
+    
+        fields = {...fields, attributes: newAttributes};
+
         membersData = await new Members(fields);
         
         membersData.save()
       } 
       // else {
-      //   console.log("change = " )
+      // //console.log("change = " )
       //   throw new ApolloError("Member already exists")
       // }
+
+      console.log("membersData = " , membersData)
 
       return membersData
     } catch (err) {
@@ -76,8 +96,21 @@ module.exports = {
 
       let membersData = await Members.findOne({ _id: fields._id })
 
-      console.log("change = 1" )
+    //console.log("change = 1" )
       if (!membersData ){
+        let newAttributes = {
+          organization: 0,
+          collaboration: 0,
+          management: 0,
+          ownership: 0,
+          flexibility: 0,
+          decisiveness: 0,
+          empathy: 0,
+          leadership: 0,
+        }
+    
+        fields = {...fields, attributes: newAttributes};
+
         membersData = await new Members(fields);
         
         membersData.save()
@@ -86,12 +119,54 @@ module.exports = {
       } else {
 
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
-        console.log("change = 2" )
+      //console.log("change = 2" )
       }
 
-      console.log("membersData = " , membersData)
+    //console.log("membersData = " , membersData)
 
       return membersData
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+  addFavoriteProject: async (parent, args, context, info) => {
+
+    const {memberID,projectID,favorite} = args.fields;
+
+    if (!memberID) throw new ApolloError( "memberID is required");
+    if (!projectID) throw new ApolloError( "projectID is required");
+    if (favorite==null) throw new ApolloError( "favorite is required");
+   
+    try {
+
+      let memberData = await Members.findOne({ _id: memberID })
+      if (!memberData) throw new ApolloError( "Member not found")
+
+      let projectData = await Projects.findOne({ _id: projectID })
+      if (!projectData) throw new ApolloError( "Project not found")
+
+
+      let currentProjects = [...memberData.projects]
+
+      currentProjects.push({
+        projectID: projectID,
+        champion: false,
+        favorite: favorite,
+      })
+
+
+      memberData = await Members.findOneAndUpdate({ _id: memberID }, { projects: currentProjects }, { new: true });
+
+
+      console.log("memberData.projects = " , memberData.projects)
+
+
+
+    return memberData
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -123,9 +198,10 @@ module.exports = {
 
       if (!membersData ) throw new ApolloError("Member not found")
 
-      let newAttribute
-      if (!membersData.attribute) {
-        newAttribute = {
+      let newAttributes
+      if (!membersData.attributes) {
+        console.log("change = 1" )
+        newAttributes = {
           organization: 0,
           collaboration: 0,
           management: 0,
@@ -136,16 +212,17 @@ module.exports = {
           leadership: 0,
         }
 
-        newAttribute[attribute] = 1
+        newAttributes[attribute] = 1
 
-        membersData = await Members.findOneAndUpdate({ _id: fields._id }, { attribute: newAttribute }, { new: true });
+        membersData = await Members.findOneAndUpdate({ _id: fields._id }, { attribute: newAttributes }, { new: true });
       } else {
-        newAttribute = {...membersData.attribute}
-        newAttribute[attribute] = newAttribute[attribute] + 1
-        membersData = await Members.findOneAndUpdate({ _id: fields._id }, { attribute: newAttribute }, { new: true });
+        console.log("change = 2" )
+        newAttributes = {...membersData.attributes}
+        newAttributes[attribute] = newAttributes[attribute] + 1
+        membersData = await Members.findOneAndUpdate({ _id: fields._id }, { attributes: newAttributes }, { new: true });
       }
 
-      console.log("newAttribute = " , newAttribute)
+    console.log("membersData = " , membersData)
 
       // console.log("change = 1" )
       // if (!membersData ){
@@ -157,10 +234,10 @@ module.exports = {
       // } else {
 
       //   membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
-      //   console.log("change = 2" )
+      // //console.log("change = 2" )
       // }
 
-      console.log("membersData.attribute = " , membersData.attribute)
+    //console.log("membersData.attribute = " , membersData.attribute)
 
       return membersData
     } catch (err) {
@@ -225,7 +302,7 @@ module.exports = {
         }
     })
 
-    console.log("change = 1" )
+  //console.log("change = 1" )
 
     // ---------- Network Member-----------
     let networkMember
@@ -237,7 +314,7 @@ module.exports = {
         flagMemberExist = true
       } 
     })
-    console.log("change = 2" )
+  //console.log("change = 2" )
 
 
     if (flagMemberExist===false){
@@ -247,7 +324,7 @@ module.exports = {
     }
     // ---------- Network Member-----------
 
-    console.log("change = 2.5",authorInfo.network )
+  //console.log("change = 2.5",authorInfo.network )
     // ---------- Network Author-----------
     let networkAuthor
     flagMemberExist = false
@@ -256,7 +333,7 @@ module.exports = {
         flagMemberExist = true
       } 
     })
-    console.log("change = 2.7" )
+  //console.log("change = 2.7" )
 
     if (flagMemberExist===false){
       networkAuthor = authorInfo.network.concat({memberID: member._id})
@@ -266,7 +343,7 @@ module.exports = {
     // ---------- Network Author-----------
 
 
-    console.log("change = 3" )
+  //console.log("change = 3" )
     
 
     let updateMembers = skill.members
@@ -280,8 +357,8 @@ module.exports = {
         updateMembers.push(member._id)
     }
 
-    console.log("change = 4" ,updatedSkills)
-    console.log("change = 4" ,networkMember)
+  //console.log("change = 4" ,updatedSkills)
+  //console.log("change = 4" ,networkMember)
 
     let newMember,newSkill
     if (makeAnUpdate){
@@ -296,7 +373,7 @@ module.exports = {
             {new: true}
         )
 
-        console.log("change = 5" )
+      //console.log("change = 5" )
 
         authorInfo = await Members.findOneAndUpdate(
             {_id: authorInfo._id},
@@ -308,7 +385,7 @@ module.exports = {
             {new: true}
         )
 
-          console.log("change = 6" )
+        //console.log("change = 6" )
 
 
         skill= await Skills.findOneAndUpdate(
@@ -323,10 +400,10 @@ module.exports = {
 
       }
       
-      console.log("member = " , member)
+    //console.log("member = " , member)
 
-      console.log("networkAuthor 22 - = " , networkAuthor)
-      console.log("authorInfo 22 - = " , authorInfo)
+    //console.log("networkAuthor 22 - = " , networkAuthor)
+    //console.log("authorInfo 22 - = " , authorInfo)
 
     member = {
       ...member._doc,

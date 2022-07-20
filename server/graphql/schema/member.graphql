@@ -24,12 +24,12 @@ module.exports = `
 
         previusProjects: [previusProjectsType],
 
-        attribute: [attributeType],
+        attributes: attributesType,
 
 
     }
 
-    type attributeType {
+    type attributesType {
         organization: Int,
         collaboration: Int,
         management: Int,
@@ -52,8 +52,9 @@ module.exports = `
     type projectMemberType {
         info: Project,
         role: roleType,
-        champion: Boolean
-        phase: phaseType
+        champion: Boolean,
+        phase: phaseType,
+        favorite: Boolean,
     }
     
 
@@ -99,13 +100,19 @@ module.exports = `
 
     }
 
+    input addFavoriteProjectInput {
+        memberID: ID
+        projectID: ID
+        favorite: Boolean
+    }
+
     input endorseAttributeInput {
         _id: ID
-        attribute: attributeEnum
+        attribute: attributesEnum
 
     }
 
-    enum attributeEnum {
+    enum attributesEnum {
         organization
         collaboration
         management
