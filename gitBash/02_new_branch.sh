@@ -11,7 +11,7 @@ read MESSAGE
 
 
 if [[ $MESSAGE == "n" || $MESSAGE == "N" ]]; then
-        MESSAGE=$OUTPUT
+        MESSAGE=$git_branch
 fi
 
 echo "${MESSAGE}"
