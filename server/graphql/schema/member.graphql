@@ -156,17 +156,17 @@ module.exports = `
     }
 
     input networkInput {
-        memberID: String
+        memberID: ID
         endorcment: [endorcmentInput]
     }
 
     input endorcmentInput {
-        skillID: String
+        skillID: ID
         registeredAt: String
     }
 
     input skillsUpdateMemberInput {
-        skillID: String
+        skillID: ID
         authors: String
         communityLevel: Float
         selfEndorsedLevel: Float
@@ -174,9 +174,9 @@ module.exports = `
 
 
     input addSkillToMember_Input {
-        skillID: String
-        memberID: String
-        authorID: String
+        skillID: ID
+        memberID: ID
+        authorID: ID
     }
 
     
