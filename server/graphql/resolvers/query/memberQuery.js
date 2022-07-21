@@ -96,6 +96,7 @@ module.exports = {
       // console.log("membersMatch_User = " , membersMatch_User)
 
 
+      let memberMatch
       let memberMatch_Result = []
       for (let i = 0; i < membersMatch_User.length; i++) {
         memberMatch = membersMatch_User[i]
@@ -127,7 +128,7 @@ module.exports = {
       );
     }
   },
-  matchMembersToSkill: async (parent, args, context, info) => {
+  matchMembersToSkills: async (parent, args, context, info) => {
        
     const {skillsID} = args.fields;
 
@@ -137,52 +138,30 @@ module.exports = {
      
     try {
 
-      // let memberData
 
-      // memberData = await Members.findOne({ _id: memberID })
+      let membersMatch_User = await Members.find({ 'skills.id':skillsID}) // Find the members that have the same skill
 
-      // // console.log("memberData = " , memberData)
-      
-      // if (!memberData) throw new ApolloError("The member need to exist on the database ");
+    
+      let memberMatch
+      let memberMatch_Result = []
+      for (let i = 0; i < membersMatch_User.length; i++) {
+        memberMatch = membersMatch_User[i]
 
-      
+        skill_memberMatch = memberMatch.skills.map(skill => skill.id)
 
-      // skillsArray_user = memberData.skills.map(skill => skill.id) // separate all teh skills
-
-      // // console.log("skillsArray_user = " , skillsArray_user)
-
-      // let membersMatch_User = await Members.find({ 'skills.id':skillsArray_user}) // Find the members that have the same skill
-
-      
-      // //filter out my user
-      // membersMatch_User = membersMatch_User.filter(member => member._id != memberID )
-
-      // // console.log("membersMatch_User = " , membersMatch_User)
+        filteredSkillArray = skillsID.filter(skill => skill_memberMatch.includes(skill))
 
 
-      // let memberMatch_Result = []
-      // for (let i = 0; i < membersMatch_User.length; i++) {
-      //   memberMatch = membersMatch_User[i]
 
-      //   skill_memberMatch = memberMatch.skills.map(skill => skill.id)
+        memberMatch_Result.push({
+          member: memberMatch,
+          matchPersentage: (filteredSkillArray.length/skillsID.length)*100,
+          commonSkills: filteredSkillArray
+        })
 
-      //   filteredSkillArray = skillsArray_user.filter(skill => skill_memberMatch.includes(skill))
+      }
 
-
-      //   // console.log("filteredSkillArray = " , filteredSkillArray)
-      //   // console.log("skillsArray_user = " , skillsArray_user)
-      //   // console.log("skill_memberMatch = " , skill_memberMatch)
-
-
-      //   memberMatch_Result.push({
-      //     member: memberMatch,
-      //     matchPersentage: (filteredSkillArray.length/skillsArray_user.length)*100,
-      //     commonSkills: filteredSkillArray
-      //   })
-
-      // }
-
-      return [{}]
+      return memberMatch_Result
     } catch (err) {
       throw new ApolloError(
         err.message,

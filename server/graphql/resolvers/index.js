@@ -1,6 +1,6 @@
 const { Query } = require('./query');
 const { Mutation } = require('./mutation');
-const { Members,matchMembersToUserOutput } = require('./objectResolvers/memberResolver');
+const { Members,matchMembersToUserOutput,matchMembersToSkillOutput } = require('./objectResolvers/memberResolver');
 const { Project,teamType,roleType,skillRoleType,
     tweetsProject,
     tweetsType,
@@ -13,7 +13,7 @@ const { SkillCategory } = require('./objectResolvers/skillCategoryResolver');
 module.exports = {
     Query,
     Mutation,
-    Members,matchMembersToUserOutput,
+    Members,matchMembersToUserOutput,matchMembersToSkillOutput,
     Project,teamType,roleType,skillRoleType,
     tweetsProject,tweetsType,
     Skills,

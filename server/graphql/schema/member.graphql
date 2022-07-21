@@ -70,6 +70,13 @@ module.exports = `
         commonSkills: [Skills]
     }
 
+    type matchMembersToSkillOutput {
+        matchPersentage: Float,
+        member: Members,
+        commonSkills: [Skills]
+    }
+
+
    
     
 
