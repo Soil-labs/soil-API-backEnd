@@ -145,7 +145,7 @@ module.exports = {
         }
         projectMatch.push({
           projectData: projectN,
-          matchPersentage: (matchNum/skillsArray.length)*100,
+          matchPercentage: (matchNum/skillsArray.length)*100,
           role: projectN.role[roleIndex]
         })
       }

@@ -65,13 +65,13 @@ module.exports = `
     }
 
     type matchMembersToUserOutput {
-        matchPersentage: Float,
+        matchPercentage: Float,
         member: Members,
         commonSkills: [Skills]
     }
 
     type matchMembersToSkillOutput {
-        matchPersentage: Float,
+        matchPercentage: Float,
         member: Members,
         commonSkills: [Skills]
     }

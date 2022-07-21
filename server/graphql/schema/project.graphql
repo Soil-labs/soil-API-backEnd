@@ -93,7 +93,7 @@ module.exports = `
 
     type projectMatchType {
         projectData: Project
-        matchPersentage: Float
+        matchPercentage: Float
         role: roleType
     }
 

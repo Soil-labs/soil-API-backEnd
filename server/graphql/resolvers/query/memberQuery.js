@@ -113,7 +113,7 @@ module.exports = {
 
         memberMatch_Result.push({
           member: memberMatch,
-          matchPersentage: (filteredSkillArray.length/skillsArray_user.length)*100,
+          matchPercentage: (filteredSkillArray.length/skillsArray_user.length)*100,
           commonSkills: filteredSkillArray
         })
 
@@ -155,7 +155,7 @@ module.exports = {
 
         memberMatch_Result.push({
           member: memberMatch,
-          matchPersentage: (filteredSkillArray.length/skillsID.length)*100,
+          matchPercentage: (filteredSkillArray.length/skillsID.length)*100,
           commonSkills: filteredSkillArray
         })
 
