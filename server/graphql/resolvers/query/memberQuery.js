@@ -127,6 +127,70 @@ module.exports = {
       );
     }
   },
+  matchMembersToSkill: async (parent, args, context, info) => {
+       
+    const {skillsID} = args.fields;
+
+    if (!skillsID) throw new ApolloError("skillsID is required");
+    
+
+     
+    try {
+
+      // let memberData
+
+      // memberData = await Members.findOne({ _id: memberID })
+
+      // // console.log("memberData = " , memberData)
+      
+      // if (!memberData) throw new ApolloError("The member need to exist on the database ");
+
+      
+
+      // skillsArray_user = memberData.skills.map(skill => skill.id) // separate all teh skills
+
+      // // console.log("skillsArray_user = " , skillsArray_user)
+
+      // let membersMatch_User = await Members.find({ 'skills.id':skillsArray_user}) // Find the members that have the same skill
+
+      
+      // //filter out my user
+      // membersMatch_User = membersMatch_User.filter(member => member._id != memberID )
+
+      // // console.log("membersMatch_User = " , membersMatch_User)
+
+
+      // let memberMatch_Result = []
+      // for (let i = 0; i < membersMatch_User.length; i++) {
+      //   memberMatch = membersMatch_User[i]
+
+      //   skill_memberMatch = memberMatch.skills.map(skill => skill.id)
+
+      //   filteredSkillArray = skillsArray_user.filter(skill => skill_memberMatch.includes(skill))
+
+
+      //   // console.log("filteredSkillArray = " , filteredSkillArray)
+      //   // console.log("skillsArray_user = " , skillsArray_user)
+      //   // console.log("skill_memberMatch = " , skill_memberMatch)
+
+
+      //   memberMatch_Result.push({
+      //     member: memberMatch,
+      //     matchPersentage: (filteredSkillArray.length/skillsArray_user.length)*100,
+      //     commonSkills: filteredSkillArray
+      //   })
+
+      // }
+
+      return [{}]
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
   
 
   

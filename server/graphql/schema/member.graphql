@@ -85,6 +85,9 @@ module.exports = `
     input matchMembersToUserInput {
         memberID: ID
     }
+    input matchMembersToSkillInput {
+        skillsID: [ID]
+    }
 
     input addNewMemberInput {
         _id: ID
