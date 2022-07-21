@@ -153,5 +153,36 @@ module.exports = {
          }
       }
    },
+   matchMembersToUserOutput: {
+      commonSkills: async (parent, args, context, info) => {
+         console.log("parent 22322= " , parent)
+
+         try {
+            const skillsID = parent.commonSkills;
+
+
+            skillData = await Skills.find({
+               $and: [
+                 { _id: skillsID },
+                 { state: "approved" },
+               ]})
+            
+
+
+
+            return skillData;
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > skills',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+   }
    
 };

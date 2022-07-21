@@ -64,6 +64,16 @@ module.exports = `
         points: Float,
     }
 
+    type matchMembersToUserOutput {
+        matchPersentage: Float,
+        member: Members,
+        commonSkills: [Skills]
+    }
+
+   
+    
+
+
 
     input findMemberInput {
         _id: ID
@@ -71,6 +81,9 @@ module.exports = `
 
     input findMembersInput {
         _id: [ID]
+    }
+    input matchMembersToUserInput {
+        memberID: ID
     }
 
     input addNewMemberInput {

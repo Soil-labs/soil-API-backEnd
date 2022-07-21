@@ -15,6 +15,7 @@ module.exports = `
           #  ---------- MEMBER QUERY -------
             findMember(fields:findMemberInput): Members
             findMembers(fields:findMembersInput): [Members]
+            matchMembersToUser(fields:matchMembersToUserInput): [matchMembersToUserOutput]
 
           #  ---------- SKILL QUERY -------
             findSkill(fields:findSkillInput): Skills
