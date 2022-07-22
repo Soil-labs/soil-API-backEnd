@@ -6,16 +6,28 @@ const {ApolloError} = require("apollo-server-express");
 module.exports = {
   createSkill: async (parent, args, context, info) => {
    
-  const {name} = args.fields;
+  const {name,state} = args.fields;
 
 
   if (!name) throw new ApolloError( "You need to specify the name of the skill");
 
   let fields = {
     name,
-    state: "waiting",
     registeredAt: new Date(),
   };
+
+  if (state){ 
+    fields = {
+      ...fields,
+      state,
+    }
+  } else {
+    fields = {
+      ...fields,
+      state: "waiting",
+    }
+  }
+  
 
 
 
