@@ -22,7 +22,12 @@ module.exports = `
 
     input createSkillInput {
         name: String
+        state: approvedSkillEnum 
+    }
 
+    input createSkillsInput {
+        names: [String]
+        state: approvedSkillEnum 
     }
 
     input createApprovedSkillInput {

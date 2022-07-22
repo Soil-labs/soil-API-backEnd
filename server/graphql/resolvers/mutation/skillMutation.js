@@ -56,6 +56,69 @@ module.exports = {
       );
     }
   },
+  createSkills: async (parent, args, context, info) => {
+   
+    const {names,state} = args.fields;
+  
+  
+    if (!names) throw new ApolloError( "You need to specify the names of the skill");
+  
+    
+     
+  
+    try {
+
+        let skillData
+
+        let allSkills = []
+
+        let fields
+        let name
+      
+        for (i=0;i<names.length;i++){
+          name = names[i]
+
+          if (name){
+            fields = {
+              name,
+              registeredAt: new Date(),
+            };
+          
+            if (state){ 
+              fields = {
+                ...fields,
+                state,
+              }
+            } else {
+              fields = {
+                ...fields,
+                state: "waiting",
+              }
+            }
+
+            skillData = await Skills.findOne({ name: name })
+
+
+            if (!skillData ){
+              skillData = await new Skills(fields);
+              
+              skillData.save()
+
+            }
+
+            allSkills.push(skillData)
+          }
+        }
+  
+        return allSkills
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > addNewMember"}
+        );
+      }
+    },
   createApprovedSkill: async (parent, args, context, info) => {
     // Be careful only Admins can created preapproved skills
    
