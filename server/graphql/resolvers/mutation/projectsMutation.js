@@ -259,10 +259,58 @@ module.exports = {
 
       return projectDataUpdate
 
-      // return { 
-      //   numTweets: projectDataUpdate.tweets.length,
-      //   tweets: projectDataUpdate.tweets
-      // }
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+
+
+  changeTeamMember_Phase_Project: async (parent, args, context, info) => {
+   
+
+    const {projectID,memberID,phase} = JSON.parse(JSON.stringify(args.fields))
+
+    
+    if (!projectID) throw new ApolloError( "you need to specify a project ID");
+    if (!memberID) throw new ApolloError( "you need to specify a tweet ID");
+    if (phase==null) throw new ApolloError( "you need to specify if the tweet is approved or not");
+
+    console.log("projectID,memberID,phase = " , projectID,memberID,phase)
+
+    try {
+
+
+      let projectData = await Projects.findOne({ _id: projectID })
+
+      if (!projectData) throw new ApolloError( "This project dont exist you need to choose antoher project");
+
+      projectData.team.forEach(member => {
+      console.log("member = " , member)
+        if (member.memberID == memberID){
+          member.phase = phase
+          console.log("tuba = " )
+        }
+      })
+
+      // console.log("projectData = " , projectData)
+
+
+        projectDataUpdate = await Projects.findOneAndUpdate(
+          {_id: projectID},
+          {
+              $set: {team: projectData.team }
+          },
+          {new: true}
+      )
+
+
+      return projectDataUpdate
+
+      
     } catch (err) {
       throw new ApolloError(
         err.message,

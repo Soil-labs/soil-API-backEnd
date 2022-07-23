@@ -111,6 +111,14 @@ module.exports = `
         approved: Boolean,
     }
 
+    input changeTeamMember_Phase_ProjectInput {
+        projectID: ID
+        memberID: ID
+        phase: phaseType,
+    }
+
+    
+
 
 
     input updateProjectInput {
