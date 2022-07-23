@@ -76,24 +76,21 @@ module.exports = {
       let memberData
 
       memberData = await Members.findOne({ _id: memberID })
-
-      // console.log("memberData = " , memberData)
+      
       
       if (!memberData) throw new ApolloError("The member need to exist on the database ");
 
       
 
       skillsArray_user = memberData.skills.map(skill => skill.id) // separate all teh skills
-
-      // console.log("skillsArray_user = " , skillsArray_user)
+      
 
       let membersMatch_User = await Members.find({ 'skills.id':skillsArray_user}) // Find the members that have the same skill
 
       
       //filter out my user
       membersMatch_User = membersMatch_User.filter(member => member._id != memberID )
-
-      // console.log("membersMatch_User = " , membersMatch_User)
+      
 
 
       let memberMatch
@@ -106,11 +103,6 @@ module.exports = {
         filteredSkillArray = skillsArray_user.filter(skill => skill_memberMatch.includes(skill))
 
 
-        // console.log("filteredSkillArray = " , filteredSkillArray)
-        // console.log("skillsArray_user = " , skillsArray_user)
-        // console.log("skill_memberMatch = " , skill_memberMatch)
-
-
         memberMatch_Result.push({
           member: memberMatch,
           matchPercentage: (filteredSkillArray.length/skillsArray_user.length)*100,
@@ -118,6 +110,8 @@ module.exports = {
         })
 
       }
+
+      memberMatch_Result.sort((a,b) => (a.matchPercentage < b.matchPercentage) ? 1 : -1)
 
       return memberMatch_Result
     } catch (err) {
