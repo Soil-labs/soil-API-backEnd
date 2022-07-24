@@ -198,8 +198,11 @@ module.exports = {
 
       if (!membersData ) throw new ApolloError("Member not found")
 
+      console.log("membersData.attributes = " , membersData.attributes)
+      console.log("membersData.attributes = " , membersData.attributes.organization)
+
       let newAttributes
-      if (!membersData.attributes) {
+      if (!membersData.attributes || !membersData.attributes.organization) {
         console.log("change = 1" )
         newAttributes = {
           organization: 0,
@@ -214,7 +217,7 @@ module.exports = {
 
         newAttributes[attribute] = 1
 
-        membersData = await Members.findOneAndUpdate({ _id: fields._id }, { attribute: newAttributes }, { new: true });
+        membersData = await Members.findOneAndUpdate({ _id: fields._id }, { attributes: newAttributes }, { new: true });
       } else {
         console.log("change = 2" )
         newAttributes = {...membersData.attributes}

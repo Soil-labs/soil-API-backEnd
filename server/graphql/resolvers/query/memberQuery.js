@@ -87,13 +87,18 @@ module.exports = {
 
       let membersMatch_User = await Members.find({ 'skills.id':skillsArray_user}) // Find the members that have the same skill
 
+      if (membersMatch_User.length == 0){
+        membersMatch_User = await Members.find({})
+        membersMatch_User = membersMatch_User.slice(0, 4)
+
+      }
       
       //filter out my user
       membersMatch_User = membersMatch_User.filter(member => member._id != memberID )
       
 
 
-      let memberMatch
+      let memberMatch,matchPercentage
       let memberMatch_Result = []
       for (let i = 0; i < membersMatch_User.length; i++) {
         memberMatch = membersMatch_User[i]
@@ -102,10 +107,15 @@ module.exports = {
 
         filteredSkillArray = skillsArray_user.filter(skill => skill_memberMatch.includes(skill))
 
+        if (skillsArray_user.length>0){
+          matchPercentage = (filteredSkillArray.length/skillsArray_user.length)*100
+        } else {
+          matchPercentage = 0
+        }
 
         memberMatch_Result.push({
           member: memberMatch,
-          matchPercentage: (filteredSkillArray.length/skillsArray_user.length)*100,
+          matchPercentage: matchPercentage,
           commonSkills: filteredSkillArray
         })
 
