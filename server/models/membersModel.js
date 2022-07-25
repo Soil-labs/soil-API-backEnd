@@ -57,14 +57,14 @@ const memberSchema = mongoose.Schema({
   attributes: {
     totalVotes: Number,
 
-    organization: Number,
-    collaboration: Number,
-    management: Number,
-    ownership: Number,
-    flexibility: Number,
-    decisiveness: Number,
-    empathy: Number,
-    leadership: Number,
+    Director: Number,
+    Motivator: Number,
+    Inspirer: Number,
+    Helper: Number,
+    Supporter: Number,
+    Coordinator: Number,
+    Observer: Number,
+    Reformer: Number,
   },
 
   network: [{

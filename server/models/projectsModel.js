@@ -39,6 +39,7 @@ const projectSchema = mongoose.Schema({
 
 
   tweets: [{
+    title: String,
     content: String,
     author: String,
     registeredAt: Date,

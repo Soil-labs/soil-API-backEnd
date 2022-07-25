@@ -39,14 +39,14 @@ module.exports = {
 
       if (!membersData){
         let newAttributes = {
-          organization: 0,
-          collaboration: 0,
-          management: 0,
-          ownership: 0,
-          flexibility: 0,
-          decisiveness: 0,
-          empathy: 0,
-          leadership: 0,
+          Director: 0,
+          Motivator: 0,
+          Inspirer: 0,
+          Helper: 0,
+          Supporter: 0,
+          Coordinator: 0,
+          Observer: 0,
+          Reformer: 0,
         }
     
         fields = {...fields, attributes: newAttributes};
@@ -99,14 +99,14 @@ module.exports = {
     //console.log("change = 1" )
       if (!membersData ){
         let newAttributes = {
-          organization: 0,
-          collaboration: 0,
-          management: 0,
-          ownership: 0,
-          flexibility: 0,
-          decisiveness: 0,
-          empathy: 0,
-          leadership: 0,
+          Director: 0,
+          Motivator: 0,
+          Inspirer: 0,
+          Helper: 0,
+          Supporter: 0,
+          Coordinator: 0,
+          Observer: 0,
+          Reformer: 0,
         }
     
         fields = {...fields, attributes: newAttributes};
@@ -199,20 +199,23 @@ module.exports = {
       if (!membersData ) throw new ApolloError("Member not found")
 
       console.log("membersData.attributes = " , membersData.attributes)
-      console.log("membersData.attributes = " , membersData.attributes.organization)
+      console.log("membersData.attributes = " , membersData.attributes.Director)
+      console.log("membersData.attributes = " , !membersData.attributes)
+      console.log("membersData.attributes = " ,  membersData.attributes.Director==undefined)
+      console.log("membersData.attributes = " , !membersData.attributes || membersData.attributes.Director!=undefined)
 
       let newAttributes
-      if (!membersData.attributes || !membersData.attributes.organization) {
+      if (!membersData.attributes || membersData.attributes.Director==undefined) {
         console.log("change = 1" )
         newAttributes = {
-          organization: 0,
-          collaboration: 0,
-          management: 0,
-          ownership: 0,
-          flexibility: 0,
-          decisiveness: 0,
-          empathy: 0,
-          leadership: 0,
+          Director: 0,
+          Motivator: 0,
+          Inspirer: 0,
+          Helper: 0,
+          Supporter: 0,
+          Coordinator: 0,
+          Observer: 0,
+          Reformer: 0,
         }
 
         newAttributes[attribute] = 1

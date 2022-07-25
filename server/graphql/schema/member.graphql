@@ -30,14 +30,14 @@ module.exports = `
     }
 
     type attributesType {
-        organization: Int,
-        collaboration: Int,
-        management: Int,
-        ownership: Int,
-        flexibility: Int,
-        decisiveness: Int,
-        empathy: Int,
-        leadership: Int,
+        Director: Int,
+        Motivator: Int,
+        Inspirer: Int,
+        Helper: Int,
+        Supporter: Int,
+        Coordinator: Int,
+        Observer: Int,
+        Reformer: Int,
     }
 
     type previusProjectsType {
@@ -136,14 +136,14 @@ module.exports = `
     }
 
     enum attributesEnum {
-        organization
-        collaboration
-        management
-        ownership
-        flexibility
-        decisiveness
-        empathy
-        leadership
+        Director
+        Motivator
+        Inspirer
+        Helper
+        Supporter
+        Coordinator
+        Observer
+        Reformer
     }
 
      input previusProjectsInput {

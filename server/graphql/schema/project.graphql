@@ -69,6 +69,7 @@ module.exports = `
     
     type tweetsType {
         _id: ID
+        title: String
         content: String
         author: Members
         registeredAt: String
@@ -99,7 +100,8 @@ module.exports = `
 
     
     input newTweetProjectInput {
-        projectID: ID
+        projectID: ID,
+        title: String,
         content: String,
         author: String,
         approved: Boolean,

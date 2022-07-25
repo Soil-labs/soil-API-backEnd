@@ -147,14 +147,13 @@ module.exports = {
   newTweetProject: async (parent, args, context, info) => {
    
 
-    let {projectID,content,author,approved} = JSON.parse(JSON.stringify(args.fields))
+    let {projectID,title,content,author,approved} = JSON.parse(JSON.stringify(args.fields))
 
     
     if (!projectID) throw new ApolloError( "you need to specify a project ID");
+    if (!title) throw new ApolloError( "you need to specify title");
     if (!content) throw new ApolloError( "you need to specify content");
     if (!author) throw new ApolloError( "you need to specify author ID");
-
-  //console.log("approved = " , approved)
 
 
     var ObjectId = require('mongoose').Types.ObjectId;
@@ -167,14 +166,12 @@ module.exports = {
 
     
     let fields = {
+      title,
       content,
       author,
       approved,
       registeredAt: new Date(),
     }
-
-
-
 
 
     try {
@@ -189,17 +186,14 @@ module.exports = {
       if (!memberData) throw new ApolloError( "The author dont exist on the database you need to choose antoher author ID");
 
       
-      
       projectData.tweets.push(fields)
 
-      
-
-        projectDataUpdate = await Projects.findOneAndUpdate(
-          {_id: projectData._id},
-          {
-              $set: {tweets: projectData.tweets }
-          },
-          {new: true}
+      projectDataUpdate = await Projects.findOneAndUpdate(
+        {_id: projectData._id},
+        {
+            $set: {tweets: projectData.tweets }
+        },
+        {new: true}
       )
 
 
