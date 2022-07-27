@@ -2,6 +2,7 @@
 const { Skills } = require("../../../models/skillsModel");
 const {Projects} = require("../../../models/projectsModel");
 const {Members} = require("../../../models/membersModel");
+const {Team} = require("../../../models/teamModal");
 
 
 const {
@@ -152,6 +153,36 @@ module.exports = {
 
 
       return projectMatch
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findSkill"}
+      );
+    }
+  },
+
+  findTeams: async (parent, args, context, info) => {
+   
+    const {_id} = args.fields;
+    
+
+    try {
+
+      let teamData
+      if (_id) {
+        teamData = await Team.find({ _id: _id })
+      } else {
+        
+
+        teamData = await Team.find({})
+      }
+
+
+      
+
+
+      return teamData
     } catch (err) {
       throw new ApolloError(
         err.message,

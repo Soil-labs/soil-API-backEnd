@@ -17,6 +17,7 @@ module.exports = `
         newTweetProject(fields:newTweetProjectInput!):tweetsProject
         approveTweet(fields:approveTweetInput!):Project
         changeTeamMember_Phase_Project(fields:changeTeamMember_Phase_ProjectInput!):Project
+        createNewTeam(fields:createNewTeamInput!):Team
 
         #  ---------- SKILL MUTATIONS -------
         createSkill(fields:createSkillInput): Skills
@@ -33,6 +34,8 @@ module.exports = `
         updateSkillCategory(fields:updateSkillCategoryInput): SkillCategory
 
 
+        #  ---------- SKILL CATEGORY MUTATIONS -------
+        createProjectUpdate(fields:createProjectUpdateInput!):ProjectUpdate
 
     }
 `

@@ -23,6 +23,17 @@ module.exports = `
 
     }
 
+    type Team {
+        _id: ID
+        name: String
+        description: String
+
+        serverID: String,
+        projects: Project,
+        members: [Members]
+        champion: [Members]
+    }
+
 
     type teamType {
         memberInfo: Members
@@ -119,6 +130,17 @@ module.exports = `
         phase: phaseType,
     }
 
+    input createNewTeamInput {
+        _id: ID
+        name: String
+        description: String
+
+        serverID: String,
+        projectID: String,
+        memberID: [String]
+        championID: [String]
+    }
+
     
 
 
@@ -206,6 +228,10 @@ module.exports = `
     }
     input findProjects_RecommendedToUserInput {
         memberID: ID
+    }
+
+    input findTeamsInput {
+        _id: [ID]
     }
 
     

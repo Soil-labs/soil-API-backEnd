@@ -193,4 +193,72 @@ module.exports = {
            }
         },
    },
+   Team: {
+      projects: async (parent, args, context, info) => {
+  
+         // console.log("parent = " ,parent)
+           try {
+              const projectID = parent.projectID;
+  
+              projectData = await Projects.findOne({_id: projectID})
+  
+  
+              return projectData;
+  
+           } catch (err) {
+              throw new ApolloError(
+                 err.message,
+                 err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                 {
+                    component: 'userResolver > members',
+                    user: context.req.user?._id,
+                 }
+              );
+           }
+        },
+        members: async (parent, args, context, info) => {
+  
+         // console.log("parent = " ,parent)
+           try {
+              const memberID = parent.memberID;
+  
+              memberData = await Members.find({_id: memberID})
+  
+  
+              return memberData;
+  
+           } catch (err) {
+              throw new ApolloError(
+                 err.message,
+                 err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                 {
+                    component: 'userResolver > members',
+                    user: context.req.user?._id,
+                 }
+              );
+           }
+        },
+        champion: async (parent, args, context, info) => {
+  
+         console.log("parent = " ,parent)
+           try {
+              const championID = parent.championID;
+  
+              memberData = await Members.find({_id: championID})
+  
+  
+              return memberData;
+  
+           } catch (err) {
+              throw new ApolloError(
+                 err.message,
+                 err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                 {
+                    component: 'userResolver > members',
+                    user: context.req.user?._id,
+                 }
+              );
+           }
+        },
+   },
 };

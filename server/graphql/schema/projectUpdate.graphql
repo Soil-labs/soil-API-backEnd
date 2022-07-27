@@ -1,0 +1,36 @@
+module.exports = `
+    
+
+
+    type ProjectUpdate {
+        _id: ID
+        title: String
+        content: String
+
+        serverID: String,
+        projects: Project,
+        members: [Members]
+        author: Members
+        projectTeam: [Team]
+    }
+
+
+    
+
+    input createProjectUpdateInput {
+        _id: ID
+        title: String
+        content: String
+
+        serverID: String,
+        projectID: String,
+        memberID: [String]
+        authorID: String
+        projectTeamID: [String]
+    }
+
+    
+
+    
+
+`

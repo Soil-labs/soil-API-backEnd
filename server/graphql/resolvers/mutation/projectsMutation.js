@@ -1,9 +1,11 @@
 
 const { Projects } = require("../../../models/projectsModel");
+const { Team } = require("../../../models/teamModal");
 const { Members } = require("../../../models/membersModel");
 
 
 const {ApolloError} = require("apollo-server-express");
+const { TeamMember } = require("discord.js");
 
 
 module.exports = {
@@ -151,8 +153,8 @@ module.exports = {
 
     
     if (!projectID) throw new ApolloError( "you need to specify a project ID");
-    if (!title) throw new ApolloError( "you need to specify title");
-    if (!content) throw new ApolloError( "you need to specify content");
+    // if (!title) throw new ApolloError( "you need to specify title");
+    // if (!content) throw new ApolloError( "you need to specify content");
     if (!author) throw new ApolloError( "you need to specify author ID");
 
 
@@ -305,6 +307,68 @@ module.exports = {
       return projectDataUpdate
 
       
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+
+
+  createNewTeam: async (parent, args, context, info) => {
+   
+
+    
+    const {_id,name,description,memberID,projectID,serverID,championID} = JSON.parse(JSON.stringify(args.fields))
+
+    // _id is only if you want to update a team
+    if (!name) throw new ApolloError( "you need to specify a name");
+    if (!projectID) throw new ApolloError( "you need to specify a project ID");
+    
+    
+    let fields = {
+      projectID,
+      name,
+      registeredAt: new Date(),
+    }
+
+    if (_id) fields =  {...fields,_id}
+    if (description) fields =  {...fields,description}
+    if (memberID) fields =  {...fields,memberID}
+    if (serverID) fields =  {...fields,serverID}
+    if (championID) fields =  {...fields,championID}
+
+    console.log("change = 1" )
+
+    try {
+      if (fields._id) {
+      console.log("change = 2" )
+
+        let membersData = await Team.findOne({ _id: fields._id })
+
+        if (membersData){
+          console.log("change = 3" )
+
+          membersData = await Team.findOneAndUpdate(
+            {_id: fields._id},fields,
+            {new: true}
+        )
+
+
+          return (membersData)
+
+        }
+      }
+    console.log("change = 4" )
+
+
+      let membersData = await new Team(fields).save()
+      
+
+
+      return (membersData)
     } catch (err) {
       throw new ApolloError(
         err.message,
