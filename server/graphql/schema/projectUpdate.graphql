@@ -11,7 +11,8 @@ module.exports = `
         projects: Project,
         members: [Members]
         author: Members
-        projectTeam: [Team]
+        team: [Team]
+        registeredAt: String
     }
 
 
@@ -26,7 +27,14 @@ module.exports = `
         projectID: String,
         memberID: [String]
         authorID: String
-        projectTeamID: [String]
+        teamID: [String]
+    }
+
+    input findProjectUpdatesINPUT {
+        _id: ID
+        projectID: [String],
+        memberID: [String]
+        teamID: [String]
     }
 
     

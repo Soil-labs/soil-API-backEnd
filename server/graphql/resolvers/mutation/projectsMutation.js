@@ -354,14 +354,13 @@ module.exports = {
           membersData = await Team.findOneAndUpdate(
             {_id: fields._id},fields,
             {new: true}
-        )
+          )
 
 
           return (membersData)
 
         }
       }
-    console.log("change = 4" )
 
 
       let membersData = await new Team(fields).save()

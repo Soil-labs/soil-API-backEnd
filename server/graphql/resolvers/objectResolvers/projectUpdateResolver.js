@@ -80,15 +80,16 @@ module.exports = {
               );
            }
         },
-        projectTeam: async (parent, args, context, info) => {
-         console.log("parent = " , parent)
+        team: async (parent, args, context, info) => {
+         console.log("parent = 22" , parent)
   
            try {
-              const projectTeamID = parent.projectTeamID;
+              const teamID = parent.teamID;
   
   
-              teamData = await Team.findOne({_id: projectTeamID})
+              teamData = await Team.find({_id: teamID})
   
+              console.log("teamData = " , teamData)
   
   
               return teamData;

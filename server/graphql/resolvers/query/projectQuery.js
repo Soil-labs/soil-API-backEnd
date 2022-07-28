@@ -164,8 +164,23 @@ module.exports = {
 
   findTeams: async (parent, args, context, info) => {
    
-    const {_id} = args.fields;
+    const {_id,projectID} = args.fields;
     
+    let fields = {};
+
+    if (projectID) {
+      fields = {
+        ...fields,
+        projectID: projectID
+      }
+    }
+
+    if (_id) {
+      fields = {
+        ...fields,
+        _id: _id
+      }
+    }
 
     try {
 
@@ -173,10 +188,11 @@ module.exports = {
       if (_id) {
         teamData = await Team.find({ _id: _id })
       } else {
-        
-
-        teamData = await Team.find({})
+        teamData = await Team.find(fields)
       }
+
+      console.log("fields = " , fields)
+      console.log("teamData = " , teamData)
 
 
       
