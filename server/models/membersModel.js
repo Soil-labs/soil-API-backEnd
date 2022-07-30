@@ -21,8 +21,11 @@ const memberSchema = mongoose.Schema({
   discordAvatar: String,
   discriminator: String,
   bio: String,
+  interest:String,
 
   hoursPerWeek: Number,
+  timeZone: String,
+
 
 
   tweets: [String],
@@ -31,6 +34,10 @@ const memberSchema = mongoose.Schema({
     authors: [String],
     communityLevel: Number,
     selfEndorsedLevel: Number,
+    level: {
+      type: String,
+      enum: ["learning", "junior","mid","senior"],
+    },
   }],
   projects: [{
     projectID: mongoose.Schema.ObjectId,

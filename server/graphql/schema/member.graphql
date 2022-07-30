@@ -9,13 +9,16 @@ module.exports = `
         discordAvatar: String
         discriminator: String
         bio: String
+        interest: String
+        timeZone: String
+        level: levelEnum
 
         hoursPerWeek: Float,
 
 
 
         tweets: [String],
-        skills: [Skills],
+        skills: [skillType_member],
         projects: [projectMemberType],
         archiveProjects: [String],
         network: [Members],
@@ -25,8 +28,12 @@ module.exports = `
         previusProjects: [previusProjectsType],
 
         attributes: attributesType,
+    }
 
-
+    type skillType_member  {
+        skillInfo: Skills
+        level: levelEnum
+        author: Members
     }
 
     type attributesType {
@@ -116,11 +123,20 @@ module.exports = `
         discordAvatar: String
         discriminator: String
         bio: String
+        interest: String
+        timeZone: String
+        skills: [skillInput_member]
+        
 
         hoursPerWeek: Float,
 
         previusProjects: [previusProjectsInput],
 
+    }
+
+    input skillInput_member {
+        id: ID
+        level: levelEnum
     }
 
     input addFavoriteProjectInput {
@@ -144,6 +160,13 @@ module.exports = `
         Coordinator
         Observer
         Reformer
+    }
+
+    enum levelEnum {
+        learning
+        junior
+        mid
+        senior
     }
 
      input previusProjectsInput {

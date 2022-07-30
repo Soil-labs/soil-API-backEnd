@@ -74,7 +74,9 @@ module.exports = {
   updateMember: async (parent, args, context, info) => {
    
 
-    const {discordName,_id,discordAvatar,discriminator,bio,hoursPerWeek,previusProjects} = args.fields;
+    const {discordName,_id,discordAvatar,discriminator,bio,
+      hoursPerWeek,previusProjects,
+      interest,timeZone,level,skills} = args.fields;
 
     if (!_id) throw new ApolloError( "_id is required");
 
@@ -89,6 +91,10 @@ module.exports = {
     if (bio) fields =  {...fields,bio}
     if (hoursPerWeek) fields =  {...fields,hoursPerWeek}
     if (previusProjects) fields =  {...fields,previusProjects}
+    if (interest) fields =  {...fields,interest}
+    if (timeZone) fields =  {...fields,timeZone}
+    if (level) fields =  {...fields,level}
+    if (skills) fields =  {...fields,skills}
 
     
 
@@ -122,7 +128,9 @@ module.exports = {
       //console.log("change = 2" )
       }
 
-    //console.log("membersData = " , membersData)
+    //   console.log("fields = " , fields)
+
+    // console.log("membersData = " , membersData)
 
       return membersData
     } catch (err) {

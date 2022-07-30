@@ -29,8 +29,9 @@ module.exports = {
 
             skillData_withAuthors = skillData.map((skillD,idx)=>{
                return ({
-                  ...skillD._doc,
-                  authors: skills[idx].authors
+                  skillInfo: skillD._doc,
+                  authors: skills[idx].authors,
+                  level: skills[idx].level,
                })
             })
 
