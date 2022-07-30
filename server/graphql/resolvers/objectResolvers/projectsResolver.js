@@ -134,8 +134,6 @@ module.exports = {
            }
         },
    },
-
-
    tweetsProject: {
       tweets: async (parent, args, context, info) => {
       ////console.log("parent - tweets = " , parent.tweets)
@@ -192,6 +190,50 @@ module.exports = {
               );
            }
         },
+   },
+   projectUserMatchType: {
+      skillsMatch: async (parent, args, context, info) => {
+
+           try {
+               const skills = parent.skillsMatch;
+
+               let skillsData = await Skills.find({ _id: skills })
+   
+   
+               return skillsData;
+
+           } catch (err) {
+              throw new ApolloError(
+                 err.message,
+                 err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                 {
+                    component: 'userResolver > members',
+                    user: context.req.user?._id,
+                 }
+              );
+           }
+        },
+        skillsDontMatch: async (parent, args, context, info) => {
+
+         try {
+             const skills = parent.skillsDontMatch;
+
+             let skillsData = await Skills.find({ _id: skills })
+ 
+ 
+             return skillsData;
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > members',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
    },
    Team: {
       projects: async (parent, args, context, info) => {

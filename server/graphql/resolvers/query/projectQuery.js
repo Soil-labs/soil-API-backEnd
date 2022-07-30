@@ -161,6 +161,86 @@ module.exports = {
       );
     }
   },
+  match_projectToUser: async (parent, args, context, info) => {
+   
+    // console.log("change = " )
+    const {memberID,projectID,roleID} = args.fields;
+
+    if (!memberID) throw new ApolloError("Member id is required");
+    if (!projectID) throw new ApolloError("Project id is required");
+    if (!roleID) throw new ApolloError("Role id is required");
+
+
+
+    try {
+
+      let memberData = await Members.findOne({ _id: memberID }) // Find the Member info
+
+      if (!memberData) throw new ApolloError("Member not found");
+
+      let projectData = await Projects.findOne({ _id: projectID }) // Find the Project info
+
+      if (!projectData) throw new ApolloError("Project not found");
+
+
+      skillsArray = memberData.skills.map(skill => skill.id) // separate all teh skills
+
+
+      console.log("skillsArray = " , skillsArray)
+
+      let projectN,skill_ProjectRole,filteredSkillArray
+
+      let matchNum,roleIndex;
+      let projectMatch = []
+        
+      projectN = projectData
+
+      matchNum = 0
+
+      let roleChoose = projectN.role.filter(role => {
+        if (role._id == roleID) {
+          return role
+        }
+      })
+
+      console.log("roleChoose = " , roleChoose)
+
+
+      
+      skill_ProjectRole = roleChoose[0].skills.map(skill => skill._id)
+
+      console.log("skill_ProjectRole = " , skill_ProjectRole)
+
+      filteredSkillArray = skillsArray.filter(skill => skill_ProjectRole.includes(skill))
+
+      if (matchNum < filteredSkillArray.length) {
+        matchNum = filteredSkillArray.length
+      }
+        
+
+      // console.log("freak = ",{
+      //   projectData: projectN,
+      //   matchPercentage: (matchNum/skillsArray.length)*100,
+      //   skillsMatch: filteredSkillArray,
+      //   skillsDontMatch: skillsArray.filter(skill => !filteredSkillArray.includes(skill)),
+      // })
+
+
+      return ({
+        projectData: projectN,
+        matchPercentage: (matchNum/skillsArray.length)*100,
+        skillsMatch: filteredSkillArray,
+        skillsDontMatch: skillsArray.filter(skill => !filteredSkillArray.includes(skill)),
+        
+      })
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findSkill"}
+      );
+    }
+  },
 
   findTeams: async (parent, args, context, info) => {
    

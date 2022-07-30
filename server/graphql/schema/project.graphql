@@ -109,6 +109,13 @@ module.exports = `
         role: roleType
     }
 
+    type projectUserMatchType {
+        projectData: Project
+        matchPercentage: Float
+        skillsMatch: [Skills]
+        skillsDontMatch: [Skills]
+    }
+
     
     input newTweetProjectInput {
         projectID: ID,
@@ -228,6 +235,11 @@ module.exports = `
     }
     input findProjects_RecommendedToUserInput {
         memberID: ID
+    }
+    input match_projectToUserInput {
+        memberID: ID
+        projectID: ID
+        roleID: ID
     }
 
     input findTeamsInput {

@@ -11,6 +11,7 @@ module.exports = `
             findProjects(fields:findProjectsInput): [Project]
             findProjects_RequireSkill(fields:findProjects_RequireSkillInput): [Project]
             findProjects_RecommendedToUser(fields:findProjects_RecommendedToUserInput): [projectMatchType]
+            match_projectToUser(fields:match_projectToUserInput): projectUserMatchType
             findTeams(fields:findTeamsInput): [Team]
             
           #  ---------- MEMBER QUERY -------
