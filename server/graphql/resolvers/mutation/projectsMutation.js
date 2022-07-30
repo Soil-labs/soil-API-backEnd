@@ -284,15 +284,44 @@ module.exports = {
 
       if (!projectData) throw new ApolloError( "This project dont exist you need to choose antoher project");
 
+      let foundMember_flag = false
       projectData.team.forEach(member => {
-      console.log("member = " , member)
+      // console.log("member = " , member)
         if (member.memberID == memberID){
           member.phase = phase
           console.log("tuba = " )
+          foundMember_flag = true
         }
       })
 
-      // console.log("projectData = " , projectData)
+      if (foundMember_flag == false){
+          projectData.team.push({
+            memberID: memberID,
+            phase: phase,
+          })
+
+          let memberData = await Members.findOne({ _id: memberID })
+
+          if (memberData) {
+
+            let currentProjects = [...memberData.projects]
+          
+            currentProjects.push({
+              projectID: projectData._id,
+              champion: false,
+              phase: phase,
+            })
+
+            memberDataUpdate = await Members.findOneAndUpdate(
+              {_id: memberID},
+              {
+                  $set: {projects: currentProjects}
+              },
+              {new: true}
+            )
+          }
+
+      }
 
 
         projectDataUpdate = await Projects.findOneAndUpdate(
