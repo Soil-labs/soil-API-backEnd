@@ -16,7 +16,7 @@ module.exports = {
     
     const {_id,title,description,champion,team,role,collaborationLinks,budget,dates} = JSON.parse(JSON.stringify(args.fields))
  
-
+ 
     
     let fields = {
       _id,
