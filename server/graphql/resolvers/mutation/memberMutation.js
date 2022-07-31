@@ -134,7 +134,16 @@ module.exports = {
         
         membersData.save()
 
-        membersData = membersData
+        //add member node to neo4j
+        const session = driver.session({database:"neo4j"});
+        await session.writeTransaction(tx => 
+        tx.run(
+          `   
+          MERGE (:Member {_id: ${fields._id}, name: '${fields.discordName}'})
+          `
+          )
+        )
+        session.close();
       } else {
 
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
