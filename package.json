@@ -25,7 +25,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.7.9",
     "morgan": "^1.9.1",
-    "neo4j-driver": "^4.4.6",
+    "neo4j-driver": "^4.4.7",
     "short-uuid": "^4.1.0",
     "twilio": "^3.74.0",
     "validator": "^13.6.0"
