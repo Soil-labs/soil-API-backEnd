@@ -1,6 +1,6 @@
 const { Members } = require("../../../models/membersModel");
 const { Skills } = require("../../../models/skillsModel");
-
+const { driver } = require("../../../../server/neo4j_config");
 const {ApolloError} = require("apollo-server-express");
 
 module.exports = {
@@ -38,14 +38,30 @@ module.exports = {
       skillData = await Skills.findOne({ name: fields.name })
 
 
-      if (!skillData ){
+      if (!skillData){
         skillData = await new Skills(fields);
         
         skillData.save()
+        console.log("skill info = ", skillData);
+        
+        //Add skill to graph database
+        const session = driver.session({database:"neo4j"});
+        session.writeTransaction(tx => 
+        tx.run(
+          `  
+          MERGE (:Skill {name: '${fields.name}', _id: '${skillData._id}'})
+          `
+          )
+        )
+        .catch(error=>{
+          console.log(error)
+        })
+        .then(()=> session.close())
 
         skillData = skillData
       }
-
+      
+      
 
       return skillData
     } catch (err) {
