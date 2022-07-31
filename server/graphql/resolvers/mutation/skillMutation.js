@@ -120,6 +120,20 @@ module.exports = {
               
               skillData.save()
 
+              //Add skill to graph database
+              const session = driver.session({database:"neo4j"});
+              session.writeTransaction(tx => 
+              tx.run(
+                `  
+                MERGE (:Skill {name: '${skillData.name}', _id: '${skillData._id}'})
+                `
+                )
+              )
+              .catch(error=>{
+                console.log(error)
+              })
+              .then(()=> session.close())
+
             }
 
             allSkills.push(skillData)
