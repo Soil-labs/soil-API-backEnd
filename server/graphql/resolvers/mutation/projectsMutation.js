@@ -44,6 +44,7 @@ module.exports = {
         // console.log("projectData 1 = ", projectData);
       
         if (!projectData){
+          console.log("If Milo is do the growing again I will lose it " )
           projectData = await new Projects(fields);
           
           projectData.save()
@@ -57,6 +58,7 @@ module.exports = {
           let championName
         
           if(championInfo) {
+            console.log("Wise Ty is pleayin with my nerves" )
             championName = championInfo.discordName;
             
             // Add new project node to Neo4j with champion name
@@ -132,23 +134,18 @@ module.exports = {
         let memberDataChampion = await Members.findOne({ _id: champion })
         
 
-      //console.log("memberDataChampion.discrordName = " , memberDataChampion.discrordName)
-
         // console.log("memberDataChampion 232 = " , memberDataChampion)
 
 
         if (memberDataChampion) {
 
-          let currentProjects = [...memberDataChampion.projects]
+            let currentProjects = [...memberDataChampion.projects]
 
-          currentProjects.push({
-            projectID: projectData._id,
-            champion: true,
-          })
+            currentProjects.push({
+              projectID: projectData._id,
+              champion: true,
+            })
 
-          if (memberDataChampion){
-
-          //console.log("currentProjects = " , currentProjects)
             memberDataUpdate = await Members.findOneAndUpdate(
                 {_id: champion},
                 {
@@ -156,8 +153,32 @@ module.exports = {
                 },
                 {new: true}
             )
-          //console.log("memberDataUpdate = " , memberDataUpdate)
-          }
+
+            // Add new project node to Neo4j with champion name
+            const session = driver.session({database:"neo4j"});
+            await session.writeTransaction(tx => 
+              tx.run(
+              `   
+              MERGE (:Project {_id: '${projectData._id}', name: '${fields.title}', description: '${fields.description}', champion: '${memberDataChampion.discordName}'})
+              `
+              )
+            )
+
+            session.close()
+              
+
+            // add champion relationship between project node and member
+            const session2 = driver.session({database:"neo4j"});
+            await session2.writeTransaction(tx => 
+              tx.run(
+              `   
+              MATCH (champion2:Member {_id: ${memberDataChampion._id}})
+              MATCH (project2:Project {_id: '${projectData._id}'})
+              MERGE (project2)-[:CHAMPION]->(champion2)
+              `
+              )
+            )
+            session2.close();
         }
   
       }
