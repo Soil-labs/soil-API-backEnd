@@ -16,7 +16,7 @@ module.exports = {
     
     const {_id,title,description,champion,team,role,collaborationLinks,budget,dates} = JSON.parse(JSON.stringify(args.fields))
 
-    if (!_id) throw new ApolloError("Project id is required");
+
     
     let fields = {
       _id,
