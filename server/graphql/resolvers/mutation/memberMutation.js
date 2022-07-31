@@ -327,7 +327,7 @@ module.exports = {
           MATCH (member_neo:Member {_id: ${member._id}})
           MATCH (author_neo:Member {_id: ${authorInfo._id}})
           MATCH (skillNode:Skill {_id: '${skill._id}'})
-          MERGE (author_neo)-[:SKILL]->(member_neo)
+          MERGE (author_neo)-[:ENDORSE]->(member_neo)
           MERGE (member_neo)-[:SKILL]->(skillNode)
           `
           )
