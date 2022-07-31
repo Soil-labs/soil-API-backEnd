@@ -1,7 +1,7 @@
 const { Members } = require("../../../models/membersModel");
 const { Skills } = require("../../../models/skillsModel");
 const {ApolloError} = require("apollo-server-express");
-const { session } = require("../../../../server/neo4j_config");
+const { driver } = require("../../../../server/neo4j_config");
 
 module.exports = {
   addNewMember: async (parent, args, context, info) => {
@@ -35,16 +35,19 @@ module.exports = {
         membersData = await new Members(fields);
         
         membersData.save()
-      
-      } 
-      //add member to neo4j
-      session.writeTransaction(tx => 
+        
+        //add member node to neo4j
+        const session = driver.session({database:"neo4j"});
+        await session.writeTransaction(tx => 
         tx.run(
           `   
           MERGE (:Member {_id: ${fields._id}, name: '${fields.discordName}'})
           `
+          )
         )
-      )
+        session.close();
+      } 
+      
       // else {
       //   console.log("change = " )
       //   throw new ApolloError("Member already exists")
@@ -108,7 +111,7 @@ module.exports = {
     }
   },
   addSkillToMember: async (parent, args, context, info) => {
-   
+  
 
     const {skillID,memberID,authorID} = args.fields;
 
@@ -135,12 +138,44 @@ module.exports = {
 
       // console.log("change = " , skill,authorInfo,member)
 
-      let newSkils
+      let newSkills
 
 
       let skillExist = true
       let makeAnUpdate = false
-
+      
+      // add skill edge from author to member & add skill edge from member to skill node
+      if (member._id !== authorInfo._id) {
+        const session2 = driver.session({database:"neo4j"});
+        await session2.writeTransaction(tx => 
+        tx.run(
+          `   
+          MATCH (member_neo:Member {_id: ${member._id}})
+          MATCH (author_neo:Member {_id: ${authorInfo._id}})
+          MATCH (skillNode:Skill {_id: '${skill._id}'})
+          MERGE (author_neo)-[:SKILL]->(member_neo)
+          MERGE (member_neo)-[:SKILL]->(skillNode)
+          `
+          )
+        )
+        session2.close();
+        
+      } else {
+        //when author endorses themselves only add skill edge from member to skill node
+        const session2 = driver.session({database:"neo4j"});
+        await session2.writeTransaction(tx => 
+        tx.run(
+          `   
+          MATCH (member_neo:Member {_id: ${member._id}})
+          MATCH (author_neo:Member {_id: ${authorInfo._id}})
+          MATCH (skillNode:Skill {_id: '${skill._id}'})
+          MERGE (member_neo)-[:SKILL]->(skillNode)
+          `
+          )
+        )
+        session2.close();
+      }
+      
 
       // check all the skills, if the skill is already in the member, then update the author
       const updatedSkills = member.skills.map(skillMem=>{
