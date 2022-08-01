@@ -72,78 +72,6 @@ module.exports = {
             name:projectData.title,
           })
             
-          // console.log("projectData 2 = ")
-
-          // // identify champion by id
-          // let championInfo = await Members.findOne({ _id: champion });
-
-          // // identify champion's name
-          // let championName
-        
-          // if(championInfo) {
-          //   console.log("Wise Ty is pleayin with my nerves" )
-          //   championName = championInfo.discordName;
-            
-          //   // Add new project node to Neo4j with champion name
-          //   createNode_neo4j({
-          //     node:"Project",
-          //     id:projectData._id,
-          //     name:fields.title,
-          //   })
-          //   // const session = driver.session({database:"neo4j"});
-          //   // await session.writeTransaction(tx => 
-          //   //   tx.run(
-          //   //   `   
-          //   //   MERGE (:Project {_id: '${projectData._id}', name: '${fields.title}', description: '${fields.description}', champion: '${championName}'})
-          //   //   `
-          //   //   )
-          //   // )
-
-          //   // session.close()
-              
-
-          //   // add champion relationship between project node and member
-          //   makeConnection_neo4j({
-          //     node:["Project","Member"],
-          //     id:[projectData._id,championInfo._id],
-          //     connection:"CHAMPION",
-          //   })
-          //   // const session2 = driver.session({database:"neo4j"});
-          //   // await session2.writeTransaction(tx => 
-          //   //   tx.run(
-          //   //   `   
-          //   //   MATCH (champion2:Member {_id: ${championInfo._id}})
-          //   //   MATCH (project2:Project {_id: '${projectData._id}'})
-          //   //   MERGE (project2)-[:CHAMPION]->(champion2)
-          //   //   `
-          //   //   )
-          //   // )
-          //   // session2.close();
- 
-          // }
-          //   else {
-
-          //     championName = 'none'; 
-          //     // Add new project node to Neo4j w/o champion 
-          //     createNode_neo4j({
-          //       node:"Project",
-          //       id:fields._id,
-          //       name:fields.title,
-          //     })
-          //     // const session3 = driver.session({database:"neo4j"});
-          //     // await session3.writeTransaction(tx => 
-          //     // tx.run(
-          //     // `   
-          //     // MERGE (:Project {_id: '${fields._id}', name: '${fields.title}', description: '${fields.description}', champion: '${championName}'})
-            
-          //     // `
-          //     //   )
-          //     // )
-          //     // session3.close();
-          //   }
-          
-       
-            
           
         } else {
 
@@ -173,12 +101,7 @@ module.exports = {
 
 
       if (champion) {
-
-        // console.log("champion 232 = " , champion)
         let memberDataChampion = await Members.findOne({ _id: champion })
-        
-
-        // console.log("memberDataChampion 232 = " , memberDataChampion)
 
 
         if (memberDataChampion) {
@@ -198,23 +121,6 @@ module.exports = {
                 {new: true}
             )
 
-            // Add new project node to Neo4j with champion name
-            // createNode_neo4j({
-            //   node:"Project",
-            //   id:projectData._id,
-            //   name:fields.title,
-            // })
-            // const session = driver.session({database:"neo4j"});
-            // await session.writeTransaction(tx => 
-            //   tx.run(
-            //   `   
-            //   MERGE (:Project {_id: '${projectData._id}', name: '${fields.title}', description: '${fields.description}', champion: '${memberDataChampion.discordName}'})
-            //   `
-            //   )
-            // )
-
-            // session.close()
-              
 
             // add champion relationship between project node and member
             await makeConnection_neo4j({
@@ -222,17 +128,6 @@ module.exports = {
               id:[projectData._id,memberDataChampion._id],
               connection:"CHAMPION",
             })
-            // const session2 = driver.session({database:"neo4j"});
-            // await session2.writeTransaction(tx => 
-            //   tx.run(
-            //   `   
-            //   MATCH (champion2:Member {_id: ${memberDataChampion._id}})
-            //   MATCH (project2:Project {_id: '${projectData._id}'})
-            //   MERGE (project2)-[:CHAMPION]->(champion2)
-            //   `
-            //   )
-            // )
-            // session2.close();
         }
   
       }
@@ -250,15 +145,8 @@ module.exports = {
             id:[projectData._id,fields.team[i].memberID],
             connection:"TEAM_MEMBER",
           })
-            // await session4.writeTransaction(tx => 
-            //   tx.run(
-            //   `   
-            //   MATCH (member:Member {_id: ${fields.team[i].memberID}})
-            //   MATCH (project:Project {_id: '${projectData._id}'})
-            //   MERGE (project)-[:MEMBER]->(member)
-            //   `
-            //   )
-            // )
+          
+
           
           let memberData = await Members.findOne({ _id: fields.team[i].members })
           console.log('member data OBJECT 111: ',memberData); //null 
@@ -290,6 +178,44 @@ module.exports = {
               
             }
           }
+
+        }
+        
+      }
+
+
+      if (fields.role && fields.role.length > 0) {
+        
+
+        for (let i=0;i<fields.role.length;i++){
+
+          let RoleNow = fields.role[i]
+          
+          console.log("change = 2232" )
+
+          await createNode_neo4j({
+            node:"Role",
+            id:RoleNow._id,
+            name:RoleNow.title,
+          })
+
+          await makeConnection_neo4j({
+            node:["Project","Role"],
+            id:[projectData._id,RoleNow._id],
+            connection:"ROLE",
+          })
+
+          for (let j=0;j<RoleNow.skills.length;j++){
+            let SkillNow = RoleNow.skills[j]
+            
+            await makeConnection_neo4j({
+              node:["Role","Skill"],
+              id:[RoleNow._id,SkillNow._id],
+              connection:"ROLE_SKILL",
+            })
+          }
+          
+          
 
         }
         

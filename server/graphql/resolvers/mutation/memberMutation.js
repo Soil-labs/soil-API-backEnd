@@ -58,7 +58,7 @@ module.exports = {
         membersData.save()
         
         //add member node to neo4j
-        createNode_neo4j({
+        await createNode_neo4j({
           node:"Member",
           id:fields._id,
           name:fields.discordName,
@@ -141,7 +141,7 @@ module.exports = {
         membersData.save()
 
         //add member node to neo4j
-        createNode_neo4j({
+        await createNode_neo4j({
           node:"Member",
           id:fields._id,
           name:fields.discordName,
@@ -331,12 +331,12 @@ module.exports = {
       
       // add skill edge from author to member & add skill edge from member to skill node
       if (member._id !== authorInfo._id) {
-        makeConnection_neo4j({
+        await makeConnection_neo4j({
           node:["Member","Skill"],
           id:[member._id,skill._id],
           connection:"SKILL",
         })
-        makeConnection_neo4j({
+        await makeConnection_neo4j({
           node:["Member","Member"],
           id:[authorInfo._id,member._id],
           connection:"ENDORSE",
@@ -357,7 +357,7 @@ module.exports = {
         
       } else {
         //when author endorses themselves only add skill edge from member to skill node
-        makeConnection_neo4j({
+        await makeConnection_neo4j({
           node:["Member","Skill"],
           id:[member._id,skill._id],
           connection:"SKILL",

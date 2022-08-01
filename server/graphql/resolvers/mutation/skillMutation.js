@@ -46,7 +46,7 @@ module.exports = {
         console.log("skill info = ", skillData);
         
         //Add skill to graph database
-        createNode_neo4j({
+        await createNode_neo4j({
           node:"Skill",
           id:skillData._id,
           name:fields.name,
@@ -127,7 +127,7 @@ module.exports = {
               skillData.save()
 
               //Add skill to graph database
-              createNode_neo4j({
+              await createNode_neo4j({
                 node:"Skill",
                 id:skillData._id,
                 name:skillData.name,
