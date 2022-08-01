@@ -6,12 +6,30 @@ const {ApolloError} = require("apollo-server-express");
 const { TeamMember } = require("discord.js");
 const { driver } = require("../../../../server/neo4j_config");
 
+const {createNode_neo4j,makeConnection_neo4j} = require("../../../neo4j/func_neo4j");
+
 
 module.exports = {
   updateProject: async (parent, args, context, info) => {
    
 
-    console.log("check 1 = ");
+    // console.log("check 1 = ",findSkillQuery);
+
+    // createNode_neo4j({
+    //   node:"Project",
+    //   id:"laksdfj9029jfslkdjf",
+    //   name:"Super Project",
+    // })
+
+    // makeConnection_neo4j({
+    //   node:["Member","Project"],
+    //   id:["971147333414842408","laksdfj9029jfslkdjf"],
+    //   connection:"Dona",
+    // })
+
+
+
+    // throw new ApolloError("Project not found");
 
     
     const {_id,title,description,champion,team,role,collaborationLinks,budget,dates} = JSON.parse(JSON.stringify(args.fields))
@@ -62,30 +80,40 @@ module.exports = {
             championName = championInfo.discordName;
             
             // Add new project node to Neo4j with champion name
-            const session = driver.session({database:"neo4j"});
-            await session.writeTransaction(tx => 
-              tx.run(
-              `   
-              MERGE (:Project {_id: '${projectData._id}', name: '${fields.title}', description: '${fields.description}', champion: '${championName}'})
-              `
-              )
-            )
+            createNode_neo4j({
+              node:"Project",
+              id:projectData._id,
+              name:fields.title,
+            })
+            // const session = driver.session({database:"neo4j"});
+            // await session.writeTransaction(tx => 
+            //   tx.run(
+            //   `   
+            //   MERGE (:Project {_id: '${projectData._id}', name: '${fields.title}', description: '${fields.description}', champion: '${championName}'})
+            //   `
+            //   )
+            // )
 
-            session.close()
+            // session.close()
               
 
             // add champion relationship between project node and member
-            const session2 = driver.session({database:"neo4j"});
-            await session2.writeTransaction(tx => 
-              tx.run(
-              `   
-              MATCH (champion2:Member {_id: ${championInfo._id}})
-              MATCH (project2:Project {_id: '${projectData._id}'})
-              MERGE (project2)-[:CHAMPION]->(champion2)
-              `
-              )
-            )
-            session2.close();
+            makeConnection_neo4j({
+              node:["Member","Project"],
+              id:[championInfo._id,projectData._id],
+              connection:"CHAMPION",
+            })
+            // const session2 = driver.session({database:"neo4j"});
+            // await session2.writeTransaction(tx => 
+            //   tx.run(
+            //   `   
+            //   MATCH (champion2:Member {_id: ${championInfo._id}})
+            //   MATCH (project2:Project {_id: '${projectData._id}'})
+            //   MERGE (project2)-[:CHAMPION]->(champion2)
+            //   `
+            //   )
+            // )
+            // session2.close();
  
           }
             else {
