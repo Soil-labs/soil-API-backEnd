@@ -120,16 +120,21 @@ module.exports = {
 
               championName = 'none'; 
               // Add new project node to Neo4j w/o champion 
-              const session3 = driver.session({database:"neo4j"});
-              await session3.writeTransaction(tx => 
-              tx.run(
-              `   
-              MERGE (:Project {_id: '${fields._id}', name: '${fields.title}', description: '${fields.description}', champion: '${championName}'})
+              createNode_neo4j({
+                node:"Project",
+                id:fields._id,
+                name:fields.title,
+              })
+              // const session3 = driver.session({database:"neo4j"});
+              // await session3.writeTransaction(tx => 
+              // tx.run(
+              // `   
+              // MERGE (:Project {_id: '${fields._id}', name: '${fields.title}', description: '${fields.description}', champion: '${championName}'})
             
-              `
-                )
-              )
-              session3.close();
+              // `
+              //   )
+              // )
+              // session3.close();
             }
           
        
@@ -183,30 +188,40 @@ module.exports = {
             )
 
             // Add new project node to Neo4j with champion name
-            const session = driver.session({database:"neo4j"});
-            await session.writeTransaction(tx => 
-              tx.run(
-              `   
-              MERGE (:Project {_id: '${projectData._id}', name: '${fields.title}', description: '${fields.description}', champion: '${memberDataChampion.discordName}'})
-              `
-              )
-            )
+            createNode_neo4j({
+              node:"Project",
+              id:projectData._id,
+              name:fields.title,
+            })
+            // const session = driver.session({database:"neo4j"});
+            // await session.writeTransaction(tx => 
+            //   tx.run(
+            //   `   
+            //   MERGE (:Project {_id: '${projectData._id}', name: '${fields.title}', description: '${fields.description}', champion: '${memberDataChampion.discordName}'})
+            //   `
+            //   )
+            // )
 
-            session.close()
+            // session.close()
               
 
             // add champion relationship between project node and member
-            const session2 = driver.session({database:"neo4j"});
-            await session2.writeTransaction(tx => 
-              tx.run(
-              `   
-              MATCH (champion2:Member {_id: ${memberDataChampion._id}})
-              MATCH (project2:Project {_id: '${projectData._id}'})
-              MERGE (project2)-[:CHAMPION]->(champion2)
-              `
-              )
-            )
-            session2.close();
+            makeConnection_neo4j({
+              node:["Member","Project"],
+              id:[memberDataChampion._id,projectData._id],
+              connection:"CHAMPION",
+            })
+            // const session2 = driver.session({database:"neo4j"});
+            // await session2.writeTransaction(tx => 
+            //   tx.run(
+            //   `   
+            //   MATCH (champion2:Member {_id: ${memberDataChampion._id}})
+            //   MATCH (project2:Project {_id: '${projectData._id}'})
+            //   MERGE (project2)-[:CHAMPION]->(champion2)
+            //   `
+            //   )
+            // )
+            // session2.close();
         }
   
       }
@@ -215,18 +230,24 @@ module.exports = {
       if (fields.team && fields.team.length > 0) {
         console.log('team members!!!: ',fields.team); // prints out
 
-        const session4 = driver.session({database:"neo4j"});
+        // const session4 = driver.session({database:"neo4j"});
         for (let i=0;i<fields.team.length;i++){
           
-            await session4.writeTransaction(tx => 
-              tx.run(
-              `   
-              MATCH (member:Member {_id: ${fields.team[i].memberID}})
-              MATCH (project:Project {_id: '${projectData._id}'})
-              MERGE (project)-[:MEMBER]->(member)
-              `
-              )
-            )
+
+          makeConnection_neo4j({
+            node:["Member","Project"],
+            id:[fields.team[i].memberID,projectData._id],
+            connection:"MEMBER",
+          })
+            // await session4.writeTransaction(tx => 
+            //   tx.run(
+            //   `   
+            //   MATCH (member:Member {_id: ${fields.team[i].memberID}})
+            //   MATCH (project:Project {_id: '${projectData._id}'})
+            //   MERGE (project)-[:MEMBER]->(member)
+            //   `
+            //   )
+            // )
           
           let memberData = await Members.findOne({ _id: fields.team[i].members })
           console.log('member data OBJECT 111: ',memberData); //null 
