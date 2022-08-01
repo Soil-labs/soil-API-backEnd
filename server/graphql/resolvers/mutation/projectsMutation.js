@@ -32,7 +32,7 @@ module.exports = {
     // throw new ApolloError("Project not found");
 
     
-    const {_id,title,description,champion,team,role,collaborationLinks,budget,dates} = JSON.parse(JSON.stringify(args.fields))
+    const {_id,title,description,champion,team,role,collaborationLinks,budget,dates,stepsJoinProject} = JSON.parse(JSON.stringify(args.fields))
  
  
     
@@ -49,8 +49,9 @@ module.exports = {
     if (collaborationLinks) fields =  {...fields,collaborationLinks}
     if (budget) fields =  {...fields,budget}
     if (dates) fields =  {...fields,dates}
+    if (stepsJoinProject) fields =  {...fields,stepsJoinProject}
 
-    // console.log("fields = " , fields)
+    console.log("fields = " , fields)
 
     try {
 

@@ -17,6 +17,8 @@ module.exports = `
 
         collaborationLinks: [collaborationLinksType]
 
+        stepsJoinProject: [String]
+
         budget: budgetType
 
         dates: datesType
@@ -165,6 +167,8 @@ module.exports = `
         role: [roleInput]
 
         collaborationLinks: [collaborationLinksInput]
+
+        stepsJoinProject: [String]
 
         budget: budgetInput
 

@@ -50,6 +50,7 @@ const projectSchema = mongoose.Schema({
     title: String,
     link: String,
   }],
+  stepsJoinProject:[String],
 
   budget: {
     totalBudget: String,
