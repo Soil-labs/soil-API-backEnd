@@ -55,10 +55,16 @@ const memberSchema = mongoose.Schema({
   previusProjects: [{
     title: String,
     description: String,
+    positionName: String,
     link: String,
     picture: String,
     startDate: Date,
     endDate: Date,
+  }],
+
+  links: [{
+    name: String,
+    url: String,
   }],
 
   attributes: {

@@ -95,7 +95,7 @@ module.exports = {
 
     const {discordName,_id,discordAvatar,discriminator,bio,
       hoursPerWeek,previusProjects,
-      interest,timeZone,level,skills} = args.fields;
+      interest,timeZone,level,skills,links} = args.fields;
 
     if (!_id) throw new ApolloError( "_id is required");
 
@@ -114,6 +114,7 @@ module.exports = {
     if (timeZone) fields =  {...fields,timeZone}
     if (level) fields =  {...fields,level}
     if (skills) fields =  {...fields,skills}
+    if (links) fields =  {...fields,links}
 
     
 

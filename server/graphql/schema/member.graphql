@@ -27,7 +27,14 @@ module.exports = `
 
         previusProjects: [previusProjectsType],
 
+        links: [linkType],
+
         attributes: attributesType,
+    }
+
+    type linkType {
+        name: String
+        url: String
     }
 
     type skillType_member  {
@@ -50,6 +57,7 @@ module.exports = `
     type previusProjectsType {
         title: String,
         description: String,
+        positionName: String,
         link: String,
         picture: String,
         startDate: String,
@@ -132,6 +140,13 @@ module.exports = `
 
         previusProjects: [previusProjectsInput],
 
+        links: [linkInput],
+
+    }
+
+    input linkInput {
+        name: String
+        url: String
     }
 
     input skillInput_member {
@@ -172,6 +187,7 @@ module.exports = `
      input previusProjectsInput {
         title: String,
         description: String,
+        positionName: String,
         link: String,
         picture: String,
         startDate: String,
