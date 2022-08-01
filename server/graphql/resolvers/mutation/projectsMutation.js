@@ -99,8 +99,8 @@ module.exports = {
 
             // add champion relationship between project node and member
             makeConnection_neo4j({
-              node:["Member","Project"],
-              id:[championInfo._id,projectData._id],
+              node:["Project","Member"],
+              id:[projectData._id,championInfo._id],
               connection:"CHAMPION",
             })
             // const session2 = driver.session({database:"neo4j"});
@@ -154,6 +154,12 @@ module.exports = {
       } else {
         projectData = await new Projects(fields);
         projectData.save()
+
+        createNode_neo4j({
+          node:"Project",
+          id:projectData._id,
+          name:projectData.title,
+        })
       }
       
       
@@ -207,8 +213,8 @@ module.exports = {
 
             // add champion relationship between project node and member
             makeConnection_neo4j({
-              node:["Member","Project"],
-              id:[memberDataChampion._id,projectData._id],
+              node:["Project","Member"],
+              id:[projectData._id,memberDataChampion._id],
               connection:"CHAMPION",
             })
             // const session2 = driver.session({database:"neo4j"});
@@ -235,9 +241,9 @@ module.exports = {
           
 
           makeConnection_neo4j({
-            node:["Member","Project"],
-            id:[fields.team[i].memberID,projectData._id],
-            connection:"MEMBER",
+            node:["Project","Member"],
+            id:[projectData._id,fields.team[i].memberID],
+            connection:"TEAM_MEMBER",
           })
             // await session4.writeTransaction(tx => 
             //   tx.run(

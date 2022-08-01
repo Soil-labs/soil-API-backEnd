@@ -2,6 +2,7 @@ const { Members } = require("../../../models/membersModel");
 const { Skills } = require("../../../models/skillsModel");
 const { driver } = require("../../../../server/neo4j_config");
 const {ApolloError} = require("apollo-server-express");
+const {createNode_neo4j,makeConnection_neo4j} = require("../../../neo4j/func_neo4j");
 
 module.exports = {
   createSkill: async (parent, args, context, info) => {
@@ -45,18 +46,23 @@ module.exports = {
         console.log("skill info = ", skillData);
         
         //Add skill to graph database
-        const session = driver.session({database:"neo4j"});
-        session.writeTransaction(tx => 
-        tx.run(
-          `  
-          MERGE (:Skill {name: '${fields.name}', _id: '${skillData._id}'})
-          `
-          )
-        )
-        .catch(error=>{
-          console.log(error)
+        createNode_neo4j({
+          node:"Skill",
+          id:skillData._id,
+          name:fields.name,
         })
-        .then(()=> session.close())
+        // const session = driver.session({database:"neo4j"});
+        // session.writeTransaction(tx => 
+        // tx.run(
+        //   `  
+        //   MERGE (:Skill {name: '${fields.name}', _id: '${skillData._id}'})
+        //   `
+        //   )
+        // )
+        // .catch(error=>{
+        //   console.log(error)
+        // })
+        // .then(()=> session.close())
 
         skillData = skillData
       }
@@ -121,18 +127,23 @@ module.exports = {
               skillData.save()
 
               //Add skill to graph database
-              const session = driver.session({database:"neo4j"});
-              session.writeTransaction(tx => 
-              tx.run(
-                `  
-                MERGE (:Skill {name: '${skillData.name}', _id: '${skillData._id}'})
-                `
-                )
-              )
-              .catch(error=>{
-                console.log(error)
+              createNode_neo4j({
+                node:"Skill",
+                id:skillData._id,
+                name:skillData.name,
               })
-              .then(()=> session.close())
+              // const session = driver.session({database:"neo4j"});
+              // session.writeTransaction(tx => 
+              // tx.run(
+              //   `  
+              //   MERGE (:Skill {name: '${skillData.name}', _id: '${skillData._id}'})
+              //   `
+              //   )
+              // )
+              // .catch(error=>{
+              //   console.log(error)
+              // })
+              // .then(()=> session.close())
 
             }
 

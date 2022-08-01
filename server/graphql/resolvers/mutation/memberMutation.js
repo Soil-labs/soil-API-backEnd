@@ -4,6 +4,7 @@ const { Projects } = require("../../../models/projectsModel");
 
 const {ApolloError} = require("apollo-server-express");
 const { driver } = require("../../../../server/neo4j_config");
+const {createNode_neo4j,makeConnection_neo4j} = require("../../../neo4j/func_neo4j");
 
 module.exports = {
   addNewMember: async (parent, args, context, info) => {
@@ -57,15 +58,20 @@ module.exports = {
         membersData.save()
         
         //add member node to neo4j
-        const session = driver.session({database:"neo4j"});
-        await session.writeTransaction(tx => 
-        tx.run(
-          `   
-          MERGE (:Member {_id: ${fields._id}, name: '${fields.discordName}'})
-          `
-          )
-        )
-        session.close();
+        createNode_neo4j({
+          node:"Member",
+          id:fields._id,
+          name:fields.discordName,
+        })
+        // const session = driver.session({database:"neo4j"});
+        // await session.writeTransaction(tx => 
+        // tx.run(
+        //   `   
+        //   MERGE (:Member {_id: ${fields._id}, name: '${fields.discordName}'})
+        //   `
+        //   )
+        // )
+        // session.close();
       } 
       
       // else {
@@ -135,15 +141,20 @@ module.exports = {
         membersData.save()
 
         //add member node to neo4j
-        const session = driver.session({database:"neo4j"});
-        await session.writeTransaction(tx => 
-        tx.run(
-          `   
-          MERGE (:Member {_id: ${fields._id}, name: '${fields.discordName}'})
-          `
-          )
-        )
-        session.close();
+        createNode_neo4j({
+          node:"Member",
+          id:fields._id,
+          name:fields.discordName,
+        })
+        // const session = driver.session({database:"neo4j"});
+        // await session.writeTransaction(tx => 
+        // tx.run(
+        //   `   
+        //   MERGE (:Member {_id: ${fields._id}, name: '${fields.discordName}'})
+        //   `
+        //   )
+        // )
+        // session.close();
       } else {
 
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
@@ -320,34 +331,49 @@ module.exports = {
       
       // add skill edge from author to member & add skill edge from member to skill node
       if (member._id !== authorInfo._id) {
-        const session2 = driver.session({database:"neo4j"});
-        await session2.writeTransaction(tx => 
-        tx.run(
-          `   
-          MATCH (member_neo:Member {_id: ${member._id}})
-          MATCH (author_neo:Member {_id: ${authorInfo._id}})
-          MATCH (skillNode:Skill {_id: '${skill._id}'})
-          MERGE (author_neo)-[:ENDORSE]->(member_neo)
-          MERGE (member_neo)-[:SKILL]->(skillNode)
-          `
-          )
-        )
-        session2.close();
+        makeConnection_neo4j({
+          node:["Member","Skill"],
+          id:[member._id,skill._id],
+          connection:"SKILL",
+        })
+        makeConnection_neo4j({
+          node:["Member","Member"],
+          id:[authorInfo._id,member._id],
+          connection:"ENDORSE",
+        })
+        // const session2 = driver.session({database:"neo4j"});
+        // await session2.writeTransaction(tx => 
+        // tx.run(
+        //   `   
+        //   MATCH (member_neo:Member {_id: ${member._id}})
+        //   MATCH (author_neo:Member {_id: ${authorInfo._id}})
+        //   MATCH (skillNode:Skill {_id: '${skill._id}'})
+        //   MERGE (author_neo)-[:ENDORSE]->(member_neo)
+        //   MERGE (member_neo)-[:SKILL]->(skillNode)
+        //   `
+        //   )
+        // )
+        // session2.close();
         
       } else {
         //when author endorses themselves only add skill edge from member to skill node
-        const session2 = driver.session({database:"neo4j"});
-        await session2.writeTransaction(tx => 
-        tx.run(
-          `   
-          MATCH (member_neo:Member {_id: ${member._id}})
-          MATCH (author_neo:Member {_id: ${authorInfo._id}})
-          MATCH (skillNode:Skill {_id: '${skill._id}'})
-          MERGE (member_neo)-[:SKILL]->(skillNode)
-          `
-          )
-        )
-        session2.close();
+        makeConnection_neo4j({
+          node:["Member","Skill"],
+          id:[member._id,skill._id],
+          connection:"SKILL",
+        })
+        // const session2 = driver.session({database:"neo4j"});
+        // await session2.writeTransaction(tx => 
+        // tx.run(
+        //   `   
+        //   MATCH (member_neo:Member {_id: ${member._id}})
+        //   MATCH (author_neo:Member {_id: ${authorInfo._id}})
+        //   MATCH (skillNode:Skill {_id: '${skill._id}'})
+        //   MERGE (member_neo)-[:SKILL]->(skillNode)
+        //   `
+        //   )
+        // )
+        // session2.close();
       }
       
 
