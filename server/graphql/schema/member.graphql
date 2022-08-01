@@ -9,9 +9,11 @@ module.exports = `
         discordAvatar: String
         discriminator: String
         bio: String
+
+        content: contentType
+        
         interest: String
         timeZone: String
-        level: levelEnum
 
         hoursPerWeek: Float,
 
@@ -30,6 +32,12 @@ module.exports = `
         links: [linkType],
 
         attributes: attributesType,
+    }
+
+    type contentType {
+        interest: String,
+        mostProud: String,
+        showCaseAbility: String,
     }
 
     type linkType {
@@ -131,6 +139,7 @@ module.exports = `
         discordAvatar: String
         discriminator: String
         bio: String
+        content: contentInput
         interest: String
         timeZone: String
         skills: [skillInput_member]
@@ -142,6 +151,12 @@ module.exports = `
 
         links: [linkInput],
 
+    }
+
+    input contentInput {
+        interest: String,
+        mostProud: String,
+        showCaseAbility: String,
     }
 
     input linkInput {

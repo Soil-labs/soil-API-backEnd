@@ -20,7 +20,12 @@ const memberSchema = mongoose.Schema({
   },
   discordAvatar: String,
   discriminator: String,
-  bio: String,
+  bio: String, 
+  content: {
+    interest: String,
+    mostProud: String,
+    showCaseAbility: String,
+  },
   interest:String,
 
   hoursPerWeek: Number,
