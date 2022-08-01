@@ -362,6 +362,7 @@ module.exports = {
           id:[member._id,skill._id],
           connection:"SKILL",
         })
+        console.log("change =SDF21 " )
         // const session2 = driver.session({database:"neo4j"});
         // await session2.writeTransaction(tx => 
         // tx.run(

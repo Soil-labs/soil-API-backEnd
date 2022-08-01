@@ -28,7 +28,7 @@ module.exports = {
         node.forEach((n,idx) => {
             if (n=='Member'){
                 fun += `
-                MATCH (n${idx}:Member {_id: ${id[idx]}})
+                MATCH (n${idx}:Member {_id: '${id[idx]}'})
                 `
             } else {
                 fun += `
