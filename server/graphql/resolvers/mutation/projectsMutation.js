@@ -62,80 +62,85 @@ module.exports = {
         // console.log("projectData 1 = ", projectData);
       
         if (!projectData){
-          console.log("If Milo is do the growing again I will lose it " )
           projectData = await new Projects(fields);
           
           projectData.save()
+
+          await createNode_neo4j({
+            node:"Project",
+            id:projectData._id,
+            name:projectData.title,
+          })
             
           // console.log("projectData 2 = ")
 
-          // identify champion by id
-          let championInfo = await Members.findOne({ _id: champion });
+          // // identify champion by id
+          // let championInfo = await Members.findOne({ _id: champion });
 
-          // identify champion's name
-          let championName
+          // // identify champion's name
+          // let championName
         
-          if(championInfo) {
-            console.log("Wise Ty is pleayin with my nerves" )
-            championName = championInfo.discordName;
+          // if(championInfo) {
+          //   console.log("Wise Ty is pleayin with my nerves" )
+          //   championName = championInfo.discordName;
             
-            // Add new project node to Neo4j with champion name
-            createNode_neo4j({
-              node:"Project",
-              id:projectData._id,
-              name:fields.title,
-            })
-            // const session = driver.session({database:"neo4j"});
-            // await session.writeTransaction(tx => 
-            //   tx.run(
-            //   `   
-            //   MERGE (:Project {_id: '${projectData._id}', name: '${fields.title}', description: '${fields.description}', champion: '${championName}'})
-            //   `
-            //   )
-            // )
+          //   // Add new project node to Neo4j with champion name
+          //   createNode_neo4j({
+          //     node:"Project",
+          //     id:projectData._id,
+          //     name:fields.title,
+          //   })
+          //   // const session = driver.session({database:"neo4j"});
+          //   // await session.writeTransaction(tx => 
+          //   //   tx.run(
+          //   //   `   
+          //   //   MERGE (:Project {_id: '${projectData._id}', name: '${fields.title}', description: '${fields.description}', champion: '${championName}'})
+          //   //   `
+          //   //   )
+          //   // )
 
-            // session.close()
+          //   // session.close()
               
 
-            // add champion relationship between project node and member
-            makeConnection_neo4j({
-              node:["Project","Member"],
-              id:[projectData._id,championInfo._id],
-              connection:"CHAMPION",
-            })
-            // const session2 = driver.session({database:"neo4j"});
-            // await session2.writeTransaction(tx => 
-            //   tx.run(
-            //   `   
-            //   MATCH (champion2:Member {_id: ${championInfo._id}})
-            //   MATCH (project2:Project {_id: '${projectData._id}'})
-            //   MERGE (project2)-[:CHAMPION]->(champion2)
-            //   `
-            //   )
-            // )
-            // session2.close();
+          //   // add champion relationship between project node and member
+          //   makeConnection_neo4j({
+          //     node:["Project","Member"],
+          //     id:[projectData._id,championInfo._id],
+          //     connection:"CHAMPION",
+          //   })
+          //   // const session2 = driver.session({database:"neo4j"});
+          //   // await session2.writeTransaction(tx => 
+          //   //   tx.run(
+          //   //   `   
+          //   //   MATCH (champion2:Member {_id: ${championInfo._id}})
+          //   //   MATCH (project2:Project {_id: '${projectData._id}'})
+          //   //   MERGE (project2)-[:CHAMPION]->(champion2)
+          //   //   `
+          //   //   )
+          //   // )
+          //   // session2.close();
  
-          }
-            else {
+          // }
+          //   else {
 
-              championName = 'none'; 
-              // Add new project node to Neo4j w/o champion 
-              createNode_neo4j({
-                node:"Project",
-                id:fields._id,
-                name:fields.title,
-              })
-              // const session3 = driver.session({database:"neo4j"});
-              // await session3.writeTransaction(tx => 
-              // tx.run(
-              // `   
-              // MERGE (:Project {_id: '${fields._id}', name: '${fields.title}', description: '${fields.description}', champion: '${championName}'})
+          //     championName = 'none'; 
+          //     // Add new project node to Neo4j w/o champion 
+          //     createNode_neo4j({
+          //       node:"Project",
+          //       id:fields._id,
+          //       name:fields.title,
+          //     })
+          //     // const session3 = driver.session({database:"neo4j"});
+          //     // await session3.writeTransaction(tx => 
+          //     // tx.run(
+          //     // `   
+          //     // MERGE (:Project {_id: '${fields._id}', name: '${fields.title}', description: '${fields.description}', champion: '${championName}'})
             
-              // `
-              //   )
-              // )
-              // session3.close();
-            }
+          //     // `
+          //     //   )
+          //     // )
+          //     // session3.close();
+          //   }
           
        
             
@@ -155,7 +160,7 @@ module.exports = {
         projectData = await new Projects(fields);
         projectData.save()
 
-        createNode_neo4j({
+        await createNode_neo4j({
           node:"Project",
           id:projectData._id,
           name:projectData.title,
@@ -194,11 +199,11 @@ module.exports = {
             )
 
             // Add new project node to Neo4j with champion name
-            createNode_neo4j({
-              node:"Project",
-              id:projectData._id,
-              name:fields.title,
-            })
+            // createNode_neo4j({
+            //   node:"Project",
+            //   id:projectData._id,
+            //   name:fields.title,
+            // })
             // const session = driver.session({database:"neo4j"});
             // await session.writeTransaction(tx => 
             //   tx.run(
@@ -212,7 +217,7 @@ module.exports = {
               
 
             // add champion relationship between project node and member
-            makeConnection_neo4j({
+            await makeConnection_neo4j({
               node:["Project","Member"],
               id:[projectData._id,memberDataChampion._id],
               connection:"CHAMPION",
@@ -240,7 +245,7 @@ module.exports = {
         for (let i=0;i<fields.team.length;i++){
           
 
-          makeConnection_neo4j({
+          await makeConnection_neo4j({
             node:["Project","Member"],
             id:[projectData._id,fields.team[i].memberID],
             connection:"TEAM_MEMBER",
