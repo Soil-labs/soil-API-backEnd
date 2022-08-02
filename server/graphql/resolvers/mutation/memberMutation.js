@@ -148,24 +148,22 @@ module.exports = {
           id:fields._id,
           name:fields.discordName,
         })
-        // const session = driver.session({database:"neo4j"});
-        // await session.writeTransaction(tx => 
-        // tx.run(
-        //   `   
-        //   MERGE (:Member {_id: ${fields._id}, name: '${fields.discordName}'})
-        //   `
-        //   )
-        // )
-        // session.close();
       } else {
 
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
       //console.log("change = 2" )
       }
 
-    //   console.log("fields = " , fields)
+      for (let i=0;i<skills.length;i++){
+        let skill = skills[i];
+        
+        await makeConnection_neo4j({
+          node:["Member","Skill"],
+          id:[membersData._id,skill._id],
+          connection:"SKILL",
+        })
+      }
 
-    // console.log("membersData = " , membersData)
 
       return membersData
     } catch (err) {
