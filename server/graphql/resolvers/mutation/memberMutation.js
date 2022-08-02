@@ -159,7 +159,7 @@ module.exports = {
         
         await makeConnection_neo4j({
           node:["Member","Skill"],
-          id:[membersData._id,skill._id],
+          id:[membersData._id,skill.id],
           connection:"SKILL",
         })
       }
