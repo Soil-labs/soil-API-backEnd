@@ -151,7 +151,7 @@ module.exports = {
       } else {
 
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
-      //console.log("change = 2" )
+        
       }
 
       for (let i=0;i<skills.length;i++){
