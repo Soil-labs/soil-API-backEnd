@@ -68,7 +68,7 @@ module.exports = {
         if (invitedBy) {
           await makeConnection_neo4j({
             node:["Member","Member"],
-            id:[invitedBy,fields._id],
+            id:[fields._id,invitedBy],
             connection:"INVITED_BY",
           })
         }
