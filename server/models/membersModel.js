@@ -28,6 +28,8 @@ const memberSchema = mongoose.Schema({
   },
   interest:String,
 
+  invitedBy: String, // ID
+
   hoursPerWeek: Number,
   timeZone: String,
 

@@ -10,10 +10,10 @@ module.exports = {
   addNewMember: async (parent, args, context, info) => {
    
 
-  const {discordName,_id,discordAvatar,discriminator, bio,hoursPerWeek,previusProjects} = args.fields;
+  const {discordName,_id,discordAvatar,discriminator, bio,hoursPerWeek,previusProjects,invitedBy} = args.fields;
 
 
-    if (!_id) throw new ApolloError( "_id is required");
+    if (!_id) throw new ApolloError( "_id is required, the IDs come from Discord");
 
     let fields = {
       _id,
@@ -27,9 +27,10 @@ module.exports = {
     if (bio) fields.bio = bio;
     if (hoursPerWeek) fields.hoursPerWeek = hoursPerWeek;
     if (previusProjects) fields.previusProjects = previusProjects;
+    if (invitedBy) fields.invitedBy = invitedBy;
 
 
-    
+    // console.log("fields = " , fields)
 
 
     try {
@@ -63,23 +64,18 @@ module.exports = {
           id:fields._id,
           name:fields.discordName,
         })
-        // const session = driver.session({database:"neo4j"});
-        // await session.writeTransaction(tx => 
-        // tx.run(
-        //   `   
-        //   MERGE (:Member {_id: ${fields._id}, name: '${fields.discordName}'})
-        //   `
-        //   )
-        // )
-        // session.close();
+
+        if (invitedBy) {
+          await makeConnection_neo4j({
+            node:["Member","Member"],
+            id:[invitedBy,fields._id],
+            connection:"INVITED_BY",
+          })
+        }
+
+
       } 
       
-      // else {
-      // //console.log("change = " )
-      //   throw new ApolloError("Member already exists")
-      // }
-
-      console.log("membersData = " , membersData)
 
       return membersData
     } catch (err) {

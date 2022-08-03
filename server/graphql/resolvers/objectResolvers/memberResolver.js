@@ -152,8 +152,33 @@ module.exports = {
                }
             );
          }
-      }
+      },
+      invitedBy: async (parent, args, context, info) => {
+
+         console.log("parent = " , parent)
+            
+         try {
+            const invitedBy = parent.invitedBy;
+   
+   
+            invitedByData = await Members.findOne({_id: invitedBy})
+   
+            return invitedByData;
+   
+   
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > members',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
    },
+   
    matchMembersToUserOutput: {
       commonSkills: async (parent, args, context, info) => {
          console.log("parent 22322= " , parent)

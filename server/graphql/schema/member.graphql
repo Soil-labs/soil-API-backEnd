@@ -17,7 +17,7 @@ module.exports = `
 
         hoursPerWeek: Float,
 
-
+        invitedBy: MembersSmallType
 
         tweets: [String],
         skills: [skillType_member],
@@ -32,6 +32,13 @@ module.exports = `
         links: [linkType],
 
         attributes: attributesType,
+    }
+
+    type MembersSmallType {
+        _id: ID  
+        discordName: String
+        discordAvatar: String
+        discriminator: String
     }
 
     type contentType {
@@ -125,6 +132,8 @@ module.exports = `
         discordAvatar: String
         discriminator: String
         bio: String
+
+        invitedBy: String
 
         hoursPerWeek: Float,
 
