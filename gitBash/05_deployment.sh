@@ -17,7 +17,7 @@ echo "Type T -> for Test Deployment || Type D -> for Final Deployment Server "
 read input
 if [[ $input == "D" || $input == "d" ]]; then
         echo "Final Deployment Starts, good luck :D"
-        heroku git:remote -a "dau-backend"
+        heroku git:remote -a "eden-deploy"
 else
         echo "Test Deployment Starts"
         heroku git:remote -a "oasis-bot-test-deploy"
