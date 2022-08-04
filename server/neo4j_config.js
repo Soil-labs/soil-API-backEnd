@@ -1,6 +1,6 @@
 let neo4j = require('neo4j-driver');
 
 // neo4j connections
-const driver = neo4j.driver("neo4j+s://16837b5d.databases.neo4j.io", neo4j.auth.basic("neo4j", "J-YcKQl98fR6HTEBjm_HZKg_jQWZNCF3Zteast3G9cg"), {/* encrypted: 'ENCRYPTION_OFF' */});
+const driver = neo4j.driver(process.env.REACT_APP_NEO4J_DATABASE_ENDPOINT, neo4j.auth.basic("neo4j", process.env.REACT_APP_NEO4J_DATABASE_TOKEN), {/* encrypted: 'ENCRYPTION_OFF' */});
 
 module.exports = { driver };

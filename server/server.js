@@ -63,8 +63,8 @@ const PORT = process.env.PORT || 5001;
 
 
 const DATABASE_MONGO =
-  process.env.BASEONDATAP != undefined
-    ? process.env.BASEONDATAP
+  process.env.REACT_APP_MONGO_DATABASE != undefined
+    ? process.env.REACT_APP_MONGO_DATABASE
     : "graphQL_harveo";
 
     
