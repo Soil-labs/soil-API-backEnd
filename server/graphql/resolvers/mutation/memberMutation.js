@@ -149,15 +149,20 @@ module.exports = {
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
         
       }
+ 
+    
 
-      for (let i=0;i<skills.length;i++){
-        let skill = skills[i];
-        
-        await makeConnection_neo4j({
-          node:["Member","Skill"],
-          id:[membersData._id,skill.id],
-          connection:"SKILL",
-        })
+      console.log("kubagaaaaaa = " )
+      if (skills){
+        for (let i=0;i<skills.length;i++){
+          let skill = skills[i];
+          
+          await makeConnection_neo4j({
+            node:["Member","Skill"],
+            id:[membersData._id,skill.id],
+            connection:"SKILL",
+          })
+        }
       }
 
 
