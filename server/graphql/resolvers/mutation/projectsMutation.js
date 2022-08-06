@@ -79,7 +79,7 @@ module.exports = {
         }
       } else {
         if (serverID) fields.serverID = serverID;
-        
+
         projectData = await new Projects(fields);
         projectData.save()
 
@@ -179,12 +179,12 @@ module.exports = {
       }
 
 
-      if (fields.role && fields.role.length > 0) {
+      if (projectData.role && projectData.role.length > 0) {
         
 
-        for (let i=0;i<fields.role.length;i++){
+        for (let i=0;i<projectData.role.length;i++){
 
-          let RoleNow = fields.role[i]
+          let RoleNow = projectData.role[i]
           
           console.log("change = 2232" )
 

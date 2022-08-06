@@ -191,16 +191,30 @@ module.exports = {
   },
   matchMembersToSkills: async (parent, args, context, info) => {
        
-    const {skillsID} = args.fields;
+    const {skillsID,serverID} = args.fields;
 
     if (!skillsID) throw new ApolloError("skillsID is required");
     
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
 
      
     try {
 
 
-      let membersMatch_User = await Members.find({ 'skills.id':skillsID}) // Find the members that have the same skill
+      // let membersMatch_User = await Members.find({ 'skills.id':skillsID}) // Find the members that have the same skill
+
+      let membersMatch_User
+
+      if (queryServerID.length>0){
+        membersMatch_User = await Members.find({ $and:[{ 'skills.id':skillsID },{$or:queryServerID}]})
+      } else {
+        membersMatch_User = await Members.find({ 'skills.id':skillsID })
+      }
 
     
       let memberMatch
