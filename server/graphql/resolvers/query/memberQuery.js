@@ -33,7 +33,6 @@ module.exports = {
       if (queryServerID.length>0){
         memberData = await Members.findOne({ $and:[{ _id: _id },{$or:queryServerID}]})
       } else {
-        console.log("change = " )
         memberData = await Members.findOne({ _id: _id })
       }
       
@@ -97,29 +96,56 @@ module.exports = {
 
   matchMembersToUser: async (parent, args, context, info) => {
        
-    const {memberID} = args.fields;
+    const {memberID,serverID} = args.fields;
 
     if (!memberID) throw new ApolloError("memberID is required");
+
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
 
      
     try {
 
       let memberData
 
-      memberData = await Members.findOne({ _id: memberID })
-      
+      // memberData = await Members.findOne({ _id: memberID })
+
+      if (queryServerID.length>0){
+        memberData = await Members.findOne({ $and:[{ _id: memberID },{$or:queryServerID}]})
+      } else {
+        memberData = await Members.findOne({ _id: memberID })
+      }
       
       if (!memberData) throw new ApolloError("The member need to exist on the database ");
 
-      
-
       skillsArray_user = memberData.skills.map(skill => skill.id) // separate all teh skills
-      
 
-      let membersMatch_User = await Members.find({ 'skills.id':skillsArray_user}) // Find the members that have the same skill
+
+
+      
+      
+      // let membersMatch_User = await Members.find({ 'skills.id':skillsArray_user}) // Find the members that have the same skill
+
+      let membersMatch_User
+
+      if (queryServerID.length>0){
+        membersMatch_User = await Members.find({ $and:[{ 'skills.id':skillsArray_user },{$or:queryServerID}]})
+      } else {
+        membersMatch_User = await Members.find({ 'skills.id':skillsArray_user })
+      }
+
 
       if (membersMatch_User.length == 0){
-        membersMatch_User = await Members.find({})
+        // membersMatch_User = await Members.find({})
+        if (queryServerID.length>0){
+          membersMatch_User = await Members.find({ $and:[{ },{$or:queryServerID}]})
+        } else {
+          membersMatch_User = await Members.find({ })
+        }
         membersMatch_User = membersMatch_User.slice(0, 4)
 
       }

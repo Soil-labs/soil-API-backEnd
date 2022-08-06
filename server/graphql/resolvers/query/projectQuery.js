@@ -110,24 +110,37 @@ module.exports = {
   },
   findProjects_RequireSkill: async (parent, args, context, info) => {
    
-    const {skillID} = args.fields;
+    const {skillID,serverID} = args.fields;
 
-    // console.log("change = " )
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
     
 
     try {
 
 
       let projectsData
-      projectsData = await Projects.find({ 'role.skills._id':skillID})
+      // projectsData = await Projects.find({ 'role.skills._id':skillID})
+
+      if (queryServerID.length>0){
+        projectsData = await Projects.find({ $and:[{ 'role.skills._id':skillID },{$or:queryServerID}]})
+      } else {
+        projectsData = await Projects.find({ 'role.skills._id':skillID })
+      }
 
     //console.log("projectsData = " , projectsData)
       
-      if (projectsData){
-        return projectsData
-      } else {
-        return [{}]
-      }
+      // if (projectsData){
+        // return projectsData
+      // } else {
+      //   return [{}]
+      // }
+
+      return projectsData
       
     } catch (err) {
       throw new ApolloError(
@@ -139,25 +152,49 @@ module.exports = {
   },
   findProjects_RecommendedToUser: async (parent, args, context, info) => {
    
-    const {memberID} = args.fields;
+    const {memberID,serverID} = args.fields;
 
     if (!memberID) throw new ApolloError("Member id is required");
 
 
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
     
 
     try {
 
-      let memberData = await Members.findOne({ _id: memberID }) // Find the Member info
+      // let memberData = await Members.findOne({ _id: memberID }) // Find the Member info
 
-      if (!memberData) throw new ApolloError("Member not found");
+      // console.log("memberData.length = " , memberData.serverID)
+
+      let memberData
+
+      if (queryServerID.length>0){
+        memberData = await Members.findOne({ $and:[{ _id: memberID },{$or:queryServerID}]})
+      } else {
+        console.log("change = " )
+        memberData = await Members.findOne({ _id: memberID })
+      }
+
+      if (!memberData) throw new ApolloError("Member not found or doenst exist on this server");
 
       skillsArray = memberData.skills.map(skill => skill.id) // separate all teh skills
 
-      // console.log("memberData.skills = " , memberData.skills)
-    //console.log("skillsArray = " , skillsArray)
       
-      projectsData = await Projects.find({ 'role.skills._id':skillsArray}) // Find the proejcts that have one of this skills in their roles
+      let projectsData
+
+      if (queryServerID.length>0){
+        projectsData = await Projects.find({ $and:[{ 'role.skills._id':skillsArray },{$or:queryServerID}]})
+      } else {
+        console.log("change = 2" )
+        projectsData = await Projects.find({ 'role.skills._id':skillsArray })
+      }
+
+      // projectsData = await Projects.find({ 'role.skills._id':skillsArray}) // Find the proejcts that have one of this skills in their roles
 
       let projectN,skill_ProjectRole,filteredSkillArray
 
@@ -204,23 +241,48 @@ module.exports = {
   match_projectToUser: async (parent, args, context, info) => {
    
     // console.log("change = " )
-    const {memberID,projectID,roleID} = args.fields;
+    const {memberID,projectID,roleID,serverID} = args.fields;
 
     if (!memberID) throw new ApolloError("Member id is required");
     if (!projectID) throw new ApolloError("Project id is required");
     if (!roleID) throw new ApolloError("Role id is required");
 
 
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
+
 
     try {
 
-      let memberData = await Members.findOne({ _id: memberID }) // Find the Member info
+      // let memberData = await Members.findOne({ _id: memberID }) // Find the Member info
 
-      if (!memberData) throw new ApolloError("Member not found");
+      let memberData
+      if (queryServerID.length>0){
+        memberData = await Members.findOne({ $and:[{ _id: memberID},{$or:queryServerID}]})
+      } else {
+        memberData = await Members.findOne({ _id: memberID})
+      }
 
-      let projectData = await Projects.findOne({ _id: projectID }) // Find the Project info
+      if (!memberData) throw new ApolloError("Member not found - is not on the database or in this server");
 
-      if (!projectData) throw new ApolloError("Project not found");
+
+
+
+      // let projectData = await Projects.findOne({ _id: projectID }) // Find the Project info
+      let projectData
+      if (queryServerID.length>0){
+        projectData = await Projects.findOne({ $and:[{ _id: projectID },{$or:queryServerID}]})
+      } else {
+        projectData = await Projects.findOne({ _id: projectID })
+      }
+
+      if (!projectData) throw new ApolloError("Project not found - is not on the database or in this server");
+
+
 
 
       skillsArray = memberData.skills.map(skill => skill.id) // separate all teh skills

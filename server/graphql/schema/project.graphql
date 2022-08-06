@@ -241,14 +241,17 @@ module.exports = `
     }
     input findProjects_RequireSkillInput {
         skillID: [ID]
+        serverID: [String]
     }
     input findProjects_RecommendedToUserInput {
         memberID: ID
+        serverID: [String]
     }
     input match_projectToUserInput {
         memberID: ID
         projectID: ID
         roleID: ID
+        serverID: [String]
     }
 
     input findTeamsInput {
