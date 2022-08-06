@@ -8,7 +8,7 @@ const teamModalSchema = mongoose.Schema({
     name: String,
     description: String,
 
-    serverID: String,
+    serverID: [String],
     projectID: mongoose.Schema.ObjectId,
     memberID: [String],
     championID: [String],

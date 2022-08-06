@@ -5,15 +5,15 @@ require("dotenv").config();
 
 const projectUpdateModalSchema = mongoose.Schema({
 
-    serverID: String,
+    title: String,
+    content: String,
+
+    serverID: [String],
     projectID: mongoose.Schema.ObjectId,
     teamID: [mongoose.Schema.ObjectId],
     memberID: [String],
     authorID: String,
 
-
-    title: String,
-    content: String,
 
     registeredAt: {
         type: Date,

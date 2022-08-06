@@ -30,7 +30,7 @@ module.exports = `
         name: String
         description: String
 
-        serverID: String,
+        serverID: [String],
         projects: Project,
         members: [Members]
         champion: [Members]
@@ -144,7 +144,7 @@ module.exports = `
         name: String
         description: String
 
-        serverID: String,
+        serverID: [String],
         projectID: String,
         memberID: [String]
         championID: [String]
