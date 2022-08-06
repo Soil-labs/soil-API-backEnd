@@ -15,7 +15,16 @@ module.exports = `
         registeredAt: String
     }
 
+    type findAllProjectsTeamsAnouncmentsOutput {
+        _id: ID
+        project: Project
+        team: [teamsType]
+    }
 
+    type teamsType { 
+        teamData: Team
+        announcement: [ProjectUpdate]
+    }
     
 
     input createProjectUpdateInput {
@@ -35,6 +44,11 @@ module.exports = `
         projectID: [String],
         memberID: [String]
         teamID: [String]
+    }
+
+    input findAllProjectsTeamsAnouncmentsInput {
+        _id: ID
+    
     }
 
     

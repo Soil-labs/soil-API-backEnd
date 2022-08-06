@@ -4,7 +4,7 @@ const { findMember,findMembers,matchMembersToUser,matchMembersToSkills } = requi
 const { findSkill,findSkills,waitingToAproveSkills,adminFindAllSkillsEveryState } = require("./query/skillsQuery");
 
 const {findProject,findProjects,findProjects_RequireSkill,findProjects_RecommendedToUser,match_projectToUser,findTeams} = require("./query/projectQuery");
-const {findProjectUpdates} = require("./query/projectUpdateQuery");
+const {findProjectUpdates,findAllProjectsTeamsAnouncments} = require("./query/projectUpdateQuery");
 
 
 const {findRoleTemplate,findRoleTemplates} = require("./query/roleTemplateQuery");
@@ -38,7 +38,7 @@ module.exports = {
 
 
     // ------------- PROJECT UPDATE QUERY -----------------
-    findProjectUpdates,
+    findProjectUpdates,findAllProjectsTeamsAnouncments,
 
   },
 };

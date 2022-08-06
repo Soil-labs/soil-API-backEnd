@@ -106,5 +106,59 @@ module.exports = {
            }
         },
    },
+   findAllProjectsTeamsAnouncmentsOutput: {
+      team: async (parent, args, context, info) => {
+      //  console.log("parent = " , parent.team)
+
+         try {
+            const team = parent.team;
+
+
+            // authorData = await Members.findOne({_id: authorID})
+
+
+
+            return team;
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > members',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+      
+   },
+   teamsType: {
+      announcement: async (parent, args, context, info) => {
+       console.log("parent announcment= " , parent)
+
+         try {
+            const announcement = parent.announcement;
+
+
+            // authorData = await Members.findOne({_id: authorID})
+
+
+
+            return announcement;
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > members',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+      
+   },
    
 };

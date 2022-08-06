@@ -37,6 +37,7 @@ module.exports = `
 
           #  ---------- PROJECT UDPATE QUERY -------
           findProjectUpdates(fields:findProjectUpdatesINPUT): [ProjectUpdate]
+          findAllProjectsTeamsAnouncments(fields:findAllProjectsTeamsAnouncmentsInput): [findAllProjectsTeamsAnouncmentsOutput]
    
             
         }
