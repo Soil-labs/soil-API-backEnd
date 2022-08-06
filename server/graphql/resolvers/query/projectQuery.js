@@ -13,17 +13,34 @@ const {
 module.exports = {
   findProject: async (parent, args, context, info) => {
    
-    const {_id} = args.fields;
+    const {_id,serverID} = args.fields;
 
     if (!_id) throw new ApolloError("Project id is required");
+
+
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
 
     try {
 
 
-      let projectData = await Projects.findOne({ _id: _id })
+      // let projectData = await Projects.findOne({ _id: _id })
+
+      let projectData
+
+      if (queryServerID.length>0){
+        projectData = await Projects.findOne({ $and:[{ _id: _id },{$or:queryServerID}]})
+      } else {
+        console.log("change = " )
+        projectData = await Projects.findOne({ _id: _id })
+      }
 
 
-      if (!projectData) throw new ApolloError("Project not found");
+      // if (!projectData) throw new ApolloError("Project not found");
 
 
       return projectData
@@ -37,23 +54,46 @@ module.exports = {
   },
   findProjects: async (parent, args, context, info) => {
    
-    const {_id} = args.fields;
+    const {_id,serverID} = args.fields;
 
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
     
 
     try {
 
 
-      let projectsData
-      if (_id) {
+      // let projectsData
+      // if (_id) {
         
-        projectsData = await Projects.find({ _id: _id })
-      } else {
+      //   projectsData = await Projects.find({ _id: _id })
+      // } else {
         
 
-        projectsData = await Projects.find({})
+      //   projectsData = await Projects.find({})
+      // }
+    
+      
+      let projectsData
+
+      if (_id){
+        if (queryServerID.length>0){
+          projectsData = await Projects.find({ $and:[{ _id: _id },{$or:queryServerID}]})
+        } else {
+          projectsData = await Projects.find({ _id: _id })
+        }
+      } else{
+        if (queryServerID.length>0){
+          projectsData = await Projects.find({$or:queryServerID})
+        } else {
+          projectsData = await Projects.find({})
+
+        }
       }
-    //console.log("projectsData = " , projectsData)
 
 
       
@@ -244,7 +284,14 @@ module.exports = {
 
   findTeams: async (parent, args, context, info) => {
    
-    const {_id,projectID} = args.fields;
+    const {_id,projectID,serverID} = args.fields;
+
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
     
     let fields = {};
 
@@ -265,10 +312,21 @@ module.exports = {
     try {
 
       let teamData
-      if (_id) {
-        teamData = await Team.find({ _id: _id })
-      } else {
-        teamData = await Team.find(fields)
+
+
+      if (_id){
+        if (queryServerID.length>0){
+          teamData = await Team.find({ $and:[{ _id: _id },{$or:queryServerID}]})
+        } else {
+          teamData = await Team.find({ _id: _id })
+        }
+      } else{
+        if (queryServerID.length>0){
+          teamData = await Team.find({$or:queryServerID})
+        } else {
+          teamData = await Team.find({})
+
+        }
       }
 
       console.log("fields = " , fields)

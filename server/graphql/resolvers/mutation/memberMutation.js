@@ -10,7 +10,7 @@ module.exports = {
   addNewMember: async (parent, args, context, info) => {
    
 
-  const {discordName,_id,discordAvatar,discriminator, bio,hoursPerWeek,previusProjects,invitedBy} = args.fields;
+  const {discordName,_id,discordAvatar,discriminator, bio,hoursPerWeek,previusProjects,invitedBy,serverID} = args.fields;
 
 
     if (!_id) throw new ApolloError( "_id is required, the IDs come from Discord");
@@ -54,6 +54,8 @@ module.exports = {
     
         fields = {...fields, attributes: newAttributes};
 
+        if (serverID) fields.serverID = serverID;
+
         membersData = await new Members(fields);
         
         membersData.save()
@@ -74,7 +76,19 @@ module.exports = {
         }
 
 
-      } 
+      } else {
+        if (!membersData.serverID){
+
+          membersData = await Members.findOneAndUpdate({ _id: membersData._id }, {serverID:serverID}, { new: true });
+        } else {
+          let serverID_new = [...membersData.serverID]
+          if (!membersData.serverID.includes(serverID)){
+            serverID_new.push(serverID)
+          }
+          membersData = await Members.findOneAndUpdate({ _id: membersData._id }, {serverID:serverID_new}, { new: true });
+
+        }
+      }
       
 
       return membersData
@@ -91,7 +105,7 @@ module.exports = {
 
     const {discordName,_id,discordAvatar,discriminator,bio,
       hoursPerWeek,previusProjects,
-      interest,timeZone,level,skills,links,content} = args.fields;
+      interest,timeZone,level,skills,links,content,serverID} = args.fields;
 
     if (!_id) throw new ApolloError( "_id is required");
 
@@ -134,6 +148,8 @@ module.exports = {
     
         fields = {...fields, attributes: newAttributes};
 
+        if (serverID) fields.serverID = serverID;
+
         membersData = await new Members(fields);
         
         membersData.save()
@@ -145,6 +161,18 @@ module.exports = {
           name:fields.discordName,
         })
       } else {
+
+        if (!membersData.serverID){
+
+          if (serverID) fields.serverID = serverID;
+        } else {
+          let serverID_new = [...membersData.serverID]
+          if (!membersData.serverID.includes(serverID)){
+            serverID_new.push(serverID)
+          }
+          if (serverID) fields.serverID = serverID_new;
+
+        }
 
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
         

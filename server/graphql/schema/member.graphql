@@ -15,6 +15,8 @@ module.exports = `
         interest: String
         timeZone: String
 
+        serverID: [String],
+
         hoursPerWeek: Float,
 
         invitedBy: MembersSmallType
@@ -114,10 +116,12 @@ module.exports = `
 
     input findMemberInput {
         _id: ID
+        serverID: [String]
     }
 
     input findMembersInput {
         _id: [ID]
+        serverID: [String]
     }
     input matchMembersToUserInput {
         memberID: ID
@@ -137,6 +141,8 @@ module.exports = `
 
         hoursPerWeek: Float,
 
+        serverID: String,
+
         previusProjects: [previusProjectsInput],
 
     }
@@ -151,6 +157,7 @@ module.exports = `
         content: contentInput
         interest: String
         timeZone: String
+        serverID: String,
         skills: [skillInput_member]
         
 

@@ -6,6 +6,8 @@ module.exports = `
         title: String
         description: String
 
+        serverID: [String],
+
         champion: Members
 
         team: [teamType]
@@ -159,6 +161,7 @@ module.exports = `
         
         title: String
         description: String
+        serverID: String
 
         champion: String
 
@@ -230,9 +233,11 @@ module.exports = `
 
     input findProjectInput {
         _id: ID
+        serverID: [String]
     }
     input findProjectsInput {
         _id: [ID]
+        serverID: [String]
     }
     input findProjects_RequireSkillInput {
         skillID: [ID]
@@ -249,6 +254,7 @@ module.exports = `
     input findTeamsInput {
         _id: [ID]
         projectID: [ID]
+        serverID: [String]
     }
 
     

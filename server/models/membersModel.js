@@ -34,6 +34,7 @@ const memberSchema = mongoose.Schema({
   timeZone: String,
 
 
+  serverID: [String],
 
   tweets: [String],
   skills: [{

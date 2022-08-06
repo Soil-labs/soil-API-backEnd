@@ -8,6 +8,8 @@ const projectSchema = mongoose.Schema({
   title: String,
   description: String,
 
+  serverID: [String],
+
   champion:String,
 
   team: [{

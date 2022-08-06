@@ -11,20 +11,35 @@ const {
 module.exports = {
   findMember: async (parent, args, context, info) => {
        
-    const {_id} = args.fields;
+    const {_id,serverID} = args.fields;
 
     if (!_id) {
       throw new ApolloError("No id provided");
     }
 
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
     
     try {
 
-      let memberData = await Members.findOne({ _id: _id })
+      // let memberData = await Members.findOne({ _id: _id })
+
+      let memberData
+
+      if (queryServerID.length>0){
+        memberData = await Members.findOne({ $and:[{ _id: _id },{$or:queryServerID}]})
+      } else {
+        console.log("change = " )
+        memberData = await Members.findOne({ _id: _id })
+      }
       
 
 
-      // console.log("memberData = " , memberData)
+      console.log("memberData = " , memberData)
 
       return memberData
     } catch (err) {
@@ -38,17 +53,33 @@ module.exports = {
 
   findMembers: async (parent, args, context, info) => {
        
-    const {_id} = args.fields;
+    const {_id,serverID} = args.fields;
+
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
 
     
     try {
 
       let membersData
+
       if (_id){
-        membersData = await Members.find({ _id: _id })
-      //console.log("membersData = " , membersData)
+        if (queryServerID.length>0){
+          membersData = await Members.find({ $and:[{ _id: _id },{$or:queryServerID}]})
+        } else {
+          membersData = await Members.find({ _id: _id })
+        }
       } else{
-        membersData = await Members.find({})
+        if (queryServerID.length>0){
+          membersData = await Members.find({$or:queryServerID})
+        } else {
+          membersData = await Members.find({})
+
+        }
       }
 
 

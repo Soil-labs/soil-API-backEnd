@@ -11,28 +11,9 @@ const {createNode_neo4j,makeConnection_neo4j} = require("../../../neo4j/func_neo
 
 module.exports = {
   updateProject: async (parent, args, context, info) => {
-   
-
-    // console.log("check 1 = ",findSkillQuery);
-
-    // createNode_neo4j({
-    //   node:"Project",
-    //   id:"laksdfj9029jfslkdjf",
-    //   name:"Super Project",
-    // })
-
-    // makeConnection_neo4j({
-    //   node:["Member","Project"],
-    //   id:["971147333414842408","laksdfj9029jfslkdjf"],
-    //   connection:"Dona",
-    // })
-
-
-
-    // throw new ApolloError("Project not found");
 
     
-    const {_id,title,description,champion,team,role,collaborationLinks,budget,dates,stepsJoinProject} = JSON.parse(JSON.stringify(args.fields))
+    const {_id,title,description,champion,team,role,collaborationLinks,budget,dates,stepsJoinProject,serverID} = JSON.parse(JSON.stringify(args.fields))
  
  
     
@@ -63,7 +44,11 @@ module.exports = {
         // console.log("projectData 1 = ", projectData);
       
         if (!projectData){
+
+          if (serverID) fields.serverID = serverID;
+
           projectData = await new Projects(fields);
+
           
           projectData.save()
 
@@ -76,6 +61,13 @@ module.exports = {
           
         } else {
 
+          let serverID_new = [...projectData.serverID]
+          if (!projectData.serverID.includes(serverID)){
+            serverID_new.push(serverID)
+          }
+          if (serverID) fields.serverID = serverID_new;
+
+
           projectData= await Projects.findOneAndUpdate(
               {_id: projectData._id},
               {
@@ -86,6 +78,8 @@ module.exports = {
 
         }
       } else {
+        if (serverID) fields.serverID = serverID;
+        
         projectData = await new Projects(fields);
         projectData.save()
 

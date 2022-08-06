@@ -16,7 +16,7 @@ module.exports = {
    
 
     console.log("change = " )
-    const {_id,projectID,memberID,teamID} = args.fields;
+    const {_id,projectID,memberID,teamID,serverID} = args.fields;
 
     let fields = {}
 
@@ -58,10 +58,23 @@ module.exports = {
       })
     }
 
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
+
+    if (queryServerID.length>0){
+      querySearch.push({ $or: queryServerID })
+    }
+
+    console.log("querySearch = " , querySearch)
+
 
     try {
 
-      if (Object.keys(fields).length > 0) {
+      if (querySearch.length > 0) {
         console.log("change = 1" )
         // projectUpdateData = await ProjectUpdate.find( {
         //   $and: [
@@ -79,10 +92,10 @@ module.exports = {
         // projectUpdateData = await ProjectUpdate.find(fields)
         // projectUpdateData = await ProjectUpdate.find({memberID: fields.memberID[0]})
       } else {
-        console.log("change = 2" )
+        // console.log("change = 2" )
         projectUpdateData = await ProjectUpdate.find( {})
 
-        console.log("projectUpdateData = " , projectUpdateData)
+        // console.log("projectUpdateData = " , projectUpdateData)
       }
 
 
@@ -115,39 +128,7 @@ module.exports = {
    
 
     console.log("change = " )
-    // const {_id,projectID,memberID,teamID} = args.fields;
-
-    // let fields = {}
-
-    // if (_id) fields = {...fields,_id}
-    // if (projectID) fields = {...fields,projectID}
-    // if (memberID) fields = {...fields,memberID}
-    // if (teamID) fields = {...fields,teamID}
-
-
-
-    // console.log("fields = " , fields)
-
-    // let querySearch = []
-  
-    // if (projectID) {
-    //   projectID.forEach(id => {
-    //     querySearch.push({ projectID: id })
-    //   })
-    // }
-
-    // if (memberID) {
-    //   memberID.forEach(id => {
-    //     querySearch.push({ memberID: id })
-    //   })
-    // }
-
-    // if (teamID) {
-    //   teamID.forEach(id => {
-    //     querySearch.push({ teamID: id })
-    //   })
-    // }
-
+    
 
     try {
 
