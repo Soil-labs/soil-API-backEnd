@@ -327,26 +327,43 @@ module.exports = {
   addSkillToMember: async (parent, args, context, info) => {
   
 
-    const {skillID,memberID,authorID} = args.fields;
+    const {skillID,memberID,authorID,serverID} = args.fields;
 
     if (!skillID) throw new ApolloError( "skillID is required");
     if (!memberID) throw new ApolloError( "memberID is required");
     if (!authorID) throw new ApolloError( "authorID is required");
+
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
 
     try {
 
 
       let fieldUpdate = {}
 
-      let member = await Members.findOne({ _id: memberID })
+      let member //= await Members.findOne({ _id: memberID })
+      if (queryServerID.length>0){
+        member = await Members.findOne({ $and:[{ _id: memberID },{$or:queryServerID}]})
+      } else {
+        member = await Members.findOne({ _id: memberID })
+      }
 
-      let authorInfo = await Members.findOne({ _id: authorID })
+      let authorInfo //= await Members.findOne({ _id: authorID })
+      if (queryServerID.length>0){
+        authorInfo = await Members.findOne({ $and:[{ _id: authorID },{$or:queryServerID}]})
+      } else {
+        authorInfo = await Members.findOne({ _id: authorID })
+      }
 
       let skill = await Skills.findOne({ _id: skillID })
 
 
-      if (!member) throw new ApolloError( "member dont exist, you need to first craete the member");
-      if (!authorInfo) throw new ApolloError( "author dont exist, you need to first craete the author");
+      if (!member) throw new ApolloError( "member dont exist, or the author and member are not in the same server");
+      if (!authorInfo) throw new ApolloError( "author dont exist, or the author and member are not in the same server");
       if (!skill) throw new ApolloError( "skill dont exist, you need to first creaet the skill ");
 
 
