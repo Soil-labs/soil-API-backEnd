@@ -8,6 +8,7 @@ const {findProjectUpdates,findAllProjectsTeamsAnouncments} = require("./query/pr
 
 
 const {findRoleTemplate,findRoleTemplates} = require("./query/roleTemplateQuery");
+const {findServers} = require("./query/serverQuery");
 const {findSkillCategory,findSkillCategories} = require("./query/skillCategoryQuery");
 
 
@@ -32,6 +33,9 @@ module.exports = {
 
     // ------------- ROLE TEMPLATE QUERY -----------------
     findRoleTemplate,findRoleTemplates,
+
+    // ------------- SERVER TEMPLATE QUERY -----------------
+    findServers,
 
     // ------------- SKILL CATEGORY QUERY -----------------
     findSkillCategory,findSkillCategories,

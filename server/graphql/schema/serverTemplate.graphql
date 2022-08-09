@@ -1,0 +1,27 @@
+module.exports = `
+    
+
+    type ServerTemplate {
+        _id: ID
+        name: String,
+        adminID: [String],
+        adminRoles: [String],
+        adminCommands: [String], 
+
+    }
+
+    input findServersInput {
+        _id: ID
+    }
+
+    input updateServerInput {
+        _id: ID
+        name: String,
+        adminID: [String],
+        adminRoles: [String],
+        adminCommands: [String], 
+    }
+
+    
+
+`
