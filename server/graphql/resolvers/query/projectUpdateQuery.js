@@ -16,7 +16,9 @@ module.exports = {
    
 
     console.log("change = " )
-    const {_id,projectID,memberID,teamID,serverID} = args.fields;
+    const {_id,projectID,memberID,teamID,serverID,dateStart,dateEnd} = args.fields;
+
+    console.log("dateStart,dateEnd = " , dateStart,dateEnd)
 
     let fields = {}
 
@@ -27,7 +29,7 @@ module.exports = {
 
 
 
-    console.log("fields = " , fields)
+    // console.log("fields = " , fields)
 
     // let querySearch = [
     //   // { _id: fields._id },
@@ -70,6 +72,15 @@ module.exports = {
     }
 
     console.log("querySearch = " , querySearch)
+
+
+    if (dateStart){
+      querySearch.push({ registeredAt: {$gt: dateStart} })
+    }
+
+    if (dateEnd){
+      querySearch.push({ registeredAt: {$lt: dateEnd} })
+    }
 
 
     try {

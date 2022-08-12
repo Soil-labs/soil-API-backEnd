@@ -45,6 +45,8 @@ module.exports = `
         memberID: [String]
         teamID: [String]
         serverID: [String]
+        dateStart: String
+        dateEnd: String
     }
 
     input findAllProjectsTeamsAnouncmentsInput {
