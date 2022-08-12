@@ -139,6 +139,8 @@ module.exports = {
    
 
     console.log("change = " )
+
+    const {dateStart,dateEnd} = args.fields;
     
 
     try {
@@ -166,7 +168,24 @@ module.exports = {
             // console.log("ProjectNow._id ,teamNow.projectID, = " , ProjectNow._id ,teamNow.projectID,ProjectNow._id.equals(teamNow.projectID))
 
             if (ProjectNow._id.equals(teamNow.projectID)){
-              let anouncmentsDataNow = await ProjectUpdate.find( {$and: [{projectID: ProjectNow._id},{teamID: teamNow._id}]} )
+
+
+              let querySearch = []
+
+              querySearch.push({projectID: ProjectNow._id})
+              querySearch.push({teamID: teamNow._id})
+
+              if (dateStart){
+                querySearch.push({ registeredAt: {$gt: dateStart} })
+              }
+          
+              if (dateEnd){
+                querySearch.push({ registeredAt: {$lt: dateEnd} })
+              }
+
+
+
+              let anouncmentsDataNow = await ProjectUpdate.find( {$and: querySearch} )
               // console.log("ProjectNow._id,teamNow.projectID = " , ProjectNow._id,teamNow._id)
               // console.log("anouncmentsDataNow = " , anouncmentsDataNow)
 

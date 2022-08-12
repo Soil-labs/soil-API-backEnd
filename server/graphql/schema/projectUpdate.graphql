@@ -51,6 +51,8 @@ module.exports = `
 
     input findAllProjectsTeamsAnouncmentsInput {
         _id: ID
+        dateStart: String
+        dateEnd: String
     
     }
 
