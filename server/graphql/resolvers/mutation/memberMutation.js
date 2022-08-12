@@ -65,6 +65,7 @@ module.exports = {
           node:"Member",
           id:fields._id,
           name:fields.discordName,
+          serverID:membersData.serverID,
         })
 
         if (invitedBy) {
@@ -159,6 +160,7 @@ module.exports = {
           node:"Member",
           id:fields._id,
           name:fields.discordName,
+          serverID:membersData.serverID,
         })
       } else {
 
@@ -175,12 +177,19 @@ module.exports = {
         }
 
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
+
+        if (fields.serverID){
+          await createNode_neo4j({
+            node:"Member",
+            id:membersData._id,
+            name:membersData.discordName,
+            serverID:membersData.serverID,
+          })
+        }
         
       }
  
     
-
-      console.log("kubagaaaaaa = " )
       if (skills){
         for (let i=0;i<skills.length;i++){
           let skill = skills[i];

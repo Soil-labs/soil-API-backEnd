@@ -155,7 +155,7 @@ module.exports = {
       },
       invitedBy: async (parent, args, context, info) => {
 
-         console.log("parent = " , parent)
+         // console.log("parent = " , parent)
             
          try {
             const invitedBy = parent.invitedBy;

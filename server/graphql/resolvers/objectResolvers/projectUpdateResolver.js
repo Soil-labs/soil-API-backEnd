@@ -81,7 +81,7 @@ module.exports = {
            }
         },
         team: async (parent, args, context, info) => {
-         console.log("parent = 22" , parent)
+         // console.log("parent = 22" , parent)
   
            try {
               const teamID = parent.teamID;
