@@ -4,7 +4,7 @@ const { Projects } = require("../../../models/projectsModel");
 
 const {ApolloError} = require("apollo-server-express");
 const { driver } = require("../../../../server/neo4j_config");
-const {createNode_neo4j,makeConnection_neo4j} = require("../../../neo4j/func_neo4j");
+const {createNode_neo4j,makeConnection_neo4j,updateNode_neo4j} = require("../../../neo4j/func_neo4j");
 
 module.exports = {
   addNewMember: async (parent, args, context, info) => {
@@ -179,10 +179,9 @@ module.exports = {
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
 
         if (fields.serverID){
-          await createNode_neo4j({
+          await updateNode_neo4j({
             node:"Member",
             id:membersData._id,
-            name:membersData.discordName,
             serverID:membersData.serverID,
           })
         }

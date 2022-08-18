@@ -6,7 +6,7 @@ const {ApolloError} = require("apollo-server-express");
 const { TeamMember } = require("discord.js");
 const { driver } = require("../../../../server/neo4j_config");
 
-const {createNode_neo4j,makeConnection_neo4j} = require("../../../neo4j/func_neo4j");
+const {createNode_neo4j,updateNode_neo4j,makeConnection_neo4j} = require("../../../neo4j/func_neo4j");
 
 
 module.exports = {
@@ -52,10 +52,13 @@ module.exports = {
           
           projectData.save()
 
+          console.log("change = -putsigona bagiensld" )
+
           await createNode_neo4j({
             node:"Project",
             id:projectData._id,
             name:projectData.title,
+            serverID:projectData.serverID,
           })
             
           
@@ -76,6 +79,14 @@ module.exports = {
               {new: true}
           )
 
+          if (fields.serverID){
+            await updateNode_neo4j({
+              node:"Project",
+              id:projectData._id,
+              serverID:projectData.serverID,
+            })
+          }
+
         }
       } else {
         if (serverID) fields.serverID = serverID;
@@ -87,6 +98,7 @@ module.exports = {
           node:"Project",
           id:projectData._id,
           name:projectData.title,
+          serverID:projectData.serverID,
         })
       }
       
@@ -127,12 +139,17 @@ module.exports = {
   
       }
 
+      // console.log("team ---- --- -- --  = " , team)
+
       
-      if (fields.team && fields.team.length > 0) {
+      if (team && fields.team && fields.team.length > 0) {
         console.log('team members!!!: ',fields.team); // prints out
 
         // const session4 = driver.session({database:"neo4j"});
         for (let i=0;i<fields.team.length;i++){
+          
+          // console.log("team ---- --- -- --  = " , i)
+
           
 
           await makeConnection_neo4j({
@@ -179,7 +196,7 @@ module.exports = {
       }
 
 
-      if (projectData.role && projectData.role.length > 0) {
+      if (role && projectData.role && projectData.role.length > 0) {
         
 
         for (let i=0;i<projectData.role.length;i++){
