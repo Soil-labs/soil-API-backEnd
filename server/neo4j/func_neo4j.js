@@ -80,12 +80,18 @@ module.exports = {
 
 
         let fun
+
+        let update_value_n
+
+        // console.log("id_name,id_value,update_name,update_value,node = " , id_name,id_value,update_name,update_value,node)
+
+
         if (update_name == 'serverID'){
-            update_value = arrayToString(update_value)
+            update_value_n = arrayToString(update_value)
 
             fun = `
                 MATCH (n:${node}{${id_name}:'${id_value}'})
-                SET n.${update_name} = ${update_value}
+                SET n.${update_name} = ${update_value_n}
                 RETURN n
             `
         } else {
@@ -221,7 +227,7 @@ function arrayToString(arrayT) {
   
       stringResult += "]";
   
-      console.log("stringResult = ", stringResult);
+    //   console.log("stringResult = ", stringResult);
   
       return stringResult;
     } else {

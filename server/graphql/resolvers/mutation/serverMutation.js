@@ -61,19 +61,37 @@ module.exports = {
 
         }
 
+        let serverData_all = await ServerTemplate.find({})
+
+          let serverID = []
+          serverData_all.map(server => {
+            serverID.push(server._id)
+          })
+
         if (isNewServer) {
           
           let skillsData = await Skills.find({})
 
+
+          let serverNew = []
           for (let i = 0; i < skillsData.length; i++) {
-            console.log("skillsData[i]._id = " , skillsData[i]._id=="63002207122231377800bee1")
-            
+            // console.log("skillsData[i]._id = " , skillsData[i]._id=="63003681674d6b3e9185e3e6")
+
+            serverNew = [...serverID]
+
+            if (i==0){
+              console.log("skillsData[i] = " , skillsData[i])
+              console.log("serverNew = " , serverNew)
+            }
+
+            serverNew.push(serverData._id)
+
             updateNode_neo4j_serverID_f({
               node:"Skill",
               id_name: "_id",
               id_value: skillsData[i]._id,
               update_name:"serverID",
-              update_value:_id,
+              update_value:serverNew,
             })
           }
 
