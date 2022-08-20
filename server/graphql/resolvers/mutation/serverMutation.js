@@ -1,7 +1,10 @@
 // const { Members } = require("../../../models/membersModel");
-// const { Skills } = require("../../../models/skillsModel");
+const { Skills } = require("../../../models/skillsModel");
 // const { RoleTemplate } = require("../../../models/roleTemplateModal");
 const { ServerTemplate } = require("../../../models/serverModel");
+
+
+const {createNode_neo4j,createNode_neo4j_field,updateNode_neo4j_serverID_f,makeConnection_neo4j} = require("../../../neo4j/func_neo4j");
 
 const {ApolloError} = require("apollo-server-express");
 
@@ -26,14 +29,20 @@ module.exports = {
     if (adminCommands) fields.adminCommands = adminCommands;
 
 
+    let isNewServer = false;
 
     try {
 
+        let serverData
         if (_id) {
-            let serverData = await ServerTemplate.findOne({ _id: _id })
+            serverData = await ServerTemplate.findOne({ _id: _id })
             if (!serverData) {
                 serverData = await new ServerTemplate(fields);
                 serverData.save()
+
+                isNewServer = true;
+
+
             } else {
                 serverData= await ServerTemplate.findOneAndUpdate(
                     {_id: serverData._id},
@@ -43,12 +52,35 @@ module.exports = {
                     {new: true}
                 )
             }
-            return serverData;
         } else {
-            let serverData = await new ServerTemplate(fields);
+            serverData = await new ServerTemplate(fields);
             serverData.save()
-            return serverData;
+
+            isNewServer = true;
+
+
         }
+
+        if (isNewServer) {
+          
+          let skillsData = await Skills.find({})
+
+          for (let i = 0; i < skillsData.length; i++) {
+            console.log("skillsData[i]._id = " , skillsData[i]._id=="63002207122231377800bee1")
+            
+            updateNode_neo4j_serverID_f({
+              node:"Skill",
+              id_name: "_id",
+              id_value: skillsData[i]._id,
+              update_name:"serverID",
+              update_value:_id,
+            })
+          }
+
+        }
+
+        return serverData;
+
 
     } catch (err) {
       throw new ApolloError(

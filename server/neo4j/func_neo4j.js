@@ -20,6 +20,7 @@ module.exports = {
             `
         }
 
+        console.log("fun = " , fun)
 
         const session = driver.session({database:"neo4j"});
 
@@ -31,10 +32,88 @@ module.exports = {
         session.close()
         
     },
-    updateNode_neo4j: async (req, res) => {
+    createNode_neo4j_field: async (req, res) => {
+        const { fields } = req;
+        
+        console.log("fields = " , fields)
+
+        let temp
+        let str = ''
+        for (var key in fields) {
+            console.log("key,fields[key] = " , key,fields[key])
+
+            if (fields[key] ){
+                if (key == 'serverID'){
+                    temp = arrayToString(fields[key])
+
+                    str += `${key}: ${temp},`
+                } else if (key != 'node') {
+                    temp = fields[key]
+
+                    str += `${key}: '${temp}',`
+                }
+            }
+
+        }
+        str = str.slice(0,-1)
+
+
+        let fun = ` 
+                MERGE (:${fields.node} {${str}})
+                `
+
+
+        console.log("fun = " , fun)
+
+        const session = driver.session({database:"neo4j"});
+
+
+        result = await session.writeTransaction(tx => 
+            tx.run(fun)
+        )
+
+        session.close()
+        
+    },
+    updateNode_neo4j_serverID_f: async (req, res) => {
+        const { id_name,id_value,update_name,update_value,node } = req;
+
+
+        let fun
+        if (update_name == 'serverID'){
+            update_value = arrayToString(update_value)
+
+            fun = `
+                MATCH (n:${node}{${id_name}:'${id_value}'})
+                SET n.${update_name} = ${update_value}
+                RETURN n
+            `
+        } else {
+
+            fun = `
+                MATCH (n:${node}{${id_name}:'${id_value}'})
+                SET n.${update_name} = "${update_value}"
+                RETURN n
+            `
+        }
+
+        
+
+
+        const session = driver.session({database:"neo4j"});
+
+
+        result = await session.writeTransaction(tx => 
+            tx.run(fun)
+        )
+
+        session.close()
+        
+    },
+    updateNode_neo4j_serverID: async (req, res) => {
         const { id,node, serverID } = req;
 
-        console.log("change -----------updateNode_neo4j---------= " , node, id,serverID)
+        console.log("change -----------updateNode_neo4j_serverID---------= " , node, id,serverID)
 
 
         if (!(serverID && serverID.length>0)) return 
@@ -48,6 +127,38 @@ module.exports = {
 
         let fun = `
             MATCH (n:${node}{_id:'${id}'})
+            SET n.serverID = ${serverID_string}
+            RETURN n
+        `
+
+
+        const session = driver.session({database:"neo4j"});
+
+
+        result = await session.writeTransaction(tx => 
+            tx.run(fun)
+        )
+
+        session.close()
+        
+    },
+    updateNode_neo4j_serverID_projectID: async (req, res) => {
+        const { project_id,node, serverID } = req;
+
+        console.log("change -----------updateNode_neo4j_serverID---------= " , node, project_id,serverID)
+
+
+        if (!(serverID && serverID.length>0)) return 
+
+        if (!project_id) return 
+
+        if (!node) return 
+
+
+        let serverID_string = arrayToString(serverID)
+
+        let fun = `
+            MATCH (n:${node}{project_id:'${project_id}'})
             SET n.serverID = ${serverID_string}
             RETURN n
         `
@@ -96,7 +207,7 @@ module.exports = {
 }
 
 function arrayToString(arrayT) {
-    // console.log("change sd =-==-=---=--===--==- ");
+    
     if (arrayT && Array.isArray(arrayT) && arrayT.length > 0) {
       let stringResult = "[";
   

@@ -6,7 +6,7 @@ const {ApolloError} = require("apollo-server-express");
 const { TeamMember } = require("discord.js");
 const { driver } = require("../../../../server/neo4j_config");
 
-const {createNode_neo4j,updateNode_neo4j,makeConnection_neo4j} = require("../../../neo4j/func_neo4j");
+const {createNode_neo4j,createNode_neo4j_field,updateNode_neo4j_serverID,updateNode_neo4j_serverID_projectID,makeConnection_neo4j} = require("../../../neo4j/func_neo4j");
 
 
 module.exports = {
@@ -54,11 +54,14 @@ module.exports = {
 
           console.log("change = -putsigona bagiensld" )
 
-          await createNode_neo4j({
-            node:"Project",
-            id:projectData._id,
-            name:projectData.title,
-            serverID:projectData.serverID,
+          await createNode_neo4j_field({
+            fields:{
+              node:"Project",
+              _id: projectData._id,
+              project_id: projectData._id,
+              name: projectData.title,
+              serverID: projectData.serverID,
+            }
           })
             
           
@@ -80,7 +83,7 @@ module.exports = {
           )
 
           if (fields.serverID){
-            await updateNode_neo4j({
+            await updateNode_neo4j_serverID({
               node:"Project",
               id:projectData._id,
               serverID:projectData.serverID,
@@ -94,11 +97,14 @@ module.exports = {
         projectData = await new Projects(fields);
         projectData.save()
 
-        await createNode_neo4j({
-          node:"Project",
-          id:projectData._id,
-          name:projectData.title,
-          serverID:projectData.serverID,
+        await createNode_neo4j_field({
+          fields:{
+            node:"Project",
+            _id: projectData._id,
+            project_id: projectData._id,
+            name: projectData.title,
+            serverID: projectData.serverID,
+          }
         })
       }
       
@@ -130,7 +136,7 @@ module.exports = {
 
 
             // add champion relationship between project node and member
-            await makeConnection_neo4j({
+            makeConnection_neo4j({
               node:["Project","Member"],
               id:[projectData._id,memberDataChampion._id],
               connection:"CHAMPION",
@@ -152,7 +158,7 @@ module.exports = {
 
           
 
-          await makeConnection_neo4j({
+          makeConnection_neo4j({
             node:["Project","Member"],
             id:[projectData._id,fields.team[i].memberID],
             connection:"TEAM_MEMBER",
@@ -205,13 +211,17 @@ module.exports = {
           
           console.log("change = 2232" )
 
-          await createNode_neo4j({
-            node:"Role",
-            id:RoleNow._id,
-            name:RoleNow.title,
+          await createNode_neo4j_field({
+            fields:{
+              node:"Role",
+              _id: RoleNow._id,
+              project_id: projectData._id,
+              name: RoleNow.title,
+              serverID: projectData.serverID,
+            }
           })
 
-          await makeConnection_neo4j({
+          makeConnection_neo4j({
             node:["Project","Role"],
             id:[projectData._id,RoleNow._id],
             connection:"ROLE",
@@ -220,7 +230,7 @@ module.exports = {
           for (let j=0;j<RoleNow.skills.length;j++){
             let SkillNow = RoleNow.skills[j]
             
-            await makeConnection_neo4j({
+            makeConnection_neo4j({
               node:["Role","Skill"],
               id:[RoleNow._id,SkillNow._id],
               connection:"ROLE_SKILL",
@@ -231,6 +241,23 @@ module.exports = {
 
         }
         
+      } else if (serverID){
+
+        for (let i=0;i<projectData.role.length;i++){
+
+          let RoleNow = projectData.role[i]
+    
+          updateNode_neo4j_serverID_projectID({
+            node:"Role",
+            project_id:projectData._id,
+            serverID:projectData.serverID,
+          })
+
+          
+          
+
+        }
+
       }
 
 

@@ -1,8 +1,9 @@
 const { Members } = require("../../../models/membersModel");
 const { Skills } = require("../../../models/skillsModel");
 const { driver } = require("../../../../server/neo4j_config");
+const { ServerTemplate } = require("../../../models/serverModel");
 const {ApolloError} = require("apollo-server-express");
-const {createNode_neo4j,makeConnection_neo4j} = require("../../../neo4j/func_neo4j");
+const {createNode_neo4j,createNode_neo4j_field,updateNode_neo4j_serverID_f,makeConnection_neo4j} = require("../../../neo4j/func_neo4j");
 
 module.exports = {
   createSkill: async (parent, args, context, info) => {
@@ -46,23 +47,26 @@ module.exports = {
         console.log("skill info = ", skillData);
         
         //Add skill to graph database
-        await createNode_neo4j({
-          node:"Skill",
-          id:skillData._id,
-          name:fields.name,
+
+
+        let serverData = await ServerTemplate.find({})
+
+        let serverID = []
+        serverData.map(server => {
+          serverID.push(server._id)
         })
-        // const session = driver.session({database:"neo4j"});
-        // session.writeTransaction(tx => 
-        // tx.run(
-        //   `  
-        //   MERGE (:Skill {name: '${fields.name}', _id: '${skillData._id}'})
-        //   `
-        //   )
-        // )
-        // .catch(error=>{
-        //   console.log(error)
-        // })
-        // .then(()=> session.close())
+
+        createNode_neo4j_field({
+          fields:{
+            node:"Skill",
+            _id:skillData._id,
+            name:fields.name,
+            serverID: serverID,
+            state: fields.state,
+          }
+        })
+
+        
 
         skillData = skillData
       }
@@ -86,6 +90,12 @@ module.exports = {
     if (!names) throw new ApolloError( "You need to specify the names of the skill");
   
     
+    let serverData = await ServerTemplate.find({})
+
+    let serverID = []
+    serverData.map(server => {
+      serverID.push(server._id)
+    })
      
   
     try {
@@ -127,24 +137,27 @@ module.exports = {
               skillData.save()
 
               //Add skill to graph database
-              await createNode_neo4j({
-                node:"Skill",
-                id:skillData._id,
-                name:skillData.name,
-              })
-              // const session = driver.session({database:"neo4j"});
-              // session.writeTransaction(tx => 
-              // tx.run(
-              //   `  
-              //   MERGE (:Skill {name: '${skillData.name}', _id: '${skillData._id}'})
-              //   `
-              //   )
-              // )
-              // .catch(error=>{
-              //   console.log(error)
-              // })
-              // .then(()=> session.close())
 
+                
+
+                // createNode_neo4j({
+                //   node:"Skill",
+                //   id:skillData._id,
+                //   name:fields.name,
+                //   serverID: serverID,
+                // })
+
+                createNode_neo4j_field({
+                  fields:{
+                    node:"Skill",
+                    _id:skillData._id,
+                    name:fields.name,
+                    serverID: serverID,
+                    state: state,
+                  }
+                })
+              
+              
             }
 
             allSkills.push(skillData)
@@ -188,7 +201,22 @@ module.exports = {
           
           skillData.save()
   
-          skillData = skillData
+          let serverData = await ServerTemplate.find({})
+
+          let serverID = []
+          serverData.map(server => {
+            serverID.push(server._id)
+          })
+
+          createNode_neo4j_field({
+            fields:{
+              node:"Skill",
+              _id:skillData._id,
+              name:fields.name,
+              serverID: serverID,
+              state: "approved",
+            }
+          })
         }
   
   
@@ -218,7 +246,7 @@ module.exports = {
   
         skillData = await Skills.findOne({ _id: _id })
   
-      //console.log("skillData = " , skillData)
+        
   
         if (skillData ){
 
@@ -231,9 +259,18 @@ module.exports = {
               },
               {new: true}
           )
+
+          updateNode_neo4j_serverID_f({
+              node:"Skill",
+              id_name: "_id",
+              id_value: skillData._id,
+              update_name:"state",
+              update_value:skillData.state,
+          })
+
         }
 
-      //console.log("skillData 2= " , skillData)
+        
 
   
   
