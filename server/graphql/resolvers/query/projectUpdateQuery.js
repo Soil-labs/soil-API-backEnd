@@ -3,6 +3,7 @@ const { Skills } = require("../../../models/skillsModel");
 const {Projects} = require("../../../models/projectsModel");
 const {Members} = require("../../../models/membersModel");
 const {Team} = require("../../../models/teamModal");
+const {Role} = require("../../../models/roleModel");
 const {ProjectUpdate} = require("../../../models/projectUpdateModal");
 
 
@@ -16,7 +17,7 @@ module.exports = {
    
 
     console.log("change = " )
-    const {_id,projectID,memberID,teamID,serverID,dateStart,dateEnd} = args.fields;
+    const {_id,projectID,memberID,teamID,serverID,roleID,dateStart,dateEnd} = args.fields;
 
     console.log("dateStart,dateEnd = " , dateStart,dateEnd)
 
@@ -26,6 +27,7 @@ module.exports = {
     if (projectID) fields = {...fields,projectID}
     if (memberID) fields = {...fields,memberID}
     if (teamID) fields = {...fields,teamID}
+    if (roleID) fields = {...fields,roleID}
 
 
 
@@ -57,6 +59,12 @@ module.exports = {
     if (teamID) {
       teamID.forEach(id => {
         querySearch.push({ teamID: id })
+      })
+    }
+
+    if (roleID) {
+      roleID.forEach(id => {
+        querySearch.push({ roleID: id })
       })
     }
 
@@ -230,6 +238,200 @@ module.exports = {
     }
   },
   
+
+  findGarden: async (parent, args, context, info) => {
+   
+
+    console.log("change = " )
+
+    const {dateStart,dateEnd,serverID} = args.fields;
+
+    let querySearch = []
+    if (serverID) {
+      serverID.forEach(id => {
+        querySearch.push({ serverID: id })
+      })
+    }
+
+    if (dateStart){
+      querySearch.push({ registeredAt: {$gt: dateStart} })
+    }
+
+    if (dateEnd){
+      querySearch.push({ registeredAt: {$lt: dateEnd} })
+    }
+
+
+    console.log("querySearch = " , querySearch)
+
+    let searchQ = {}
+    if (querySearch.length > 0) {
+      searchQ = {$and: querySearch}
+    } 
+    
+
+    let generalRole = await Role.findOne({name: "General"})
+
+    let generalTeam = await Team.findOne({name: "General"})
+
+    console.log("generalRole = " , generalRole)
+    console.log("generalTeam = " , generalTeam)
+
+    // let garden_projectTeamRole = [{_id:"62f685952dc2d40004d395c8"}]
+    let garden_projectTeamRole = []
+
+    try {
+
+      let projectsData
+
+
+      let anouncmentsData = await ProjectUpdate.find( searchQ )
+
+      // console.log("anouncmentsData = " , anouncmentsData)
+
+      for (let i=0;i<anouncmentsData.length;i++){
+        // for (let i=0;i<10;i++){
+        let anouncment = anouncmentsData[i]
+
+        console.log("i = " , i)
+        // console.log("anouncment = " , anouncment)
+
+        //  ---------------- Find Project Position -----------------
+        var findProject_position = -1
+        
+        garden_projectTeamRole.find((project,idx) => {
+          // console.log("project = " , project._id,anouncment.projectID,anouncment.projectID.equals(project._id),idx)
+          if (anouncment.projectID.equals(project._id)){
+            findProject_position = idx
+            return idx
+          }
+        })
+
+        
+
+        if (findProject_position==-1){ // new Project, find info
+          projectsData = await Projects.findOne( {_id: anouncment.projectID } )
+
+          garden_projectTeamRole.push({
+            _id: projectsData._id,
+            project: projectsData,
+            team: [],
+          })
+
+          findProject_position = garden_projectTeamRole.length-1
+
+        } 
+
+        //  ---------------- Find Project Position -----------------
+
+
+        // console.log("findProject_position = " , findProject_position)
+        // console.log("garden_projectTeamRole[findProject_position] = " , garden_projectTeamRole[findProject_position])
+
+        //  ---------------- Find Team Position -----------------
+
+        let searchTeamID 
+        if (anouncment.teamID && anouncment.teamID[0]){
+          searchTeamID = anouncment.teamID[0]
+        } else {
+          searchTeamID = generalTeam._id
+        }
+
+        var findTeam_position = -1
+
+
+
+        garden_projectTeamRole[findProject_position].team.find((team,idx) => {
+          // console.log("team = " , team._id,searchTeamID,searchTeamID.equals(team._id),idx)
+          if (searchTeamID.equals(team._id)){
+            findTeam_position = idx
+            return idx
+          }
+        })
+
+
+        if (findTeam_position==-1){ // new Team, find info
+          
+          let teamData = await Team.findOne( {_id: searchTeamID } )
+
+          garden_projectTeamRole[findProject_position].team.push({
+            _id: teamData._id,
+            teamData: teamData,
+            role: [],
+          })
+          findTeam_position = garden_projectTeamRole[findProject_position].team.length-1
+
+        }
+
+        
+
+        //  ---------------- Find Team Position -----------------
+
+
+        // console.log("findProject_position = " , findProject_position)
+        // console.log("garden_projectTeamRole[findProject_position] = " , garden_projectTeamRole[findProject_position])
+
+        //  ---------------- Find Team Position -----------------
+
+        let searchRoleID
+        if (anouncment.roleID && anouncment.roleID[0]){
+          searchRoleID = anouncment.roleID[0]
+        } else {
+          searchRoleID = generalRole._id
+        }
+
+        var findRole_position = -1
+
+        garden_projectTeamRole[findProject_position].team[findTeam_position].role.find((role,idx) => {
+          // console.log("role = " , role._id,searchRoleID,searchRoleID.equals(role._id),idx)
+          if (searchRoleID.equals(role._id)){
+            findRole_position = idx
+            return idx
+          }
+        })
+
+        // console.log("anouncment ---- tokio = " , anouncment)
+
+        if (findRole_position==-1){ // new Role, find info
+
+          let roleData = await Role.findOne( {_id: searchRoleID } )
+
+          garden_projectTeamRole[findProject_position].team[findTeam_position].role.push({
+            _id: roleData._id,
+            roleData: roleData,
+            announcement: [anouncment],
+          })
+          findRole_position = garden_projectTeamRole[findProject_position].team[findTeam_position].role.length-1
+
+        } else {
+          garden_projectTeamRole[findProject_position].team[findTeam_position].role[findRole_position].announcement.push(anouncment)
+        }
+
+
+        
+
+        //  ---------------- Find Team Position -----------------
+
+
+
+          
+
+      }
+
+
+
+
+      // return [{}]
+      return garden_projectTeamRole
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findSkill"}
+      );
+    }
+  },
   
   
 };

@@ -38,6 +38,17 @@ module.exports = `
         champion: [Members]
     }
 
+    type Role {
+        _id: ID
+        name: String
+        description: String
+
+        serverID: [String],
+        project: Project,
+        members: [Members]
+        teams: [Team]
+    }
+
 
     type teamType {
         memberInfo: Members
@@ -152,6 +163,17 @@ module.exports = `
         championID: [String]
     }
 
+    input createNewRoleInput {
+        _id: ID
+        name: String
+        description: String
+
+        serverID: [String],
+        projectID: String,
+        memberID: [String]
+        teamID: [String]
+    }
+
     
 
 
@@ -258,6 +280,12 @@ module.exports = `
         _id: [ID]
         projectID: [ID]
         serverID: [String]
+    }
+
+    input findRolesInput {
+        _id: [ID]
+        serverID: [String]
+        
     }
 
     

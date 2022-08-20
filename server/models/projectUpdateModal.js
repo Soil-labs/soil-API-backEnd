@@ -9,10 +9,20 @@ const projectUpdateModalSchema = mongoose.Schema({
     content: String,
 
     serverID: [String],
+
+
     projectID: mongoose.Schema.ObjectId,
     teamID: [mongoose.Schema.ObjectId],
+    roleID: [mongoose.Schema.ObjectId],
+
+
     memberID: [String],
     authorID: String,
+
+
+    thread: String,
+
+    token: String,
 
 
     registeredAt: {

@@ -3,8 +3,8 @@
 const { findMember,findMembers,matchMembersToUser,matchMembersToSkills } = require("./query/memberQuery");
 const { findSkill,findSkills,waitingToAproveSkills,adminFindAllSkillsEveryState } = require("./query/skillsQuery");
 
-const {findProject,findProjects,findProjects_RequireSkill,findProjects_RecommendedToUser,match_projectToUser,findTeams} = require("./query/projectQuery");
-const {findProjectUpdates,findAllProjectsTeamsAnouncments} = require("./query/projectUpdateQuery");
+const {findProject,findProjects,findProjects_RequireSkill,findProjects_RecommendedToUser,match_projectToUser,findTeams,findRoles} = require("./query/projectQuery");
+const {findProjectUpdates,findAllProjectsTeamsAnouncments,findGarden} = require("./query/projectUpdateQuery");
 
 
 const {findRoleTemplate,findRoleTemplates} = require("./query/roleTemplateQuery");
@@ -23,7 +23,7 @@ module.exports = {
 
 
     // ------------- PROJECT QUERY -----------------
-    findProject,findProjects,findProjects_RequireSkill,findProjects_RecommendedToUser,match_projectToUser,findTeams,
+    findProject,findProjects,findProjects_RequireSkill,findProjects_RecommendedToUser,match_projectToUser,findTeams,findRoles,
 
     // ------------- MEMBER QUERY -----------------
     findMember,findMembers,matchMembersToUser,matchMembersToSkills,
@@ -42,7 +42,7 @@ module.exports = {
 
 
     // ------------- PROJECT UPDATE QUERY -----------------
-    findProjectUpdates,findAllProjectsTeamsAnouncments,
+    findProjectUpdates,findAllProjectsTeamsAnouncments,findGarden,
 
   },
 };

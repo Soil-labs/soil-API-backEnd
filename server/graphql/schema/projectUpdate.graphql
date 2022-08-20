@@ -12,6 +12,12 @@ module.exports = `
         members: [Members]
         author: Members
         team: [Team]
+        role: [Role]
+        token: String
+
+        thread: String
+
+
         registeredAt: String
     }
 
@@ -25,6 +31,24 @@ module.exports = `
         teamData: Team
         announcement: [ProjectUpdate]
     }
+
+
+    type findGardenOutput {
+        _id: ID
+        project: Project
+        team: [teamsType_garden]
+    }
+
+    type teamsType_garden { 
+        teamData: Team
+        role: [RoleType_garden]
+    }
+
+    type RoleType_garden {
+        roleData: Role
+        announcement: [ProjectUpdate]
+
+    }
     
 
     input createProjectUpdateInput {
@@ -37,6 +61,11 @@ module.exports = `
         memberID: [String]
         authorID: String
         teamID: [String]
+        roleID: [String]
+
+        thread: String
+
+        token: String
     }
 
     input findProjectUpdatesINPUT {
@@ -44,6 +73,7 @@ module.exports = `
         projectID: [String],
         memberID: [String]
         teamID: [String]
+        roleID: [String]
         serverID: [String]
         dateStart: String
         dateEnd: String
@@ -53,6 +83,17 @@ module.exports = `
         _id: ID
         dateStart: String
         dateEnd: String
+
+        serverID: [String],
+    
+    }
+
+    input findGardenInput {
+        _id: ID
+        dateStart: String
+        dateEnd: String
+
+        serverID: [String],
     
     }
 

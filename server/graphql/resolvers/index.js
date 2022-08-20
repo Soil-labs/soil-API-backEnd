@@ -3,7 +3,7 @@ const { Mutation } = require('./mutation');
 const { Members,matchMembersToUserOutput,matchMembersToSkillOutput } = require('./objectResolvers/memberResolver');
 const { Project,teamType,roleType,skillRoleType,
     tweetsProject,
-    tweetsType,projectUserMatchType,Team,
+    tweetsType,projectUserMatchType,Team,Role,
  } = require('./objectResolvers/projectsResolver');
 const { Skills } = require('./objectResolvers/skillsResolver');
 const { RoleTemplate } = require('./objectResolvers/roleTemplateResolver');
@@ -16,7 +16,7 @@ module.exports = {
     Mutation,
     Members,matchMembersToUserOutput,matchMembersToSkillOutput,
     Project,teamType,roleType,skillRoleType,
-    tweetsProject,tweetsType,projectUserMatchType,Team,
+    tweetsProject,tweetsType,projectUserMatchType,Team,Role,
     Skills,
     RoleTemplate,
     SkillCategory,

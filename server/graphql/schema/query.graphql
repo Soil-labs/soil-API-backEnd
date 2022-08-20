@@ -13,6 +13,7 @@ module.exports = `
             findProjects_RecommendedToUser(fields:findProjects_RecommendedToUserInput): [projectMatchType]
             match_projectToUser(fields:match_projectToUserInput): projectUserMatchType
             findTeams(fields:findTeamsInput): [Team]
+            findRoles(fields:findRolesInput): [Role]
             
           #  ---------- MEMBER QUERY -------
             findMember(fields:findMemberInput): Members
@@ -41,6 +42,7 @@ module.exports = `
           #  ---------- PROJECT UDPATE QUERY -------
           findProjectUpdates(fields:findProjectUpdatesINPUT): [ProjectUpdate]
           findAllProjectsTeamsAnouncments(fields:findAllProjectsTeamsAnouncmentsInput): [findAllProjectsTeamsAnouncmentsOutput]
+          findGarden(fields:findGardenInput): [findGardenOutput]
    
             
         }

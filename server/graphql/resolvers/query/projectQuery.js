@@ -3,6 +3,7 @@ const { Skills } = require("../../../models/skillsModel");
 const {Projects} = require("../../../models/projectsModel");
 const {Members} = require("../../../models/membersModel");
 const {Team} = require("../../../models/teamModal");
+const {Role} = require("../../../models/roleModel");
 
 
 const {
@@ -393,6 +394,53 @@ module.exports = {
 
       console.log("fields = " , fields)
       console.log("teamData = " , teamData)
+
+
+      
+
+
+      return teamData
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findSkill"}
+      );
+    }
+  },
+  findRoles: async (parent, args, context, info) => {
+   
+    const {_id,serverID} = args.fields;
+
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
+    
+    
+
+    try {
+
+      let teamData
+
+
+      if (_id){
+        if (queryServerID.length>0){
+          teamData = await Role.find({ $and:[{ _id: _id },{$or:queryServerID}]})
+        } else {
+          teamData = await Role.find({ _id: _id })
+        }
+      } else{
+        if (queryServerID.length>0){
+          teamData = await Role.find({$or:queryServerID})
+        } else {
+          teamData = await Role.find({})
+
+        }
+      }
+
 
 
       

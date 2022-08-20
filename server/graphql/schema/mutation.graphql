@@ -18,6 +18,7 @@ module.exports = `
         approveTweet(fields:approveTweetInput!):Project
         changeTeamMember_Phase_Project(fields:changeTeamMember_Phase_ProjectInput!):Project
         createNewTeam(fields:createNewTeamInput!):Team
+        createNewRole(fields:createNewRoleInput!):Role
 
         #  ---------- SKILL MUTATIONS -------
         createSkill(fields:createSkillInput): Skills

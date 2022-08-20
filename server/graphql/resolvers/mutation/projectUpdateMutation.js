@@ -15,7 +15,7 @@ module.exports = {
    
 
     
-    const {_id,title,content,memberID,projectID,serverID,authorID,teamID} = JSON.parse(JSON.stringify(args.fields))
+    const {_id,title,content,memberID,projectID,serverID,authorID,teamID,roleID,token,thread} = JSON.parse(JSON.stringify(args.fields))
 
     // _id is only if you want to update a team
     
@@ -32,6 +32,9 @@ module.exports = {
     if (teamID) fields =  {...fields,teamID}
     if (title) fields =  {...fields,title}
     if (projectID) fields =  {...fields,projectID}
+    if (roleID) fields =  {...fields,roleID}
+    if (token) fields =  {...fields,token}
+    if (thread) fields =  {...fields,thread}
 
 
     console.log("change = 1" )

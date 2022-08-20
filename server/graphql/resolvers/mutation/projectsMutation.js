@@ -1,6 +1,7 @@
 
 const { Projects } = require("../../../models/projectsModel");
 const { Team } = require("../../../models/teamModal");
+const { Role } = require("../../../models/roleModel");
 const { Members } = require("../../../models/membersModel");
 const {ApolloError} = require("apollo-server-express");
 const { TeamMember } = require("discord.js");
@@ -523,6 +524,67 @@ module.exports = {
 
 
       return (membersData)
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+
+  createNewRole: async (parent, args, context, info) => {
+   
+
+    
+    const {_id,name,description,memberID,projectID,serverID,teamID} = JSON.parse(JSON.stringify(args.fields))
+
+    // _id is only if you want to update a team
+    if (!name) throw new ApolloError( "you need to specify a name");
+    
+    
+    let fields = {
+      name,
+      registeredAt: new Date(),
+    }
+
+    if (_id) fields =  {...fields,_id}
+    if (description) fields =  {...fields,description}
+    if (memberID) fields =  {...fields,memberID}
+    if (serverID) fields =  {...fields,serverID}
+    if (teamID) fields =  {...fields,teamID}
+    if (projectID) fields =  {...fields,projectID}
+
+
+    console.log("change = 1" )
+
+    let roleData
+    try {
+      if (fields._id) {
+      console.log("change = 2" )
+
+        roleData = await Role.findOne({ _id: fields._id })
+
+        if (roleData){
+          console.log("change = 3" )
+
+          roleData = await Role.findOneAndUpdate(
+            {_id: fields._id},fields,
+            {new: true}
+          )
+
+
+          return (roleData)
+
+        }
+      } else {
+        roleData = await new Role(fields).save()
+        
+      }
+      
+
+
+      return (roleData)
     } catch (err) {
       throw new ApolloError(
         err.message,

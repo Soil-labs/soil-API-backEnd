@@ -3,6 +3,7 @@ const { Members } = require('../../../models/membersModel');
 const { Skills } = require('../../../models/skillsModel');
 const { Projects } = require('../../../models/projectsModel');
 const { Team } = require("../../../models/teamModal");
+const { Role } = require("../../../models/roleModel");
 
 const { ApolloError } = require('apollo-server-express');
 
@@ -83,27 +84,54 @@ module.exports = {
         team: async (parent, args, context, info) => {
          // console.log("parent = 22" , parent)
   
-           try {
-              const teamID = parent.teamID;
+         try {
+            const teamID = parent.teamID;
+
+
+            teamData = await Team.find({_id: teamID})
+
+            console.log("teamData = " , teamData)
+
+
+            return teamData;
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > members',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+        },
+        role: async (parent, args, context, info) => {
+         // console.log("parent = 22" , parent)
+
+         try {
+            const roleID = parent.roleID;
+
+
+            roleData = await Role.find({_id: roleID})
+
+            console.log("roleData = " , roleData)
+
+
+            return roleData;
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > members',
+                  user: context.req.user?._id,
+               }
+            );
+         }
   
-  
-              teamData = await Team.find({_id: teamID})
-  
-              console.log("teamData = " , teamData)
-  
-  
-              return teamData;
-  
-           } catch (err) {
-              throw new ApolloError(
-                 err.message,
-                 err.extensions?.code || 'DATABASE_SEARCH_ERROR',
-                 {
-                    component: 'userResolver > members',
-                    user: context.req.user?._id,
-                 }
-              );
-           }
+           
         },
    },
    findAllProjectsTeamsAnouncmentsOutput: {
