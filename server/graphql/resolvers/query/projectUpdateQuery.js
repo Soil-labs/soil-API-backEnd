@@ -274,8 +274,47 @@ module.exports = {
 
     let generalTeam = await Team.findOne({name: "General"})
 
-    console.log("generalRole = " , generalRole)
-    console.log("generalTeam = " , generalTeam)
+    // console.log("generalRole = " , generalRole)
+    // console.log("generalTeam = " , generalTeam)
+
+
+    //  ------------ Projects Index -----------------
+    let projects_all = await Projects.find( {} )
+    
+    project_index = {}
+
+    projects_all.forEach((project,idx) => {
+      project_index[project._id] = idx
+    })
+    // console.log("project_index = " , project_index)
+    //  ------------ Projects Index -----------------
+
+    
+    //  ------------ Team Index -----------------
+    let team_all = await Team.find( {} )
+    
+    team_index = {}
+
+    team_all.forEach((team,idx) => {
+      team_index[team._id] = idx
+    })
+    // console.log("team_index = " , team_index)
+    //  ------------ Team Index -----------------
+
+
+
+    //  ------------ Role Index -----------------
+    let role_all = await Role.find( {} )
+    
+    role_index = {}
+
+    role_all.forEach((team,idx) => {
+      role_index[team._id] = idx
+    })
+    // console.log("role_index = " , role_index)
+    //  ------------ Role Index -----------------
+
+
 
     // let garden_projectTeamRole = [{_id:"62f685952dc2d40004d395c8"}]
     let garden_projectTeamRole = []
@@ -293,7 +332,7 @@ module.exports = {
         // for (let i=0;i<10;i++){
         let anouncment = anouncmentsData[i]
 
-        console.log("i = " , i)
+        // console.log("i = " , i)
         // console.log("anouncment = " , anouncment)
 
         //  ---------------- Find Project Position -----------------
@@ -310,7 +349,8 @@ module.exports = {
         
 
         if (findProject_position==-1){ // new Project, find info
-          projectsData = await Projects.findOne( {_id: anouncment.projectID } )
+          // projectsData = await Projects.findOne( {_id: anouncment.projectID } )
+          projectsData = projects_all[project_index[anouncment.projectID]]
 
           garden_projectTeamRole.push({
             _id: projectsData._id,
@@ -352,7 +392,9 @@ module.exports = {
 
         if (findTeam_position==-1){ // new Team, find info
           
-          let teamData = await Team.findOne( {_id: searchTeamID } )
+          // let teamData = await Team.findOne( {_id: searchTeamID } )
+          teamData = team_all[team_index[searchTeamID]]
+
 
           garden_projectTeamRole[findProject_position].team.push({
             _id: teamData._id,
@@ -394,7 +436,9 @@ module.exports = {
 
         if (findRole_position==-1){ // new Role, find info
 
-          let roleData = await Role.findOne( {_id: searchRoleID } )
+          // let roleData = await Role.findOne( {_id: searchRoleID } )
+          roleData = role_all[role_index[searchRoleID]]
+
 
           garden_projectTeamRole[findProject_position].team[findTeam_position].role.push({
             _id: roleData._id,
