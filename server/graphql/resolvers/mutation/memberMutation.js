@@ -81,12 +81,25 @@ module.exports = {
         if (!membersData.serverID){
 
           membersData = await Members.findOneAndUpdate({ _id: membersData._id }, {serverID:serverID}, { new: true });
+
+          updateNode_neo4j_serverID({
+            node:"Member",
+            id:membersData._id,
+            serverID:membersData.serverID,
+          })
+
         } else {
           let serverID_new = [...membersData.serverID]
           if (!membersData.serverID.includes(serverID)){
             serverID_new.push(serverID)
           }
           membersData = await Members.findOneAndUpdate({ _id: membersData._id }, {serverID:serverID_new}, { new: true });
+
+          updateNode_neo4j_serverID({
+            node:"Member",
+            id:membersData._id,
+            serverID:serverID_new,
+          })
 
         }
       }
@@ -179,7 +192,7 @@ module.exports = {
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
 
         if (fields.serverID){
-          await updateNode_neo4j_serverID({
+           updateNode_neo4j_serverID({
             node:"Member",
             id:membersData._id,
             serverID:membersData.serverID,
@@ -193,7 +206,7 @@ module.exports = {
         for (let i=0;i<skills.length;i++){
           let skill = skills[i];
           
-          await makeConnection_neo4j({
+           makeConnection_neo4j({
             node:["Member","Skill"],
             id:[membersData._id,skill.id],
             connection:"SKILL",
