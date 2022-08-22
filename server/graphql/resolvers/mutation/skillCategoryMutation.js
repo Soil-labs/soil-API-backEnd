@@ -6,7 +6,7 @@ module.exports = {
   updateSkillCategory: async (parent, args, context, info) => {
    
 
-    const {_id,name,description,skills} = args.fields;
+    const {_id,name,description,skills,subCategory_skill,id_lightcast,emoji} = args.fields;
 
 
     let fields = {
@@ -17,6 +17,9 @@ module.exports = {
     if (description) fields.description = description;
     if (name) fields.name = name;
     if (_id) fields._id = _id;
+    if (subCategory_skill) fields.subCategory_skill = subCategory_skill;
+    if (id_lightcast) fields.id_lightcast = id_lightcast;
+    if (emoji) fields.emoji = emoji;
 
 
     try {
