@@ -83,6 +83,8 @@ module.exports = {
 
         let update_value_n
 
+        console.log("id_name,id_value,update_name,update_value,node  ------------> " , id_name,id_value,update_name,update_value,node )
+
         // console.log("id_name,id_value,update_name,update_value,node = " , id_name,id_value,update_name,update_value,node)
 
 

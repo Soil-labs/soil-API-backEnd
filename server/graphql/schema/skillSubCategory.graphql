@@ -1,13 +1,14 @@
 module.exports = `
     
 
-    type SkillCategory {
+    type SkillSubCategory {
         _id: ID
         name: String,
         description: String,
         skills: [Skills], 
+
+        categorySkills: [SkillCategory],
         
-        subCategorySkill: [SkillSubCategory],
          
         id_lightcast: String,
 
@@ -15,26 +16,24 @@ module.exports = `
     }
 
     
-    input updateSkillCategoryInput {
+    input updateSkillSubCategoryInput {
         _id: ID
         name: String,
         description: String,
         skills: [String],  
 
-        subCategorySkill: [ID],
+        categorySkills: [ID],
         id_lightcast: String,
 
         emoji: String,
     }
 
-    input findSkillCategoryInput {
+    input findSkillSubCategoryInput {
         _id: ID
-        id_lightcast: ID,
     }
 
-    input findSkillCategoriesInput {
+    input findSkillSubCategoriesInput {
         _id: [ID]
-        id_lightcast: [ID],
     }
     
 

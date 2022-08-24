@@ -8,7 +8,7 @@ const skillcategorySchema = mongoose.Schema({
   name: String,
   description: String,
 
-  subCategory_skill: [mongoose.Schema.ObjectId],
+  subCategorySkill: [mongoose.Schema.ObjectId],
   skills: [mongoose.Schema.ObjectId],
 
   id_lightcast: String,

@@ -12,40 +12,26 @@ module.exports = {
   findSkill: async (parent, args, context, info) => {
    
 
-    const {_id} = args.fields;
+    const {_id,id_lightcast} = args.fields;
 
-    if (!_id) throw new ApolloError( "You need to specify the id of the skill");
+    // if (!_id) throw new ApolloError( "You need to specify the id of the skill");
 
-    let fields = {
-      _id,
-      registeredAt: new Date(),
-    };
+    let searchQuery = {}
+
+    if (_id){
+      searchQuery = { _id: _id };
+    } else if (id_lightcast){
+      searchQuery = { id_lightcast: id_lightcast };
+    } else {
+      throw new ApolloError( "You need to specify the id of the skill");
+    }
 
 
     
 
     try {
-      let skillData
-      
-      
-      skillData = await Skills.findOne( {
-          $and: [
-            { _id: fields._id },
-            { state: "approved" },
-          ]
-      } ) 
+      let skillData= await Skills.findOne( searchQuery) 
 
-
-      if (!skillData  ){
-        skillData = await new Skills({
-          ...fields,
-          state: "waiting",
-        });
-        
-        skillData.save()
-
-        skillData = skillData
-      }
 
 
       return skillData
@@ -60,35 +46,56 @@ module.exports = {
   findSkills: async (parent, args, context, info) => {
    
 
-    const {_id} = args.fields;
+    const {_id,id_lightcast} = args.fields;
 
-    let fields = {
-    };
+    let searchQuery = {}
 
-    if (_id) fields = { ...fields, _id };
+    if (_id){
+      searchQuery = {
+        $and: [
+          { _id: _id },
+          { state: "approved" },
+        ]
+      } ;
+    } else if (id_lightcast){
+      searchQuery = {
+        $and: [
+          { id_lightcast: id_lightcast },
+          { state: "approved" },
+        ]
+      } ;
+    } else {
+      searchQuery = {
+        $and: [
+          { state: "approved" },
+        ]
+      } ;
+    }
 
   //console.log("fields = " , fields)
     
 
     try {
       let membersData
-      if (_id) {
-      //console.log("change =1 ")
+      // if (_id) {
+      // //console.log("change =1 ")
 
-          membersData = await Skills.find( {
-            $and: [
-              { _id: fields._id },
-              { state: "approved" },
-            ]
-        } )
+      //     membersData = await Skills.find( {
+      //       $and: [
+      //         { _id: fields._id },
+      //         { state: "approved" },
+      //       ]
+      //   } )
 
 
-      } else {
-      //console.log("change =2 ")
+      // } else {
+      // //console.log("change =2 ")
 
-        membersData = await Skills.find({state: "approved"})
-      //console.log("membersData = " , membersData)
-      }
+      //   membersData = await Skills.find({state: "approved"})
+      // //console.log("membersData = " , membersData)
+      // }
+
+      membersData = await Skills.find(searchQuery)
 
       
 

@@ -7,6 +7,7 @@ const projectType = require('./project.graphql');
 const projectUpdateType = require('./projectUpdate.graphql');
 const skillsType = require('./skills.graphql');
 const SkillCategoryType = require('./skillCategory.graphql');
+const SkillSubCategoryType = require('./skillSubCategory.graphql');
 const roleTemplateType = require('./roleTemplate.graphql');
 const serverTemplateType = require('./serverTemplate.graphql');
 const errorType = require('./errors.graphql');
@@ -22,6 +23,7 @@ const typeDefs = gql`
   ${roleTemplateType}
   ${serverTemplateType}
   ${SkillCategoryType}
+  ${SkillSubCategoryType}
   ${errorType}
 
 `;

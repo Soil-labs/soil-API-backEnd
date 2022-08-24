@@ -16,11 +16,18 @@ const skillSchema = mongoose.Schema({
   tweets: [mongoose.Schema.ObjectId],
   members: [String],
 
+  subCategorySkill: [mongoose.Schema.ObjectId],
+  categorySkills: [mongoose.Schema.ObjectId],
+
+  relatedSkills: [mongoose.Schema.ObjectId],
+
   state: {
     type: String,
     enum: ["waiting","rejected","approved"],
     default: "waiting"
   },
+
+  id_lightcast: String,
 
   registeredAt: Date,
 

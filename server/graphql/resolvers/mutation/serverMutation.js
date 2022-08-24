@@ -1,5 +1,9 @@
 // const { Members } = require("../../../models/membersModel");
 const { Skills } = require("../../../models/skillsModel");
+const {SkillCategory} = require("../../../models/skillCategoryModel");
+const { SkillSubCategory} = require("../../../models/skillSubCategoryModel");
+
+
 // const { RoleTemplate } = require("../../../models/roleTemplateModal");
 const { ServerTemplate } = require("../../../models/serverModel");
 
@@ -68,28 +72,63 @@ module.exports = {
             serverID.push(server._id)
           })
 
+        let serverNew = [...serverID]
+
+        serverNew.push(serverData._id)
+
         if (isNewServer) {
+
+
+          // updateNode_neo4j_serverID_f({
+          //   node:"Skill",
+          //   id_name: "serverID_code",
+          //   id_value: "828",
+          //   update_name:"serverID",
+          //   update_value:[...serverID],
+          // })
+
           
           let skillsData = await Skills.find({})
 
 
           let serverNew = []
+          serverNew = [...serverID]
+          serverNew.push(serverData._id)
+
           for (let i = 0; i < skillsData.length; i++) {
-            // console.log("skillsData[i]._id = " , skillsData[i]._id=="63003681674d6b3e9185e3e6")
-
-            serverNew = [...serverID]
-
-            if (i==0){
-              console.log("skillsData[i] = " , skillsData[i])
-              console.log("serverNew = " , serverNew)
-            }
-
-            serverNew.push(serverData._id)
 
             updateNode_neo4j_serverID_f({
               node:"Skill",
               id_name: "_id",
               id_value: skillsData[i]._id,
+              update_name:"serverID",
+              update_value:serverNew,
+            })
+          }
+          
+          let SkillCategoryData = await SkillCategory.find({})
+
+
+          for (let i = 0; i < SkillCategoryData.length; i++) {
+
+            updateNode_neo4j_serverID_f({
+              node:"Skill_Category",
+              id_name: "_id",
+              id_value: SkillCategoryData[i]._id,
+              update_name:"serverID",
+              update_value:serverNew,
+            })
+          }
+
+          let SkillSubCategoryData = await SkillSubCategory.find({})
+
+
+          for (let i = 0; i < SkillSubCategoryData.length; i++) {
+
+            updateNode_neo4j_serverID_f({
+              node:"Skill_Sub_Category",
+              id_name: "_id",
+              id_value: SkillSubCategoryData[i]._id,
               update_name:"serverID",
               update_value:serverNew,
             })

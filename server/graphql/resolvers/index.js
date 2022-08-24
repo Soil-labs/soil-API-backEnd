@@ -8,6 +8,7 @@ const { Project,teamType,roleType,skillRoleType,
 const { Skills } = require('./objectResolvers/skillsResolver');
 const { RoleTemplate } = require('./objectResolvers/roleTemplateResolver');
 const { SkillCategory } = require('./objectResolvers/skillCategoryResolver');
+const { SkillSubCategory } = require('./objectResolvers/skillSubCategoryResolver');
 const { ProjectUpdate,findAllProjectsTeamsAnouncmentsOutput,teamsType } = require('./objectResolvers/projectUpdateResolver');
 
 
@@ -20,5 +21,6 @@ module.exports = {
     Skills,
     RoleTemplate,
     SkillCategory,
+    SkillSubCategory,
     ProjectUpdate,findAllProjectsTeamsAnouncmentsOutput,teamsType,
 }

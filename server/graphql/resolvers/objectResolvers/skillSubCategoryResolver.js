@@ -1,13 +1,14 @@
 // const { User } = require('../../../models/user');
 
 const { Skills } = require('../../../models/skillsModel');
-const { SkillSubCategory} = require("../../../models/skillSubCategoryModel");
+const { SkillCategory} = require("../../../models/skillCategoryModel");
+
 const { ApolloError } = require('apollo-server-express');
 
 
 
 module.exports = {
-   SkillCategory: {
+   SkillSubCategory: {
       skills: async (parent, args, context, info) => {
        //console.log("parent = " , parent)
 
@@ -35,21 +36,21 @@ module.exports = {
             );
          }
       },
-      subCategorySkill: async (parent, args, context, info) => {
+      categorySkills: async (parent, args, context, info) => {
          //console.log("parent = " , parent)
   
            try {
-              const subCategorySkill = parent.subCategorySkill;
+              const categorySkills = parent.categorySkills;
   
-              // console.log("subCategorySkill = " , subCategorySkill)
+              console.log("parent = " , parent)
   
   
   
-              SkillSubCategoryData = await SkillSubCategory.find({_id: subCategorySkill})
+              categoryData = await SkillCategory.find({_id: categorySkills})
            
   
   
-              return SkillSubCategoryData;
+              return categoryData;
   
            } catch (err) {
               throw new ApolloError(
@@ -63,5 +64,6 @@ module.exports = {
            }
         },
    },
+   
    
 };

@@ -10,6 +10,7 @@ const {findProjectUpdates,findAllProjectsTeamsAnouncments,findGarden} = require(
 const {findRoleTemplate,findRoleTemplates} = require("./query/roleTemplateQuery");
 const {findServers} = require("./query/serverQuery");
 const {findSkillCategory,findSkillCategories} = require("./query/skillCategoryQuery");
+const {findSkillSubCategory,findSkillSubCategories} = require("./query/skillSubCategoryQuery");
 
 
 const { errors } = require("./query/errorQuery");
@@ -39,6 +40,9 @@ module.exports = {
 
     // ------------- SKILL CATEGORY QUERY -----------------
     findSkillCategory,findSkillCategories,
+
+    // ------------- SKILL SUB CATEGORY QUERY -----------------
+    findSkillSubCategory,findSkillSubCategories,
 
 
     // ------------- PROJECT UPDATE QUERY -----------------

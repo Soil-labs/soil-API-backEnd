@@ -1,6 +1,6 @@
 
 
-const {SkillCategory} = require("../../../models/skillCategoryModel");
+const {SkillSubCategory} = require("../../../models/skillSubCategoryModel");
 
 const {
   ApolloError,
@@ -8,7 +8,7 @@ const {
 
 
 module.exports = {
-  findSkillCategory: async (parent, args, context, info) => {
+  findSkillSubCategory: async (parent, args, context, info) => {
    
     const {_id,id_lightcast} = args.fields;
 
@@ -19,19 +19,18 @@ module.exports = {
     } else if (id_lightcast){
       searchQuery = { id_lightcast: id_lightcast };
     } else {
-      throw new ApolloError( "You need to specify the id of the skill category ");
+      throw new ApolloError( "You need to specify the id of the skill sub category ");
     }
-
 
     try {
 
 
-      let skillCategoryData 
+      let skillSubCategoryData 
 
-      skillCategoryData = await SkillCategory.findOne(searchQuery)
+      skillSubCategoryData = await SkillSubCategory.findOne(searchQuery)
 
  
-      return skillCategoryData
+      return skillSubCategoryData
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -40,7 +39,7 @@ module.exports = {
       );
     }
   },
-  findSkillCategories: async (parent, args, context, info) => {
+  findSkillSubCategories: async (parent, args, context, info) => {
    
     const {_id,id_lightcast} = args.fields;
 
@@ -56,20 +55,20 @@ module.exports = {
 
     try {
 
-      let skillCategoryData
+      let skillSubCategoryData
 
       // if (_id) {
-      //   skillCategoryData = await SkillCategory.find({ _id: _id })
+      //   skillSubCategoryData = await SkillSubCategory.find({ _id: _id })
       // } else {
-      //   skillCategoryData = await SkillCategory.find({})
+      //   skillSubCategoryData = await SkillSubCategory.find({})
       // }
 
-      skillCategoryData = await SkillCategory.find(searchQuery)
+      skillSubCategoryData = await SkillSubCategory.find(searchQuery)
 
    
 
 
-      return skillCategoryData
+      return skillSubCategoryData
     } catch (err) {
       throw new ApolloError(
         err.message,

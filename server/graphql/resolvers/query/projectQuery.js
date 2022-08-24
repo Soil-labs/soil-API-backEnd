@@ -377,20 +377,28 @@ module.exports = {
       let teamData
 
 
-      if (_id){
-        if (queryServerID.length>0){
-          teamData = await Team.find({ $and:[{ _id: _id },{$or:queryServerID}]})
-        } else {
-          teamData = await Team.find({ _id: _id })
-        }
-      } else{
-        if (queryServerID.length>0){
-          teamData = await Team.find({$or:queryServerID})
-        } else {
-          teamData = await Team.find({})
-
-        }
+      
+      if (queryServerID.length>0){
+        teamData = await Team.find({ $and:[fields,{$or:queryServerID},]})
+      } else {
+        teamData = await Team.find(fields)
       }
+        
+
+        // if (_id){
+        //   if (queryServerID.length>0){
+        //     teamData = await Team.find({ $and:[{ _id: _id },{$or:queryServerID},]})
+        //   } else {
+        //     teamData = await Team.find({ _id: _id })
+        //   }
+        // } else{
+        //   if (queryServerID.length>0){
+        //     teamData = await Team.find({$or:queryServerID})
+        //   } else {
+        //     teamData = await Team.find({})
+  
+        //   }
+        // }
 
       console.log("fields = " , fields)
       console.log("teamData = " , teamData)

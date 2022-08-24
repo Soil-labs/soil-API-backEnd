@@ -39,6 +39,11 @@ module.exports = `
             findSkillCategory(fields:findSkillCategoryInput): SkillCategory
             findSkillCategories(fields:findSkillCategoriesInput): [SkillCategory]
 
+
+          #  ---------- SKILL SUB CATEGORY QUERY -------
+            findSkillSubCategory(fields:findSkillSubCategoryInput): SkillSubCategory
+            findSkillSubCategories(fields:findSkillSubCategoriesInput): [SkillSubCategory]
+
           #  ---------- PROJECT UDPATE QUERY -------
           findProjectUpdates(fields:findProjectUpdatesINPUT): [ProjectUpdate]
           findAllProjectsTeamsAnouncments(fields:findAllProjectsTeamsAnouncmentsInput): [findAllProjectsTeamsAnouncmentsOutput]

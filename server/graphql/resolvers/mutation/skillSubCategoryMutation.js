@@ -1,4 +1,4 @@
-const { SkillCategory} = require("../../../models/skillCategoryModel");
+const { SkillSubCategory} = require("../../../models/skillSubCategoryModel");
 const { ServerTemplate } = require("../../../models/serverModel");
 
 const {createNode_neo4j,createNode_neo4j_field,updateNode_neo4j_serverID_f,makeConnection_neo4j} = require("../../../neo4j/func_neo4j");
@@ -6,10 +6,10 @@ const {createNode_neo4j,createNode_neo4j_field,updateNode_neo4j_serverID_f,makeC
 const {ApolloError} = require("apollo-server-express");
 
 module.exports = {
-  updateSkillCategory: async (parent, args, context, info) => {
+  updateSkillSubCategory: async (parent, args, context, info) => {
    
 
-    const {_id,name,description,skills,subCategorySkill,id_lightcast,emoji} = args.fields;
+    const {_id,name,description,skills,categorySkills,id_lightcast,emoji} = args.fields;
 
 
     let fields = {
@@ -20,7 +20,7 @@ module.exports = {
     if (description) fields.description = description;
     if (name) fields.name = name;
     if (_id) fields._id = _id;
-    if (subCategorySkill) fields.subCategorySkill = subCategorySkill;
+    if (categorySkills) fields.categorySkills = categorySkills;
     if (id_lightcast) fields.id_lightcast = id_lightcast;
     if (emoji) fields.emoji = emoji;
 
@@ -29,18 +29,18 @@ module.exports = {
 
         let isNewCategory = false;
 
-        let skillCategoryData
+        let skillSubCategoryData
         if (_id) {
-            skillCategoryData = await SkillCategory.findOne({ _id: _id })
-            if (!skillCategoryData) {
-                skillCategoryData = await new SkillCategory(fields);
-                skillCategoryData.save()
+            skillSubCategoryData = await SkillSubCategory.findOne({ _id: _id })
+            if (!skillSubCategoryData) {
+                skillSubCategoryData = await new SkillSubCategory(fields);
+                skillSubCategoryData.save()
 
                 isNewCategory = true;
 
             } else {
-                skillCategoryData= await SkillCategory.findOneAndUpdate(
-                    {_id: skillCategoryData._id},
+                skillSubCategoryData= await SkillSubCategory.findOneAndUpdate(
+                    {_id: skillSubCategoryData._id},
                     {
                         $set: fields
                     },
@@ -49,8 +49,8 @@ module.exports = {
             }
             
         } else {
-            skillCategoryData = await new SkillCategory(fields);
-            skillCategoryData.save()
+            skillSubCategoryData = await new SkillSubCategory(fields);
+            skillSubCategoryData.save()
 
             isNewCategory = true;
 
@@ -66,17 +66,17 @@ module.exports = {
 
           createNode_neo4j_field({
             fields:{
-              node:"Skill_Category",
-              _id: skillCategoryData._id,
+              node:"Skill_Sub_Category",
+              _id: skillSubCategoryData._id,
               serverID_code: "828",
-              name: skillCategoryData.name,
+              name: skillSubCategoryData.name,
               serverID: serverID,
             }
           })
         }
 
 
-        return skillCategoryData;
+        return skillSubCategoryData;
           
     } catch (err) {
       throw new ApolloError(

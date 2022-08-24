@@ -8,6 +8,13 @@ module.exports = `
         members: [Members],
         authors: [Members],
 
+        subCategorySkill: [SkillSubCategory],
+        categorySkills: [SkillCategory],
+
+        relatedSkills: [Skills],
+
+        id_lightcast: String,
+
         registeredAt: String,
         state: approvedSkillEnum,
     }
@@ -18,16 +25,27 @@ module.exports = `
 
     input findSkillInput {
         _id: ID
+        id_lightcast: ID
     }
 
     input createSkillInput {
         name: String
         state: approvedSkillEnum 
+
+        subCategorySkill: [ID],
+        categorySkills: [ID],
+
+        id_lightcast: String,
     }
 
     input createSkillsInput {
         names: [String]
         state: approvedSkillEnum 
+    }
+
+    input relatedSkillsInput {
+        _id: ID
+        relatedSkills_id: [ID]
     }
 
     input createApprovedSkillInput {
@@ -37,6 +55,8 @@ module.exports = `
     input approveOrRejectSkillInput {
         _id: ID
         state: approvedSkillEnum
+        categorySkills: [ID]
+        subCategorySkill: [ID]
     }
 
     enum approvedSkillEnum {
