@@ -454,7 +454,7 @@ module.exports = {
     try {
 
       let teamData
-
+  
 
       if (queryServerID.length>0){
         teamData = await Role.find({ $and:[fields,{$or:queryServerID}]})
