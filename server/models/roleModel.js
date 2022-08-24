@@ -11,7 +11,7 @@ const roleSchema = mongoose.Schema({
     serverID: [String],
     projectID: mongoose.Schema.ObjectId,
     memberID: [String],
-    teamID: [String],
+    teamID: [mongoose.Schema.ObjectId],
 
 
 });
