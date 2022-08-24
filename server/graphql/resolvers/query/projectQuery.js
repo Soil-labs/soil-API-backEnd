@@ -418,7 +418,9 @@ module.exports = {
   },
   findRoles: async (parent, args, context, info) => {
    
-    const {_id,serverID} = args.fields;
+    const {_id,serverID,projectID,teamID} = args.fields;
+
+    // console.log("change = " )
 
     let queryServerID = []
     if (serverID) {
@@ -427,6 +429,26 @@ module.exports = {
       })
     }
     
+    let fields = {};
+    if (projectID) {
+      fields = {
+        ...fields,
+        projectID: projectID
+      }
+    }
+
+    if (teamID) {
+      fields = {
+        ...fields,
+        teamID: teamID
+      }
+    }
+    if (_id) {
+      fields = {
+        ...fields,
+        _id: _id
+      }
+    }
     
 
     try {
@@ -434,19 +456,10 @@ module.exports = {
       let teamData
 
 
-      if (_id){
-        if (queryServerID.length>0){
-          teamData = await Role.find({ $and:[{ _id: _id },{$or:queryServerID}]})
-        } else {
-          teamData = await Role.find({ _id: _id })
-        }
-      } else{
-        if (queryServerID.length>0){
-          teamData = await Role.find({$or:queryServerID})
-        } else {
-          teamData = await Role.find({})
-
-        }
+      if (queryServerID.length>0){
+        teamData = await Role.find({ $and:[fields,{$or:queryServerID}]})
+      } else {
+        teamData = await Role.find(fields)
       }
 
 
