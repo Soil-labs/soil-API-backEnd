@@ -5,10 +5,10 @@ require("dotenv").config();
 
 const serverSchema = mongoose.Schema({
 
-  // _id: {
-  //   type: String,
-  //   unique: true,
-  // },
+  _id: {
+    type: String,
+    unique: true,
+  },
 
   name: String,
   adminID: [String],
