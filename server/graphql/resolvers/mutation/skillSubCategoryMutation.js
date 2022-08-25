@@ -30,8 +30,14 @@ module.exports = {
         let isNewCategory = false;
 
         let skillSubCategoryData
-        if (_id) {
-            skillSubCategoryData = await SkillSubCategory.findOne({ _id: _id })
+        if (_id || id_lightcast) {
+
+            if (_id){
+              skillSubCategoryData = await SkillSubCategory.findOne({ _id: _id })
+            }else{
+              skillSubCategoryData = await SkillSubCategory.findOne({ id_lightcast: id_lightcast })
+            }
+            
             if (!skillSubCategoryData) {
                 skillSubCategoryData = await new SkillSubCategory(fields);
                 skillSubCategoryData.save()
