@@ -25,13 +25,19 @@ module.exports = {
     if (emoji) fields.emoji = emoji;
 
 
-    try {
+    try { 
 
         let isNewCategory = false;
 
         let skillCategoryData
-        if (_id) {
-            skillCategoryData = await SkillCategory.findOne({ _id: _id })
+        if (_id || id_lightcast) {
+
+            if (_id){
+              skillCategoryData = await SkillCategory.findOne({ _id: _id })
+            }else{
+              skillCategoryData = await SkillCategory.findOne({ id_lightcast: id_lightcast })
+            }
+
             if (!skillCategoryData) {
                 skillCategoryData = await new SkillCategory(fields);
                 skillCategoryData.save()
