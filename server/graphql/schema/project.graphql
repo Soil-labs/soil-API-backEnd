@@ -25,6 +25,8 @@ module.exports = `
 
         dates: datesType
 
+        garden_teams: [Team]
+
     }
 
     type Team {
@@ -36,6 +38,8 @@ module.exports = `
         projects: Project,
         members: [Members]
         champion: [Members]
+
+        roles: [Role],
     }
 
     type Role {
@@ -183,7 +187,7 @@ module.exports = `
         
         title: String
         description: String
-        serverID: String
+        serverID: [String]
 
         champion: String
 

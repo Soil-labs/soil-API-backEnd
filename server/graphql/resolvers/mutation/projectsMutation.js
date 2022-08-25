@@ -480,13 +480,13 @@ module.exports = {
     const {_id,name,description,memberID,projectID,serverID,championID} = JSON.parse(JSON.stringify(args.fields))
 
     // _id is only if you want to update a team
-    if (!name) throw new ApolloError( "you need to specify a name");
-    if (!projectID) throw new ApolloError( "you need to specify a project ID");
+    // if (!name) throw new ApolloError( "you need to specify a name");
+    // if (!projectID) throw new ApolloError( "you need to specify a project ID");
     
     
     let fields = {
-      projectID,
-      name,
+      // projectID,
+      // name,
       registeredAt: new Date(),
     }
 
@@ -495,35 +495,67 @@ module.exports = {
     if (memberID) fields =  {...fields,memberID}
     if (serverID) fields =  {...fields,serverID}
     if (championID) fields =  {...fields,championID}
+    if (projectID) fields =  {...fields,projectID}
+    if (name) fields =  {...fields,name}
 
     console.log("change = 1" )
 
     try {
-      if (fields._id) {
+      let teamData
+      if (_id) {
       console.log("change = 2" )
 
-        let membersData = await Team.findOne({ _id: fields._id })
+        teamData = await Team.findOne({ _id: fields._id })
 
-        if (membersData){
+        if (teamData){
           console.log("change = 3" )
 
-          membersData = await Team.findOneAndUpdate(
+          teamData = await Team.findOneAndUpdate(
             {_id: fields._id},fields,
             {new: true}
           )
 
-
-          return (membersData)
-
         }
+      } else {
+        teamData = await new Team(fields).save()
       }
 
 
-      let membersData = await new Team(fields).save()
+      // ------------ 🌱 Update 🌱 Teams -----------------
+      projectData = await Projects.find({ _id: projectID })
+
+      console.log("projectData = " , projectData)
+      console.log("projectData.garden_teams = " , projectData.garden_teams)
+
+      if (projectData.garden_teams){
+        if (!projectData.garden_teams.includes(teamData._id)){
+          projectData.garden_teams.push(teamData._id)
+          projectUpdate = await Projects.findOneAndUpdate(
+            {_id: projectID},
+            {
+                $set: {garden_teams: projectData.garden_teams }
+            },
+            {new: true}
+          )
+        }
+      } else {
+        projectData.garden_teams = [teamData._id]
+        projectUpdate = await Projects.findOneAndUpdate(
+          {_id: projectID},
+          {
+              $set: {garden_teams: projectData.garden_teams }
+          },
+          {new: true}
+        )
+      }  
+      // ------------ 🌱 Update 🌱 Teams -----------------
+
+
+
       
 
 
-      return (membersData)
+      return (teamData)
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -573,14 +605,35 @@ module.exports = {
             {new: true}
           )
 
-
-          return (roleData)
-
         }
       } else {
         roleData = await new Role(fields).save()
         
       }
+
+      // ------------ 🌱 Update 🌱 Teams -----------------
+      teams = await Team.find({ _id: teamID })
+
+      for (let i=0; i<teams.length; i++){
+        let team = teams[i]
+
+        if (!team.roles.includes(roleData._id)){
+          let roles = [...team.roles]
+          roles.push(roleData._id)
+          team.roles = roles
+          await Team.findOneAndUpdate(
+            {_id: team._id},
+            {
+                $set: {roles: team.roles }
+            },
+            {new: true}
+          )
+        }
+      }
+
+      // ------------ 🌱 Update 🌱 Teams -----------------
+
+
       
 
 

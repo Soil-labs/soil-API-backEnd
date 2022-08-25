@@ -13,6 +13,8 @@ const teamModalSchema = mongoose.Schema({
     memberID: [String],
     championID: [String],
 
+    roles: [mongoose.Schema.ObjectId],
+
 
 });
 

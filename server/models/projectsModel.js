@@ -62,7 +62,9 @@ const projectSchema = mongoose.Schema({
   dates: {
     kickOff: Date,
     complition: Date,
-  }
+  },
+
+  garden_teams: [mongoose.Schema.ObjectId],
 
 
 });

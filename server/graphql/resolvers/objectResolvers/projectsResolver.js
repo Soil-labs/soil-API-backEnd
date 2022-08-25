@@ -3,6 +3,7 @@ const { Members } = require('../../../models/membersModel');
 const { Skills } = require('../../../models/skillsModel');
 const { Projects } = require('../../../models/projectsModel');
 const {Team} = require('../../../models/teamModal');
+const { Role } = require("../../../models/roleModel");
 
 const { ApolloError } = require('apollo-server-express');
 
@@ -53,6 +54,29 @@ module.exports = {
             );
          }
       },
+      garden_teams: async (parent, args, context, info) => {
+
+         try {
+            const garden_teams = parent.garden_teams;
+  
+            garden_teamsData = await Team.find({_id: garden_teams})
+
+
+            return garden_teamsData;
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > members',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+
+      }
+
    },
    teamType: {
       memberInfo: async (parent, args, context, info) => {
@@ -291,6 +315,28 @@ module.exports = {
   
   
               return memberData;
+  
+           } catch (err) {
+              throw new ApolloError(
+                 err.message,
+                 err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                 {
+                    component: 'userResolver > members',
+                    user: context.req.user?._id,
+                 }
+              );
+           }
+        },
+        roles: async (parent, args, context, info) => {
+  
+         console.log("parent = " ,parent)
+           try {
+              const roles = parent.roles;
+  
+              rolesData = await Role.find({_id: roles})
+  
+  
+              return rolesData;
   
            } catch (err) {
               throw new ApolloError(
