@@ -522,7 +522,7 @@ module.exports = {
 
 
       // ------------ 🌱 Update 🌱 Teams -----------------
-      projectData = await Projects.find({ _id: projectID })
+      projectData = await Projects.findOne({ _id: projectID })
 
       console.log("projectData = " , projectData)
       console.log("projectData.garden_teams = " , projectData.garden_teams)
@@ -572,11 +572,10 @@ module.exports = {
     const {_id,name,description,memberID,projectID,serverID,teamID} = JSON.parse(JSON.stringify(args.fields))
 
     // _id is only if you want to update a team
-    if (!name) throw new ApolloError( "you need to specify a name");
+    // if (!name) throw new ApolloError( "you need to specify a name");
     
     
     let fields = {
-      name,
       registeredAt: new Date(),
     }
 
@@ -586,6 +585,7 @@ module.exports = {
     if (serverID) fields =  {...fields,serverID}
     if (teamID) fields =  {...fields,teamID}
     if (projectID) fields =  {...fields,projectID}
+    if (name) fields =  {...fields,name}
 
 
     console.log("change = 1" )
