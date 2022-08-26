@@ -242,7 +242,7 @@ module.exports = {
   findGarden: async (parent, args, context, info) => {
    
 
-    console.log("change = " )
+    // console.log("change = " )
 
     const {dateStart,dateEnd,serverID} = args.fields;
 
@@ -270,7 +270,16 @@ module.exports = {
     } 
     
 
-    let generalRole = await Role.findOne({name: "General"})
+    let generalRole 
+    
+    generalRole = await Role.findOne({name: "General"})
+
+    if (!generalRole){
+      generalRole = await new Role({
+        name: "General",
+        serverID,
+      }).save()
+    }
 
     let generalTeam = await Team.findOne({name: "General"})
 
@@ -346,12 +355,14 @@ module.exports = {
           }
         })
 
+        // console.log("change = " )
         
 
         if (findProject_position==-1){ // new Project, find info
           // projectsData = await Projects.findOne( {_id: anouncment.projectID } )
           projectsData = projects_all[project_index[anouncment.projectID]]
 
+          // console.log("projectsData = " , projectsData)
           garden_projectTeamRole.push({
             _id: projectsData._id,
             project: projectsData,
@@ -415,6 +426,7 @@ module.exports = {
 
         //  ---------------- Find Team Position -----------------
 
+        // console.log("generalRole = " , generalRole)
         let searchRoleID
         if (anouncment.roleID && anouncment.roleID[0]){
           searchRoleID = anouncment.roleID[0]
@@ -437,15 +449,18 @@ module.exports = {
         if (findRole_position==-1){ // new Role, find info
 
           // let roleData = await Role.findOne( {_id: searchRoleID } )
-          roleData = role_all[role_index[searchRoleID]]
+          if (role_index[searchRoleID] && role_all[role_index[searchRoleID]]){
+            roleData = role_all[role_index[searchRoleID]]
 
 
-          garden_projectTeamRole[findProject_position].team[findTeam_position].role.push({
-            _id: roleData._id,
-            roleData: roleData,
-            announcement: [anouncment],
-          })
-          findRole_position = garden_projectTeamRole[findProject_position].team[findTeam_position].role.length-1
+            // console.log("roleData = " , searchRoleID,role_index,roleData)
+            garden_projectTeamRole[findProject_position].team[findTeam_position].role.push({
+              _id: roleData._id,
+              roleData: roleData,
+              announcement: [anouncment],
+            })
+            findRole_position = garden_projectTeamRole[findProject_position].team[findTeam_position].role.length-1
+          }
 
         } else {
           garden_projectTeamRole[findProject_position].team[findTeam_position].role[findRole_position].announcement.push(anouncment)
