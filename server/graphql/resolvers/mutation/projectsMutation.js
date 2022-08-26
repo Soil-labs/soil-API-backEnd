@@ -439,6 +439,8 @@ module.exports = {
               phase: phase,
             })
 
+            console.log("currentProjects = " , currentProjects)
+
             memberDataUpdate = await Members.findOneAndUpdate(
               {_id: memberID},
               {

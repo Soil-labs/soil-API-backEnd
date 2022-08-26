@@ -93,6 +93,7 @@ module.exports = {
                   roleID: projectsInfo[position[info._id]].roleID,
                   champion: projectsInfo[position[info._id]].champion,
                   favorite: projectsInfo[position[info._id]].favorite,
+                  phase: projectsInfo[position[info._id]].phase,
                }
 
                let roleUser

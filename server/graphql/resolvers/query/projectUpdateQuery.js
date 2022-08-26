@@ -320,7 +320,7 @@ module.exports = {
     role_all.forEach((team,idx) => {
       role_index[team._id] = idx
     })
-    // console.log("role_index = " , role_index)
+    console.log("role_index = " , role_index)
     //  ------------ Role Index -----------------
 
 
@@ -341,6 +341,7 @@ module.exports = {
         // for (let i=0;i<10;i++){
         let anouncment = anouncmentsData[i]
 
+        
         // console.log("i = " , i)
         // console.log("anouncment = " , anouncment)
 
@@ -447,6 +448,10 @@ module.exports = {
         // console.log("anouncment ---- tokio = " , anouncment)
 
         if (findRole_position==-1){ // new Role, find info
+
+          if (anouncment._id.equals("6308f4ae4bd2180004c841f4")){
+            console.log("change =a s asddf fsd a " ,searchRoleID,role_index,role_index[searchRoleID],role_all[role_index[searchRoleID]])
+          }
 
           // let roleData = await Role.findOne( {_id: searchRoleID } )
           if (role_index[searchRoleID] && role_all[role_index[searchRoleID]]){
