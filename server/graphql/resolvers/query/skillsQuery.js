@@ -109,6 +109,24 @@ module.exports = {
       );
     }
   },
+  skills_autocomplete: async (parent, args, context, info) => {
+   
+
+    const {search} = args.fields;
+
+    console.log("search = " , search)
+
+    try {
+
+      return [{}]
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findSkill"}
+      );
+    }
+  },
   adminFindAllSkillsEveryState: async (parent, args, context, info) => {
    
 

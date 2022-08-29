@@ -23,6 +23,10 @@ module.exports = `
         _id: [ID]
     }
 
+    input skills_autocompleteInput {
+        search: String,
+    }
+
     input findSkillInput {
         _id: ID
         id_lightcast: ID
