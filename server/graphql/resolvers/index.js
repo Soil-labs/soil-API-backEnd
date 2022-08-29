@@ -10,6 +10,8 @@ const { RoleTemplate } = require('./objectResolvers/roleTemplateResolver');
 const { SkillCategory } = require('./objectResolvers/skillCategoryResolver');
 const { SkillSubCategory } = require('./objectResolvers/skillSubCategoryResolver');
 const { ProjectUpdate,findAllProjectsTeamsAnouncmentsOutput,teamsType } = require('./objectResolvers/projectUpdateResolver');
+const { PubSub } = require('graphql-subscriptions');
+const pubsub = new PubSub()
 
 
 module.exports = {
@@ -23,4 +25,17 @@ module.exports = {
     SkillCategory,
     SkillSubCategory,
     ProjectUpdate,findAllProjectsTeamsAnouncmentsOutput,teamsType,
+    Mutation: {
+        updateMemberForSubs: () => {
+            pubsub.publish('MEMBER_UPDATED', {
+                memberUpdated: "Helllo"
+            })
+            return "Hello"
+        }
+    },
+    Subscription: {
+        memberUpdated: {
+            subscribe: () => pubsub.asyncIterator('MEMBER_UPDATED')
+        }
+    }
 }
