@@ -25,12 +25,9 @@ const typeDefs = gql`
   ${SkillCategoryType}
   ${SkillSubCategoryType}
   ${errorType}
-  type Mutation {
-    updateMemberForSubs: String
-  }
 
   type Subscription {
-    memberUpdated: String
+    memberUpdated(fields: findMembersInput): Members
   }
 
 `;

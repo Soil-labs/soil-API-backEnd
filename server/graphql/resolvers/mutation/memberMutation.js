@@ -6,6 +6,10 @@ const {ApolloError} = require("apollo-server-express");
 const { driver } = require("../../../../server/neo4j_config");
 const {createNode_neo4j,makeConnection_neo4j,updateNode_neo4j_serverID} = require("../../../neo4j/func_neo4j");
 
+const { PubSub } = require('graphql-subscriptions');
+const pubsub = new PubSub()
+
+
 module.exports = {
   addNewMember: async (parent, args, context, info) => {
    
@@ -104,7 +108,9 @@ module.exports = {
         }
       }
       
-
+      pubsub.publish(membersData._id, {
+        memberUpdated: membersData
+      })
       return membersData
     } catch (err) {
       throw new ApolloError(
@@ -214,7 +220,9 @@ module.exports = {
         }
       }
 
-
+      pubsub.publish(membersData._id, {
+        memberUpdated: membersData
+      })
       return membersData
     } catch (err) {
       throw new ApolloError(
@@ -582,5 +590,12 @@ module.exports = {
       );
     }
   },
+  subscribe: (parent, args, context, info) => {
+    console.log("Argsss", args)
+    const {_id,serverID} = args.fields;
+    const temp = _id? _id: "" 
+
+    return pubsub.asyncIterator(temp)
+  }
 
 };

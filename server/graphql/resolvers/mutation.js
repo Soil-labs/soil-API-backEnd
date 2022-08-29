@@ -1,4 +1,4 @@
-const {addNewMember,updateMember,addFavoriteProject,addSkillToMember,endorseAttribute,} = require("./mutation/memberMutation");
+const {addNewMember,updateMember,addFavoriteProject,addSkillToMember,endorseAttribute, subscribe} = require("./mutation/memberMutation");
 const {updateProject,newTweetProject,approveTweet,changeTeamMember_Phase_Project,createNewTeam,createNewRole} = require("./mutation/projectsMutation");
 const {createSkill,createSkills,relatedSkills,createApprovedSkill,approveOrRejectSkill} = require("./mutation/skillMutation")
 const {updateRoleTemplate} = require("./mutation/roleTemplateMutation")
@@ -43,4 +43,9 @@ module.exports = {
 
     
   },
+  Subscription: {
+    memberUpdated: {
+      subscribe
+    }
+  }
 };
