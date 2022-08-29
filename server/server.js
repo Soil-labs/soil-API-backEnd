@@ -61,6 +61,7 @@ server.applyMiddleware({
 const PORT = process.env.PORT || 5001;
 
 
+console.log("process.env.REACT_APP_MONGO_DATABASE  = " , process.env.REACT_APP_MONGO_DATABASE )
 
 const DATABASE_MONGO =
   process.env.REACT_APP_MONGO_DATABASE != undefined
