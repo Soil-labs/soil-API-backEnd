@@ -118,6 +118,38 @@ module.exports = {
 
     try {
 
+      // let result = await Skills.find(
+      //   {
+      //     $search: [{
+      //       "autocomplete": {
+      //         "query": "co",
+      //         "path": "name",
+      //         "fuzzy": {
+      //           "maxEdits": 2
+      //         }
+
+      //       }
+      //     }]
+      //   }
+      // )
+
+      let result = await Skills.aggregate([ { 
+          "$search": {
+              "index": "coding", 
+              "autocomplete": { 
+                  "query": "default",
+                  "path": "name", 
+                  "fuzzy": { 
+                      "maxEdits": 2, 
+                      // "prefixLength": 3 
+                  } 
+              } 
+          } 
+      }])
+
+
+      console.log("result = " , result)
+
       return [{}]
     } catch (err) {
       throw new ApolloError(
