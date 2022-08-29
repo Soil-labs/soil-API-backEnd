@@ -53,7 +53,7 @@ module.exports = {
                     str += `${key}: '${temp}',`
                 }
             }
-
+ 
         }
         str = str.slice(0,-1)
 
