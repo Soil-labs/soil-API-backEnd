@@ -24,69 +24,50 @@ async function main() {
 
   const httpServer = createServer(app)
 
-  const schema = makeExecutableSchema({
-      typeDefs,
-      resolvers
-  })
-
-
-  const subscriptionServer = new WebSocketServer(
-      {server: httpServer, path: '/graphql', context: {text: "I am Context"}}
-  )
-
-  const serverCleanup = useServer( {schema, execute, subscribe}, subscriptionServer);
-
-  const server = new ApolloServer({
-    schema,
-    introspection: true,
-    playground: true,
-    plugins : [
-        {
-            async serverWillStart(){
-                return { async drainServer() {
-                    serverCleanup.dispose()
-                }
-                }   
-            }
-        }
-    ],
-    context: ({ req }) => {
-      if (req.body) {
-        req.body.query = req.body.query;
+ 
+  
+const app = express();
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  introspection: true,
+  playground: true,
+  context: ({ req }) => {
+    if (req.body) {
+      req.body.query = req.body.query;
+    }
+    try {
+      req.header["Access-Control-Allow-Origin"] = "*"
+      req.header["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept"
+      if (req.headers.authorization) {
+        req.headers.authorization.replace(/[&#,+()$~%.:*?<>]/g, "");
+        const payload = jwt.decode(
+          req.headers.authorization.replace("Bearer ", "")
+        );
+        const user = { id: payload._id, email: payload.email };
+        req.user = user;
       }
-      try {
-        req.header["Access-Control-Allow-Origin"] = "*"
-        req.header["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept"
-        if (req.headers.authorization) {
-          req.headers.authorization.replace(/[&#,+()$~%.:*?<>]/g, "");
-          const payload = jwt.decode(
-            req.headers.authorization.replace("Bearer ", "")
-          );
-          const user = { id: payload._id, email: payload.email };
-          req.user = user;
-        }
-      } catch (err) {
-      // console.log(err);
-      }
+    } catch (err) {
+    // console.log(err);
+    }
 
-      return { req};
-    },
-    formatError: (err) => {
-      logError(err);
-      return err;
-    },
-  });
-  await server.start()
+    return { req };
+  },
+  formatError: (err) => {
+    logError(err);
+    return err;
+  },
+});
 
-  server.applyMiddleware({
-    app,
-    cors: {
-      // origin,
-    },
-  });
+server.applyMiddleware({
+  app,
+  cors: {
+    // origin,
+  },
+});
 
 
-  const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5001;
 
 
 

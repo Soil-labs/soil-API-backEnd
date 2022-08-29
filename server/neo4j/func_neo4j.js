@@ -41,9 +41,9 @@ module.exports = {
         let str = ''
         for (var key in fields) {
             console.log("key,fields[key] = " , key,fields[key])
-
+ 
             if (fields[key] ){
-                if (key == 'serverID'){
+                if (key == 'serverID' && fields[key].length>0){
                     temp = arrayToString(fields[key])
 
                     str += `${key}: ${temp},`
@@ -53,7 +53,7 @@ module.exports = {
                     str += `${key}: '${temp}',`
                 }
             }
-
+ 
         }
         str = str.slice(0,-1)
 
