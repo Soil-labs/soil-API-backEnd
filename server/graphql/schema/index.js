@@ -11,6 +11,8 @@ const SkillSubCategoryType = require('./skillSubCategory.graphql');
 const roleTemplateType = require('./roleTemplate.graphql');
 const serverTemplateType = require('./serverTemplate.graphql');
 const errorType = require('./errors.graphql');
+const roomType = require('./rooms.graphql');
+const subscription = require('./subscription.graphql');
 
 const typeDefs = gql`
   ${query}
@@ -25,6 +27,8 @@ const typeDefs = gql`
   ${SkillCategoryType}
   ${SkillSubCategoryType}
   ${errorType}
+  ${roomType}
+  ${subscription}
 
 `;
 

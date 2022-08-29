@@ -9,6 +9,7 @@ const {findProjectUpdates,findAllProjectsTeamsAnouncments,findGarden} = require(
 
 const {findRoleTemplate,findRoleTemplates} = require("./query/roleTemplateQuery");
 const {findServers} = require("./query/serverQuery");
+const {findRoom} = require("./query/roomQuery");
 const {findSkillCategory,findSkillCategories} = require("./query/skillCategoryQuery");
 const {findSkillSubCategory,findSkillSubCategories} = require("./query/skillSubCategoryQuery");
 
@@ -39,6 +40,10 @@ module.exports = {
 
     // ------------- SERVER TEMPLATE QUERY -----------------
     findServers,
+
+    // ------------- ROOM TEMPLATE QUERY -----------------
+    findRoom,
+
 
     // ------------- SKILL CATEGORY QUERY -----------------
     findSkillCategory,findSkillCategories,

@@ -6,6 +6,10 @@ const {ApolloError} = require("apollo-server-express");
 const { driver } = require("../../../../server/neo4j_config");
 const {createNode_neo4j,makeConnection_neo4j,updateNode_neo4j_serverID} = require("../../../neo4j/func_neo4j");
 
+const { PubSub } = require('graphql-subscriptions');
+const pubsub = new PubSub()
+
+
 module.exports = {
   addNewMember: async (parent, args, context, info) => {
    
@@ -104,7 +108,9 @@ module.exports = {
         }
       }
       
-
+      pubsub.publish(membersData._id, {
+        memberUpdated: membersData
+      })
       return membersData
     } catch (err) {
       throw new ApolloError(
@@ -214,7 +220,9 @@ module.exports = {
         }
       }
 
-
+      pubsub.publish(membersData._id, {
+        memberUpdated: membersData
+      })
       return membersData
     } catch (err) {
       throw new ApolloError(
@@ -256,7 +264,9 @@ module.exports = {
       console.log("memberData.projects = " , memberData.projects)
 
 
-
+    pubsub.publish(memberData._id, {
+      memberUpdated: memberData
+    })
     return memberData
     } catch (err) {
       throw new ApolloError(
@@ -571,8 +581,10 @@ module.exports = {
       ...member._doc,
       // skills: []
     }
-
-
+      //console.log("Context", context)
+      pubsub.publish(member._id, {
+        memberUpdated: member
+      })
       return member
     } catch (err) {
       throw new ApolloError(
@@ -582,5 +594,13 @@ module.exports = {
       );
     }
   },
+  memberUpdated: {
+    subscribe: (parent, args, context, info) => {
+      console.log("Context", parent)
+      const {_id,serverID} = args.fields;
+      const temp = _id? _id: "" 
 
+      return pubsub.asyncIterator(temp)
+    }
+  }
 };

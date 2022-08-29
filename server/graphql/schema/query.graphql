@@ -51,6 +51,9 @@ module.exports = `
           findProjectUpdates(fields:findProjectUpdatesINPUT): [ProjectUpdate]
           findAllProjectsTeamsAnouncments(fields:findAllProjectsTeamsAnouncmentsInput): [findAllProjectsTeamsAnouncmentsOutput]
           findGarden(fields:findGardenInput): [findGardenOutput]
+
+          #------------ROOM QUERY ---------
+          findRoom(fields: findRoomsInput): Rooms
    
             
         }

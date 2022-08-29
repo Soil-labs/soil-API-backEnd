@@ -46,5 +46,10 @@ module.exports = `
         #  ---------- SKILL CATEGORY MUTATIONS -------
         createProjectUpdate(fields:createProjectUpdateInput!):ProjectUpdate
 
+
+        #------------- ROOMS CATAGORY MUTATIONS ------
+        createRoom(fields: createRoomInput!): Rooms
+        enterRoom(fields: enterRoomInput!): Rooms
+
     }
 `
