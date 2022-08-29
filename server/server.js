@@ -31,7 +31,7 @@ async function main() {
 
 
   const subscriptionServer = new WebSocketServer(
-      {server: httpServer, path: '/graphql'}
+      {server: httpServer, path: '/graphql', context: {text: "I am Context"}}
   )
 
   const serverCleanup = useServer( {schema, execute, subscribe}, subscriptionServer);

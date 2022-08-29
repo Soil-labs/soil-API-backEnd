@@ -1,0 +1,6 @@
+module.exports = `
+    type Subscription {
+        memberUpdated(fields: findMembersInput): Members
+        roomUpdated(fields: findRoomsInput): Rooms
+    }
+`

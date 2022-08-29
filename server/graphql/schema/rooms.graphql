@@ -1,0 +1,23 @@
+module.exports = `
+    
+    type Rooms {
+        _id: ID,
+        name: String,
+        members: [Members],
+        registeredAt: String,
+    }
+
+    input findRoomsInput {
+        _id: ID
+    }
+
+    input createRoomInput {
+        _id: String,
+        name: String,
+    }
+
+    input enterRoomInput {
+        roomId: ID
+        memberId: ID
+    }
+`

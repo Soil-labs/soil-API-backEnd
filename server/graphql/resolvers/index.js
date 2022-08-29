@@ -6,6 +6,7 @@ const { Project,teamType,roleType,skillRoleType,
     tweetsType,projectUserMatchType,Team,Role,
  } = require('./objectResolvers/projectsResolver');
 const { Skills } = require('./objectResolvers/skillsResolver');
+const { Rooms } = require('./objectResolvers/roomResolver');
 const { RoleTemplate } = require('./objectResolvers/roleTemplateResolver');
 const { SkillCategory } = require('./objectResolvers/skillCategoryResolver');
 const { SkillSubCategory } = require('./objectResolvers/skillSubCategoryResolver');
@@ -23,6 +24,7 @@ module.exports = {
     Project,teamType,roleType,skillRoleType,
     tweetsProject,tweetsType,projectUserMatchType,Team,Role,
     Skills,
+    Rooms,
     RoleTemplate,
     SkillCategory,
     SkillSubCategory,

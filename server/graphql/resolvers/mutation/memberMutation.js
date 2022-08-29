@@ -264,7 +264,9 @@ module.exports = {
       console.log("memberData.projects = " , memberData.projects)
 
 
-
+    pubsub.publish(memberData._id, {
+      memberUpdated: memberData
+    })
     return memberData
     } catch (err) {
       throw new ApolloError(
@@ -579,8 +581,10 @@ module.exports = {
       ...member._doc,
       // skills: []
     }
-
-
+      //console.log("Context", context)
+      pubsub.publish(member._id, {
+        memberUpdated: member
+      })
       return member
     } catch (err) {
       throw new ApolloError(
@@ -590,12 +594,13 @@ module.exports = {
       );
     }
   },
-  subscribe: (parent, args, context, info) => {
-    console.log("Argsss", args)
-    const {_id,serverID} = args.fields;
-    const temp = _id? _id: "" 
+  memberUpdated: {
+    subscribe: (parent, args, context, info) => {
+      console.log("Context", parent)
+      const {_id,serverID} = args.fields;
+      const temp = _id? _id: "" 
 
-    return pubsub.asyncIterator(temp)
+      return pubsub.asyncIterator(temp)
+    }
   }
-
 };
