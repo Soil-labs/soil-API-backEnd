@@ -1,7 +1,7 @@
 
 const { Skills } = require("../../../models/skillsModel");
 
-
+const mongoose = require("mongoose");
 
 const {
   ApolloError,
@@ -114,43 +114,30 @@ module.exports = {
 
     const {search} = args.fields;
 
-    console.log("search = " , search)
+    let collection = mongoose.connection.db.collection("skills")
+
 
     try {
 
-      // let result = await Skills.find(
-      //   {
-      //     $search: [{
-      //       "autocomplete": {
-      //         "query": "co",
-      //         "path": "name",
-      //         "fuzzy": {
-      //           "maxEdits": 2
-      //         }
-
-      //       }
-      //     }]
-      //   }
-      // )
-
-      let result = await Skills.aggregate([ { 
+      console.log("change = 1" ,search)
+      let result = await collection.aggregate([ { 
           "$search": {
-              "index": "coding", 
               "autocomplete": { 
-                  "query": "default",
+                  "query": search,
                   "path": "name", 
                   "fuzzy": { 
-                      "maxEdits": 2, 
-                      // "prefixLength": 3 
+                      "maxEdits": 1, 
                   } 
               } 
           } 
       }])
-
+      .toArray();
 
       console.log("result = " , result)
 
-      return [{}]
+
+
+      return result
     } catch (err) {
       throw new ApolloError(
         err.message,
