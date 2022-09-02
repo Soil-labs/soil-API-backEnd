@@ -3,6 +3,7 @@ const { Projects } = require("../../../models/projectsModel");
 const { Team } = require("../../../models/teamModal");
 const { Role } = require("../../../models/roleModel");
 const { Members } = require("../../../models/membersModel");
+const { Initiative } = require("../../../models/initiativeModel");
 const {ApolloError} = require("apollo-server-express");
 const { TeamMember } = require("discord.js");
 const { driver } = require("../../../../server/neo4j_config");
@@ -479,7 +480,7 @@ module.exports = {
    
 
     
-    const {_id,name,description,memberID,projectID,serverID,championID} = JSON.parse(JSON.stringify(args.fields))
+    const {_id,name,description,memberID,projectID,serverID,championID,categoryDiscordlD} = JSON.parse(JSON.stringify(args.fields))
 
     // _id is only if you want to update a team
     // if (!name) throw new ApolloError( "you need to specify a name");
@@ -499,6 +500,7 @@ module.exports = {
     if (championID) fields =  {...fields,championID}
     if (projectID) fields =  {...fields,projectID}
     if (name) fields =  {...fields,name}
+    if (categoryDiscordlD) fields =  {...fields,categoryDiscordlD}
 
     console.log("change = 1" )
 
@@ -649,4 +651,92 @@ module.exports = {
     }
   },
 
+  createNewInitiative: async (parent, args, context, info) => {
+   
+
+    
+    const { _id,name,description,phase,championID,serverID,projectID,teamID,memberID,
+      notifyUserID,channelDiscordlID} = JSON.parse(JSON.stringify(args.fields))
+
+    // _id is only if you want to update a team
+    // if (!name) throw new ApolloError( "you need to specify a name");
+    
+    
+    let fields = {
+      registeredAt: new Date(),
+    }
+
+    if (_id) fields =  {...fields,_id}
+    if (name) fields =  {...fields,name}
+    if (description) fields =  {...fields,description}
+    if (phase) fields =  {...fields,phase}
+    if (championID) fields =  {...fields,championID}
+    if (memberID) fields =  {...fields,memberID}
+    if (serverID) fields =  {...fields,serverID}
+    if (teamID) fields =  {...fields,teamID}
+    if (projectID) fields =  {...fields,projectID}
+    if (name) fields =  {...fields,name}
+    if (notifyUserID) fields =  {...fields,notifyUserID}
+    if (channelDiscordlID) fields =  {...fields,channelDiscordlID}
+
+
+    console.log("change = 1" )
+
+    let initiativeData
+    try {
+      if (fields._id) {
+      console.log("change = 2" )
+
+        initiativeData = await Initiative.findOne({ _id: fields._id })
+
+        if (initiativeData){
+          console.log("change = 3" )
+
+          initiativeData = await Initiative.findOneAndUpdate(
+            {_id: fields._id},fields,
+            {new: true}
+          )
+
+        }
+      } else {
+        initiativeData = await new Initiative(fields).save()
+        
+      }
+
+      // ------------ 🌱 Update 🌱 Initiative -----------------
+      teams = await Team.find({ _id: teamID })
+
+      for (let i=0; i<teams.length; i++){
+        let team = teams[i]
+
+        if (!team.initiatives.includes(initiativeData._id)){
+          let initiatives = [...team.initiatives]
+          initiatives.push(initiativeData._id)
+          team.initiatives = initiatives
+          await Team.findOneAndUpdate(
+            {_id: team._id},
+            {
+                $set: {initiatives: team.initiatives }
+            },
+            {new: true}
+          )
+        }
+      }
+      // ------------ 🌱 Update 🌱 Initiative -----------------
+
+      
+
+      console.log("initiativeData.championID = " , initiativeData.championID)
+      
+
+
+      return (initiativeData)
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
 };

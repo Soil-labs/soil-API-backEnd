@@ -19,6 +19,7 @@ module.exports = `
         changeTeamMember_Phase_Project(fields:changeTeamMember_Phase_ProjectInput!):Project
         createNewTeam(fields:createNewTeamInput!):Team
         createNewRole(fields:createNewRoleInput!):Role
+        createNewInitiative(fields:createNewInitiativeInput!):Initiative
 
         #  ---------- SKILL MUTATIONS -------
         createSkill(fields:createSkillInput): Skills

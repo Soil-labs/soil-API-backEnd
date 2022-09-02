@@ -3,7 +3,7 @@ const { Mutation, Subscription } = require('./mutation');
 const { Members,matchMembersToUserOutput,matchMembersToSkillOutput } = require('./objectResolvers/memberResolver');
 const { Project,teamType,roleType,skillRoleType,
     tweetsProject,
-    tweetsType,projectUserMatchType,Team,Role,
+    tweetsType,projectUserMatchType,Team,Role,Initiative,
  } = require('./objectResolvers/projectsResolver');
 const { Skills } = require('./objectResolvers/skillsResolver');
 const { Rooms } = require('./objectResolvers/roomResolver');
@@ -22,7 +22,7 @@ module.exports = {
     Subscription,
     Members,matchMembersToUserOutput,matchMembersToSkillOutput,
     Project,teamType,roleType,skillRoleType,
-    tweetsProject,tweetsType,projectUserMatchType,Team,Role,
+    tweetsProject,tweetsType,projectUserMatchType,Team,Role,Initiative,
     Skills,
     Rooms,
     RoleTemplate,
