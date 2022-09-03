@@ -520,6 +520,8 @@ module.exports = {
             {new: true}
           )
 
+        } else {
+          throw new ApolloError( "_id not found, this Team don't exist");
         }
       } else {
         teamData = await new Team(fields).save()
@@ -527,14 +529,25 @@ module.exports = {
 
 
       // ------------ 🌱 Update 🌱 Teams -----------------
-      projectData = await Projects.findOne({ _id: projectID })
+      if (projectID) {
+        projectData = await Projects.findOne({ _id: projectID })
 
-      console.log("projectData = " , projectData)
-      console.log("projectData.garden_teams = " , projectData.garden_teams)
+        console.log("projectData = " , projectData)
+        console.log("projectData.garden_teams = " , projectData.garden_teams)
 
-      if (projectData.garden_teams){
-        if (!projectData.garden_teams.includes(teamData._id)){
-          projectData.garden_teams.push(teamData._id)
+        if (projectData.garden_teams){
+          if (!projectData.garden_teams.includes(teamData._id)){
+            projectData.garden_teams.push(teamData._id)
+            projectUpdate = await Projects.findOneAndUpdate(
+              {_id: projectID},
+              {
+                  $set: {garden_teams: projectData.garden_teams }
+              },
+              {new: true}
+            )
+          }
+        } else {
+          projectData.garden_teams = [teamData._id]
           projectUpdate = await Projects.findOneAndUpdate(
             {_id: projectID},
             {
@@ -542,17 +555,8 @@ module.exports = {
             },
             {new: true}
           )
-        }
-      } else {
-        projectData.garden_teams = [teamData._id]
-        projectUpdate = await Projects.findOneAndUpdate(
-          {_id: projectID},
-          {
-              $set: {garden_teams: projectData.garden_teams }
-          },
-          {new: true}
-        )
-      }  
+        }  
+      }
       // ------------ 🌱 Update 🌱 Teams -----------------
 
 
