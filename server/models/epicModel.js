@@ -2,27 +2,22 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 
-
-const projectUpdateModalSchema = mongoose.Schema({
+// Task
+const epicModalSchema = mongoose.Schema({
 
     //  --- Content ---
-    title: String,
-    content: String,
+    name: String,
+    description: String,
     //  --- Content ---
 
-    
+
     //  --- Garden Location ---
     serverID: [String],
     projectID: mongoose.Schema.ObjectId,
     teamID: [mongoose.Schema.ObjectId],
-    roleID: [mongoose.Schema.ObjectId],
-    epicID: mongoose.Schema.ObjectId,
-    taskID: mongoose.Schema.ObjectId,
 
-    threadDiscordlID: String,
+    channelDiscordlID: String,
     //  --- Garden Location ---
-
-
 
     //  --- Member Info ---
     championID: String,
@@ -32,29 +27,23 @@ const projectUpdateModalSchema = mongoose.Schema({
     //  --- Member Info ---
 
 
-    // --- Task Info ---
-    priority: Number,
-    deadline: Date,
+    
+
     phase: {
         type: String,
         enum: ["open", "archive"],
     },
-    deWorkLink: String,
-    // --- Task Info ---
 
-
-
-    token: String,
-
-
+    
 
     registeredAt: {
         type: Date,
         default: Date.now
     },
 
+
 });
 
 
-const ProjectUpdate = mongoose.model("ProjectUpdate", projectUpdateModalSchema);
-module.exports = { ProjectUpdate };
+const Epic = mongoose.model("Epic", epicModalSchema);
+module.exports = { Epic };

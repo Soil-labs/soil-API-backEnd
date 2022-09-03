@@ -15,7 +15,9 @@ module.exports = {
    
 
     
-    const {_id,title,content,memberID,projectID,serverID,authorID,teamID,roleID,token,thread} = JSON.parse(JSON.stringify(args.fields))
+    const {_id,title,content,memberID,projectID,serverID,
+      authorID,notifyUserID,teamID,roleID,token,threadDiscordlID,championID,epicID,
+      priority,deadline,phase,deWorkLink,taskID} = JSON.parse(JSON.stringify(args.fields))
 
     // _id is only if you want to update a team
     
@@ -34,16 +36,33 @@ module.exports = {
     if (projectID) fields =  {...fields,projectID}
     if (roleID) fields =  {...fields,roleID}
     if (token) fields =  {...fields,token}
-    if (thread) fields =  {...fields,thread}
+    if (threadDiscordlID) fields =  {...fields,threadDiscordlID}
+    if (championID) fields =  {...fields,championID}
+    if (epicID) fields =  {...fields,epicID}
+    if (notifyUserID) fields =  {...fields,notifyUserID}
+    if (priority) fields =  {...fields,priority}
+    if (deadline) fields =  {...fields,deadline}
+    if (phase) fields =  {...fields,phase}
+    if (deWorkLink) fields =  {...fields,deWorkLink}
 
+
+    if (taskID){
+      taskData = await ProjectUpdate.findOne({ _id: taskID })
+      if (taskData) {
+        fields = {...fields,taskID:taskData._id}
+        fields =  {...fields,threadDiscordlID:taskData.threadDiscordlID}
+      }
+
+    }
 
     console.log("change = 1" )
 
     try {
+      let projectUpdateData
       if (fields._id) {
         console.log("change = 2" )
 
-        let projectUpdateData = await ProjectUpdate.findOne({ _id: fields._id })
+        projectUpdateData = await ProjectUpdate.findOne({ _id: fields._id })
 
         if (projectUpdateData){
           console.log("change = 3" )
@@ -54,14 +73,98 @@ module.exports = {
         )
 
 
-          return (projectUpdateData)
+          // return (projectUpdateData)
 
         }
+      } else {
+        projectUpdateData = await new ProjectUpdate(fields).save()
       }
-      console.log("change = 4" )
 
 
-      let projectUpdateData = await new ProjectUpdate(fields).save()
+      // ------------ Member Task Save info -----------------
+      if (projectUpdateData.memberID){
+        for (let i=0; i<projectUpdateData.memberID.length; i++){
+          let member = await Members.findOne({ _id: projectUpdateData.memberID[i] })
+          if (member){
+            if ( !member.gardenUpdate || !member.gardenUpdate.taskID || (!member.gardenUpdate.taskID.includes(projectUpdateData._id) && projectUpdateData.phase=="open")){
+              let taskID
+              if (!member.gardenUpdate || !member.gardenUpdate.taskID){
+                taskID = []
+              } else {
+                taskID = [...member.gardenUpdate.taskID]
+              }
+              taskID.push(projectUpdateData._id)
+              member.gardenUpdate.taskID = taskID
+              await Members.findOneAndUpdate(
+                {_id: member._id},
+                {
+                    $set: {gardenUpdate: member.gardenUpdate }
+                },
+                {new: true}
+              )
+            }
+            if (member.gardenUpdate.taskID.includes(projectUpdateData._id) && projectUpdateData.phase=="archive"){
+              let taskID = [...member.gardenUpdate.taskID]
+              // console.log("change = tid" ,taskID)
+              taskID = taskID.filter(item => item.equals(projectUpdateData._id) == false)
+              member.gardenUpdate.taskID = taskID
+              await Members.findOneAndUpdate(
+                {_id: member._id},
+                {
+                    $set: {gardenUpdate: member.gardenUpdate }
+                },
+                {new: true}
+              )
+              // console.log("change = tad 2" ,member.gardenUpdate.taskID)
+
+            }
+          }
+        }
+      }
+      // ------------ Member Task Save info -----------------
+
+
+      // ------------ Champion Task Save info -----------------
+      if (projectUpdateData.championID){
+        let member = await Members.findOne({ _id: projectUpdateData.championID })
+        console.log("champion = " , member)
+        if (member){
+          console.log("champion = 2" )
+          if ( !member.gardenUpdate || !member.gardenUpdate.taskID || (!member.gardenUpdate.taskID.includes(projectUpdateData._id) && projectUpdateData.phase=="open")){
+
+            let taskID
+            if (!member.gardenUpdate || !member.gardenUpdate.taskID){
+              taskID = []
+            } else {
+              taskID = [...member.gardenUpdate.taskID]
+            }
+            taskID.push(projectUpdateData._id)
+            member.gardenUpdate.taskID = taskID
+            console.log("member.gardenUpdate.taskID = " , member.gardenUpdate.taskID)
+            await Members.findOneAndUpdate(
+              {_id: member._id},
+              {
+                  $set: {gardenUpdate: member.gardenUpdate }
+              },
+              {new: true}
+            )
+          }
+          if (member.gardenUpdate.taskID.includes(projectUpdateData._id) && projectUpdateData.phase=="archive"){
+            let taskID = [...member.gardenUpdate.taskID]
+            taskID = taskID.filter(item => item.equals(projectUpdateData._id) == false)
+            member.gardenUpdate.taskID = taskID
+            await Members.findOneAndUpdate(
+              {_id: member._id},
+              {
+                  $set: {gardenUpdate: member.gardenUpdate }
+              },
+              {new: true}
+            )
+
+          }
+        }
+      }
+      // ------------ Champion Task Save info -----------------
       
 
 

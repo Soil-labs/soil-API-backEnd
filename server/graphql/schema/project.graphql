@@ -40,6 +40,10 @@ module.exports = `
         champion: [Members]
 
         roles: [Role],
+        epics: [Epic]
+
+        categoryDiscordlD: String,
+        channelGeneralDiscordID: String,
     }
 
     type Role {
@@ -51,6 +55,26 @@ module.exports = `
         project: Project,
         members: [Members]
         teams: [Team]
+    }
+
+    type Epic {
+         _id: ID
+        name: String
+        description: String
+
+        phase: phaseEpicType
+
+        champion: Members,
+
+        serverID: [String],
+        project: Project,
+        teams: [Team],
+
+        members: [Members],
+        notifyUsers: [Members],
+        author: Members
+
+        channelDiscordlID: String,
     }
 
 
@@ -65,6 +89,11 @@ module.exports = `
         engaged
         committed
         rejected
+    }
+
+    enum phaseEpicType {
+        open
+        archive
     }
 
     type skillRoleType {
@@ -165,6 +194,9 @@ module.exports = `
         projectID: String,
         memberID: [String]
         championID: [String]
+
+        categoryDiscordlD: String,
+        channelGeneralDiscordID: String,
     }
 
     input createNewRoleInput {
@@ -176,6 +208,26 @@ module.exports = `
         projectID: ID,
         memberID: [String]
         teamID: [ID]
+    }
+
+    input createNewEpicInput {
+        _id: ID
+        name: String
+        description: String
+
+        phase: phaseEpicType
+
+        championID: String,
+
+        serverID: [String],
+        projectID: ID,
+        teamID: [ID],
+        authorID: String,
+
+        memberID: [String],
+        notifyUserID: [String],
+
+        channelDiscordlID: String,
     }
 
     
@@ -287,6 +339,13 @@ module.exports = `
     }
 
     input findRolesInput {
+        _id: [ID]
+        serverID: [String]
+        projectID: ID,
+        teamID: [ID],
+        
+    }
+    input findEpicInput {
         _id: [ID]
         serverID: [String]
         projectID: ID,

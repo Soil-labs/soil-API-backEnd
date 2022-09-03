@@ -4,11 +4,14 @@ const {Projects} = require("../../../models/projectsModel");
 const {Members} = require("../../../models/membersModel");
 const {Team} = require("../../../models/teamModal");
 const {Role} = require("../../../models/roleModel");
+const { Epic } = require("../../../models/epicModel");
+
 
 
 const {
   ApolloError,
 } = require("apollo-server-express");
+
 
 
 module.exports = {
@@ -376,11 +379,13 @@ module.exports = {
 
       let teamData
 
+      console.log("change = ",fields,queryServerID )
 
       
       if (queryServerID.length>0){
         teamData = await Team.find({ $and:[fields,{$or:queryServerID},]})
       } else {
+        console.log("change = 2" )
         teamData = await Team.find(fields)
       }
         
@@ -400,8 +405,8 @@ module.exports = {
         //   }
         // }
 
-      console.log("fields = " , fields)
-      console.log("teamData = " , teamData)
+      // console.log("fields = " , fields)
+      // console.log("teamData = " , teamData)
 
 
       
@@ -468,6 +473,66 @@ module.exports = {
 
 
       return teamData
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findSkill"}
+      );
+    }
+  },
+
+  findEpic: async (parent, args, context, info) => {
+   
+    const {_id,serverID,projectID,teamID} = args.fields;
+
+
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      }) 
+    }
+    
+    let fields = {};
+    if (projectID) {
+      fields = {
+        ...fields,
+        projectID: projectID
+      }
+    }
+
+    if (teamID) {
+      fields = {
+        ...fields,
+        teamID: teamID
+      }
+    }
+    if (_id) {
+      fields = {
+        ...fields,
+        _id: _id
+      }
+    }
+    
+
+    try {
+
+      let epicData
+  
+
+      if (queryServerID.length>0){
+        epicData = await Epic.find({ $and:[fields,{$or:queryServerID}]})
+      } else {
+        epicData = await Epic.find(fields)
+      }
+
+
+
+      
+
+
+      return epicData
     } catch (err) {
       throw new ApolloError(
         err.message,

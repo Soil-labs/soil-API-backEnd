@@ -14,6 +14,10 @@ const teamModalSchema = mongoose.Schema({
     championID: [String],
 
     roles: [mongoose.Schema.ObjectId],
+    epics: [mongoose.Schema.ObjectId],
+
+    categoryDiscordlD: String,
+    channelGeneralDiscordID: String,
 
 
 });

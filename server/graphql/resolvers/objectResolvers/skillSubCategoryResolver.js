@@ -42,7 +42,7 @@ module.exports = {
            try {
               const categorySkills = parent.categorySkills;
   
-              console.log("parent = " , parent)
+            //   console.log("parent = " , parent)
   
   
   

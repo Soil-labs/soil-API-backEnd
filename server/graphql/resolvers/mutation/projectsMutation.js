@@ -3,6 +3,7 @@ const { Projects } = require("../../../models/projectsModel");
 const { Team } = require("../../../models/teamModal");
 const { Role } = require("../../../models/roleModel");
 const { Members } = require("../../../models/membersModel");
+const { Epic } = require("../../../models/epicModel");
 const {ApolloError} = require("apollo-server-express");
 const { TeamMember } = require("discord.js");
 const { driver } = require("../../../../server/neo4j_config");
@@ -479,7 +480,7 @@ module.exports = {
    
 
     
-    const {_id,name,description,memberID,projectID,serverID,championID} = JSON.parse(JSON.stringify(args.fields))
+    const {_id,name,description,memberID,projectID,serverID,championID,categoryDiscordlD,channelGeneralDiscordID} = JSON.parse(JSON.stringify(args.fields))
 
     // _id is only if you want to update a team
     // if (!name) throw new ApolloError( "you need to specify a name");
@@ -499,6 +500,8 @@ module.exports = {
     if (championID) fields =  {...fields,championID}
     if (projectID) fields =  {...fields,projectID}
     if (name) fields =  {...fields,name}
+    if (categoryDiscordlD) fields =  {...fields,categoryDiscordlD}
+    if (channelGeneralDiscordID) fields =  {...fields,channelGeneralDiscordID}
 
     console.log("change = 1" )
 
@@ -649,4 +652,180 @@ module.exports = {
     }
   },
 
+  createNewEpic: async (parent, args, context, info) => {
+   
+
+    
+    const { _id,name,description,phase,championID,serverID,projectID,teamID,memberID,
+      notifyUserID,authorID,channelDiscordlID} = JSON.parse(JSON.stringify(args.fields))
+
+    // _id is only if you want to update a team
+    // if (!name) throw new ApolloError( "you need to specify a name");
+    
+    
+    let fields = {
+      registeredAt: new Date(),
+    }
+
+    if (_id) fields =  {...fields,_id}
+    if (name) fields =  {...fields,name}
+    if (description) fields =  {...fields,description}
+    if (phase) fields =  {...fields,phase}
+    if (championID) fields =  {...fields,championID}
+    if (memberID) fields =  {...fields,memberID}
+    if (serverID) fields =  {...fields,serverID}
+    if (teamID) fields =  {...fields,teamID}
+    if (projectID) fields =  {...fields,projectID}
+    if (name) fields =  {...fields,name}
+    if (notifyUserID) fields =  {...fields,notifyUserID}
+    if (channelDiscordlID) fields =  {...fields,channelDiscordlID}
+    if (authorID) fields =  {...fields,authorID}
+
+
+    console.log("change = 1" )
+
+    let epicData
+    try {
+      if (fields._id) {
+      console.log("change = 2" )
+
+        epicData = await Epic.findOne({ _id: fields._id })
+
+        if (epicData){
+          console.log("change = 3" )
+
+          epicData = await Epic.findOneAndUpdate(
+            {_id: fields._id},fields,
+            {new: true}
+          )
+
+        }
+      } else {
+        epicData = await new Epic(fields).save()
+        
+      }
+
+      // ------------ 🌱 Update 🌱 Epic -----------------
+      teams = await Team.find({ _id: teamID })
+
+      for (let i=0; i<teams.length; i++){
+        let team = teams[i]
+
+        if (!team.epics.includes(epicData._id)){
+          let epics = [...team.epics]
+          epics.push(epicData._id)
+          team.epics = epics
+          await Team.findOneAndUpdate(
+            {_id: team._id},
+            {
+                $set: {epics: team.epics }
+            },
+            {new: true}
+          )
+        }
+      }
+      // ------------ 🌱 Update 🌱 Epic -----------------
+
+
+      // ------------ Member Epic Save info -----------------
+      if (epicData.memberID){
+        for (let i=0; i<epicData.memberID.length; i++){
+          let member = await Members.findOne({ _id: epicData.memberID[i] })
+          if (member){
+            if ( !member.gardenUpdate || !member.gardenUpdate.epicID || (!member.gardenUpdate.epicID.includes(epicData._id) && epicData.phase=="open")){
+              let epicID
+              if (!member.gardenUpdate || !member.gardenUpdate.epicID){
+                epicID = []
+              } else {
+                epicID = [...member.gardenUpdate.epicID]
+              }
+              epicID.push(epicData._id)
+              member.gardenUpdate.epicID = epicID
+              await Members.findOneAndUpdate(
+                {_id: member._id},
+                {
+                    $set: {gardenUpdate: member.gardenUpdate }
+                },
+                {new: true}
+              )
+            }
+            if (member.gardenUpdate.epicID.includes(epicData._id) && epicData.phase=="archive"){
+              let epicID = [...member.gardenUpdate.epicID]
+              // console.log("change = tid" ,epicID)
+              epicID = epicID.filter(item => item.equals(epicData._id) == false)
+              member.gardenUpdate.epicID = epicID
+              await Members.findOneAndUpdate(
+                {_id: member._id},
+                {
+                    $set: {gardenUpdate: member.gardenUpdate }
+                },
+                {new: true}
+              )
+              // console.log("change = tad 2" ,member.gardenUpdate.epicID)
+
+            }
+          }
+        }
+      }
+      // ------------ Member Epic Save info -----------------
+
+
+      // ------------ Champion Task Save info -----------------
+      if (epicData.championID){
+        let member = await Members.findOne({ _id: epicData.championID })
+        console.log("champion = " , member)
+        if (member){
+          console.log("champion = 2" )
+          if ( !member.gardenUpdate || !member.gardenUpdate.epicID || (!member.gardenUpdate.epicID.includes(epicData._id) && epicData.phase=="open")){
+
+            let epicID
+            if (!member.gardenUpdate || !member.gardenUpdate.epicID){
+              epicID = []
+            } else {
+              epicID = [...member.gardenUpdate.epicID]
+            }
+            epicID.push(epicData._id)
+            member.gardenUpdate.epicID = epicID
+            console.log("member.gardenUpdate.epicID = " , member.gardenUpdate.epicID)
+            await Members.findOneAndUpdate(
+              {_id: member._id},
+              {
+                  $set: {gardenUpdate: member.gardenUpdate }
+              },
+              {new: true}
+            )
+          }
+          if (member.gardenUpdate.epicID.includes(epicData._id) && epicData.phase=="archive"){
+            let epicID = [...member.gardenUpdate.epicID]
+            epicID = epicID.filter(item => item.equals(epicData._id) == false)
+            member.gardenUpdate.epicID = epicID
+            await Members.findOneAndUpdate(
+              {_id: member._id},
+              {
+                  $set: {gardenUpdate: member.gardenUpdate }
+              },
+              {new: true}
+            )
+
+          }
+        }
+      }
+      // ------------ Champion Task Save info -----------------
+
+
+      
+
+      console.log("epicData.championID = " , epicData.championID)
+      
+
+
+      return (epicData)
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
 };

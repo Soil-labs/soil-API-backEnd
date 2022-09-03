@@ -132,7 +132,7 @@ async function main() {
   // // console.log("DATABASE_MONGO = ", DATABASE_MONGO);
   // });
   httpServer.listen(PORT, ()=> {
-    console.log(`apolloServer is ready at http://localhost:${PORT}`)
+    console.log(`apolloServer is ready at http://localhost:${PORT}/graphql`)
 })
 }
 

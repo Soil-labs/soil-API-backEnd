@@ -4,6 +4,7 @@ const { Skills } = require('../../../models/skillsModel');
 const { Projects } = require('../../../models/projectsModel');
 const {Team} = require('../../../models/teamModal');
 const { Role } = require("../../../models/roleModel");
+const { Epic } = require("../../../models/epicModel");
 
 const { ApolloError } = require('apollo-server-express');
 
@@ -307,7 +308,7 @@ module.exports = {
         },
         champion: async (parent, args, context, info) => {
   
-         console.log("parent = " ,parent)
+         // console.log("parent = " ,parent)
            try {
               const championID = parent.championID;
   
@@ -329,7 +330,7 @@ module.exports = {
         },
         roles: async (parent, args, context, info) => {
   
-         console.log("parent = " ,parent)
+         // console.log("parent = " ,parent)
            try {
               const roles = parent.roles;
   
@@ -337,6 +338,28 @@ module.exports = {
   
   
               return rolesData;
+  
+           } catch (err) {
+              throw new ApolloError(
+                 err.message,
+                 err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                 {
+                    component: 'userResolver > members',
+                    user: context.req.user?._id,
+                 }
+              );
+           }
+        },
+        epics: async (parent, args, context, info) => {
+  
+         // console.log("parent = " ,parent)
+           try {
+              const epics = parent.epics;
+  
+              epicsData = await Epic.find({_id: epics})
+  
+  
+              return epicsData;
   
            } catch (err) {
               throw new ApolloError(
@@ -397,7 +420,7 @@ module.exports = {
         },
         teams: async (parent, args, context, info) => {
   
-         console.log("parent = you dont shitn -  " ,parent)
+         // console.log("parent = you dont shitn -  " ,parent)
            try {
               const teamID = parent.teamID;
   
@@ -417,6 +440,140 @@ module.exports = {
               );
            }
         },
+      },
+   Epic: {
+      project: async (parent, args, context, info) => {
+   
+         // console.log("parent = " ,parent)
+            try {
+               const projectID = parent.projectID;
+   
+               projectData = await Projects.findOne({_id: projectID})
+   
+   
+               return projectData;
+   
+            } catch (err) {
+               throw new ApolloError(
+                  err.message,
+                  err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                  {
+                     component: 'userResolver > members',
+                     user: context.req.user?._id,
+                  }
+               );
+            }
+         },
+         members: async (parent, args, context, info) => {
+   
+         // console.log("parent = " ,parent)
+            try {
+               const memberID = parent.memberID;
+   
+               memberData = await Members.find({_id: memberID})
+   
+   
+               return memberData;
+   
+            } catch (err) {
+               throw new ApolloError(
+                  err.message,
+                  err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                  {
+                     component: 'userResolver > members',
+                     user: context.req.user?._id,
+                  }
+               );
+            }
+         },
+         champion: async (parent, args, context, info) => {
+
+         // console.log("parent = " ,parent)
+            try {
+               const championID = parent.championID;
+   
+               memberData = await Members.findOne({_id: championID})
+   
+   
+               return memberData;
+   
+            } catch (err) {
+               throw new ApolloError(
+                  err.message,
+                  err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                  {
+                     component: 'userResolver > members',
+                     user: context.req.user?._id,
+                  }
+               );
+            }
+         },
+         author: async (parent, args, context, info) => {
+
+            console.log("parent = " ,parent)
+               try {
+                  const authorID = parent.authorID;
+      
+                  authorData = await Members.findOne({_id: authorID})
+      
+      
+                  return authorData;
+      
+               } catch (err) {
+                  throw new ApolloError(
+                     err.message,
+                     err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                     {
+                        component: 'userResolver > members',
+                        user: context.req.user?._id,
+                     }
+                  );
+               }
+            },
+         teams: async (parent, args, context, info) => {
+   
+         // console.log("parent = you dont shitn -  " ,parent)
+            try {
+               const teamID = parent.teamID;
+   
+               memberData = await Team.find({_id: teamID})
+   
+   
+               return memberData;
+   
+            } catch (err) {
+               throw new ApolloError(
+                  err.message,
+                  err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                  {
+                     component: 'userResolver > members',
+                     user: context.req.user?._id,
+                  }
+               );
+            }
+         },
+         notifyUsers: async (parent, args, context, info) => {
+   
+            // console.log("parent = you dont shitn -  " ,parent)
+               try {
+                  const notifyUserID = parent.notifyUserID;
+      
+                  memberData = await Members.find({_id: notifyUserID})
+      
+      
+                  return memberData;
+      
+               } catch (err) {
+                  throw new ApolloError(
+                     err.message,
+                     err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                     {
+                        component: 'userResolver > members',
+                        user: context.req.user?._id,
+                     }
+                  );
+               }
+            },
         
-   },
+      },
 };
