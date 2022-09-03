@@ -17,7 +17,7 @@ const projectSchema = mongoose.Schema({
     roleID: mongoose.Schema.ObjectId,
     phase: {
       type: String,
-      enum: ["shortlisted", "engaged","committed","rejected"],
+      enum: ["shortlisted", "engaged","committed","rejected","invited"],
       default: "shortlisted"
     },
   }],

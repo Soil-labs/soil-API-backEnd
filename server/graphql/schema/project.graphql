@@ -89,6 +89,7 @@ module.exports = `
         engaged
         committed
         rejected
+        invited
     }
 
     enum phaseEpicType {
