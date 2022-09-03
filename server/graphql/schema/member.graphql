@@ -130,6 +130,11 @@ module.exports = `
         _id: [ID]
         serverID: [String]
     }
+
+    input members_autocompleteInput {
+        search: String,
+    }
+
     input matchMembersToUserInput {
         memberID: ID
         serverID:[String]

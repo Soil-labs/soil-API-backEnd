@@ -22,6 +22,8 @@ module.exports = `
             matchMembersToUser(fields:matchMembersToUserInput): [matchMembersToUserOutput]
             matchMembersToSkills(fields:matchMembersToSkillInput): [matchMembersToSkillOutput]
 
+            members_autocomplete(fields:members_autocompleteInput): [Members]
+
           #  ---------- SKILL QUERY -------
             findSkill(fields:findSkillInput): Skills
             findSkills(fields:findSkillsInput): [Skills]
