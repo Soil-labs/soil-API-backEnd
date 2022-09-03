@@ -17,6 +17,7 @@ const teamModalSchema = mongoose.Schema({
     epics: [mongoose.Schema.ObjectId],
 
     categoryDiscordlD: String,
+    channelGeneralDiscordID: String,
 
 
 });

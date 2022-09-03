@@ -480,7 +480,7 @@ module.exports = {
    
 
     
-    const {_id,name,description,memberID,projectID,serverID,championID,categoryDiscordlD} = JSON.parse(JSON.stringify(args.fields))
+    const {_id,name,description,memberID,projectID,serverID,championID,categoryDiscordlD,channelGeneralDiscordID} = JSON.parse(JSON.stringify(args.fields))
 
     // _id is only if you want to update a team
     // if (!name) throw new ApolloError( "you need to specify a name");
@@ -501,6 +501,7 @@ module.exports = {
     if (projectID) fields =  {...fields,projectID}
     if (name) fields =  {...fields,name}
     if (categoryDiscordlD) fields =  {...fields,categoryDiscordlD}
+    if (channelGeneralDiscordID) fields =  {...fields,channelGeneralDiscordID}
 
     console.log("change = 1" )
 

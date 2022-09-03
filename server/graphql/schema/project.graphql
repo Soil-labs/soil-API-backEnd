@@ -43,6 +43,7 @@ module.exports = `
         epics: [Epic]
 
         categoryDiscordlD: String,
+        channelGeneralDiscordID: String,
     }
 
     type Role {
@@ -195,6 +196,7 @@ module.exports = `
         championID: [String]
 
         categoryDiscordlD: String,
+        channelGeneralDiscordID: String,
     }
 
     input createNewRoleInput {
