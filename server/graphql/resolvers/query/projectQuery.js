@@ -4,12 +4,14 @@ const {Projects} = require("../../../models/projectsModel");
 const {Members} = require("../../../models/membersModel");
 const {Team} = require("../../../models/teamModal");
 const {Role} = require("../../../models/roleModel");
+const { Epic } = require("../../../models/epicModel");
+
 
 
 const {
   ApolloError,
 } = require("apollo-server-express");
-const { Initiative } = require("..");
+
 
 
 module.exports = {
@@ -403,8 +405,8 @@ module.exports = {
         //   }
         // }
 
-      console.log("fields = " , fields)
-      console.log("teamData = " , teamData)
+      // console.log("fields = " , fields)
+      // console.log("teamData = " , teamData)
 
 
       
@@ -480,7 +482,7 @@ module.exports = {
     }
   },
 
-  findInitiative: async (parent, args, context, info) => {
+  findEpic: async (parent, args, context, info) => {
    
     const {_id,serverID,projectID,teamID} = args.fields;
 
@@ -489,7 +491,7 @@ module.exports = {
     if (serverID) {
       serverID.forEach(id => {
         queryServerID.push({ serverID: id })
-      })
+      }) 
     }
     
     let fields = {};
@@ -516,13 +518,13 @@ module.exports = {
 
     try {
 
-      let initiativeData
+      let epicData
   
 
       if (queryServerID.length>0){
-        initiativeData = await Initiative.find({ $and:[fields,{$or:queryServerID}]})
+        epicData = await Epic.find({ $and:[fields,{$or:queryServerID}]})
       } else {
-        initiativeData = await Initiative.find(fields)
+        epicData = await Epic.find(fields)
       }
 
 
@@ -530,7 +532,7 @@ module.exports = {
       
 
 
-      return initiativeData
+      return epicData
     } catch (err) {
       throw new ApolloError(
         err.message,

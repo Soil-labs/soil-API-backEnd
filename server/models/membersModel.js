@@ -96,6 +96,11 @@ const memberSchema = mongoose.Schema({
     }],
   }],
 
+  gardenUpdate: {
+    epicID: [mongoose.Schema.ObjectId],
+    taskID: [mongoose.Schema.ObjectId,]
+  },
+
   registeredAt: Date,
 
 

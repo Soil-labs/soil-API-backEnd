@@ -14,6 +14,7 @@ module.exports = `
             match_projectToUser(fields:match_projectToUserInput): projectUserMatchType
             findTeams(fields:findTeamsInput): [Team]
             findRoles(fields:findRolesInput): [Role]
+            findEpic(fields:findEpicInput): [Epic]
             
           #  ---------- MEMBER QUERY -------
             findMember(fields:findMemberInput): Members

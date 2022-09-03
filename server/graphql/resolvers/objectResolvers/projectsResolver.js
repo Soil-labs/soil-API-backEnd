@@ -4,7 +4,7 @@ const { Skills } = require('../../../models/skillsModel');
 const { Projects } = require('../../../models/projectsModel');
 const {Team} = require('../../../models/teamModal');
 const { Role } = require("../../../models/roleModel");
-const { Initiative } = require("../../../models/initiativeModel");
+const { Epic } = require("../../../models/epicModel");
 
 const { ApolloError } = require('apollo-server-express');
 
@@ -308,7 +308,7 @@ module.exports = {
         },
         champion: async (parent, args, context, info) => {
   
-         console.log("parent = " ,parent)
+         // console.log("parent = " ,parent)
            try {
               const championID = parent.championID;
   
@@ -330,7 +330,7 @@ module.exports = {
         },
         roles: async (parent, args, context, info) => {
   
-         console.log("parent = " ,parent)
+         // console.log("parent = " ,parent)
            try {
               const roles = parent.roles;
   
@@ -350,16 +350,16 @@ module.exports = {
               );
            }
         },
-        initiatives: async (parent, args, context, info) => {
+        epics: async (parent, args, context, info) => {
   
-         console.log("parent = " ,parent)
+         // console.log("parent = " ,parent)
            try {
-              const initiatives = parent.initiatives;
+              const epics = parent.epics;
   
-              initiativesData = await Initiative.find({_id: initiatives})
+              epicsData = await Epic.find({_id: epics})
   
   
-              return initiativesData;
+              return epicsData;
   
            } catch (err) {
               throw new ApolloError(
@@ -441,7 +441,7 @@ module.exports = {
            }
         },
       },
-   Initiative: {
+   Epic: {
       project: async (parent, args, context, info) => {
    
          // console.log("parent = " ,parent)
@@ -487,15 +487,37 @@ module.exports = {
             }
          },
          champion: async (parent, args, context, info) => {
+
+         // console.log("parent = " ,parent)
+            try {
+               const championID = parent.championID;
    
-            // console.log("parent = " ,parent)
+               memberData = await Members.findOne({_id: championID})
+   
+   
+               return memberData;
+   
+            } catch (err) {
+               throw new ApolloError(
+                  err.message,
+                  err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                  {
+                     component: 'userResolver > members',
+                     user: context.req.user?._id,
+                  }
+               );
+            }
+         },
+         author: async (parent, args, context, info) => {
+
+            console.log("parent = " ,parent)
                try {
-                  const championID = parent.championID;
+                  const authorID = parent.authorID;
       
-                  memberData = await Members.findOne({_id: championID})
+                  authorData = await Members.findOne({_id: authorID})
       
       
-                  return memberData;
+                  return authorData;
       
                } catch (err) {
                   throw new ApolloError(

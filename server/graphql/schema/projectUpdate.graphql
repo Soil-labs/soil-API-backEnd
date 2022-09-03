@@ -9,13 +9,28 @@ module.exports = `
 
         serverID: [String],
         projects: Project,
-        members: [Members]
-        author: Members
         team: [Team]
         role: [Role]
+        epic: Epic,
+        task: ProjectUpdate
+
+
+        members: [Members]
+        author: Members
+        champion: Members
+        notifyUsers: [Members]
+
+
+        priority: Int,
+        deadline: String,
+        phase: phaseEpicType
+        deWorkLink: String,
+
+
+
         token: String
 
-        thread: String
+        threadDiscordlID: String
 
 
         registeredAt: String
@@ -58,12 +73,24 @@ module.exports = `
 
         serverID: [String],
         projectID: String,
-        memberID: [String]
-        authorID: String
         teamID: [String]
         roleID: [String]
+        epicID: String,
+        taskID: String,
 
-        thread: String
+        championID: String
+        memberID: [String]
+        authorID: String
+        notifyUserID: [String]
+
+
+        priority: Int,
+        deadline: String,
+        phase: phaseEpicType
+        deWorkLink: String,
+
+
+        threadDiscordlID: String
 
         token: String
     }

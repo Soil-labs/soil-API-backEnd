@@ -2,6 +2,8 @@
 const { Members } = require('../../../models/membersModel');
 const { Skills } = require('../../../models/skillsModel');
 const { Projects } = require('../../../models/projectsModel');
+const {ProjectUpdate } = require("../../../models/projectUpdateModal");
+const { Epic } = require("../../../models/epicModel");
 
 const { ApolloError } = require('apollo-server-express');
 
@@ -165,6 +167,35 @@ module.exports = {
             invitedByData = await Members.findOne({_id: invitedBy})
    
             return invitedByData;
+   
+   
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > members',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+      gardenUpdate: async (parent, args, context, info) => {
+
+         // console.log("parent = " , parent)
+            
+         try {
+            const gardenUpdate = parent.gardenUpdate;
+   
+   
+            epicData = await Epic.find({_id: gardenUpdate.epicID})
+
+            taskData = await ProjectUpdate.find({_id: gardenUpdate.taskID})
+   
+            return {
+               epic:epicData,
+               task: taskData,
+            };
    
    
          } catch (err) {

@@ -40,7 +40,7 @@ module.exports = `
         champion: [Members]
 
         roles: [Role],
-        initiatives: [Initiative]
+        epics: [Epic]
 
         categoryDiscordlD: String,
     }
@@ -56,12 +56,12 @@ module.exports = `
         teams: [Team]
     }
 
-    type Initiative {
+    type Epic {
          _id: ID
         name: String
         description: String
 
-        phase: phaseInitiativeType
+        phase: phaseEpicType
 
         champion: Members,
 
@@ -71,6 +71,7 @@ module.exports = `
 
         members: [Members],
         notifyUsers: [Members],
+        author: Members
 
         channelDiscordlID: String,
     }
@@ -89,7 +90,7 @@ module.exports = `
         rejected
     }
 
-    enum phaseInitiativeType {
+    enum phaseEpicType {
         open
         archive
     }
@@ -207,18 +208,19 @@ module.exports = `
         teamID: [ID]
     }
 
-    input createNewInitiativeInput {
+    input createNewEpicInput {
         _id: ID
         name: String
         description: String
 
-        phase: phaseInitiativeType
+        phase: phaseEpicType
 
         championID: String,
 
         serverID: [String],
         projectID: ID,
         teamID: [ID],
+        authorID: String,
 
         memberID: [String],
         notifyUserID: [String],
@@ -341,7 +343,7 @@ module.exports = `
         teamID: [ID],
         
     }
-    input findInitiativeInput {
+    input findEpicInput {
         _id: [ID]
         serverID: [String]
         projectID: ID,
