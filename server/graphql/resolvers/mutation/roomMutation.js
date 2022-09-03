@@ -1,4 +1,6 @@
 const { Rooms } = require("../../../models/roomsModel");
+const { Members } = require("../../../models/membersModel");
+const { Skills } = require("../../../models/skillsModel");
 const {ApolloError} = require("apollo-server-express");
 
 const { PubSub } = require('graphql-subscriptions');
@@ -58,29 +60,29 @@ module.exports = {
     },
 
     enterRoom: async (parent, args, context, info) => {
-        const {roomId,memberId} = args.fields;
+        const {roomID,memberID} = args.fields;
 
-        if (!roomId) throw new ApolloError( "_id is required, the IDs come from Discord");
-        if (!memberId) throw new ApolloError( "You need to specify the memberId to enter the Room");
+        if (!roomID) throw new ApolloError( "_id is required, the IDs come from Discord");
+        if (!memberID) throw new ApolloError( "You need to specify the memberId to enter the Room");
 
         let fields = {
-            roomId,
-            memberId
+            roomID,
+            memberID
         };
 
         try {
 
             let roomData
 
-            roomData = await Rooms.findOne({ _id: fields.roomId })
+            roomData = await Rooms.findOne({ _id: fields.roomID })
             if(!roomData) throw new ApolloError( "RoomId does Not exists");
 
-            const isMemberInTheRoom = roomData.members.indexOf(memberId) === -1 ? false : true;
+            const isMemberInTheRoom = roomData.members.indexOf(memberID) === -1 ? false : true;
             console.log(roomData)
             if(!isMemberInTheRoom) {
-                const updatedMember = [...roomData.members, memberId]
+                const updatedMember = [...roomData.members, memberID]
                 roomData= await Rooms.findOneAndUpdate(
-                    {_id: fields.roomId},
+                    {_id: fields.roomID},
                     {
                         members: updatedMember
                     },
@@ -99,11 +101,105 @@ module.exports = {
             );
         }
     },
+    exitRoom: async (parent, args, context, info) => {
+        const {roomID,memberID} = args.fields;
+
+        if (!roomID) throw new ApolloError( "_id is required, the IDs come from Discord");
+        if (!memberID) throw new ApolloError( "You need to specify the memberId to Exit the Room");
+
+        let fields = {
+            roomID,
+            memberID
+        };
+
+        try {
+
+            let roomData
+
+            roomData = await Rooms.findOne({ _id: fields.roomID })
+            if(!roomData) throw new ApolloError( "RoomId does Not exists");
+
+            const isMemberInTheRoom = roomData.members.indexOf(memberID) === -1 ? false : true;
+            if(!isMemberInTheRoom) throw new ApolloError("Member is not in the Room.")
+            console.log(roomData)
+            if(isMemberInTheRoom) {
+                const tempMembers = roomData.members
+                delete tempMembers[roomData.members.indexOf(memberID)]
+                const updatedMember = tempMembers.filter((memberID) => memberID)
+                roomData= await Rooms.findOneAndUpdate(
+                    {_id: fields.roomID},
+                    {
+                        members: updatedMember
+                    },
+                    {new: true}
+                )
+            }
+            pubsub.publish(roomData._id, {
+                roomUpdated: roomData
+            })
+            return roomData
+        } catch (err) {
+            throw new ApolloError(
+                err.message,
+                err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+                { component: "tmemberQuery > exitRoom"}
+            );
+        }
+    },
+
+
+    addSkillsToMemberInRoom: async (parent, args, context, info) => {
+
+        const {skills, memberID, roomID} = args.fields;
+          if (!memberID) throw new ApolloError( "memberID is required");
+          if (!roomID) throw new ApolloError( "roomID is required");
+
+          let fields = {
+            _id: memberID,
+            registeredAt: new Date(),
+          };
+          
+          if (skills) fields =  {...fields,skills}
+          
+          
+      
+        try {
+      
+            let membersData = await Members.findOne({ _id: fields._id })
+            let roomData = await Rooms.findOne({_id: roomID})
+
+            if(!roomData.members.include(memberID)) throw new ApolloError( "Member Not in the room");
+      
+            if(membersData) {
+                membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true })
+                pubsub.publish("SKILL_UPDATED_IN_ROOM" + roomID, {
+                    newSkillInRoom: membersData
+                })
+            }
+            
+            return membersData
+        } catch (err) {
+            throw new ApolloError(
+              err.message,
+              err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+              { component: "roomMutaion > addSkillsToMemberInRoom"}
+            );
+        }
+    },
     roomUpdated: {
         subscribe: (parent, args, context, info) => {
             const {_id} = args.fields;
             if (!_id) throw new ApolloError( "_id is required, the IDs come from Discord");
             return pubsub.asyncIterator(_id)
+        }
+    },
+
+    newSkillInRoom: {
+        subscribe: (parent, args, context, info) => {
+            const {_id} = args.fields;
+            if (!_id) throw new ApolloError( "_id is required, the IDs come from Discord");
+            return pubsub.asyncIterator("SKILL_UPDATED_IN_ROOM" + _id)
+
         }
     }
 }

@@ -596,7 +596,7 @@ module.exports = {
   },
   memberUpdated: {
     subscribe: (parent, args, context, info) => {
-      console.log("Context", parent)
+      //console.log("Context", parent)
       const {_id,serverID} = args.fields;
       const temp = _id? _id: "" 
 

@@ -7,6 +7,7 @@ module.exports = `
         registeredAt: String,
     }
 
+
     input findRoomsInput {
         _id: ID
     }
@@ -17,7 +18,13 @@ module.exports = `
     }
 
     input enterRoomInput {
-        roomId: ID
-        memberId: ID
+        roomID: ID
+        memberID: ID
+    }
+
+    input addSkillsToMemberInRoomInput {
+        roomID: ID
+        memberID: ID
+        skills: [skillInput_member]
     }
 `

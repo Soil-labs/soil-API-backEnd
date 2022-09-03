@@ -1,5 +1,6 @@
 
 const { Members } = require("../../../models/membersModel");
+const mongoose = require("mongoose");
 
 
 
@@ -90,6 +91,43 @@ module.exports = {
         err.message,
         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
         { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+
+  members_autocomplete: async (parent, args, context, info) => {
+   
+
+    const {search} = args.fields;
+    console.log("change = 1" ,search)
+    let collection = mongoose.connection.db.collection("members")
+
+
+    try {
+
+      console.log("change = 1" ,search)
+      let result = await collection.aggregate([ { 
+          "$search": {
+              "autocomplete": { 
+                  "query": search,
+                  "path": "discordName", 
+                  "fuzzy": { 
+                      "maxEdits": 1, 
+                  } 
+              } 
+          } 
+      }])
+      .toArray();
+
+      console.log("result = " , result)
+
+      
+      return result
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > members_autocomplete"}
       );
     }
   },

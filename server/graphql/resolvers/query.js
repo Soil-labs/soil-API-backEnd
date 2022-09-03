@@ -1,6 +1,6 @@
 
 
-const { findMember,findMembers,matchMembersToUser,matchMembersToSkills } = require("./query/memberQuery");
+const { findMember,findMembers,matchMembersToUser,matchMembersToSkills, members_autocomplete } = require("./query/memberQuery");
 const { findSkill,findSkills,waitingToAproveSkills,adminFindAllSkillsEveryState,skills_autocomplete } = require("./query/skillsQuery");
 
 const {findProject,findProjects,findProjects_RequireSkill,findProjects_RecommendedToUser,match_projectToUser,findTeams,findRoles} = require("./query/projectQuery");
@@ -28,7 +28,7 @@ module.exports = {
     findProject,findProjects,findProjects_RequireSkill,findProjects_RecommendedToUser,match_projectToUser,findTeams,findRoles,
 
     // ------------- MEMBER QUERY -----------------
-    findMember,findMembers,matchMembersToUser,matchMembersToSkills,
+    findMember,findMembers,matchMembersToUser,matchMembersToSkills, members_autocomplete,
 
     // ------------- SKILL QUERY -----------------
     findSkill,findSkills,waitingToAproveSkills,adminFindAllSkillsEveryState,
