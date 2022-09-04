@@ -19,7 +19,7 @@ const projectUpdateModalSchema = mongoose.Schema({
     epicID: mongoose.Schema.ObjectId,
     taskID: mongoose.Schema.ObjectId,
 
-    threadDiscordlID: String,
+    threadDiscordlD: String,
     //  --- Garden Location ---
 
 

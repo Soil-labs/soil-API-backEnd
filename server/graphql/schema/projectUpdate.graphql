@@ -30,7 +30,7 @@ module.exports = `
 
         token: String
 
-        threadDiscordlID: String
+        threadDiscordlD: String
 
 
         registeredAt: String
@@ -90,7 +90,7 @@ module.exports = `
         deWorkLink: String,
 
 
-        threadDiscordlID: String
+        threadDiscordlD: String
 
         token: String
     }

@@ -283,6 +283,62 @@ module.exports = {
       );
     }
   },
+  matchMembersToProject: async (parent, args, context, info) => {
+       
+    const {skillsID,serverID} = args.fields;
+
+    if (!skillsID) throw new ApolloError("skillsID is required");
+    
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
+
+     
+    try {
+
+
+      // let membersMatch_User = await Members.find({ 'skills.id':skillsID}) // Find the members that have the same skill
+
+      let membersMatch_User
+
+      if (queryServerID.length>0){
+        membersMatch_User = await Members.find({ $and:[{ 'skills.id':skillsID },{$or:queryServerID}]})
+      } else {
+        membersMatch_User = await Members.find({ 'skills.id':skillsID })
+      }
+
+    
+      let memberMatch
+      let memberMatch_Result = []
+      for (let i = 0; i < membersMatch_User.length; i++) {
+        memberMatch = membersMatch_User[i]
+
+        skill_memberMatch = memberMatch.skills.map(skill => skill.id)
+
+        filteredSkillArray = skillsID.filter(skill => skill_memberMatch.includes(skill))
+
+
+
+        memberMatch_Result.push({
+          member: memberMatch,
+          matchPercentage: (filteredSkillArray.length/skillsID.length)*100,
+          commonSkills: filteredSkillArray
+        })
+
+      }
+
+      return memberMatch_Result
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
   
 
   

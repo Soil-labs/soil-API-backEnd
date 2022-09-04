@@ -115,6 +115,12 @@ module.exports = `
         commonSkills: [Skills]
     }
 
+    type matchMembersToProjectOutput {
+        matchPercentage: Float,
+        member: Members,
+        commonSkills: [Skills]
+    }
+
 
    
     
@@ -140,6 +146,11 @@ module.exports = `
         serverID:[String]
     }
     input matchMembersToSkillInput {
+        skillsID: [ID]
+        serverID: [String]
+    }
+
+    input matchMembersToProjectInput {
         skillsID: [ID]
         serverID: [String]
     }

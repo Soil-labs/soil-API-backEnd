@@ -53,7 +53,7 @@ const memberSchema = mongoose.Schema({
     champion: Boolean,
     phase: {
       type: String,
-      enum: ["shortlisted", "engaged","committed","rejected"],
+      enum: ["shortlisted", "engaged","committed","rejected","invited"],
       default: "shortlisted"
     },
     favorite: Boolean,
