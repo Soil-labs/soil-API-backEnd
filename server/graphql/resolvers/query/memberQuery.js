@@ -1,7 +1,7 @@
 
 const { Members } = require("../../../models/membersModel");
 const mongoose = require("mongoose");
-
+const { Projects } = require("../../../models/projectsModel");
 
 
 const {
@@ -285,9 +285,9 @@ module.exports = {
   },
   matchMembersToProject: async (parent, args, context, info) => {
        
-    const {skillsID,serverID} = args.fields;
+    const {projectID,serverID} = args.fields;
 
-    if (!skillsID) throw new ApolloError("skillsID is required");
+    if (!projectID) throw new ApolloError("projectID is required");
     
     let queryServerID = []
     if (serverID) {
@@ -300,37 +300,22 @@ module.exports = {
     try {
 
 
-      // let membersMatch_User = await Members.find({ 'skills.id':skillsID}) // Find the members that have the same skill
 
-      let membersMatch_User
+      let project
 
       if (queryServerID.length>0){
-        membersMatch_User = await Members.find({ $and:[{ 'skills.id':skillsID },{$or:queryServerID}]})
+        projectMatch_User = await Projects.find({ $and:[{ _id: projectID },{$or:queryServerID}]})
       } else {
-        membersMatch_User = await Members.find({ 'skills.id':skillsID })
+        projectMatch_User = await Projects.find({ _id: projectID })
       }
 
-    
-      let memberMatch
-      let memberMatch_Result = []
-      for (let i = 0; i < membersMatch_User.length; i++) {
-        memberMatch = membersMatch_User[i]
-
-        skill_memberMatch = memberMatch.skills.map(skill => skill.id)
-
-        filteredSkillArray = skillsID.filter(skill => skill_memberMatch.includes(skill))
+      // ------------ WiseTy -----------------
 
 
+      // ------------ WiseTy -----------------
 
-        memberMatch_Result.push({
-          member: memberMatch,
-          matchPercentage: (filteredSkillArray.length/skillsID.length)*100,
-          commonSkills: filteredSkillArray
-        })
 
-      }
-
-      return memberMatch_Result
+      return [{}]
     } catch (err) {
       throw new ApolloError(
         err.message,
