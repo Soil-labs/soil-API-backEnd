@@ -16,7 +16,7 @@ module.exports = {
 
     
     const {_id,title,content,memberID,projectID,serverID,
-      authorID,notifyUserID,teamID,roleID,token,threadDiscordlD,championID,epicID,
+      authorID,notifyUserID,teamID,roleID,token,threadDiscordID,championID,epicID,
       priority,deadline,phase,deWorkLink,taskID} = JSON.parse(JSON.stringify(args.fields))
 
     // _id is only if you want to update a team
@@ -36,7 +36,7 @@ module.exports = {
     if (projectID) fields =  {...fields,projectID}
     if (roleID) fields =  {...fields,roleID}
     if (token) fields =  {...fields,token}
-    if (threadDiscordlD) fields =  {...fields,threadDiscordlD}
+    if (threadDiscordID) fields =  {...fields,threadDiscordID}
     if (championID) fields =  {...fields,championID}
     if (epicID) fields =  {...fields,epicID}
     if (notifyUserID) fields =  {...fields,notifyUserID}
@@ -50,7 +50,7 @@ module.exports = {
       taskData = await ProjectUpdate.findOne({ _id: taskID })
       if (taskData) {
         fields = {...fields,taskID:taskData._id}
-        fields =  {...fields,threadDiscordlD:taskData.threadDiscordlD}
+        fields =  {...fields,threadDiscordID:taskData.threadDiscordID}
       }
 
     }
