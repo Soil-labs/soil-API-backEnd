@@ -10,6 +10,8 @@ module.exports = `
         discriminator: String
         bio: String
 
+        onbording: onboardingType
+
         content: contentType
         
         interest: String
@@ -36,6 +38,12 @@ module.exports = `
         attributes: attributesType,
 
         gardenUpdate: gardenUpdateType
+    }
+
+    type onboardingType {
+        signup: Boolean
+        percentage: Int
+
     }
 
     type gardenUpdateType {
@@ -179,6 +187,9 @@ module.exports = `
         discordAvatar: String
         discriminator: String
         bio: String
+
+        onbording: onboardingInput
+
         content: contentInput
         interest: String
         timeZone: String
@@ -192,6 +203,11 @@ module.exports = `
 
         links: [linkInput],
 
+    }
+
+    input onboardingInput {
+        signup: Boolean
+        percentage: Int
     }
 
     input contentInput {

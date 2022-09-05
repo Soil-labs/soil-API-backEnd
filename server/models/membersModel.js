@@ -21,6 +21,18 @@ const memberSchema = mongoose.Schema({
   discordAvatar: String,
   discriminator: String,
   bio: String, 
+
+  onbording: {
+    signup: {
+      type: Boolean,
+      default: false,
+    },
+    percentage: {
+      type: Number,
+      default: 0,
+    },
+  },
+
   content: {
     interest: String,
     mostProud: String,

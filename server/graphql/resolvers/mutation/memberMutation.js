@@ -55,6 +55,7 @@ module.exports = {
           Observer: 0,
           Reformer: 0,
         }
+
     
         fields = {...fields, attributes: newAttributes};
 
@@ -125,7 +126,7 @@ module.exports = {
 
     const {discordName,_id,discordAvatar,discriminator,bio,
       hoursPerWeek,previusProjects,
-      interest,timeZone,level,skills,links,content,serverID} = args.fields;
+      interest,timeZone,level,skills,links,content,serverID,onbording} = args.fields;
 
     if (!_id) throw new ApolloError( "_id is required");
 
@@ -147,13 +148,13 @@ module.exports = {
     if (links) fields =  {...fields,links}
     if (content) fields =  {...fields,content}
 
+
     
 
     try {
 
       let membersData = await Members.findOne({ _id: fields._id })
 
-    //console.log("change = 1" )
       if (!membersData ){
         let newAttributes = {
           Director: 0,
@@ -182,6 +183,23 @@ module.exports = {
           serverID:membersData.serverID,
         })
       } else {
+
+        if (onbording){
+          console.log("change = " )
+          if (onbording.signup!= undefined && onbording.percentage!= undefined){
+          console.log("change = 1" )
+
+            fields = {...fields, onbording: onbording}
+          } else if (onbording.signup!= undefined ){
+          console.log("change = 2" )
+
+            fields = {...fields, onbording: {...membersData.onbording, signup: onbording.signup}}
+          } else if (onbording.percentage!= undefined ){
+          console.log("change = 3" )
+
+            fields = {...fields, onbording: {...membersData.onbording, percentage: onbording.percentage}}
+          }
+        }
 
         if (!membersData.serverID){
 
