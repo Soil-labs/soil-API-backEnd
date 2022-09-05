@@ -169,6 +169,8 @@ module.exports = {
     
         fields = {...fields, attributes: newAttributes};
 
+        if (onbording) fields = {...fields, onbording: onbording}
+
         if (serverID) fields.serverID = serverID;
 
         membersData = await new Members(fields);
@@ -185,18 +187,11 @@ module.exports = {
       } else {
 
         if (onbording){
-          console.log("change = " )
           if (onbording.signup!= undefined && onbording.percentage!= undefined){
-          console.log("change = 1" )
-
             fields = {...fields, onbording: onbording}
           } else if (onbording.signup!= undefined ){
-          console.log("change = 2" )
-
             fields = {...fields, onbording: {...membersData.onbording, signup: onbording.signup}}
           } else if (onbording.percentage!= undefined ){
-          console.log("change = 3" )
-
             fields = {...fields, onbording: {...membersData.onbording, percentage: onbording.percentage}}
           }
         }
