@@ -12,9 +12,9 @@ const pubsub = new PubSub()
 
 module.exports = {
   addNewMember: async (parent, args, context, info) => {
-   
-
-  const {discordName,_id,discordAvatar,discriminator, bio,hoursPerWeek,previusProjects,invitedBy,serverID} = args.fields;
+    
+    const {discordName,_id,discordAvatar,discriminator, bio,hoursPerWeek,previusProjects,invitedBy,serverID} = args.fields;
+    console.log("Mutation > addNewMember > args.fields = " , args.fields)
 
 
     if (!_id) throw new ApolloError( "_id is required, the IDs come from Discord");
@@ -127,6 +127,8 @@ module.exports = {
     const {discordName,_id,discordAvatar,discriminator,bio,
       hoursPerWeek,previusProjects,
       interest,timeZone,level,skills,links,content,serverID,onbording} = args.fields;
+
+      console.log("Mutation > updateMember > args.fields = " , args.fields)
 
     if (!_id) throw new ApolloError( "_id is required");
 
@@ -248,6 +250,7 @@ module.exports = {
   addFavoriteProject: async (parent, args, context, info) => {
 
     const {memberID,projectID,favorite} = args.fields;
+    console.log("Mutation > addFavoriteProject > args.fields = " , args.fields)
 
     if (!memberID) throw new ApolloError( "memberID is required");
     if (!projectID) throw new ApolloError( "projectID is required");
@@ -293,6 +296,7 @@ module.exports = {
    
 
     const {_id,attribute} = args.fields;
+    console.log("Mutation > endorseAttribute > args.fields = " , args.fields)
 
     if (!_id) throw new ApolloError( "_id is required");
     if (!attribute) throw new ApolloError( "attribute is required");
@@ -372,6 +376,7 @@ module.exports = {
   
 
     const {skillID,memberID,authorID,serverID} = args.fields;
+    console.log("Mutation > addSkillToMember > args.fields = " , args.fields)
 
     if (!skillID) throw new ApolloError( "skillID is required");
     if (!memberID) throw new ApolloError( "memberID is required");

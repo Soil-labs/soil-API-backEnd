@@ -13,6 +13,7 @@ module.exports = {
   findRoleTemplate: async (parent, args, context, info) => {
    
     const {_id} = args.fields;
+    console.log("Query > findRoleTemplate > args.fields = " , args.fields)
 
     if (!_id) throw new ApolloError("No id provided");
 
@@ -36,6 +37,7 @@ module.exports = {
   findRoleTemplates: async (parent, args, context, info) => {
    
     const {_id} = args.fields;
+    console.log("Query > findRoleTemplates > args.fields = " , args.fields)
 
     try {
 

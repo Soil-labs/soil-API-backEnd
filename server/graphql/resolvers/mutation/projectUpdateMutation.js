@@ -19,6 +19,7 @@ module.exports = {
       authorID,notifyUserID,teamID,roleID,token,threadDiscordID,championID,epicID,
       priority,deadline,phase,deWorkLink,taskID} = JSON.parse(JSON.stringify(args.fields))
 
+      console.log("Mutation > createProjectUpdate > args.fields = " , args.fields)
     // _id is only if you want to update a team
     
     
