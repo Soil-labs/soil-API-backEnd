@@ -5,6 +5,7 @@ const { Projects } = require('../../../models/projectsModel');
 const {Team} = require('../../../models/teamModal');
 const { Role } = require("../../../models/roleModel");
 const { Epic } = require("../../../models/epicModel");
+const { ProjectUpdate } = require("../../../models/projectUpdateModal");
 
 const { ApolloError } = require('apollo-server-express');
 
@@ -464,6 +465,30 @@ module.exports = {
                );
             }
          },
+         task: async (parent, args, context, info) => {
+   
+            console.log("parent = " ,parent)
+               try {
+                  const taskID = parent.taskID;
+                  
+                  console.log("taskID = " , taskID)
+      
+                  taskData = await ProjectUpdate.find({_id: taskID})
+      
+      
+                  return taskData;
+      
+               } catch (err) {
+                  throw new ApolloError(
+                     err.message,
+                     err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                     {
+                        component: 'userResolver > members',
+                        user: context.req.user?._id,
+                     }
+                  );
+               }
+            },
          members: async (parent, args, context, info) => {
    
          // console.log("parent = " ,parent)

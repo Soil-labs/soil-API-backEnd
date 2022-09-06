@@ -3,6 +3,7 @@ const { Projects } = require("../../../models/projectsModel");
 const { Team } = require("../../../models/teamModal");
 const { Members } = require("../../../models/membersModel");
 const {ProjectUpdate } = require("../../../models/projectUpdateModal");
+const { Epic } = require("../../../models/epicModel");
 
 
 const {ApolloError} = require("apollo-server-express");
@@ -56,17 +57,14 @@ module.exports = {
 
     }
 
-    console.log("change = 1" )
 
     try {
       let projectUpdateData
       if (fields._id) {
-        console.log("change = 2" )
 
         projectUpdateData = await ProjectUpdate.findOne({ _id: fields._id })
 
         if (projectUpdateData){
-          console.log("change = 3" )
 
           projectUpdateData = await ProjectUpdate.findOneAndUpdate(
             {_id: fields._id},fields,
@@ -166,6 +164,44 @@ module.exports = {
         }
       }
       // ------------ Champion Task Save info -----------------
+
+      console.log("change = " )
+
+
+      // ------------ Epic Save info -----------------
+      if (epicID){
+      epicData = await Epic.findOne({ _id: projectUpdateData.epicID })
+
+        if (epicData){
+
+          let taskNOW = ""
+          if (fields.taskID){
+            taskNOW = fields.taskID
+          } else {
+            taskNOW = projectUpdateData._id
+          }
+          let tasksEpic
+          if (epicData.taskID){
+             tasksEpic = [...epicData.taskID]
+          } else {
+             tasksEpic = []
+          }
+          console.log("change = 3",tasksEpic,taskNOW )
+          if (!tasksEpic.includes(taskNOW)){
+            tasksEpic.push(taskNOW)
+          }
+          console.log("change = 4",tasksEpic,taskNOW )
+
+
+          epicData = await Epic.findOneAndUpdate(
+            {_id: epicID},
+            {taskID: tasksEpic },
+            {new: true}
+          )
+        }
+      }
+
+      // ------------ Epic Save info -----------------
       
 
 
