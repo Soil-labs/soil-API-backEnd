@@ -12,9 +12,9 @@ const pubsub = new PubSub()
 
 module.exports = {
   addNewMember: async (parent, args, context, info) => {
-   
-
-  const {discordName,_id,discordAvatar,discriminator, bio,hoursPerWeek,previusProjects,invitedBy,serverID} = args.fields;
+    
+    const {discordName,_id,discordAvatar,discriminator, bio,hoursPerWeek,previusProjects,invitedBy,serverID} = args.fields;
+    console.log("Mutation > addNewMember > args.fields = " , args.fields)
 
 
     if (!_id) throw new ApolloError( "_id is required, the IDs come from Discord");
@@ -55,6 +55,7 @@ module.exports = {
           Observer: 0,
           Reformer: 0,
         }
+
     
         fields = {...fields, attributes: newAttributes};
 
@@ -125,7 +126,9 @@ module.exports = {
 
     const {discordName,_id,discordAvatar,discriminator,bio,
       hoursPerWeek,previusProjects,
-      interest,timeZone,level,skills,links,content,serverID} = args.fields;
+      interest,timeZone,level,skills,links,content,serverID,onbording} = args.fields;
+
+      console.log("Mutation > updateMember > args.fields = " , args.fields)
 
     if (!_id) throw new ApolloError( "_id is required");
 
@@ -147,13 +150,13 @@ module.exports = {
     if (links) fields =  {...fields,links}
     if (content) fields =  {...fields,content}
 
+
     
 
     try {
 
       let membersData = await Members.findOne({ _id: fields._id })
 
-    //console.log("change = 1" )
       if (!membersData ){
         let newAttributes = {
           Director: 0,
@@ -167,6 +170,8 @@ module.exports = {
         }
     
         fields = {...fields, attributes: newAttributes};
+
+        if (onbording) fields = {...fields, onbording: onbording}
 
         if (serverID) fields.serverID = serverID;
 
@@ -182,6 +187,16 @@ module.exports = {
           serverID:membersData.serverID,
         })
       } else {
+
+        if (onbording){
+          if (onbording.signup!= undefined && onbording.percentage!= undefined){
+            fields = {...fields, onbording: onbording}
+          } else if (onbording.signup!= undefined ){
+            fields = {...fields, onbording: {...membersData.onbording, signup: onbording.signup}}
+          } else if (onbording.percentage!= undefined ){
+            fields = {...fields, onbording: {...membersData.onbording, percentage: onbording.percentage}}
+          }
+        }
 
         if (!membersData.serverID){
 
@@ -235,6 +250,7 @@ module.exports = {
   addFavoriteProject: async (parent, args, context, info) => {
 
     const {memberID,projectID,favorite} = args.fields;
+    console.log("Mutation > addFavoriteProject > args.fields = " , args.fields)
 
     if (!memberID) throw new ApolloError( "memberID is required");
     if (!projectID) throw new ApolloError( "projectID is required");
@@ -280,6 +296,7 @@ module.exports = {
    
 
     const {_id,attribute} = args.fields;
+    console.log("Mutation > endorseAttribute > args.fields = " , args.fields)
 
     if (!_id) throw new ApolloError( "_id is required");
     if (!attribute) throw new ApolloError( "attribute is required");
@@ -359,6 +376,7 @@ module.exports = {
   
 
     const {skillID,memberID,authorID,serverID} = args.fields;
+    console.log("Mutation > addSkillToMember > args.fields = " , args.fields)
 
     if (!skillID) throw new ApolloError( "skillID is required");
     if (!memberID) throw new ApolloError( "memberID is required");

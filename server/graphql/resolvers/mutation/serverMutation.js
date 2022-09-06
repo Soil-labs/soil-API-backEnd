@@ -17,6 +17,7 @@ module.exports = {
    
 
     const {_id,name, adminID , adminRoles , adminCommands } = args.fields;
+    console.log("Mutation > updateServer > args.fields = " , args.fields)
 
     if (!_id) throw new ApolloError("_id -> serverID is required");
 

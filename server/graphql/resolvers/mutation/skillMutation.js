@@ -11,6 +11,7 @@ module.exports = {
   createSkill: async (parent, args, context, info) => {
    
   const {name,state,categorySkills,subCategorySkill,id_lightcast} = args.fields;
+  console.log("Mutation > createSkill > args.fields = " , args.fields)
 
 
   if (!name) throw new ApolloError( "You need to specify the name of the skill");
@@ -199,6 +200,7 @@ module.exports = {
   relatedSkills: async (parent, args, context, info) => {
     
     const {_id,relatedSkills_id} = args.fields;
+    console.log("Mutation > relatedSkills > args.fields = " , args.fields)
   
   
     if (!_id) throw new ApolloError( "You need to specify the id of the skill");
@@ -268,6 +270,7 @@ module.exports = {
   createSkills: async (parent, args, context, info) => {
    
     const {names,state} = args.fields;
+    console.log("Mutation > createSkills > args.fields = " , args.fields)
   
   
     if (!names) throw new ApolloError( "You need to specify the names of the skill");
@@ -360,6 +363,7 @@ module.exports = {
     // Be careful only Admins can created preapproved skills
    
     const {name} = args.fields;
+    console.log("Mutation > createApprovedSkill > args.fields = " , args.fields)
   
   
     if (!name) throw new ApolloError( "You need to specify the name of the skill");
@@ -415,6 +419,7 @@ module.exports = {
   approveOrRejectSkill: async (parent, args, context, info) => {
    
     const {_id,state,categorySkills,subCategorySkill} = args.fields;
+    console.log("Mutation > approveOrRejectSkill > args.fields = " , args.fields)
   
   
     if (!_id) throw new ApolloError( "You need to specify the ID of the skill");

@@ -16,10 +16,11 @@ module.exports = {
   findProjectUpdates: async (parent, args, context, info) => {
    
 
-    console.log("change = " )
+    
     const {_id,projectID,memberID,teamID,serverID,roleID,dateStart,dateEnd} = args.fields;
+    console.log("Query > findProjectUpdates > args.fields = " , args.fields)
 
-    console.log("dateStart,dateEnd = " , dateStart,dateEnd)
+    
 
     let fields = {}
 
@@ -146,9 +147,8 @@ module.exports = {
   findAllProjectsTeamsAnouncments: async (parent, args, context, info) => {
    
 
-    console.log("change = " )
-
     const {dateStart,dateEnd} = args.fields;
+    console.log("Query > findAllProjectsTeamsAnouncments > args.fields = " , args.fields)
     
 
     try {
@@ -245,6 +245,7 @@ module.exports = {
     // console.log("change = " )
 
     const {dateStart,dateEnd,serverID} = args.fields;
+    console.log("Query > findGarden > args.fields = " , args.fields)
 
     let querySearch = []
     if (serverID) {

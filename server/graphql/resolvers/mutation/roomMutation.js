@@ -13,6 +13,7 @@ module.exports = {
     createRoom: async (parent, args, context, info) => {
    
         const {_id,name} = args.fields;
+        console.log("Mutation > createRoom > args.fields = " , args.fields)
 
         // if (!_id) throw new ApolloError( "_id is required, the IDs come from Discord");
         // if (!name) throw new ApolloError( "You need to specify the name of the Room");
@@ -61,6 +62,7 @@ module.exports = {
 
     enterRoom: async (parent, args, context, info) => {
         const {roomID,memberID} = args.fields;
+        console.log("Mutation > enterRoom > args.fields = " , args.fields)
 
         if (!roomID) throw new ApolloError( "_id is required, the IDs come from Discord");
         if (!memberID) throw new ApolloError( "You need to specify the memberId to enter the Room");
@@ -103,6 +105,7 @@ module.exports = {
     },
     exitRoom: async (parent, args, context, info) => {
         const {roomID,memberID} = args.fields;
+        console.log("Mutation > exitRoom > args.fields = " , args.fields)
 
         if (!roomID) throw new ApolloError( "_id is required, the IDs come from Discord");
         if (!memberID) throw new ApolloError( "You need to specify the memberId to Exit the Room");
@@ -151,6 +154,8 @@ module.exports = {
     addSkillsToMemberInRoom: async (parent, args, context, info) => {
 
         const {skills, memberID, roomID} = args.fields;
+        console.log("Mutation > addSkillsToMemberInRoom > args.fields = " , args.fields)
+
           if (!memberID) throw new ApolloError( "memberID is required");
           if (!roomID) throw new ApolloError( "roomID is required");
 
@@ -189,6 +194,8 @@ module.exports = {
     roomUpdated: {
         subscribe: (parent, args, context, info) => {
             const {_id} = args.fields;
+            console.log("Mutation > roomUpdated > args.fields = " , args.fields)
+
             if (!_id) throw new ApolloError( "_id is required, the IDs come from Discord");
             return pubsub.asyncIterator(_id)
         }
@@ -197,6 +204,7 @@ module.exports = {
     newSkillInRoom: {
         subscribe: (parent, args, context, info) => {
             const {_id} = args.fields;
+            console.log("Mutation > newSkillInRoom > args.fields = " , args.fields)
             if (!_id) throw new ApolloError( "_id is required, the IDs come from Discord");
             return pubsub.asyncIterator("SKILL_UPDATED_IN_ROOM" + _id)
 

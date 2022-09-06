@@ -15,6 +15,7 @@ const epicModalSchema = mongoose.Schema({
     serverID: [String],
     projectID: mongoose.Schema.ObjectId,
     teamID: [mongoose.Schema.ObjectId],
+    taskID: [mongoose.Schema.ObjectId],
 
     channelDiscordlID: String,
     //  --- Garden Location ---

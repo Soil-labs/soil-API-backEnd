@@ -7,6 +7,7 @@ module.exports = `
         description: String
 
         serverID: [String],
+        gardenServerID: String,
 
         champion: Members
 
@@ -69,6 +70,7 @@ module.exports = `
         serverID: [String],
         project: Project,
         teams: [Team],
+        task: [ProjectUpdate]
 
         members: [Members],
         notifyUsers: [Members],
@@ -241,6 +243,7 @@ module.exports = `
         title: String
         description: String
         serverID: [String]
+        gardenServerID: String,
 
         champion: String
 
@@ -313,10 +316,12 @@ module.exports = `
     input findProjectInput {
         _id: ID
         serverID: [String]
+        gardenServerID: String,
     }
     input findProjectsInput {
         _id: [ID]
         serverID: [String]
+        gardenServerID: String,
     }
     input findProjects_RequireSkillInput {
         skillID: [ID]

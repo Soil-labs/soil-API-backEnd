@@ -11,6 +11,7 @@ module.exports = {
   findSkillSubCategory: async (parent, args, context, info) => {
    
     const {_id,id_lightcast} = args.fields;
+    console.log("Query > findSkillSubCategory > args.fields = " , args.fields)
 
     let searchQuery = {}
 
@@ -42,6 +43,7 @@ module.exports = {
   findSkillSubCategories: async (parent, args, context, info) => {
    
     const {_id,id_lightcast} = args.fields;
+    console.log("Query > findSkillSubCategories > args.fields = " , args.fields)
 
     let searchQuery = {}
 

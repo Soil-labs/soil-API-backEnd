@@ -15,8 +15,10 @@ module.exports = {
   updateProject: async (parent, args, context, info) => {
 
     
-    const {_id,title,description,champion,team,role,collaborationLinks,budget,dates,stepsJoinProject,serverID} = JSON.parse(JSON.stringify(args.fields))
+    const {_id,title,description,champion,team,role,collaborationLinks,
+      budget,dates,stepsJoinProject,serverID,gardenServerID} = JSON.parse(JSON.stringify(args.fields))
  
+      console.log("Mutation > updateProject > args.fields = " , args.fields)
  
     
     let fields = {
@@ -33,6 +35,7 @@ module.exports = {
     if (budget) fields =  {...fields,budget}
     if (dates) fields =  {...fields,dates}
     if (stepsJoinProject) fields =  {...fields,stepsJoinProject}
+    if (gardenServerID) fields =  {...fields,gardenServerID}
 
     console.log("fields = " , fields)
 
@@ -278,6 +281,7 @@ module.exports = {
    
 
     let {projectID,title,content,author,approved} = JSON.parse(JSON.stringify(args.fields))
+    console.log("Mutation > newTweetProject > args.fields = " , args.fields)
 
     
     if (!projectID) throw new ApolloError( "you need to specify a project ID");
@@ -348,7 +352,7 @@ module.exports = {
    
 
     const {projectID,tweetID,approved} = JSON.parse(JSON.stringify(args.fields))
-
+    console.log("Mutation > approveTweet > args.fields = " , args.fields)
     
     if (!projectID) throw new ApolloError( "you need to specify a project ID");
     if (!tweetID) throw new ApolloError( "you need to specify a tweet ID");
@@ -397,7 +401,7 @@ module.exports = {
    
 
     const {projectID,memberID,phase} = JSON.parse(JSON.stringify(args.fields))
-
+    console.log("Mutation > changeTeamMember_Phase_Project > args.fields = " , args.fields)
     
     if (!projectID) throw new ApolloError( "you need to specify a project ID");
     if (!memberID) throw new ApolloError( "you need to specify a tweet ID");
@@ -485,6 +489,8 @@ module.exports = {
 
     
     const {_id,name,description,memberID,projectID,serverID,championID,categoryDiscordlD,channelGeneralDiscordID} = JSON.parse(JSON.stringify(args.fields))
+    console.log("Mutation > createNewTeam > args.fields = " , args.fields)
+
 
     // _id is only if you want to update a team
     // if (!name) throw new ApolloError( "you need to specify a name");
@@ -583,6 +589,7 @@ module.exports = {
 
     
     const {_id,name,description,memberID,projectID,serverID,teamID} = JSON.parse(JSON.stringify(args.fields))
+    console.log("Mutation > createNewRole > args.fields = " , args.fields)
 
     // _id is only if you want to update a team
     // if (!name) throw new ApolloError( "you need to specify a name");
@@ -666,6 +673,7 @@ module.exports = {
     
     const { _id,name,description,phase,championID,serverID,projectID,teamID,memberID,
       notifyUserID,authorID,channelDiscordlID} = JSON.parse(JSON.stringify(args.fields))
+    console.log("Mutation > createNewEpic > args.fields = " , args.fields)
 
     // _id is only if you want to update a team
     // if (!name) throw new ApolloError( "you need to specify a name");

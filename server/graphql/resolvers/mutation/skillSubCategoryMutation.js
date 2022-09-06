@@ -10,6 +10,7 @@ module.exports = {
    
 
     const {_id,name,description,skills,categorySkills,id_lightcast,emoji} = args.fields;
+    console.log("Mutation > updateSkillSubCategory > args.fields = " , args.fields)
 
 
     let fields = {

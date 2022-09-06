@@ -10,6 +10,7 @@ module.exports = {
 
   const {_id,title,description,skills} = args.fields;
 
+  console.log("Mutation > updateRoleTemplate > args.fields = " , args.fields)
 
     // if (!title) throw new ApolloError( "title is required");
 

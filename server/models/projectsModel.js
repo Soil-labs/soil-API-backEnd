@@ -9,6 +9,7 @@ const projectSchema = mongoose.Schema({
   description: String,
 
   serverID: [String],
+  gardenServerID: String,
 
   champion:String,
 

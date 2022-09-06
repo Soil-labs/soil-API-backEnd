@@ -13,6 +13,7 @@ module.exports = {
   findMember: async (parent, args, context, info) => {
        
     const {_id,serverID} = args.fields;
+    console.log("Query > findMember > args.fields = " , args.fields)
 
     if (!_id) {
       throw new ApolloError("No id provided");
@@ -54,6 +55,7 @@ module.exports = {
   findMembers: async (parent, args, context, info) => {
        
     const {_id,serverID} = args.fields;
+    console.log("Query > findMembers > args.fields = " , args.fields)
 
     let queryServerID = []
     if (serverID) {
@@ -99,7 +101,8 @@ module.exports = {
    
 
     const {search} = args.fields;
-    console.log("change = 1" ,search)
+    console.log("Query > members_autocomplete > args.fields = " , args.fields)
+    
     let collection = mongoose.connection.db.collection("members")
 
 
@@ -135,6 +138,7 @@ module.exports = {
   matchMembersToUser: async (parent, args, context, info) => {
        
     const {memberID,serverID} = args.fields;
+    console.log("Query > matchMembersToUser > args.fields = " , args.fields)
 
     if (!memberID) throw new ApolloError("memberID is required");
 
@@ -230,6 +234,7 @@ module.exports = {
   matchMembersToSkills: async (parent, args, context, info) => {
        
     const {skillsID,serverID} = args.fields;
+    console.log("Query > matchMembersToSkills > args.fields = " , args.fields)
 
     if (!skillsID) throw new ApolloError("skillsID is required");
     
@@ -286,6 +291,7 @@ module.exports = {
   matchMembersToProject: async (parent, args, context, info) => {
        
     const {projectID,serverID} = args.fields;
+    console.log("Query > matchMembersToProject > args.fields = " , args.fields)
 
     if (!projectID) throw new ApolloError("projectID is required");
     
