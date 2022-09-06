@@ -21,6 +21,7 @@ module.exports = `
             findMembers(fields:findMembersInput): [Members]
             matchMembersToUser(fields:matchMembersToUserInput): [matchMembersToUserOutput]
             matchMembersToSkills(fields:matchMembersToSkillInput): [matchMembersToSkillOutput]
+            matchMembersToProject(fields:matchMembersToProjectInput): [matchMembersToProjectOutput]
 
             members_autocomplete(fields:members_autocompleteInput): [Members]
 

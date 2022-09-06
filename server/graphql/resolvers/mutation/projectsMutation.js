@@ -414,7 +414,6 @@ module.exports = {
 
       let foundMember_flag = false
       projectData.team.forEach(member => {
-      // console.log("member = " , member)
         if (member.memberID == memberID){
           member.phase = phase
           console.log("tuba = " )
@@ -422,44 +421,49 @@ module.exports = {
         }
       })
 
+      console.log("foundMember_flag = ",foundMember_flag )
+
       if (foundMember_flag == false){
-          projectData.team.push({
-            memberID: memberID,
-            phase: phase,
-          })
+        console.log("foundMember_flag = " )
+        projectData.team.push({
+          memberID: memberID,
+          phase: phase,
+        })
 
-          let memberData = await Members.findOne({ _id: memberID })
+        
 
-          if (memberData) {
+      } 
 
-            let currentProjects = [...memberData.projects]
-          
-            currentProjects.push({
-              projectID: projectData._id,
-              champion: false,
-              phase: phase,
-            })
+      let memberData = await Members.findOne({ _id: memberID })
 
-            console.log("currentProjects = " , currentProjects)
+      if (memberData) {
 
-            memberDataUpdate = await Members.findOneAndUpdate(
-              {_id: memberID},
-              {
-                  $set: {projects: currentProjects}
-              },
-              {new: true}
-            )
-          }
+        let currentProjects = [...memberData.projects]
+      
+        currentProjects.push({
+          projectID: projectData._id,
+          champion: false,
+          phase: phase,
+        })
 
+        console.log("currentProjects = " , currentProjects)
+
+        memberDataUpdate = await Members.findOneAndUpdate(
+          {_id: memberID},
+          {
+              $set: {projects: currentProjects}
+          },
+          {new: true}
+        )
       }
 
 
-        projectDataUpdate = await Projects.findOneAndUpdate(
-          {_id: projectID},
-          {
-              $set: {team: projectData.team }
-          },
-          {new: true}
+      projectDataUpdate = await Projects.findOneAndUpdate(
+        {_id: projectID},
+        {
+            $set: {team: projectData.team }
+        },
+        {new: true}
       )
 
 

@@ -1,7 +1,7 @@
 
 const { Members } = require("../../../models/membersModel");
 const mongoose = require("mongoose");
-
+const { Projects } = require("../../../models/projectsModel");
 
 
 const {
@@ -275,6 +275,47 @@ module.exports = {
       }
 
       return memberMatch_Result
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+  matchMembersToProject: async (parent, args, context, info) => {
+       
+    const {projectID,serverID} = args.fields;
+
+    if (!projectID) throw new ApolloError("projectID is required");
+    
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
+
+     
+    try {
+
+
+
+      let project
+
+      if (queryServerID.length>0){
+        projectMatch_User = await Projects.find({ $and:[{ _id: projectID },{$or:queryServerID}]})
+      } else {
+        projectMatch_User = await Projects.find({ _id: projectID })
+      }
+
+      // ------------ WiseTy -----------------
+
+
+      // ------------ WiseTy -----------------
+
+
+      return [{}]
     } catch (err) {
       throw new ApolloError(
         err.message,
