@@ -167,8 +167,8 @@ module.exports = {
       
             let membersData = await Members.findOne({ _id: fields._id })
             let roomData = await Rooms.findOne({_id: roomID})
-
-            if(!roomData.members.include(memberID)) throw new ApolloError( "Member Not in the room");
+            console.log(roomData.members)
+            if(!roomData.members.includes(memberID)) throw new ApolloError( "Member Not in the room");
       
             if(membersData) {
                 membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true })
