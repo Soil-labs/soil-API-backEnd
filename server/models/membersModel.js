@@ -71,7 +71,7 @@ const memberSchema = mongoose.Schema({
     favorite: Boolean,
   }],
 
-  roles: mongoose.Schema.ObjectId,
+  role: mongoose.Schema.ObjectId,
   archiveProjects: [mongoose.Schema.ObjectId],
 
   previusProjects: [{

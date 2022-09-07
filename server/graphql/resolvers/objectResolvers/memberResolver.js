@@ -52,27 +52,27 @@ module.exports = {
             );
          }
       },
-      roles: async (parent, args, context, info) => {
+      role: async (parent, args, context, info) => {
          // console.log("parent = " , parent)
 
          try {
-            const roles = parent.roles;
+            const role = parent.role;
 
 
-            rolesID = roles?._id
+            roleID = role?._id
 
 
 
-            rolesData = await RoleTemplate.findOne({ _id: rolesID })
+            roleData = await RoleTemplate.findOne({ _id: roleID })
             
-            return rolesData;
+            return roleData;
 
          } catch (err) {
             throw new ApolloError(
                err.message,
                err.extensions?.code || 'DATABASE_SEARCH_ERROR',
                {
-                  component: 'userResolver > roles',
+                  component: 'userResolver > role',
                   user: context.req.user?._id,
                }
             );

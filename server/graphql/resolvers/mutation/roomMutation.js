@@ -155,7 +155,7 @@ module.exports = {
 
         const {discordName,discordAvatar,discriminator,bio,
             hoursPerWeek,previusProjects,
-            interest,timeZone,level,skills,links,content,serverID, roles, memberID, roomID} = args.fields;
+            interest,timeZone,level,skills,links,content,serverID, role, memberID, roomID} = args.fields;
         console.log("Mutation > updateMemberInRoom > args.fields = " , args.fields)
           if (!memberID) throw new ApolloError( "memberID is required");
           if (!roomID) throw new ApolloError( "roomID is required");
@@ -177,7 +177,7 @@ module.exports = {
           if (skills) fields =  {...fields,skills}
           if (links) fields =  {...fields,links}
           if (content) fields =  {...fields,content}
-          if (roles) fields =  {...fields,roles}
+          if (role) fields =  {...fields,role}
           
           
       
@@ -186,7 +186,7 @@ module.exports = {
             let membersData = await Members.findOne({ _id: fields._id })
             let roomData = await Rooms.findOne({_id: roomID})
             console.log(roomData.members)
-            if(!roomData.members.includes(memberID)) throw new ApolloError( "Member Not in the room");
+            if(roomData && roomData.members && !roomData.members.includes(memberID)) throw new ApolloError( "Member Not in the room");
       
             if(membersData) {
                 membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true })

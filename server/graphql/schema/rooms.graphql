@@ -39,7 +39,7 @@ module.exports = `
         hoursPerWeek: Float,
 
         previusProjects: [previusProjectsInput],
-        roles: findRoleTemplatesInput,
+        role: findRoleTemplatesInput,
 
         links: [linkInput],
     }
