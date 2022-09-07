@@ -2,6 +2,7 @@
 const { Members } = require("../../../models/membersModel");
 const mongoose = require("mongoose");
 const { Projects } = require("../../../models/projectsModel");
+const { driver } = require("../../../../server/neo4j_config");
 
 
 const {
@@ -308,8 +309,59 @@ module.exports = {
       } else {
         projectMatch_User = await Projects.find({ _id: projectID })
       }
+      console.log("projectMatch_User = " , projectMatch_User)
 
       // ------------ WiseTy -----------------
+      const session = driver.session({database:"neo4j"});
+      const res = await session.readTransaction(tx =>
+        tx.run(
+          `MATCH (p:Project{project_id: '630055b20d42a70004246dcb'})-[]-(r:Role)-[]-(s:Skill)
+           MATCH (s:Skill)-[]-(m:Member)
+           WHERE NOT (m)-[]-(p)
+           RETURN (p)-[]-(r)-[]-(s)-[]-(m)`
+        )
+      )
+    
+      const names = res.records.map(row => {
+        // return row.get('m')
+        // for (let i = 0; i<row._fields; ++i) {
+        //   console.log('nodes', row._fields[i]);
+        // }
+        
+        return row
+      })
+      console.log('nodes and edges: ',names[0]._fields[0][0].segments); 
+      console.log('nodes and edges2: ',names[0]._fields[0]); 
+      console.log('nodes and edges3: ',names[0]._fields); 
+      console.log('nodes and edges4: ',names[0]);
+      console.log('nodes and edges: 5',names);  
+      const listsOfPaths = names[1]._fields[0][0].segments
+      
+        for (let i = 0; i<listsOfPaths.length; ++i) {
+          console.log('start node name ', i, listsOfPaths[i].start.properties.name);
+          console.log('start node id ', i, listsOfPaths[i].start.properties._id);
+          console.log('start node label ', i, listsOfPaths[i].start.labels);
+          console.log('👇');
+          console.log('relationship ', i, listsOfPaths[i].relationship.type);
+          console.log('👇');
+          console.log('end node name ', i, listsOfPaths[i].end.properties.name);
+          console.log('end node id ', i, listsOfPaths[i].end.properties._id);
+          console.log('end node label ', i, listsOfPaths[i].end.labels);
+          console.log('👇');
+
+        }
+
+      // console.log(names[0]);
+      // console.log('fields: ',names[0]._fields);
+      // console.log('start node: ',names[0]._fields[0][0].start);
+      // console.log('end node : ',names[0]._fields[0][0].end);
+      // console.log('nodes and edges: ',names[0]._fields[0][0].segments); 
+      // console.log('first element in list of segments ',names[0]._fields[0][0].segments[0]); 
+      // console.log('second element in list of segments ',names[0]._fields[0][0].segments[1]); 
+      // console.log('third element in list of segments ',names[0]._fields[0][0].segments[2]); 
+      
+
+
 
 
       // ------------ WiseTy -----------------
