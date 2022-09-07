@@ -22,7 +22,7 @@ module.exports = {
 
       console.log("Mutation > createProjectUpdate > args.fields = " , args.fields)
     // _id is only if you want to update a team
-    
+     
     
     let fields = {
       registeredAt: new Date(),
