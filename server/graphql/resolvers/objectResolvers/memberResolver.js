@@ -1,6 +1,7 @@
 // const { User } = require('../../../models/user');
 const { Members } = require('../../../models/membersModel');
 const { Skills } = require('../../../models/skillsModel');
+const { RoleTemplate } = require('../../../models/roleTemplateModal');
 const { Projects } = require('../../../models/projectsModel');
 const {ProjectUpdate } = require("../../../models/projectUpdateModal");
 const { Epic } = require("../../../models/epicModel");
@@ -46,6 +47,34 @@ module.exports = {
                err.extensions?.code || 'DATABASE_SEARCH_ERROR',
                {
                   component: 'userResolver > skills',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+      roles: async (parent, args, context, info) => {
+         // console.log("parent = " , parent)
+
+         try {
+            const roles = parent.roles;
+
+
+            const rolesID = roles._id
+
+
+
+            rolesData = await RoleTemplate.findOne({ _id: rolesID })
+            
+
+            console.log(rolesData)
+            return rolesData;
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > roles',
                   user: context.req.user?._id,
                }
             );
