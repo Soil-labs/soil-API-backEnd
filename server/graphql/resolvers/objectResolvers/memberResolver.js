@@ -59,14 +59,12 @@ module.exports = {
             const roles = parent.roles;
 
 
-            const rolesID = roles._id
+            rolesID = roles?._id
 
 
 
             rolesData = await RoleTemplate.findOne({ _id: rolesID })
             
-
-            console.log(rolesData)
             return rolesData;
 
          } catch (err) {
