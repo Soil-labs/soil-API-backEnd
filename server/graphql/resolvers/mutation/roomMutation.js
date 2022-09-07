@@ -151,11 +151,12 @@ module.exports = {
     },
 
 
-    addSkillsToMemberInRoom: async (parent, args, context, info) => {
+    updateMemberInRoom: async (parent, args, context, info) => {
 
-        const {skills, memberID, roomID} = args.fields;
-        console.log("Mutation > addSkillsToMemberInRoom > args.fields = " , args.fields)
-
+        const {discordName,discordAvatar,discriminator,bio,
+            hoursPerWeek,previusProjects,
+            interest,timeZone,level,skills,links,content,serverID, role, memberID, roomID} = args.fields;
+        console.log("Mutation > updateMemberInRoom > args.fields = " , args.fields)
           if (!memberID) throw new ApolloError( "memberID is required");
           if (!roomID) throw new ApolloError( "roomID is required");
 
@@ -164,7 +165,19 @@ module.exports = {
             registeredAt: new Date(),
           };
           
+          if (discordAvatar) fields =  {...fields,discordAvatar}
+          if (discordName) fields =  {...fields,discordName}
+          if (discriminator) fields =  {...fields,discriminator}
+          if (bio) fields =  {...fields,bio}
+          if (hoursPerWeek) fields =  {...fields,hoursPerWeek}
+          if (previusProjects) fields =  {...fields,previusProjects}
+          if (interest) fields =  {...fields,interest}
+          if (timeZone) fields =  {...fields,timeZone}
+          if (level) fields =  {...fields,level}
           if (skills) fields =  {...fields,skills}
+          if (links) fields =  {...fields,links}
+          if (content) fields =  {...fields,content}
+          if (role) fields =  {...fields,role}
           
           
       
@@ -173,21 +186,40 @@ module.exports = {
             let membersData = await Members.findOne({ _id: fields._id })
             let roomData = await Rooms.findOne({_id: roomID})
             console.log(roomData.members)
-            if(!roomData.members.includes(memberID)) throw new ApolloError( "Member Not in the room");
+            if(roomData && roomData.members && !roomData.members.includes(memberID)) throw new ApolloError( "Member Not in the room");
       
             if(membersData) {
                 membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true })
-                pubsub.publish("SKILL_UPDATED_IN_ROOM" + roomID, {
-                    newSkillInRoom: membersData
-                })
+            } else {
+                let newAttributes = {
+                    Director: 0,
+                    Motivator: 0,
+                    Inspirer: 0,
+                    Helper: 0,
+                    Supporter: 0,
+                    Coordinator: 0,
+                    Observer: 0,
+                    Reformer: 0,
+                }
+              
+                fields = {...fields, attributes: newAttributes};
+          
+                if (serverID) fields.serverID = serverID;
+          
+                membersData = await new Members(fields);
+                  
+                membersData.save()
             }
-            
+
+            pubsub.publish("MEMBER_UPDATED_IN_ROOM" + roomID, {
+                memberUpdatedInRoom: membersData
+            })
             return membersData
         } catch (err) {
             throw new ApolloError(
               err.message,
               err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-              { component: "roomMutaion > addSkillsToMemberInRoom"}
+              { component: "roomMutaion > updateMemberInRoom"}
             );
         }
     },
@@ -201,12 +233,12 @@ module.exports = {
         }
     },
 
-    newSkillInRoom: {
+    memberUpdatedInRoom: {
         subscribe: (parent, args, context, info) => {
             const {_id} = args.fields;
             console.log("Mutation > newSkillInRoom > args.fields = " , args.fields)
             if (!_id) throw new ApolloError( "_id is required, the IDs come from Discord");
-            return pubsub.asyncIterator("SKILL_UPDATED_IN_ROOM" + _id)
+            return pubsub.asyncIterator("MEMBER_UPDATED_IN_ROOM" + _id)
 
         }
     }
