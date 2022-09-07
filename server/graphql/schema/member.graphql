@@ -26,7 +26,6 @@ module.exports = `
         tweets: [String],
         skills: [skillType_member],
         projects: [projectMemberType],
-        role: RoleTemplate
         archiveProjects: [String],
         network: [Members],
 
@@ -201,7 +200,6 @@ module.exports = `
         hoursPerWeek: Float,
 
         previusProjects: [previusProjectsInput],
-        role: findRoleTemplatesInput,
 
         links: [linkInput],
 

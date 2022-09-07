@@ -2,6 +2,6 @@ module.exports = `
     type Subscription {
         memberUpdated(fields: findMembersInput): Members
         roomUpdated(fields: findRoomsInput): Rooms
-        memberUpdatedInRoom(fields: findRoomsInput): Members
+        newSkillInRoom(fields: findRoomsInput): Members
     }
 `

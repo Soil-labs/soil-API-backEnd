@@ -70,8 +70,6 @@ const memberSchema = mongoose.Schema({
     },
     favorite: Boolean,
   }],
-
-  role: mongoose.Schema.ObjectId,
   archiveProjects: [mongoose.Schema.ObjectId],
 
   previusProjects: [{
