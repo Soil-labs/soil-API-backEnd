@@ -151,46 +151,107 @@ module.exports = {
     },
 
 
-    addSkillsToMemberInRoom: async (parent, args, context, info) => {
+    updateMemberInRoom: async (parent, args, context, info) => {
 
-        const {skills, memberID, roomID} = args.fields;
-        console.log("Mutation > addSkillsToMemberInRoom > args.fields = " , args.fields)
-
-          if (!memberID) throw new ApolloError( "memberID is required");
-          if (!roomID) throw new ApolloError( "roomID is required");
-
+        const {discordName,memberID,discordAvatar,discriminator,bio,
+            hoursPerWeek,previusProjects,
+            interest,timeZone,level,skills,links,content,serverID,onbording,memberRole, roomID} = args.fields;
+      
+            console.log("Mutation > updateMemberInRoom > args.fields = " , args.fields)
+      
+          if (!memberID) throw new ApolloError( "member id is required");
+          if (!roomID) throw new ApolloError( "room id is required");
+      
           let fields = {
             _id: memberID,
             registeredAt: new Date(),
           };
-          
+      
+          if (discordAvatar) fields =  {...fields,discordAvatar}
+          if (discordName) fields =  {...fields,discordName}
+          if (discriminator) fields =  {...fields,discriminator}
+          if (bio) fields =  {...fields,bio}
+          if (hoursPerWeek) fields =  {...fields,hoursPerWeek}
+          if (previusProjects) fields =  {...fields,previusProjects}
+          if (interest) fields =  {...fields,interest}
+          if (timeZone) fields =  {...fields,timeZone}
+          if (level) fields =  {...fields,level}
           if (skills) fields =  {...fields,skills}
-          
+          if (links) fields =  {...fields,links}
+          if (content) fields =  {...fields,content}
+          if (memberRole) fields = {...fields, memberRole}
+      
+      
           
       
-        try {
+          try {
       
             let membersData = await Members.findOne({ _id: fields._id })
-            let roomData = await Rooms.findOne({_id: roomID})
-            console.log(roomData.members)
-            if(!roomData.members.includes(memberID)) throw new ApolloError( "Member Not in the room");
       
-            if(membersData) {
-                membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true })
-                pubsub.publish("SKILL_UPDATED_IN_ROOM" + roomID, {
-                    newSkillInRoom: membersData
-                })
+            if (!membersData ){
+              let newAttributes = {
+                Director: 0,
+                Motivator: 0,
+                Inspirer: 0,
+                Helper: 0,
+                Supporter: 0,
+                Coordinator: 0,
+                Observer: 0,
+                Reformer: 0,
+              }
+          
+              fields = {...fields, attributes: newAttributes};
+      
+              if (onbording) fields = {...fields, onbording: onbording}
+      
+              if (serverID) fields.serverID = serverID;
+      
+              membersData = await new Members(fields);
+              
+              membersData.save()
+      
+              //add member node to neo4j
+            } else {
+      
+              if (onbording){
+                if (onbording.signup!= undefined && onbording.percentage!= undefined){
+                  fields = {...fields, onbording: onbording}
+                } else if (onbording.signup!= undefined ){
+                  fields = {...fields, onbording: {...membersData.onbording, signup: onbording.signup}}
+                } else if (onbording.percentage!= undefined ){
+                  fields = {...fields, onbording: {...membersData.onbording, percentage: onbording.percentage}}
+                }
+              }
+      
+              if (!membersData.serverID){
+      
+                if (serverID) fields.serverID = serverID;
+              } else {
+                let serverID_new = [...membersData.serverID]
+                if (!membersData.serverID.includes(serverID)){
+                  serverID_new.push(serverID)
+                }
+                if (serverID) fields.serverID = serverID_new;
+      
+              }
+      
+              membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
+              
             }
-            
+       
+      
+            pubsub.publish("SKILL_UPDATED_IN_ROOM" + roomID, {
+              memberUpdatedInRoom: membersData
+            })
             return membersData
-        } catch (err) {
+          } catch (err) {
             throw new ApolloError(
               err.message,
               err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-              { component: "roomMutaion > addSkillsToMemberInRoom"}
+              { component: "tmemberQuery > findMember"}
             );
-        }
-    },
+          }
+        },
     roomUpdated: {
         subscribe: (parent, args, context, info) => {
             const {_id} = args.fields;
@@ -201,7 +262,7 @@ module.exports = {
         }
     },
 
-    newSkillInRoom: {
+    memberUpdatedInRoom: {
         subscribe: (parent, args, context, info) => {
             const {_id} = args.fields;
             console.log("Mutation > newSkillInRoom > args.fields = " , args.fields)
