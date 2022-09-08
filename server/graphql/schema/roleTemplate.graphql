@@ -2,7 +2,7 @@ module.exports = `
     
 
     type RoleTemplate {
-        _id: ID!
+        _id: ID
         title: String,
         description: String,
         skills: [Skills],  

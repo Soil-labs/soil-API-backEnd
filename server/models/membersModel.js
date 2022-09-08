@@ -115,6 +115,8 @@ const memberSchema = mongoose.Schema({
 
   registeredAt: Date,
 
+  memberRole: mongoose.Schema.ObjectId
+
 
 });
 

@@ -37,8 +37,11 @@ module.exports = `
 
         attributes: attributesType,
 
-        gardenUpdate: gardenUpdateType
+        gardenUpdate: gardenUpdateType,
+
+        memberRole: RoleTemplate
     }
+
 
     type onboardingType {
         signup: Boolean
