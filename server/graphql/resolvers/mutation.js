@@ -15,9 +15,8 @@ module.exports = {
     // ------------- MEMBER MUTATION -----------------
     addNewMember,
     updateMember,
-    addSkillToMember,
     endorseAttribute,
-    addFavoriteProject,
+    addFavoriteProject,addSkillToMember,
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,

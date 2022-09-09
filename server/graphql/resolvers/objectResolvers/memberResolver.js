@@ -11,6 +11,28 @@ const { RoleTemplate } = require('../../../models/roleTemplateModal');
 
 
 module.exports = {
+   skillType_member: {
+      skillInfo: async (parent, args, context, info) => {
+         try {
+            const skillID = parent.id;
+         
+            // console.log("skillID = " , skillID)
+            
+            const skillData = await Skills.findOne({ _id: skillID });
+            // console.log("parent = " , parent.id,skillData)
+
+            // console.log("skillData = " , skillData)
+
+
+            return skillData;
+
+            // skillsID = skills.map(skill=>{return (skill.id)})
+            
+         } catch (error) {
+            throw new ApolloError(error);
+         }
+      },
+   },
    Members: {
       skills: async (parent, args, context, info) => {
          // console.log("parent = " , parent)
@@ -18,28 +40,45 @@ module.exports = {
          try {
             const skills = parent.skills;
 
+            // console.log("parent._id = " , parent._id)
 
-            skillsID = skills.map(skill=>{return (skill.id)})
+            // console.log("skills = " , skills)
+
+
+            // skillsID = skills.map(skill=>{return (skill.id)})
 
 
 
-            skillData = await Skills.find({
-               $and: [
-                 { _id: skillsID },
-                 { state: "approved" },
-               ]})
+            // skillData = await Skills.find({
+            //    $and: [
+            //      { _id: skillsID },
+            //      { state: "approved" },
+            //    ]})
             
 
-            skillData_withAuthors = skillData.map((skillD,idx)=>{
+            // skillDaa_withAuthors = skillData.map((skillD,idx)=>{
+            //    return ({
+            //       skillInfo: skillD._doc,
+            //       authors: skills[idx].authors,
+            //       level: skills[idx].level,
+            //    })
+            // })
+
+            skillDaa_withAuthors = skills.map((skillD,idx)=>{
                return ({
-                  skillInfo: skillD._doc,
-                  authors: skills[idx].authors,
-                  level: skills[idx].level,
+                  skillInfo: skillD.id,
+                  authors: skillD.authors,
+                  level: skillD.level,
                })
             })
 
+            console.log("skillDaa_withAuthors = " , skillDaa_withAuthors)
 
-            return skillData_withAuthors;
+
+
+
+            // return skillData_withAuthors;
+            return skills;
 
          } catch (err) {
             throw new ApolloError(
