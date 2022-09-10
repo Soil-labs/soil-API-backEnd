@@ -4,9 +4,9 @@ const { Skills } = require('../../../models/skillsModel');
 const { Projects } = require('../../../models/projectsModel');
 const {ProjectUpdate } = require("../../../models/projectUpdateModal");
 const { Epic } = require("../../../models/epicModel");
-
+const {Role} = require("../../../models/roleModel");
 const { ApolloError } = require('apollo-server-express');
-const { RoleTemplate } = require('../../../models/roleTemplateModal');
+const {RoleTemplate} = require("../../../models/roleTemplateModal");
 
 
 
@@ -97,8 +97,11 @@ module.exports = {
          try {
             
             const memberRoleID = parent.memberRole
+
+            console.log("memberRoleID -- 222= " , memberRoleID)
             
             const memberRoleData = await RoleTemplate.findOne({_id: memberRoleID})
+            // const memberRoleData = await RoleTemplate.find({})
             
 
             console.log("memberObject Resolver > Member Role", memberRoleData)

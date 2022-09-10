@@ -199,6 +199,7 @@ module.exports = `
         serverID: String,
         skills: [skillInput_member]
         
+        memberRole: ID
 
         hoursPerWeek: Float,
 
