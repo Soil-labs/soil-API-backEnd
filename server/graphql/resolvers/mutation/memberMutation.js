@@ -126,7 +126,7 @@ module.exports = {
 
     const {discordName,_id,discordAvatar,discriminator,bio,
       hoursPerWeek,previusProjects,
-      interest,timeZone,level,skills,links,content,serverID,onbording} = args.fields;
+      interest,timeZone,level,skills,links,content,serverID,onbording,memberRole} = args.fields;
 
       console.log("Mutation > updateMember > args.fields = " , args.fields)
 
@@ -149,8 +149,10 @@ module.exports = {
     if (skills) fields =  {...fields,skills}
     if (links) fields =  {...fields,links}
     if (content) fields =  {...fields,content}
+    if (memberRole) fields =  {...fields,memberRole}
 
-
+  
+    console.log("memberRole = " , memberRole)
     
 
     try {
@@ -212,6 +214,7 @@ module.exports = {
 
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
 
+        console.log("membersData = " , membersData)
         if (fields.serverID){
            updateNode_neo4j_serverID({
             node:"Member",
