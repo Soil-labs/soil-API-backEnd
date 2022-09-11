@@ -13,6 +13,7 @@ module.exports = {
    
 
     const {_id,id_lightcast} = args.fields;
+    console.log("Query > findSkill > args.fields = " , args.fields)
 
     // if (!_id) throw new ApolloError( "You need to specify the id of the skill");
 
@@ -47,6 +48,7 @@ module.exports = {
    
 
     const {_id,id_lightcast} = args.fields;
+    console.log("Query > findSkills > args.fields = " , args.fields)
 
     let searchQuery = {}
 
@@ -113,6 +115,7 @@ module.exports = {
    
 
     const {search} = args.fields;
+    console.log("Query > skills_autocomplete > args.fields = " , args.fields)
 
     let collection = mongoose.connection.db.collection("skills")
 
@@ -149,6 +152,7 @@ module.exports = {
    
 
     const {_id} = args.fields;
+    console.log("Query > adminFindAllSkillsEveryState > args.fields = " , args.fields)
 
     let fields = {
     };
@@ -187,6 +191,7 @@ module.exports = {
   },
   waitingToAproveSkills: async (parent, args, context, info) => {
    
+    console.log("Query > waitingToAproveSkills > args.fields = " )
 
     let fields = {
     };

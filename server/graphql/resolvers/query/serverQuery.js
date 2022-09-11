@@ -10,6 +10,7 @@ module.exports = {
   findServers: async (parent, args, context, info) => {
    
     const {_id} = args.fields;
+    console.log("Query > findServers > args.fields = " , args.fields)
 
     try {
 

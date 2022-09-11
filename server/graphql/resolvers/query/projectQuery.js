@@ -17,7 +17,9 @@ const {
 module.exports = {
   findProject: async (parent, args, context, info) => {
    
-    const {_id,serverID} = args.fields;
+    const {_id,serverID,gardenServerID} = args.fields;
+    console.log("Query > findProject > args.fields = " , args.fields)
+
 
     if (!_id) throw new ApolloError("Project id is required");
 
@@ -38,8 +40,11 @@ module.exports = {
 
       if (queryServerID.length>0){
         projectData = await Projects.findOne({ $and:[{ _id: _id },{$or:queryServerID}]})
-      } else {
+      } else if (gardenServerID){
         console.log("change = " )
+        projectData = await Projects.findOne({ $and:[{ _id: _id },{gardenServerID:gardenServerID}]})
+        // projectData = await Projects.findOne({ _id: _id })
+      } else {
         projectData = await Projects.findOne({ _id: _id })
       }
 
@@ -57,8 +62,11 @@ module.exports = {
     }
   },
   findProjects: async (parent, args, context, info) => {
-   
-    const {_id,serverID} = args.fields;
+
+    
+    const {_id,serverID,gardenServerID} = args.fields;
+
+    console.log("Query > findProjects > args.fields = " , args.fields)
 
     let queryServerID = []
     if (serverID) {
@@ -69,17 +77,6 @@ module.exports = {
     
 
     try {
-
-
-      // let projectsData
-      // if (_id) {
-        
-      //   projectsData = await Projects.find({ _id: _id })
-      // } else {
-        
-
-      //   projectsData = await Projects.find({})
-      // }
     
       
       let projectsData
@@ -87,15 +84,20 @@ module.exports = {
       if (_id){
         if (queryServerID.length>0){
           projectsData = await Projects.find({ $and:[{ _id: _id },{$or:queryServerID}]})
+        } else if (gardenServerID){
+          projectsData = await Projects.find({ $and:[{ _id: _id },{gardenServerID:gardenServerID}]})
+          // projectsData = await Projects.find({ _id: _id })
         } else {
           projectsData = await Projects.find({ _id: _id })
         }
       } else{
         if (queryServerID.length>0){
           projectsData = await Projects.find({$or:queryServerID})
+        } else if (gardenServerID){
+          projectsData = await Projects.find({gardenServerID:gardenServerID})
+          // projectsData = await Projects.find({})
         } else {
           projectsData = await Projects.find({})
-
         }
       }
 
@@ -115,6 +117,8 @@ module.exports = {
   findProjects_RequireSkill: async (parent, args, context, info) => {
    
     const {skillID,serverID} = args.fields;
+    console.log("Query > findProjects_RequireSkill > args.fields = " , args.fields)
+
 
     let queryServerID = []
     if (serverID) {
@@ -157,6 +161,8 @@ module.exports = {
   findProjects_RecommendedToUser: async (parent, args, context, info) => {
    
     const {memberID,serverID} = args.fields;
+    console.log("Query > findProjects_RecommendedToUser > args.fields = " , args.fields)
+
 
     if (!memberID) throw new ApolloError("Member id is required");
 
@@ -246,6 +252,7 @@ module.exports = {
    
     // console.log("change = " )
     const {memberID,projectID,roleID,serverID} = args.fields;
+    console.log("Query > match_projectToUser > args.fields = " , args.fields)
 
     if (!memberID) throw new ApolloError("Member id is required");
     if (!projectID) throw new ApolloError("Project id is required");
@@ -351,6 +358,7 @@ module.exports = {
   findTeams: async (parent, args, context, info) => {
    
     const {_id,projectID,serverID} = args.fields;
+    console.log("Query > findTeams > args.fields = " , args.fields)
 
     let queryServerID = []
     if (serverID) {
@@ -424,6 +432,7 @@ module.exports = {
   findRoles: async (parent, args, context, info) => {
    
     const {_id,serverID,projectID,teamID} = args.fields;
+    console.log("Query > findRoles > args.fields = " , args.fields)
 
     // console.log("change = " )
 
@@ -485,6 +494,7 @@ module.exports = {
   findEpic: async (parent, args, context, info) => {
    
     const {_id,serverID,projectID,teamID} = args.fields;
+    console.log("Query > findEpic > args.fields = " , args.fields)
 
 
     let queryServerID = []

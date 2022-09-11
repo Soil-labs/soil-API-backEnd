@@ -10,6 +10,8 @@ module.exports = `
         discriminator: String
         bio: String
 
+        onbording: onboardingType
+
         content: contentType
         
         interest: String
@@ -35,7 +37,16 @@ module.exports = `
 
         attributes: attributesType,
 
-        gardenUpdate: gardenUpdateType
+        gardenUpdate: gardenUpdateType,
+
+        memberRole: RoleTemplate
+    }
+
+
+    type onboardingType {
+        signup: Boolean
+        percentage: Int
+
     }
 
     type gardenUpdateType {
@@ -180,12 +191,16 @@ module.exports = `
         discordAvatar: String
         discriminator: String
         bio: String
+
+        onbording: onboardingInput
+
         content: contentInput
         interest: String
         timeZone: String
         serverID: String,
         skills: [skillInput_member]
         
+        memberRole: ID
 
         hoursPerWeek: Float,
 
@@ -193,6 +208,11 @@ module.exports = `
 
         links: [linkInput],
 
+    }
+
+    input onboardingInput {
+        signup: Boolean
+        percentage: Int
     }
 
     input contentInput {
@@ -216,6 +236,7 @@ module.exports = `
         projectID: ID
         favorite: Boolean
     }
+
 
     input endorseAttributeInput {
         _id: ID
