@@ -2,6 +2,9 @@
 const { Members } = require("../../../models/membersModel");
 const mongoose = require("mongoose");
 const { Projects } = require("../../../models/projectsModel");
+const { driver } = require("../../../../server/neo4j_config");
+
+const {projectToMember_match} = require("../../../neo4j/func_neo4j");
 
 
 const {
@@ -314,14 +317,35 @@ module.exports = {
       } else {
         projectMatch_User = await Projects.find({ _id: projectID })
       }
+      // console.log("projectMatch_User = " , projectMatch_User)
+
+      // ------------ WiseTy -----------------
+
+      console.log("change = 22" )
+      result = await projectToMember_match({projectID:"630c18e7b9854c303ccd99fc"})
+
+      console.log("result 22-2-2 = " , result)
+
+      matchMembers = []
+      matchIDs = []
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < result[i].length; j++) {
+          if (matchIDs.includes(result[i][j]._id)) continue
+          matchIDs.push(result[i][j]._id)
+          // matchMembers.push(result[i][j])
+          matchMembers.push({
+            member: result[i][j]._id,
+            matchPercentage: (3-i)*30,
+          })
+        }
+      }
+
+      console.log("matchMembers = " , matchMembers)
 
       // ------------ WiseTy -----------------
 
 
-      // ------------ WiseTy -----------------
-
-
-      return [{}]
+      return matchMembers
     } catch (err) {
       throw new ApolloError(
         err.message,

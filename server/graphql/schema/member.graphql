@@ -114,6 +114,7 @@ module.exports = `
         points: Float,
     }
 
+    
     type matchMembersToUserOutput {
         matchPercentage: Float,
         member: Members,
