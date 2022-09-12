@@ -1,6 +1,7 @@
 const { Members } = require("../../../models/membersModel");
 const { Skills } = require("../../../models/skillsModel");
 const { Projects } = require("../../../models/projectsModel");
+const { RoleTemplate } = require("../../../models/roleTemplateModal");
 
 const {ApolloError} = require("apollo-server-express");
 const { driver } = require("../../../../server/neo4j_config");
@@ -126,7 +127,9 @@ module.exports = {
 
     const {discordName,_id,discordAvatar,discriminator,bio,
       hoursPerWeek,previusProjects,
-      interest,timeZone,level,skills,links,content,serverID,onbording,memberRole} = args.fields;
+      interest,timeZone,level,links,content,serverID,onbording,memberRole} = args.fields;
+
+      let {skills} = args.fields;
 
       console.log("Mutation > updateMember > args.fields = " , args.fields)
 
@@ -146,18 +149,53 @@ module.exports = {
     if (interest) fields =  {...fields,interest}
     if (timeZone) fields =  {...fields,timeZone}
     if (level) fields =  {...fields,level}
-    if (skills) fields =  {...fields,skills}
+    
     if (links) fields =  {...fields,links}
     if (content) fields =  {...fields,content}
     if (memberRole) fields =  {...fields,memberRole}
 
-  
-    console.log("memberRole = " , memberRole)
+
+    let membersData = await Members.findOne({ _id: fields._id })
     
+
+    console.log("memberRole = " , memberRole)
+    console.log("skills = " , skills)
+    console.log("membersData.skills = " , membersData.skills)
+
+    // -------- Role -> Skill -----------
+    if (memberRole){
+      let roleTemplateData = await RoleTemplate.findOne({_id:memberRole})
+      if (roleTemplateData){
+        
+        if (!skills){
+          skills = membersData.skills
+        }
+
+        skillID = []
+        skills.forEach((skill)=>{
+          skillID.push(skill.id.toString())
+        })
+        
+        roleTemplateData.skills.forEach((skill)=>{
+          if (!skillID.includes(skill.toString())){
+            skills.push({
+              id: skill,
+              level: 'mid'
+            })
+          }
+        })
+
+
+      }
+    }
+    // -------- Role -> Skill -----------
+    // console.log("skills = " , skills)
+    // asdf
+
+    if (skills) fields =  {...fields,skills}
 
     try {
 
-      let membersData = await Members.findOne({ _id: fields._id })
 
       if (!membersData ){
         let newAttributes = {
@@ -176,6 +214,9 @@ module.exports = {
         if (onbording) fields = {...fields, onbording: onbording}
 
         if (serverID) fields.serverID = serverID;
+
+
+        
 
         membersData = await new Members(fields);
         
