@@ -12,6 +12,7 @@ const {
   waitingToAproveSkills,
   adminFindAllSkillsEveryState,
   skills_autocomplete,
+  skills,
 } = require("./query/skillsQuery");
 
 const {
@@ -75,7 +76,7 @@ module.exports = {
     findSkills,
     waitingToAproveSkills,
     adminFindAllSkillsEveryState,
-
+    skills,
     skills_autocomplete,
 
     // ------------- ROLE TEMPLATE QUERY -----------------

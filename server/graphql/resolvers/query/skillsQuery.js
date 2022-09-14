@@ -3,7 +3,9 @@ const { Skills } = require("../../../models/skillsModel");
 const mongoose = require("mongoose");
 
 const { ApolloError } = require("apollo-server-express");
+const e = require("express");
 
+const DEFAULT_PAGE_LIMIT = 20;
 
 module.exports = {
   findSkill: async (parent, args, context, info) => {
@@ -86,7 +88,112 @@ module.exports = {
       );
     }
   },
+  skills: async (parent, args, context, info) => {
+    const { request, id_lightcast, after, before, limit, sortBy } = args.fields;
+    console.log("Query > findSkills > args.fields = ", args.fields);
 
+    let _id = request && request._id ? request._id : null;
+
+    let options = {
+      limit: limit || DEFAULT_PAGE_LIMIT,
+    };
+
+    if (sortBy) {
+      options.field = sortBy.field || "_id";
+      options.sort = {
+        [sortBy.field]: sortBy.direction == "ASC" ? 1 : -1,
+      };
+      options.direction = sortBy.direction == "ASC" ? 1 : -1;
+    } else {
+      options.field = "_id";
+      options.sort = {
+        _id: 1,
+      };
+      options.direction = 1;
+    }
+
+    let than_key_next = options.direction === 1 ? "$gt" : "$lt";
+    let than_key_prev = options.direction === -1 ? "$gt" : "$lt";
+
+    if (after) {
+      let after_key = after;
+      if (options.field === "_id") after_key = mongoose.Types.ObjectId(after);
+      options.filters = {
+        [options.field]: {
+          [than_key_next]: after_key,
+        },
+      };
+    } else if (before) {
+      let before_key = before;
+      if (options.field === "_id") before_key = mongoose.Types.ObjectId(before);
+      options.filters = {
+        [options.field]: {
+          [than_key_prev]: before_key,
+        },
+      };
+      options.sort[options.field] = -1 * options.sort[options.field];
+    }
+
+    let searchQuery = {};
+    if (_id) {
+      searchQuery = {
+        $and: [{ _id: _id }, { state: "approved" }],
+      };
+    } else if (id_lightcast) {
+      searchQuery = {
+        $and: [{ id_lightcast: id_lightcast }, { state: "approved" }],
+      };
+    } else {
+      searchQuery = {
+        $and: [{ state: "approved" }],
+      };
+    }
+
+    try {
+      let data = await Skills.find({ ...searchQuery, ...options.filters })
+        .sort(options.sort)
+        .limit(options.limit);
+
+      if (before) data.reverse();
+
+      let hasNextPage =
+        data.length > 0
+          ? !!(await Skills.findOne({
+              ...searchQuery,
+              [options.field]: {
+                [than_key_next]: data[data.length - 1][options.field],
+              },
+            }))
+          : !!before;
+
+      let hasPrevPage =
+        data.length > 0
+          ? !!(await Skills.findOne({
+              ...searchQuery,
+              [options.field]: {
+                [than_key_prev]: data[0][options.field],
+              },
+            }))
+          : !!after;
+
+      return {
+        data,
+        pageInfo: {
+          hasNextPage,
+          hasPrevPage,
+          start: data.length > 0 ? data[0][options.field] : after,
+          end: data.length > 0 ? data[data.length - 1][options.field] : before,
+        },
+      };
+    } catch (err) {
+      console.error(err);
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findSkill" }
+      );
+    }
+  },
   skills_autocomplete: async (parent, args, context, info) => {
     const { search } = args.fields;
     console.log("Query > skills_autocomplete > args.fields = ", args.fields);

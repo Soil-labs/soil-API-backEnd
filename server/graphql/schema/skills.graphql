@@ -68,6 +68,42 @@ module.exports = `
         rejected
         approved
     }
+
+    enum SortableSkillFields {
+        _id
+        name
+        registeredAt
+    }
+
+    enum SortDirection {
+        ASC
+        DESC
+    }
     
+    input findSkillsInputPaginated {
+        request: findSkillsInput
+        after: String
+        before: String
+        limit: Int
+        sortBy: SortBySkill
+    }
+
+    input SortBySkill {
+        field: SortableSkillFields,
+        direction: SortDirection
+    }
+
+
+    type PaginatedSkills {
+        data: [Skills]
+        pageInfo: PageInfo
+    }
+
+    type PageInfo {
+        hasNextPage : Boolean
+        hasPrevPage: Boolean
+        start : String
+        end: String
+    }
 
 `

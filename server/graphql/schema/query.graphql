@@ -30,7 +30,7 @@ module.exports = `
             findSkills(fields:findSkillsInput): [Skills]
             waitingToAproveSkills(fields:findSkillsInput): [Skills]
             adminFindAllSkillsEveryState(fields:findSkillsInput): [Skills]
-
+            skills(fields:findSkillsInputPaginated): PaginatedSkills
             skills_autocomplete(fields:skills_autocompleteInput): [Skills]
 
 
