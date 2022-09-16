@@ -107,7 +107,7 @@ async function main() {
         useCreateIndex: true,
       }
     )
-    .then(() => console.log("Connected to db - 2"))
+    .then(() => console.log("Connected to db"))
     .catch((err) => console.log(err.message));
 
   // Data parsing
