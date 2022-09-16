@@ -22,9 +22,28 @@ module.exports = `
         memberID: ID
     }
 
-    input addSkillsToMemberInRoomInput {
+    input updateMemberInRoomInput {
         roomID: ID
         memberID: ID
+        discordName: String
+        discordAvatar: String
+        discriminator: String
+        bio: String
+
+        onbording: onboardingInput
+
+        content: contentInput
+        interest: String
+        timeZone: String
+        serverID: String,
         skills: [skillInput_member]
+        memberRole: findRoleTemplateInput
+        
+
+        hoursPerWeek: Float,
+
+        previusProjects: [previusProjectsInput],
+
+        links: [linkInput],
     }
 `

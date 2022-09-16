@@ -12,7 +12,7 @@ const skillSubCategorySchema = mongoose.Schema({
   skills: [mongoose.Schema.ObjectId],
 
   id_lightcast: String,
-
+ 
   emoji: String,
 
 });

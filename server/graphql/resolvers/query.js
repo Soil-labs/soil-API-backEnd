@@ -3,7 +3,7 @@ const {
   findMembers,
   matchMembersToUser,
   matchMembersToSkills,
-  matchMembersToProject,
+  matchMembersToProject,matchMembersToProjectRole,
   members_autocomplete,
 } = require("./query/memberQuery");
 const {
@@ -68,7 +68,7 @@ module.exports = {
     findMembers,
     matchMembersToUser,
     matchMembersToSkills,
-    matchMembersToProject,
+    matchMembersToProject,matchMembersToProjectRole,
     members_autocomplete,
 
     // ------------- SKILL QUERY -----------------

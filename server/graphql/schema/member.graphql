@@ -37,8 +37,11 @@ module.exports = `
 
         attributes: attributesType,
 
-        gardenUpdate: gardenUpdateType
+        gardenUpdate: gardenUpdateType,
+
+        memberRole: RoleTemplate
     }
+
 
     type onboardingType {
         signup: Boolean
@@ -111,6 +114,7 @@ module.exports = `
         points: Float,
     }
 
+    
     type matchMembersToUserOutput {
         matchPercentage: Float,
         member: Members,
@@ -124,6 +128,12 @@ module.exports = `
     }
 
     type matchMembersToProjectOutput {
+        matchPercentage: Float,
+        member: Members,
+        commonSkills: [Skills]
+    }
+
+    type matchMembersToProjectRoleOutput {
         matchPercentage: Float,
         member: Members,
         commonSkills: [Skills]
@@ -163,6 +173,11 @@ module.exports = `
         serverID: [String]
     }
 
+    input matchMembersToProjectRoleInput {
+        projectRoleID: ID
+        serverID: [String]
+    }
+
     input addNewMemberInput {
         _id: ID
         discordName: String
@@ -196,6 +211,7 @@ module.exports = `
         serverID: String,
         skills: [skillInput_member]
         
+        memberRole: ID
 
         hoursPerWeek: Float,
 
@@ -231,6 +247,7 @@ module.exports = `
         projectID: ID
         favorite: Boolean
     }
+
 
     input endorseAttributeInput {
         _id: ID

@@ -52,7 +52,7 @@ module.exports = `
         createRoom(fields: createRoomInput!): Rooms
         enterRoom(fields: enterRoomInput!): Rooms
         exitRoom(fields: enterRoomInput!): Rooms
-        addSkillsToMemberInRoom(fields: addSkillsToMemberInRoomInput): Members
+        updateMemberInRoom(fields: updateMemberInRoomInput): Members
 
     }
 `

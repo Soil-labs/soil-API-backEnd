@@ -122,10 +122,7 @@ module.exports = `
         skills: [skillRoleType]
 
         archive: Boolean
-        dateRangeStart: String
-        dateRangeEnd: String
-        hoursPerWeek: Int
-        budget: budgetType
+        
     }
 
     
@@ -335,6 +332,12 @@ module.exports = `
         memberID: ID
         projectID: ID
         roleID: ID
+        serverID: [String]
+    }
+
+
+    input matchProjectsToMemberInput {
+        memberID: ID
         serverID: [String]
     }
 

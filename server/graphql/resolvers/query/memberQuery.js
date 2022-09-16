@@ -2,6 +2,9 @@
 const { Members } = require("../../../models/membersModel");
 const mongoose = require("mongoose");
 const { Projects } = require("../../../models/projectsModel");
+const { driver } = require("../../../../server/neo4j_config");
+
+const {matchMembersToProject_neo4j,matchMembersToProjectRole_neo4j} = require("../../../neo4j/func_neo4j");
 
 
 const {
@@ -305,8 +308,6 @@ module.exports = {
      
     try {
 
-
-
       let project
 
       if (queryServerID.length>0){
@@ -314,14 +315,115 @@ module.exports = {
       } else {
         projectMatch_User = await Projects.find({ _id: projectID })
       }
+      // console.log("projectMatch_User = " , projectMatch_User)
+
+      // ------------ WiseTy -----------------
+
+      console.log("change = 22" )
+      result = await matchMembersToProject_neo4j({projectID:"630c18e7b9854c303ccd99fc"})
+
+      console.log("result 22-2-2 = " , result)
+
+      matchMembers = []
+      matchIDs = []
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < result[i].length; j++) {
+          if (matchIDs.includes(result[i][j]._id)) continue
+          matchIDs.push(result[i][j]._id)
+          // matchMembers.push(result[i][j])
+          matchMembers.push({
+            member: result[i][j]._id,
+            matchPercentage: (3-i)*30,
+          })
+        }
+      }
+
+      console.log("matchMembers = " , matchMembers)
 
       // ------------ WiseTy -----------------
 
 
+      return matchMembers
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+
+  matchMembersToProjectRole: async (parent, args, context, info) => {
+       
+    const {projectRoleID,serverID} = args.fields;
+    console.log("Query > matchMembersToProjectRole > args.fields = " , args.fields)
+
+    if (!projectRoleID) throw new ApolloError("projectID is required");
+    
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
+
+    console.log("projectRoleID = " , projectRoleID)
+
+     
+    try {
+      
+      let project
+
+      let projectMatch_User = await Projects.findOne({ "role._id": projectRoleID })
+
+      let projectRoleMatch ={}
+
+      projectMatch_User.role.filter(roleNow => {
+        if (roleNow._id.equals(projectRoleID)==true){
+          projectRoleMatch = roleNow
+          
+        }
+      })
+
+
+
+      console.log("projectMatch_User = " , projectMatch_User)
+      console.log("projectMatch_User.role = " , projectMatch_User.role)
+      console.log("projectRoleMatch = " , projectRoleMatch)
+
+      // console.log("projectMatch_User = " , projectMatch_User)
+
+      // ------------ WiseTy -----------------
+
+      console.log("change = 22" )
+      result = await matchMembersToProjectRole_neo4j({projectRoleID:projectRoleMatch._id})
+
+      console.log("result 22-2-2 = " , result)
+
+      matchMembers = []
+      matchIDs = []
+      for (let i = 0; i < 3; i++) {
+        
+        if (!result[i]) continue
+
+        for (let j = 0; j < result[i].length; j++) {
+          if (matchIDs.includes(result[i][j]._id)) continue
+          matchIDs.push(result[i][j]._id)
+          // matchMembers.push(result[i][j])
+          matchMembers.push({
+            member: result[i][j]._id,
+            matchPercentage: (3-i)*30,
+          })
+        }
+      }
+
+      console.log("matchMembers = " , matchMembers)
+
       // ------------ WiseTy -----------------
 
 
-      return [{}]
+      return matchMembers
+      // return [{}]
     } catch (err) {
       throw new ApolloError(
         err.message,
