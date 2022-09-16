@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const { Projects } = require("../../../models/projectsModel");
 const { driver } = require("../../../../server/neo4j_config");
 
-const {matchMembersToProject_neo4j,matchMembersToProjectRole_neo4j} = require("../../../neo4j/func_neo4j");
+const {matchMembersToProject_neo4j,matchMembersToProjectRole_neo4j,matchProjectsToMember_neo4j} = require("../../../neo4j/func_neo4j");
 
 
 const {
@@ -403,7 +403,7 @@ module.exports = {
       matchMembers = []
       matchIDs = []
       for (let i = 0; i < 3; i++) {
-        
+
         if (!result[i]) continue
 
         for (let j = 0; j < result[i].length; j++) {
@@ -414,6 +414,103 @@ module.exports = {
             member: result[i][j]._id,
             matchPercentage: (3-i)*30,
           })
+        }
+      }
+
+      console.log("matchMembers = " , matchMembers)
+
+      // ------------ WiseTy -----------------
+
+
+      return matchMembers
+      // return [{}]
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+  matchProjectsToMember: async (parent, args, context, info) => {
+       
+    const {memberID,serverID} = args.fields;
+    console.log("Query > matchMembersToProjectRole > args.fields = " , args.fields)
+
+    if (!memberID) throw new ApolloError("projectID is required");
+    
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
+
+    // console.log("projectRoleID = " , projectRoleID)
+
+     
+    try {
+      
+      // let project
+
+      let memberData = await Members.findOne({ "_id": memberID })
+
+      if (!memberData) throw new ApolloError("member is not in the database");
+
+      console.log("memberData = " , memberData)
+
+   
+      // ------------ WiseTy -----------------
+
+      console.log("change = 22" )
+      result = await matchProjectsToMember_neo4j({memberID:memberData._id})
+
+      console.log("result 22-2-2 = " , result)
+
+      matchMembers = []
+      matchIDs = []
+      for (let i = 0; i < 3; i++) {
+        
+        if (!result[i]) continue
+
+        for (let j = 0; j < result[i].length; j++) {
+
+          if (matchIDs.includes(result[i][j].project._id)) {
+
+            let pos = matchIDs.indexOf(result[i][j].project._id)
+
+            console.log("pos = " , pos)
+
+            if (!matchMembers[pos].roleID.includes(result[i][j].role.properties._id)) {
+              // console.log("=------- result[i][j].role.properties = " , result[i][j].role.properties)
+              // matchMembers[pos].role.push(result[i][j].role.properties)
+              matchMembers[pos].role.push({
+                roleID: result[i][j].role.properties._id,
+                matchPercentage: (3-i)*30,
+              })
+              matchMembers[pos].roleID.push(result[i][j].role.properties._id)
+            }
+
+
+            
+
+          } else {
+
+            matchIDs.push(result[i][j].project._id)
+            // matchMembers.push(result[i][j].project)
+            // console.log("result[i][j].role.properties = " , result[i][j].role.properties)
+            
+            matchMembers.push({
+              projectID: result[i][j].project._id,
+              // role: [{result[i][j].role.properties}],
+              role:[{
+                roleID:result[i][j].role.properties._id,
+                matchPercentage: (3-i)*30,
+              }],
+              roleID: [result[i][j].role.properties._id],
+              matchPercentage: (3-i)*30,
+            })
+          }
         }
       }
 

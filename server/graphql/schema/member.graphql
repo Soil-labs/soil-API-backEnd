@@ -139,6 +139,34 @@ module.exports = `
         commonSkills: [Skills]
     }
 
+    type matchProjectsToMemberOutput {
+        # matchProject: MatchProjectInfo
+        project: Project
+        matchPercentage: Int
+        relatedSkills: [Skills]
+        matchProjectRoles: [MatchProjectRole]
+    }
+
+    type MatchProjectRole {
+        roleID: ID
+        matchPercentage: Int
+        relatedSkills: [Skills]
+    }
+
+    # type ProjectRole {
+    #     _id: ID
+    #     # title: String
+    #     # content: ProjectRoleContent
+
+    #     skills: [Skills]
+
+    #     # phase: PhaseProjectRoleEnum
+    # }
+
+    # type SkillAndLevel  {
+    #     info: Skills
+    #     level: levelEnum
+    # }
 
    
     
@@ -175,6 +203,11 @@ module.exports = `
 
     input matchMembersToProjectRoleInput {
         projectRoleID: ID
+        serverID: [String]
+    }
+
+    input matchProjectsToMemberInput {
+        memberID: ID
         serverID: [String]
     }
 

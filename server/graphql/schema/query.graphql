@@ -23,6 +23,7 @@ module.exports = `
             matchMembersToSkills(fields:matchMembersToSkillInput): [matchMembersToSkillOutput]
             matchMembersToProject(fields:matchMembersToProjectInput): [matchMembersToProjectOutput]
             matchMembersToProjectRole(fields:matchMembersToProjectRoleInput): [matchMembersToProjectRoleOutput]
+            matchProjectsToMember(fields:matchProjectsToMemberInput): [matchProjectsToMemberOutput]
 
             members_autocomplete(fields:members_autocompleteInput): [Members]
 
@@ -61,9 +62,9 @@ module.exports = `
           findRoom(fields: findRoomsInput): Rooms
 
 
-          # ----------- MATCH -----------
-          matchProjectsToMember(fields:matchProjectsToMemberInput): [Project]
-          # ----------- MATCH -----------
+          # # ----------- MATCH -----------
+          # matchProjectsToMember(fields:matchProjectsToMemberInput): [Project]
+          # # ----------- MATCH -----------
 
    
             

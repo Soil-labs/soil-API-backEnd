@@ -363,6 +363,60 @@ module.exports = {
          }
       },
    },
+   matchProjectsToMemberOutput: {
+      project: async (parent, args, context, info) => {
+         // console.log("parent 22322= " , parent)
+
+         try {
+            const projectID = parent.projectID;
+
+
+            projectData = await Projects.findOne({_id: projectID})
+            
+
+
+
+            return projectData;
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > skills',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+      matchProjectRoles: async (parent, args, context, info) => {
+         console.log("parent 22322= " , parent)
+
+         try {
+            // const projectID = parent.projectID;
+
+
+            // projectData = await Projects.findOne({_id: projectID})
+            
+
+
+
+            // return projectData;
+
+            return parent.role
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > skills',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+   },
    matchMembersToSkillOutput: {
       commonSkills: async (parent, args, context, info) => {
          console.log("parent 22322= " , parent)

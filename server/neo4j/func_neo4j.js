@@ -405,6 +405,125 @@ module.exports = {
         // return([member_oneHopeMatch,member_twoHopeMatch])
         return([member_oneHopeMatch,member_twoHopeMatch,member_threeHopeMatch])
 
+    },
+    matchProjectsToMember_neo4j: async (req, res) => {
+        console.log("change = 111" )
+        const {memberID } = req;
+
+        const session = driver.session({database:"neo4j"});
+
+        // console.log("change = 1",projectID)
+
+
+
+        // ----------------- One Hope -----------------
+        result_oneHopeMatch = await session.writeTransaction(tx => 
+            tx.run(`//oneHopMemberToProjects
+            MATCH (p:Project)-[]-(r:Role)-[]-(s:Skill)
+            MATCH (s)-[]-(m:Member{_id: '${memberID}'})
+            WHERE NOT (m)-[]-(p)
+            RETURN (p)-[]-(r)-[]-(s)-[]-(m)`)
+        )
+
+        let names_oneHopeMatch = result_oneHopeMatch.records.map(row => {
+            return row
+        })
+        member_oneHopeMatch = []
+        if (names_oneHopeMatch.length>0){
+            for (let i = 0; i<names_oneHopeMatch.length; ++i) {
+                if (names_oneHopeMatch[i] && names_oneHopeMatch[i]._fields && names_oneHopeMatch[i]._fields[0][0]){
+                    if (names_oneHopeMatch[i]._fields[0][0].start && names_oneHopeMatch[i]._fields[0][0].start.properties){
+                        console.log("names_oneHopeMatch[i]._fields[0][0] = " , names_oneHopeMatch[i]._fields[0][0].segments[0].start)
+                        console.log("names_oneHopeMatch[i]._fields[0][0] = " , names_oneHopeMatch[i]._fields[0][0].segments[1].start)
+                        console.log("names_oneHopeMatch[i]._fields[0][0] = " , names_oneHopeMatch[i]._fields[0][0].segments[2].start)
+                        // member_oneHopeMatch.push(names_oneHopeMatch[i]._fields[0][0].start.properties)
+                        member_oneHopeMatch.push({
+                            project: names_oneHopeMatch[i]._fields[0][0].start.properties,
+                            role: names_oneHopeMatch[i]._fields[0][0].segments[1].start,
+                        })
+                    }
+                }
+            }
+        }
+        // ----------------- One Hope -----------------
+
+        // console.log("change = " , member_oneHopeMatch)
+        // ----------------- Two Hope -----------------
+        result_twoHopeMatch = await session.writeTransaction(tx => 
+            tx.run(`//twoHopMemberMatch
+            MATCH (p:Project)-[]-(r:Role)-[]-(s:Skill)
+            MATCH (s)-[]-(o:Skill)
+            MATCH (o)-[]-(m:Member{_id: '${memberID}'})
+            WHERE NOT (m)-[]-(p)
+            RETURN (p)-[]-(r)-[]-(s)-[]-(o)-[]-(m)`)
+        )
+        
+        let names_twoHopeMatch = result_twoHopeMatch.records.map(row => {
+            return row
+        })
+        member_twoHopeMatch = []
+        if (names_twoHopeMatch.length>0){
+            for (let i = 0; i<names_twoHopeMatch.length; ++i) {
+                if (names_twoHopeMatch[i] && names_twoHopeMatch[i]._fields && names_twoHopeMatch[i]._fields[0][0]){
+                    if ( names_twoHopeMatch[i]._fields[0][0].start && names_twoHopeMatch[i]._fields[0][0].start.properties){
+                        // console.log("names_twoHopeMatch[i]._fields[0][0] = " , names_twoHopeMatch[i])
+
+                        // console.log("names_twoHopeMatch[i]._fields[0][0] = " , names_twoHopeMatch[i]._fields[0][0].segments[0].start)
+                        // console.log("names_twoHopeMatch[i]._fields[0][0] = " , names_twoHopeMatch[i]._fields[0][0].segments[1].start)
+                        // console.log("names_twoHopeMatch[i]._fields[0][0] = " , names_twoHopeMatch[i]._fields[0][0].segments[2].start)
+                        // names_twoHopeMatch.push(names_twoHopeMatch[i]._fields[0][0].start.properties)
+                        member_twoHopeMatch.push({
+                            project: names_twoHopeMatch[i]._fields[0][0].start.properties,
+                            role: names_twoHopeMatch[i]._fields[0][0].segments[1].start,
+                        })
+                    }
+                }
+            }
+        }
+        // console.log("member_twoHopeMatch = " , member_twoHopeMatch)
+        // ----------------- Two Hope -----------------
+
+        // ----------------- Three Hope -----------------
+        result_threeHopeMatch = await session.writeTransaction(tx =>
+            tx.run(`//threeHopMemberToProjects
+            MATCH (p:Project)-[]-(r:Role)-[]-(s:Skill)-[]-(o:Skill)-[]-(q:Skill)
+            MATCH (q)-[]-(m:Member{_id:'${memberID}'})
+            WHERE NOT (m)-[]-(p)
+            RETURN (p)-[]-(r)-[]-(s)-[]-(o)-[]-(q)-[]-(m)`)
+        )
+        let names_threeHopeMatch = result_threeHopeMatch.records.map(row => {
+            return row
+        })
+        member_threeHopeMatch = []
+        if (names_threeHopeMatch.length>0){
+            for (let i = 0; i<names_threeHopeMatch.length; ++i) {
+                if (names_threeHopeMatch[i] && names_threeHopeMatch[i]._fields && names_threeHopeMatch[i]._fields[0][0]){
+                    if (names_threeHopeMatch[i]._fields[0][0].start && names_threeHopeMatch[i]._fields[0][0].start.properties){
+                        // member_threeHopeMatch.push(names_threeHopeMatch[i]._fields[0][0].start.properties)
+                        member_threeHopeMatch.push({
+                            project: names_threeHopeMatch[i]._fields[0][0].start.properties,
+                            role: names_threeHopeMatch[i]._fields[0][0].segments[1].start,
+                        })
+                    }
+                }
+            }
+        }
+        // ----------------- Three Hope -----------------
+
+
+        session.close()
+        
+
+        // return({
+        //     oneHopeMatch: member_oneHopeMatch,
+        //     twoHopeMatch: member_twoHopeMatch,
+        //     threeHopeMatch: member_threeHopeMatch
+        // })
+
+        // return([member_oneHopeMatch])
+        // return([member_oneHopeMatch,member_twoHopeMatch])
+        return([member_oneHopeMatch,member_twoHopeMatch,member_threeHopeMatch])
+
     }
 }
 
