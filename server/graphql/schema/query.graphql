@@ -58,6 +58,12 @@ module.exports = `
 
           #------------ROOM QUERY ---------
           findRoom(fields: findRoomsInput): Rooms
+
+
+          # ----------- MATCH -----------
+          matchProjectsToMember(fields:matchProjectsToMemberInput): [Project]
+          # ----------- MATCH -----------
+
    
             
         }

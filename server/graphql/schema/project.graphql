@@ -335,6 +335,12 @@ module.exports = `
         serverID: [String]
     }
 
+
+    input matchProjectsToMemberInput {
+        memberID: ID
+        serverID: [String]
+    }
+
     input findTeamsInput {
         _id: [ID]
         projectID: [ID]
