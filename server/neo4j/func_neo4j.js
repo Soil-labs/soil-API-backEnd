@@ -213,10 +213,12 @@ module.exports = {
         
     },
     matchMembersToProject_neo4j: async (req, res) => {
-        console.log("change = 111" )
+        console.log("change = 11100011" )
         const {projectID } = req;
 
         const session = driver.session({database:"neo4j"});
+
+        console.log("change = 0011001 ")
 
         console.log("change = 1",projectID)
 
@@ -310,10 +312,11 @@ module.exports = {
 
     },
     matchMembersToProjectRole_neo4j: async (req, res) => {
-        console.log("change = 111" )
+        console.log("change = 11100011" )
         const {projectRoleID } = req;
 
         const session = driver.session({database:"neo4j"});
+        console.log("change = 0011001 ")
 
         // console.log("change = 1",projectID)
 
@@ -326,6 +329,8 @@ module.exports = {
             WHERE NOT (m)-[]-(p)
             RETURN (r)-[]-(s)-[]-(m)`)
         )
+
+        console.log("change = 03" )
 
         let names_oneHopeMatch = result_oneHopeMatch.records.map(row => {
             return row
