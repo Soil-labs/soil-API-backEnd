@@ -410,6 +410,210 @@ module.exports = {
         // return([member_oneHopeMatch,member_twoHopeMatch])
         return([member_oneHopeMatch,member_twoHopeMatch,member_threeHopeMatch])
 
+    },
+    matchPrepareSkillToMembers_neo4j : async (req, res) => {
+        console.log("change = 11100011" )
+        const {skillID } = req;
+
+        const session = driver.session({database:"neo4j"});
+        console.log("change = 0011001 ",skillID)
+
+        // console.log("change = 1",projectID)
+
+
+
+        // // ----------------- One Hope -----------------
+        result_oneHopeMatch = await session.writeTransaction(tx => 
+            tx.run(`MATCH (s:Skill{_id: '${skillID}'})-[:SKILL]-(m:Member)
+            RETURN (s)-[]-(m)`)
+        )
+
+        
+        let names_oneHopeMatch = result_oneHopeMatch.records.map(row => {
+            return row
+        })
+
+        // console.log("change = 03 = ",names_oneHopeMatch )
+
+        member_oneHopeMatch = []
+        if (names_oneHopeMatch.length>0){
+            for (let i = 0; i<names_oneHopeMatch.length; ++i) {
+
+                // if (i==0) console.log("change = ",names_oneHopeMatch[i] )
+                if (names_oneHopeMatch[i] && names_oneHopeMatch[i]._fields && names_oneHopeMatch[i]._fields[0][0]){
+                    if (names_oneHopeMatch[i]._fields[0][0].end && names_oneHopeMatch[i]._fields[0][0].end.properties){
+                        member_oneHopeMatch.push(names_oneHopeMatch[i]._fields[0][0].end.properties)
+                    }
+                }
+            }
+        }
+        // ----------------- One Hope -----------------
+
+        // console.log("change = " , member_oneHopeMatch)
+        // ----------------- Two Hope -----------------
+        result_twoHopeMatch = await session.writeTransaction(tx => 
+            tx.run(`MATCH (s:Skill{_id: '${skillID}'})-[:RELATED]-(o:Skill)-[:SKILL]-(m:Member)
+            RETURN (s)-[]-(o)-[]-(m)`)
+        )
+        
+        let names_twoHopeMatch = result_twoHopeMatch.records.map(row => {
+            return row
+        })
+        // console.log("names_twoHopeMatch = " , names_twoHopeMatch)
+        member_twoHopeMatch = []
+        if (names_twoHopeMatch.length>0){
+            for (let i = 0; i<names_twoHopeMatch.length; ++i) {
+                // if (i==0) console.log("change = ",names_twoHopeMatch[i] )
+                if (names_twoHopeMatch[i] && names_twoHopeMatch[i]._fields && names_twoHopeMatch[i]._fields[0][0]){
+                    
+                    if (names_twoHopeMatch[i]._fields[0][0].end && names_twoHopeMatch[i]._fields[0][0].end.properties){
+                        member_twoHopeMatch.push(names_twoHopeMatch[i]._fields[0][0].end.properties)
+                    }
+                }
+            }
+        }
+        console.log("member_twoHopeMatch = " , member_twoHopeMatch)
+        // ----------------- Two Hope -----------------
+
+        // ----------------- Three Hope -----------------
+        result_threeHopeMatch = await session.writeTransaction(tx =>
+            tx.run(`MATCH (s:Skill{_id: '${skillID}'})-[:RELATED]-(o:Skill)-[:RELATED]-(t:Skill)-[:SKILL]-(m:Member)
+            RETURN (s)-[]-(o)-[]-(t)-[]-(m)`)
+        )
+        let names_threeHopeMatch = result_threeHopeMatch.records.map(row => {
+            return row
+        })
+        member_threeHopeMatch = []
+        if (names_threeHopeMatch.length>0){
+            for (let i = 0; i<names_threeHopeMatch.length; ++i) {
+                if (names_threeHopeMatch[i] && names_threeHopeMatch[i]._fields && names_threeHopeMatch[i]._fields[0][0]){
+                    if (names_threeHopeMatch[i]._fields[0][0].end && names_threeHopeMatch[i]._fields[0][0].end.properties){
+                        member_threeHopeMatch.push(names_threeHopeMatch[i]._fields[0][0].end.properties)
+                    }
+                }
+            }
+        }
+        // console.log("member_threeHopeMatch = " , member_threeHopeMatch)
+        // ----------------- Three Hope -----------------
+
+
+        session.close()
+        
+
+        // return({
+        //     oneHopeMatch: member_oneHopeMatch,
+        //     twoHopeMatch: member_twoHopeMatch,
+        //     threeHopeMatch: member_threeHopeMatch
+        // })
+
+        // return([member_oneHopeMatch])
+        // return ([])
+        // return([member_oneHopeMatch,member_twoHopeMatch])
+        return([member_oneHopeMatch,member_twoHopeMatch,member_threeHopeMatch])
+
+    },
+    matchPrepareSkillToProjectRoles_neo4j : async (req, res) => {
+        console.log("change = 11100011" )
+        const {skillID } = req;
+
+        const session = driver.session({database:"neo4j"});
+        console.log("change = 0011001 ",skillID)
+
+        // console.log("change = 1",projectID)
+
+
+
+        // // ----------------- One Hope -----------------
+        result_oneHopeMatch = await session.writeTransaction(tx => 
+            tx.run(`MATCH (s:Skill{_id: '${skillID}'})-[:ROLE_SKILL]-(r:Role)
+                    RETURN (s)-[]-(r)`)
+        )
+
+        
+        let names_oneHopeMatch = result_oneHopeMatch.records.map(row => {
+            return row
+        })
+
+        // console.log("change = 03 = ",names_oneHopeMatch )
+
+        member_oneHopeMatch = []
+        if (names_oneHopeMatch.length>0){
+            for (let i = 0; i<names_oneHopeMatch.length; ++i) {
+
+                // if (i==0) console.log("change = ",names_oneHopeMatch[i] )
+                if (names_oneHopeMatch[i] && names_oneHopeMatch[i]._fields && names_oneHopeMatch[i]._fields[0][0]){
+                    if (names_oneHopeMatch[i]._fields[0][0].end && names_oneHopeMatch[i]._fields[0][0].end.properties){
+                        member_oneHopeMatch.push(names_oneHopeMatch[i]._fields[0][0].end.properties)
+                    }
+                }
+            }
+        }
+        // ----------------- One Hope -----------------
+
+        // console.log("change = " , member_oneHopeMatch)
+        // ----------------- Two Hope -----------------
+        result_twoHopeMatch = await session.writeTransaction(tx => 
+            tx.run(`MATCH (s:Skill{_id: '${skillID}'})-[:RELATED]-(o:Skill)-[]-(r:Role)
+            RETURN (s)-[]-(o)-[]-(r)`)
+        )
+        
+        let names_twoHopeMatch = result_twoHopeMatch.records.map(row => {
+            return row
+        })
+        // console.log("names_twoHopeMatch = " , names_twoHopeMatch)
+        member_twoHopeMatch = []
+        if (names_twoHopeMatch.length>0){
+            for (let i = 0; i<names_twoHopeMatch.length; ++i) {
+                // if (i==0) console.log("change = ",names_twoHopeMatch[i] )
+                if (names_twoHopeMatch[i] && names_twoHopeMatch[i]._fields && names_twoHopeMatch[i]._fields[0][0]){
+                    
+                    if (names_twoHopeMatch[i]._fields[0][0].end && names_twoHopeMatch[i]._fields[0][0].end.properties){
+                        member_twoHopeMatch.push(names_twoHopeMatch[i]._fields[0][0].end.properties)
+                    }
+                }
+            }
+        }
+        // console.log("member_twoHopeMatch = " , member_twoHopeMatch)
+        // ----------------- Two Hope -----------------
+
+        // ----------------- Three Hope -----------------
+        result_threeHopeMatch = await session.writeTransaction(tx =>
+            tx.run(`MATCH (s:Skill{_id: '${skillID}'})-[:RELATED]-(o:Skill)-[:RELATED]-(t:Skill)-[:ROLE_SKILL]-(r:Role)
+            RETURN (s)-[]-(o)-[]-(t)-[]-(r)`)
+        )
+        let names_threeHopeMatch = result_threeHopeMatch.records.map(row => {
+            return row
+        })
+        member_threeHopeMatch = []
+        if (names_threeHopeMatch.length>0){
+            for (let i = 0; i<names_threeHopeMatch.length; ++i) {
+                if (names_threeHopeMatch[i] && names_threeHopeMatch[i]._fields && names_threeHopeMatch[i]._fields[0][0]){
+                    if (names_threeHopeMatch[i]._fields[0][0].end && names_threeHopeMatch[i]._fields[0][0].end.properties){
+                        member_threeHopeMatch.push(names_threeHopeMatch[i]._fields[0][0].end.properties)
+                    }
+                }
+            }
+        }
+        // console.log("member_threeHopeMatch = " , member_threeHopeMatch)
+        // ----------------- Three Hope -----------------
+
+
+        session.close()
+        
+
+        // return({
+        //     oneHopeMatch: member_oneHopeMatch,
+        //     twoHopeMatch: member_twoHopeMatch,
+        //     threeHopeMatch: member_threeHopeMatch
+        // })
+
+        // return([member_oneHopeMatch])
+        // return ([])
+        // return([member_oneHopeMatch,member_twoHopeMatch])
+        return([member_oneHopeMatch,member_twoHopeMatch,member_threeHopeMatch])
+
+        // return ([])
+
     }
 }
 

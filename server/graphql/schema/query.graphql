@@ -23,6 +23,12 @@ module.exports = `
             matchMembersToSkills(fields:matchMembersToSkillInput): [matchMembersToSkillOutput]
             matchMembersToProject(fields:matchMembersToProjectInput): [matchMembersToProjectOutput]
             matchMembersToProjectRole(fields:matchMembersToProjectRoleInput): [matchMembersToProjectRoleOutput]
+            matchPrepareSkillToMembers(fields:matchPrepareSkillToMembersInput): Skills
+            matchPrepareSkillToProjectRoles(fields:matchPrepareSkillToProjectRolesInput): Skills
+            matchSkillsToMembers(fields:matchSkillsToMembersInput): [matchMembersToSkillOutput]
+            matchSkillsToProjects(fields:matchSkillsToProjectsInput): [matchSkillsToProjectsOutput]
+
+
 
             members_autocomplete(fields:members_autocompleteInput): [Members]
 

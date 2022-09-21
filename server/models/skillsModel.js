@@ -29,6 +29,31 @@ const skillSchema = mongoose.Schema({
 
   id_lightcast: String,
 
+
+  match: {
+    recalculateProjectRoles: {
+      type: Boolean,
+      default: true
+    },
+    distanceProjectRoles: {
+      hop0: [mongoose.Schema.ObjectId],
+      hop1: [mongoose.Schema.ObjectId],
+      hop2: [mongoose.Schema.ObjectId],
+      hop3: [mongoose.Schema.ObjectId],
+    },
+    
+    recalculateMembers: {
+      type: Boolean,
+      default: true
+    },
+    distanceMembers: {
+      hop0: [String],
+      hop1: [String],
+      hop2: [String],
+      hop3: [String],
+    }
+  },
+
   registeredAt: Date,
 
 

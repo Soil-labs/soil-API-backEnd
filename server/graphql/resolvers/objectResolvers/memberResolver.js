@@ -363,24 +363,20 @@ module.exports = {
          }
       },
    },
-   matchMembersToSkillOutput: {
-      commonSkills: async (parent, args, context, info) => {
+   matchPrepareSkillToMembersOutput: {
+      member: async (parent, args, context, info) => {
          console.log("parent 22322= " , parent)
 
          try {
-            const skillsID = parent.commonSkills;
+            const member = parent.member;
 
 
-            skillData = await Skills.find({
-               $and: [
-                 { _id: skillsID },
-                 { state: "approved" },
-               ]})
+            memberData = await Members.findOne({_id: member})
             
 
 
 
-            return skillData;
+            return memberData;
 
          } catch (err) {
             throw new ApolloError(
@@ -393,6 +389,200 @@ module.exports = {
             );
          }
       },
-   }
+   },
+   matchMembersToSkillOutput: {
+      commonSkills: async (parent, args, context, info) => {
+         console.log("parent 22322= " , parent)
+
+         try {
+            // const skillsID = parent.commonSkills;
+
+
+            // skillData = await Skills.find({
+            //    $and: [
+            //      { _id: skillsID },
+            //      { state: "approved" },
+            //    ]})
+
+            // const memberID = parent.memberID;
+
+            // memberData = await Members.findOne({_id: memberID})
+            
+            // console.log("memberData.skills.id  = " , memberData.skills.id )
+
+            // skillData = await Skills.find({
+            //    $and: [
+            //      { _id: memberData.skills.id },
+            //      { state: "approved" },
+            //    ]})
+
+
+
+            // return skillData;
+            return [{}]
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > skills',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+      member: async (parent, args, context, info) => {
+         console.log("parent 22322= " , parent)
+
+         try {
+            const memberID = parent.memberID;
+
+
+            memberData = await Members.findOne({_id: memberID})
+            
+
+
+
+            return memberData;
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > skills',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+   },
+   matchSkillsToProjectsOutput: {
+      commonSkills: async (parent, args, context, info) => {
+         // console.log("parent 22322= " , parent)
+
+         try {
+            // const skillsID = parent.commonSkills;
+
+
+            // skillData = await Skills.find({
+            //    $and: [
+            //      { _id: skillsID },
+            //      { state: "approved" },
+            //    ]})
+
+            // const memberID = parent.memberID;
+
+            // memberData = await Members.findOne({_id: memberID})
+            
+            // console.log("memberData.skills.id  = " , memberData.skills.id )
+
+            // skillData = await Skills.find({
+            //    $and: [
+            //      { _id: memberData.skills.id },
+            //      { state: "approved" },
+            //    ]})
+
+
+
+            // return skillData;
+            return [{}]
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > skills',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+      project: async (parent, args, context, info) => {
+         // console.log("parent 22322= " , parent)
+
+         try {
+            const projectID = parent.projectID;
+
+
+            projectData = await Projects.findOne({_id: projectID})
+            
+
+
+
+            return projectData;
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > skills',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+      projectRoles: async (parent, args, context, info) => {
+         // console.log("parent 22322= " , parent)
+
+         try {
+            const projectRoles = parent.projectRoles;
+
+            // console.log("projectRoles = " , projectRoles)
+            // memberData = await Projects.findOne({"role._id":: projectRoles.})
+            
+
+
+
+            return projectRoles;
+            // return [{}]
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > skills',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+   },
+   matchProjectRoles : {
+      projectRole: async (parent, args, context, info) => {
+         // console.log("parent 22322= " , parent)
+
+         try {
+            const projectRoleID = parent.projectRoleID;
+
+            // console.log("projectRoleID = " , projectRoleID)
+            projectData = await Projects.findOne({"role._id": projectRoleID})
+            
+            
+            projectDataRole = projectData.role.filter((role) => role._id == projectRoleID)
+
+            projectDataRole = projectDataRole[0]
+
+            // console.log("projectDataRole = " , projectDataRole)
+
+            return projectDataRole;
+            // return [{}]
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > skills',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+   },
    
 };

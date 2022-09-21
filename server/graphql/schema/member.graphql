@@ -139,6 +139,24 @@ module.exports = `
         commonSkills: [Skills]
     }
 
+    type matchPrepareSkillToMembersOutput {
+        matchPercentage: Float,
+        member: Members,
+        commonSkills: [Skills]
+    }
+
+    type matchSkillsToProjectsOutput {
+        matchPercentage: Float,
+        project: Project,
+        commonSkills: [Skills]
+        projectRoles: [matchProjectRoles]
+    }
+    
+    type matchProjectRoles {
+        matchPercentage: Float,
+        projectRole: roleType,
+        commonSkills: [Skills]
+    }
 
    
     
@@ -175,6 +193,26 @@ module.exports = `
 
     input matchMembersToProjectRoleInput {
         projectRoleID: ID
+        serverID: [String]
+    }
+
+    input matchPrepareSkillToMembersInput {
+        skillID: ID
+        serverID: [String]
+    }
+
+    input matchPrepareSkillToProjectRolesInput {
+        skillID: ID
+        serverID: [String]
+    }
+
+    input matchSkillsToMembersInput {
+        skillsID: [ID]
+        serverID: [String]
+    }
+
+    input matchSkillsToProjectsInput {
+        skillsID: [ID]
         serverID: [String]
     }
 
