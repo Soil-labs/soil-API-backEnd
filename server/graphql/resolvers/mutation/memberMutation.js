@@ -276,6 +276,23 @@ module.exports = {
             id:[membersData._id,skill.id],
             connection:"SKILL",
           })
+
+          // Recalculate the skill match now that neo4j diagram changed
+          await Skills.findOneAndUpdate(
+              {_id: skill._id},
+              {
+                  $set: {
+                      match: {
+                        recalculateProjectRoles: true,
+                        distanceProjectRoles: skill.distanceProjectRoles,
+                        
+                        recalculateMembers: true,
+                        distanceMembers: skill.distanceMembers,
+                      }
+                  }
+              },
+              {new: true}
+          )
         }
       }
 
@@ -480,19 +497,7 @@ module.exports = {
           id:[authorInfo._id,member._id],
           connection:"ENDORSE",
         })
-        // const session2 = driver.session({database:"neo4j"});
-        // await session2.writeTransaction(tx => 
-        // tx.run(
-        //   `   
-        //   MATCH (member_neo:Member {_id: ${member._id}})
-        //   MATCH (author_neo:Member {_id: ${authorInfo._id}})
-        //   MATCH (skillNode:Skill {_id: '${skill._id}'})
-        //   MERGE (author_neo)-[:ENDORSE]->(member_neo)
-        //   MERGE (member_neo)-[:SKILL]->(skillNode)
-        //   `
-        //   )
-        // )
-        // session2.close();
+        
         
       } else {
         //when author endorses themselves only add skill edge from member to skill node
@@ -501,20 +506,25 @@ module.exports = {
           id:[member._id,skill._id],
           connection:"SKILL",
         })
-        console.log("change =SDF21 " )
-        // const session2 = driver.session({database:"neo4j"});
-        // await session2.writeTransaction(tx => 
-        // tx.run(
-        //   `   
-        //   MATCH (member_neo:Member {_id: ${member._id}})
-        //   MATCH (author_neo:Member {_id: ${authorInfo._id}})
-        //   MATCH (skillNode:Skill {_id: '${skill._id}'})
-        //   MERGE (member_neo)-[:SKILL]->(skillNode)
-        //   `
-        //   )
-        // )
-        // session2.close();
+        
       }
+
+      // Recalculate the skill match now that neo4j diagram changed
+      await Skills.findOneAndUpdate(
+        {_id: skill._id},
+        {
+            $set: {
+                match: {
+                  recalculateProjectRoles: true,
+                  distanceProjectRoles: skill.distanceProjectRoles,
+                  
+                  recalculateMembers: true,
+                  distanceMembers: skill.distanceMembers,
+                }
+            }
+        },
+        {new: true}
+    )
       
 
       // check all the skills, if the skill is already in the member, then update the author

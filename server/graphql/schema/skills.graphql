@@ -15,12 +15,30 @@ module.exports = `
 
         id_lightcast: String,
 
+        match: MatchType
+
         registeredAt: String,
         state: approvedSkillEnum,
     }
 
+    type MatchType {
+        recalculateProjectRoles: Boolean
+        distanceProjectRoles: DistanceType
+        recalculateMembers: Boolean
+        distanceMembers: DistanceType
+    }
+
+    type DistanceType {
+        hop0: [ID]
+        hop1: [ID]
+        hop2: [ID]
+        hop3: [ID]
+    }
+
     input findSkillsInput {
         _id: [ID]
+        recalculateMembers: Boolean
+        recalculateProjectRoles: Boolean
     }
 
     input skills_autocompleteInput {

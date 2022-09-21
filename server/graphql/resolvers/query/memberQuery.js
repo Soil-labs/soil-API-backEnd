@@ -2,9 +2,10 @@
 const { Members } = require("../../../models/membersModel");
 const mongoose = require("mongoose");
 const { Projects } = require("../../../models/projectsModel");
+const { Skills } = require("../../../models/skillsModel");
 const { driver } = require("../../../../server/neo4j_config");
 
-const {matchMembersToProject_neo4j,matchMembersToProjectRole_neo4j} = require("../../../neo4j/func_neo4j");
+const {matchMembersToProject_neo4j,matchMembersToProjectRole_neo4j,matchPrepareSkillToMembers_neo4j,matchPrepareSkillToProjectRoles_neo4j} = require("../../../neo4j/func_neo4j");
 
 
 const {
@@ -372,7 +373,6 @@ module.exports = {
      
     try {
       
-      let project
 
       let projectMatch_User = await Projects.findOne({ "role._id": projectRoleID })
 
@@ -423,6 +423,424 @@ module.exports = {
 
 
       return matchMembers
+      // return [{}]
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+
+  matchPrepareSkillToMembers: async (parent, args, context, info) => {
+       
+    const {skillID,serverID} = args.fields;
+    console.log("Query > matchPrepareSkillToMembers > args.fields = " , args.fields)
+
+    if (!skillID) throw new ApolloError("projectID is required");
+    
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
+
+    console.log("skillID = " , skillID)
+
+     
+    try {
+      
+      let project
+
+      let skillData = await Skills.findOne({ "_id": skillID })
+
+      if (!skillData) throw new ApolloError("Skill Don't exist");
+
+      console.log("skillData = " , skillData)
+
+
+
+      // ------------ WiseTy -----------------
+
+      console.log("change = 22" )
+      result = await matchPrepareSkillToMembers_neo4j({skillID:skillData._id})
+
+      console.log("result 22-2-2 = " , result)
+
+      matchMembers = []
+      matchIDs = []
+
+      
+      distanceMatchHop = [[],[],[]]
+
+      for (let i = 0; i < 3; i++) {
+        
+        if (!result[i]) continue
+
+        for (let j = 0; j < result[i].length; j++) {
+          if (matchIDs.includes(result[i][j]._id)) continue
+          matchIDs.push(result[i][j]._id)
+          // matchMembers.push(result[i][j])
+          matchMembers.push({
+            member: result[i][j]._id,
+            matchPercentage: (3-i)*30,
+          })
+          distanceMatchHop[i].push(result[i][j]._id)
+        }
+      }
+
+      
+      let distanceMembers = {
+        hop0: distanceMatchHop[0],
+        hop1: distanceMatchHop[1],
+        hop2: distanceMatchHop[2],
+      }
+      console.log("distanceMembers = " , distanceMembers)
+
+
+      // let skillData = await Skills.findOne({ "_id": skillID })
+
+      skillDataNew= await Skills.findOneAndUpdate(
+        {_id: skillID},
+        {
+            $set: {
+                match: {
+                  recalculateMembers: false,
+                  distanceMembers: distanceMembers,
+                  recalculateProjectRoles: skillData.match.recalculateProjectRoles,
+                  distanceProjectRoles: skillData.match.distanceProjectRoles,
+                }
+            }
+        },
+        {new: true}
+    )
+
+      // console.log("matchMembers = " , matchMembers)
+
+      // // ------------ WiseTy -----------------
+
+
+      return skillDataNew
+      // return [{}]
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+  matchPrepareSkillToProjectRoles: async (parent, args, context, info) => {
+       
+    const {skillID,serverID} = args.fields;
+    console.log("Query > matchPrepareSkillToProjectRoles > args.fields = " , args.fields)
+
+    if (!skillID) throw new ApolloError("skillID is required");
+    
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
+
+    console.log("skillID = " , skillID)
+
+     
+    try {
+
+      let skillData = await Skills.findOne({ "_id": skillID })
+
+      if (!skillData) throw new ApolloError("Skill Don't exist");
+
+      console.log("skillData = " , skillData)
+
+
+
+      // ------------ WiseTy -----------------
+
+      console.log("change = 22" )
+      result = await matchPrepareSkillToProjectRoles_neo4j({skillID:skillData._id})
+
+      console.log("result 22-2-2 = " , result)
+
+      matchMembers = []
+      matchIDs = []
+
+      
+      distanceMatchHop = [[],[],[]]
+
+      for (let i = 0; i < 3; i++) {
+        
+        if (!result[i]) continue
+
+        for (let j = 0; j < result[i].length; j++) {
+          if (matchIDs.includes(result[i][j]._id)) continue
+          matchIDs.push(result[i][j]._id)
+          // matchMembers.push(result[i][j])
+          matchMembers.push({
+            member: result[i][j]._id,
+            matchPercentage: (3-i)*30,
+          })
+          distanceMatchHop[i].push(result[i][j]._id)
+        }
+      }
+
+      
+      let distanceProjectRoles = {
+        hop0: distanceMatchHop[0],
+        hop1: distanceMatchHop[1],
+        hop2: distanceMatchHop[2],
+      }
+      console.log("distanceProjectRoles = " , distanceProjectRoles)
+
+
+      // let skillData = await Skills.findOne({ "_id": skillID })
+
+      skillDataNew= await Skills.findOneAndUpdate(
+        {_id: skillID},
+        {
+            $set: {
+                match: {
+                  recalculateProjectRoles: false,
+                  distanceProjectRoles: distanceProjectRoles,
+
+                  recalculateMembers: skillData.match.recalculateMembers,
+                  distanceMembers: skillData.match.distanceMembers,
+                }
+            }
+        },
+        {new: true}
+    )
+
+      // console.log("matchMembers = " , matchMembers)
+
+    //   // // ------------ WiseTy -----------------
+
+
+      return skillDataNew
+      // return [{}]
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+  matchSkillsToMembers: async (parent, args, context, info) => {
+       
+    const {skillsID,serverID} = args.fields;
+    console.log("Query > matchSkillsToMembers > args.fields = " , args.fields)
+
+    if (!skillsID) throw new ApolloError("projectID is required");
+    
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
+
+
+     
+    try {
+      
+      let project
+
+      let skillData = await Skills.find({ "_id": skillsID })
+
+      if (!skillData) throw new ApolloError("Skill Don't exist");
+
+      console.log("skillData[0] = " , skillData[0])
+      console.log("skillData[0] = " , skillData[0].match)
+
+
+      let distanceAll = [[],[],[]]
+      let points = [[],[],[]]
+
+      let everyID = []
+
+      console.log("distanceAll = " , distanceAll)
+      for (let i=0;i<skillData.length;i++){
+
+        for (let k=0;k<3;k++){
+          let membersNow
+          if (k==0) membersNow = skillData[i].match.distanceMembers.hop0
+          if (k==1) membersNow = skillData[i].match.distanceMembers.hop1
+          if (k==2) membersNow = skillData[i].match.distanceMembers.hop2
+
+          for (let j=0;j<membersNow.length;j++){
+            let memberID = membersNow[j]
+            if (!everyID.includes(memberID)){
+              distanceAll[k].push(memberID)
+              points[k].push(1)
+              everyID.push(memberID)
+
+              if (i==1) console.log("add the memberID = " , memberID)
+            } else {
+              let pos = distanceAll[k].indexOf(memberID)
+              // console.log("pos = " , pos)
+              if (pos>-1) points[k][pos] = points[k][pos] + 1
+            }
+          }
+        }
+      }
+
+      console.log("points = " , points)
+
+      matchSkillsToMembersOutput = []
+      
+      for (let i=0;i<distanceAll.length;i++){
+
+        for (let k=0;k<distanceAll[i].length;k++){
+          matchSkillsToMembersOutput.push({
+            memberID: distanceAll[i][k],
+            matchPercentage: 25*(3-i) + (25/skillData.length)*points[i][k],
+            // commonSkills: 
+          })
+        }
+
+      }
+
+
+      return matchSkillsToMembersOutput
+      // return [{}]
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+  matchSkillsToProjects: async (parent, args, context, info) => {
+       
+    const {skillsID,serverID} = args.fields;
+    console.log("Query > matchSkillsToMembers > args.fields = " , args.fields)
+
+    if (!skillsID) throw new ApolloError("projectID is required");
+    
+    let queryServerID = []
+    if (serverID) {
+      serverID.forEach(id => {
+        queryServerID.push({ serverID: id })
+      })
+    }
+
+
+     
+    try {
+      
+      let project
+
+      let skillData = await Skills.find({ "_id": skillsID })
+
+      if (!skillData) throw new ApolloError("Skill Don't exist");
+
+      // console.log("skillData[0] = " , skillData[0])
+      // console.log("skillData[0] = " , skillData[0].match)
+
+
+      let distanceAll = [[],[],[]]
+      let points = [[],[],[]]
+
+      let everyID = []
+
+      console.log("distanceAll = " , distanceAll)
+      for (let i=0;i<skillData.length;i++){
+
+        for (let k=0;k<3;k++){
+          let membersNow
+          if (k==0) membersNow = skillData[i].match.distanceProjectRoles.hop0
+          if (k==1) membersNow = skillData[i].match.distanceProjectRoles.hop1
+          if (k==2) membersNow = skillData[i].match.distanceProjectRoles.hop2
+
+          for (let j=0;j<membersNow.length;j++){
+            let memberID = membersNow[j]
+            if (!everyID.includes(memberID.toString())){
+              distanceAll[k].push(memberID.toString())
+              points[k].push(1)
+              everyID.push(memberID.toString())
+
+              // if (i==1) console.log("add the memberID = " , memberID)
+            } else {
+              let pos = distanceAll[k].indexOf(memberID.toString())
+              if (pos>-1) points[k][pos] = points[k][pos] + 1
+            }
+          }
+        }
+      }
+
+      // console.log("distanceAll = " , distanceAll)
+      // console.log("points = " , points)
+
+
+      matchSkillsToMembersOutput = []
+      projectsID_all = []
+      
+      for (let i=0;i<distanceAll.length;i++){
+
+        for (let k=0;k<distanceAll[i].length;k++){
+
+          let projectNowData = await Projects.findOne({ "role._id": distanceAll[i][k] })
+
+          if (i==0 && k==0) {
+            console.log("distanceAll[i][k] = " , distanceAll[i][k])
+            console.log("projectNowData = " , projectNowData)
+          }
+
+          if (projectsID_all.includes(projectNowData._id.toString())) {
+
+            let pos = projectsID_all.indexOf(projectNowData._id.toString())
+
+            newMatchPersentage = matchSkillsToMembersOutput[pos].matchPercentage
+            if (matchSkillsToMembersOutput[pos].matchPercentage<25*(3-i) + (25/skillData.length)*points[i][k]){
+              newMatchPersentage = 25*(3-i) + (25/skillData.length)*points[i][k]
+            }
+            matchSkillsToMembersOutput[pos] = {
+              projectID: matchSkillsToMembersOutput[pos].projectID,
+              matchPercentage: newMatchPersentage,
+              commonSkillsID: [],
+              projectRoles: [{
+                projectRoleID: distanceAll[i][k],
+                matchPercentage: 25*(3-i) + (25/skillData.length)*points[i][k],
+                commonSkillsID: [],
+              }]
+
+            }
+
+          } else {
+            matchSkillsToMembersOutput.push({
+              projectID: projectNowData._id,
+              matchPercentage: 25*(3-i) + (25/skillData.length)*points[i][k],
+              commonSkillsID: [],
+
+              projectRoles: [{
+                projectRoleID: distanceAll[i][k],
+                matchPercentage: 25*(3-i) + (25/skillData.length)*points[i][k],
+                commonSkillsID: [],
+              }]
+            })
+            projectsID_all.push(projectNowData._id.toString())
+          }
+
+          // console.log("projectNowData = " , projectNowData)
+          
+          // matchSkillsToMembersOutput.push({
+          //   projectID: distanceAll[i][k],
+          //   matchPercentage: 25*(3-i) + (25/skillData.length)*points[i][k],
+          //   projectRoles: 
+          //   // commonSkills: 
+          // })
+        }
+
+      }
+
+
+      return matchSkillsToMembersOutput
       // return [{}]
     } catch (err) {
       throw new ApolloError(

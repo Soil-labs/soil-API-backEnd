@@ -37,49 +37,59 @@ module.exports = {
     }
   },
   findSkills: async (parent, args, context, info) => {
-    const { _id, id_lightcast } = args.fields;
+    const { _id, id_lightcast,recalculateMembers,recalculateProjectRoles } = args.fields;
     console.log("Query > findSkills > args.fields = ", args.fields);
 
     let searchQuery = {};
 
-    if (_id) {
-      searchQuery = {
-        $and: [{ _id: _id }, { state: "approved" }],
-      };
-    } else if (id_lightcast) {
-      searchQuery = {
-        $and: [{ id_lightcast: id_lightcast }, { state: "approved" }],
-      };
-    } else {
-      searchQuery = {
-        $and: [{ state: "approved" }],
-      };
+    let searchQuery_and = [{ state: "approved" }];
+
+    if (recalculateMembers!=null) {
+      searchQuery_and.push({"match.recalculateMembers": recalculateMembers})
+    }
+    if (recalculateProjectRoles!=null){
+      searchQuery_and.push({"match.recalculateProjectRoles": recalculateProjectRoles})
     }
 
-    //console.log("fields = " , fields)
+    console.log("searchQuery_and = " , searchQuery_and)
+
+    if (_id) {
+      searchQuery_and.push({ _id: _id });
+    } else if (id_lightcast) {
+      searchQuery_and.push({ id_lightcast: id_lightcast });
+    }
+
+
+
+    searchQuery = {
+      $and: searchQuery_and,
+    };
 
     try {
       let membersData;
-      // if (_id) {
-      // //console.log("change =1 ")
 
-      //     membersData = await Skills.find( {
-      //       $and: [
-      //         { _id: fields._id },
-      //         { state: "approved" },
-      //       ]
-      //   } )
+      skillData = await Skills.find(searchQuery);
+      // skillData = await Skills.find({"match.recalculateMembers": recalculateMembers});
+      // skillData = await Skills.find({});
 
-      // } else {
-      // //console.log("change =2 ")
-
-      //   membersData = await Skills.find({state: "approved"})
-      // //console.log("membersData = " , membersData)
+      // for (let i=0;i<skillData.length;i++){
+        
+      //   skillDataNow = await Skills.findOneAndUpdate(
+      //     {_id: skillData[i]._id},
+      //     {
+      //         $set: {
+      //             match: {
+      //               recalculateMembers: true,
+      //               recalculateProjectRoles: true
+      //             }
+      //         }
+      //     },
+      //     {new: true}
+      // )
       // }
 
-      membersData = await Skills.find(searchQuery);
 
-      return membersData;
+      return skillData;
     } catch (err) {
       throw new ApolloError(
         err.message,

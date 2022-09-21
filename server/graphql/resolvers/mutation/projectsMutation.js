@@ -3,6 +3,7 @@ const { Projects } = require("../../../models/projectsModel");
 const { Team } = require("../../../models/teamModal");
 const { Role } = require("../../../models/roleModel");
 const { Members } = require("../../../models/membersModel");
+const { Skills } = require("../../../models/skillsModel");
 const { Epic } = require("../../../models/epicModel");
 const {ApolloError} = require("apollo-server-express");
 const { TeamMember } = require("discord.js");
@@ -240,6 +241,28 @@ module.exports = {
               id:[RoleNow._id,SkillNow._id],
               connection:"ROLE_SKILL",
             })
+
+            skillData = await Skills.findOne({ _id: SkillNow._id })
+
+            if (skillData){
+              // Recalculate the skill match now that neo4j diagram changed
+              await Skills.findOneAndUpdate(
+                  {_id: skillData._id},
+                  {
+                      $set: {
+                          match: {
+                            recalculateProjectRoles: true,
+                            distanceProjectRoles: skillData.distanceProjectRoles,
+                            
+                            recalculateMembers: true,
+                            distanceMembers: skillData.distanceMembers,
+                          }
+                      }
+                  },
+                  {new: true}
+              )
+            }
+            
           }
           
           
