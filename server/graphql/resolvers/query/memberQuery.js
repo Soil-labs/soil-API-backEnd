@@ -633,6 +633,7 @@ module.exports = {
   matchSkillsToMembers: async (parent, args, context, info) => {
        
     const {skillsID,serverID} = args.fields;
+    let {page,limit} = args.fields;
     console.log("Query > matchSkillsToMembers > args.fields = " , args.fields)
 
     if (!skillsID) throw new ApolloError("projectID is required");
@@ -644,6 +645,12 @@ module.exports = {
       })
     }
 
+    if (page!=null && limit!=null){
+
+    } else {
+      page=0
+      limit=10
+    }
 
      
     try {
@@ -701,12 +708,14 @@ module.exports = {
             matchPercentage: 25*(3-i) + (25/skillData.length)*points[i][k],
             // commonSkills: 
           })
+          
         }
+        
 
       }
 
 
-      return matchSkillsToMembersOutput
+      return matchSkillsToMembersOutput.slice(page*limit,(page+1)*limit)
       // return [{}]
     } catch (err) {
       throw new ApolloError(
@@ -719,6 +728,7 @@ module.exports = {
   matchSkillsToProjects: async (parent, args, context, info) => {
        
     const {skillsID,serverID} = args.fields;
+    let {page,limit} = args.fields;
     console.log("Query > matchSkillsToMembers > args.fields = " , args.fields)
 
     if (!skillsID) throw new ApolloError("projectID is required");
@@ -730,6 +740,12 @@ module.exports = {
       })
     }
 
+    if (page!=null && limit!=null){
+
+    } else {
+      page=0
+      limit=10
+    }
 
      
     try {
@@ -753,21 +769,21 @@ module.exports = {
       for (let i=0;i<skillData.length;i++){
 
         for (let k=0;k<3;k++){
-          let membersNow
-          if (k==0) membersNow = skillData[i].match.distanceProjectRoles.hop0
-          if (k==1) membersNow = skillData[i].match.distanceProjectRoles.hop1
-          if (k==2) membersNow = skillData[i].match.distanceProjectRoles.hop2
+          let projectsNow
+          if (k==0) projectsNow = skillData[i].match.distanceProjectRoles.hop0
+          if (k==1) projectsNow = skillData[i].match.distanceProjectRoles.hop1
+          if (k==2) projectsNow = skillData[i].match.distanceProjectRoles.hop2
 
-          for (let j=0;j<membersNow.length;j++){
-            let memberID = membersNow[j]
-            if (!everyID.includes(memberID.toString())){
-              distanceAll[k].push(memberID.toString())
+          for (let j=0;j<projectsNow.length;j++){
+            let projectID = projectsNow[j]
+            if (!everyID.includes(projectID.toString())){
+              distanceAll[k].push(projectID.toString())
               points[k].push(1)
-              everyID.push(memberID.toString())
+              everyID.push(projectID.toString())
 
-              // if (i==1) console.log("add the memberID = " , memberID)
+              // if (i==1) console.log("add the projectID = " , projectID)
             } else {
-              let pos = distanceAll[k].indexOf(memberID.toString())
+              let pos = distanceAll[k].indexOf(projectID.toString())
               if (pos>-1) points[k][pos] = points[k][pos] + 1
             }
           }
@@ -777,6 +793,22 @@ module.exports = {
       // console.log("distanceAll = " , distanceAll)
       // console.log("points = " , points)
 
+      let projectNow_allData = await Projects.find({ "role._id": everyID })
+
+      console.log("everyID = " , everyID)
+      console.log("projectNow_allData = " , projectNow_allData)
+
+      roleIDtoProjectID = {}
+
+      for (let i=0;i<projectNow_allData.length;i++){
+        let projectNow = projectNow_allData[i]
+        for (let j=0;j<projectNow.role.length;j++){
+          let roleNow = projectNow.role[j]
+          roleIDtoProjectID[roleNow._id.toString()] = projectNow._id.toString()
+        }
+      }
+
+
 
       matchSkillsToMembersOutput = []
       projectsID_all = []
@@ -785,16 +817,18 @@ module.exports = {
 
         for (let k=0;k<distanceAll[i].length;k++){
 
-          let projectNowData = await Projects.findOne({ "role._id": distanceAll[i][k] })
+          // let projectNowData = await Projects.findOne({ "role._id": distanceAll[i][k] })
 
-          if (i==0 && k==0) {
-            console.log("distanceAll[i][k] = " , distanceAll[i][k])
-            console.log("projectNowData = " , projectNowData)
-          }
+          let projectNowID = roleIDtoProjectID[distanceAll[i][k]]
 
-          if (projectsID_all.includes(projectNowData._id.toString())) {
+          // if (i==0 && k==0) {
+          //   console.log("distanceAll[i][k] = " , distanceAll[i][k])
+          //   console.log("projectNowData = " , projectNowData)
+          // }
 
-            let pos = projectsID_all.indexOf(projectNowData._id.toString())
+          if (projectsID_all.includes(projectNowID.toString())) {
+
+            let pos = projectsID_all.indexOf(projectNowID.toString())
 
             newMatchPersentage = matchSkillsToMembersOutput[pos].matchPercentage
             if (matchSkillsToMembersOutput[pos].matchPercentage<25*(3-i) + (25/skillData.length)*points[i][k]){
@@ -814,7 +848,7 @@ module.exports = {
 
           } else {
             matchSkillsToMembersOutput.push({
-              projectID: projectNowData._id,
+              projectID: projectNowID,
               matchPercentage: 25*(3-i) + (25/skillData.length)*points[i][k],
               commonSkillsID: [],
 
@@ -824,24 +858,14 @@ module.exports = {
                 commonSkillsID: [],
               }]
             })
-            projectsID_all.push(projectNowData._id.toString())
+            projectsID_all.push(projectNowID.toString())
           }
 
-          // console.log("projectNowData = " , projectNowData)
-          
-          // matchSkillsToMembersOutput.push({
-          //   projectID: distanceAll[i][k],
-          //   matchPercentage: 25*(3-i) + (25/skillData.length)*points[i][k],
-          //   projectRoles: 
-          //   // commonSkills: 
-          // })
         }
 
       }
 
-
-      return matchSkillsToMembersOutput
-      // return [{}]
+      return matchSkillsToMembersOutput.slice(page*limit,(page+1)*limit)
     } catch (err) {
       throw new ApolloError(
         err.message,
