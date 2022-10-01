@@ -5,6 +5,10 @@ module.exports = `
         _id: ID
         title: String
         description: String
+        descriptionOneLine: String,
+
+        emoji: String,
+        backColorEmoji: String,
 
         serverID: [String],
         gardenServerID: String,
@@ -107,9 +111,10 @@ module.exports = `
     }
 
     type budgetType {
+        totalBudget: String
         token: String
         perHour: String
-        totalBudget: String
+        perMonth: String,
     }
 
 
@@ -118,10 +123,16 @@ module.exports = `
         _id: ID
         title: String
         description: String
+        keyRosponsibilities: String,
+        openPositions: Int,
 
         skills: [skillRoleType]
 
         archive: Boolean
+        dateRangeStart: String
+        dateRangeEnd: String
+        hoursPerWeek: Int
+        budget: budgetType
         
     }
 
@@ -239,6 +250,12 @@ module.exports = `
         
         title: String
         description: String
+
+        descriptionOneLine: String,
+
+        emoji: String,
+        backColorEmoji: String,
+
         serverID: [String]
         gardenServerID: String,
 
@@ -276,6 +293,7 @@ module.exports = `
         totalBudget: String
         token: String
         perHour: String
+        perMonth: String,
     }
 
 
@@ -284,6 +302,8 @@ module.exports = `
         _id: ID
         title: String
         description: String
+        keyRosponsibilities: String,
+        openPositions: Int,
 
         skills: [skillRoleInput]
 

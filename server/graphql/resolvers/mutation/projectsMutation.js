@@ -16,7 +16,7 @@ module.exports = {
   updateProject: async (parent, args, context, info) => {
 
     
-    const {_id,title,description,champion,team,role,collaborationLinks,
+    const {_id,title,description,descriptionOneLine,emoji,backColorEmoji,champion,team,role,collaborationLinks,
       budget,dates,stepsJoinProject,serverID,gardenServerID} = JSON.parse(JSON.stringify(args.fields))
  
       console.log("Mutation > updateProject > args.fields = " , args.fields)
@@ -29,6 +29,9 @@ module.exports = {
 
     if (title) fields =  {...fields,title}
     if (description) fields =  {...fields,description}
+    if (descriptionOneLine) fields =  {...fields,descriptionOneLine}
+    if (emoji) fields =  {...fields,emoji}
+    if (backColorEmoji) fields =  {...fields,backColorEmoji}
     if (champion) fields =  {...fields,champion}
     if (team) fields =  {...fields,team}
     if (role) fields =  {...fields,role}

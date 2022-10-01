@@ -7,6 +7,10 @@ const projectSchema = mongoose.Schema({
 
   title: String,
   description: String,
+  descriptionOneLine: String,
+
+  emoji: String,
+  backColorEmoji: String,
 
   serverID: [String],
   gardenServerID: String,
@@ -26,6 +30,9 @@ const projectSchema = mongoose.Schema({
   role: [{
     title: String,
     description: String,
+    keyRosponsibilities: String,
+    openPositions: Number,
+
     skills: [{
       _id: mongoose.Schema.ObjectId,
       level: String,
@@ -35,8 +42,10 @@ const projectSchema = mongoose.Schema({
     dateRangeEnd: Date,
     hoursPerWeek: String,
     budget: {
+      totalBudget: String,
       token: String,
       perHour: String,
+      perMonth: String,
     }
   }],
 
@@ -59,6 +68,7 @@ const projectSchema = mongoose.Schema({
     totalBudget: String,
     token: String,
     perHour: String,
+    acceptEquivalentToken: Boolean,
   },
   dates: {
     kickOff: Date,
