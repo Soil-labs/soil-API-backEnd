@@ -665,14 +665,19 @@ module.exports = {
       console.log("skillData[0] = " , skillData[0].match)
 
 
+      let numberOfSkills = skillData.length
+
       let distanceAll = [[],[],[]]
       let points = [[],[],[]]
+      let persentage = [[],[],[]]
 
       let everyID = []
 
+      let newSkillFlag,persentageNow 
       console.log("distanceAll = " , distanceAll)
       for (let i=0;i<skillData.length;i++){
 
+        newSkillFlag = true
         for (let k=0;k<3;k++){
           let membersNow
           if (k==0) membersNow = skillData[i].match.distanceMembers.hop0
@@ -682,15 +687,31 @@ module.exports = {
           for (let j=0;j<membersNow.length;j++){
             let memberID = membersNow[j]
             if (!everyID.includes(memberID)){
+              newSkillFlag = false
               distanceAll[k].push(memberID)
               points[k].push(1)
               everyID.push(memberID)
 
+              persentageNow = (100/numberOfSkills)*(  (25*(4-k))/(100)  ) // (How powerful is this skill) * (what is the distance)
+
+              persentage[k].push(persentageNow)
+
+
               if (i==1) console.log("add the memberID = " , memberID)
             } else {
+              newSkillFlag = false
               let pos = distanceAll[k].indexOf(memberID)
               // console.log("pos = " , pos)
-              if (pos>-1) points[k][pos] = points[k][pos] + 1
+              if (pos>-1) {
+                points[k][pos] = points[k][pos] + 1
+
+                persentageNow = (100/numberOfSkills)*(  (25*(4-k))/(100)  ) // (How powerful is this skill) * (what is the distance)
+
+                persentage[k][pos] = persentage[k][pos] + persentageNow
+
+              }
+
+
             }
           }
         }
@@ -705,8 +726,10 @@ module.exports = {
         for (let k=0;k<distanceAll[i].length;k++){
           matchSkillsToMembersOutput.push({
             memberID: distanceAll[i][k],
-            matchPercentage: 25*(3-i) + (25/skillData.length)*points[i][k],
+            // matchPercentage: 25*(3-i) + (25/skillData.length)*points[i][k],
+            matchPercentage: persentage[i][k],
             // commonSkills: 
+
           })
           
         }
