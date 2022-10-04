@@ -459,7 +459,7 @@ module.exports = {
          }
       },
       matchPercentage: async (parent, args, context, info) => {
-         console.log("parent 22322= rorinsdf" , parent)
+         // console.log("parent 22322= rorinsdf" , parent)
          // console.log("info 22322= rorinsdf" , info)
 
          try {
@@ -469,8 +469,8 @@ module.exports = {
             memberData = await Members.findOne({_id: memberID})
             
 
-            console.log("memberData = " , memberData.hoursPerWeek)
-            console.log("memberData = " , memberData.budget)
+            // console.log("memberData = " , memberData.hoursPerWeek)
+            // console.log("memberData = " , memberData.budget)
 
             let hoursPercentage = 0
             if (memberData.hoursPerWeek) {
@@ -483,13 +483,21 @@ module.exports = {
 
             let budgetPercentage = 0
 
+            if (memberData.budget && memberData.budget.totalBudget ) {
+               budgetPercentage = 100 - ((memberData.budget.totalBudget - parent.budgetAmount)**2)/3
+               
+               if (budgetPercentage<0) budgetPercentage = 0
+               if (budgetPercentage>100) budgetPercentage = 100
+               console.log("budgetPercentage = " , budgetPercentage)
+            }
+
             let skillTotalPercentage = parent.skillTotalPercentage
             let totalPercentage = skillTotalPercentage*0.6 + hoursPercentage*0.2 + budgetPercentage*0.2
 
-            console.log("change = " , totalPercentage,
-            skillTotalPercentage,
-            hoursPercentage,
-            budgetPercentage,)
+            // console.log("change = " , totalPercentage,
+            // skillTotalPercentage,
+            // hoursPercentage,
+            // budgetPercentage,)
             return {
                totalPercentage,
                skillTotalPercentage,
