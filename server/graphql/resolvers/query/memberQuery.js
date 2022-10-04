@@ -632,7 +632,7 @@ module.exports = {
   },
   matchSkillsToMembers: async (parent, args, context, info) => {
        
-    const {skillsID,serverID} = args.fields;
+    const {skillsID,hoursPerWeek,budgetAmount,serverID} = args.fields;
     let {page,limit} = args.fields;
     console.log("Query > matchSkillsToMembers > args.fields = " , args.fields)
 
@@ -661,20 +661,21 @@ module.exports = {
 
       if (!skillData) throw new ApolloError("Skill Don't exist");
 
-      console.log("skillData[0] = " , skillData[0])
-      console.log("skillData[0] = " , skillData[0].match)
+      // console.log("skillData[0] = " , skillData[0])
+      // console.log("skillData[0] = " , skillData[0].match)
 
 
       let numberOfSkills = skillData.length
 
       let distanceAll = [[],[],[]]
       let points = [[],[],[]]
-      let persentage = [[],[],[]]
+      let percentage = [[],[],[]]
+      let skillPercentage = [[],[],[]]
 
       let everyID = []
 
-      let newSkillFlag,persentageNow 
-      console.log("distanceAll = " , distanceAll)
+      let newSkillFlag,percentageNow 
+      // console.log("distanceAll = " , distanceAll)
       for (let i=0;i<skillData.length;i++){
 
         newSkillFlag = true
@@ -684,30 +685,61 @@ module.exports = {
           if (k==1) membersNow = skillData[i].match.distanceMembers.hop1
           if (k==2) membersNow = skillData[i].match.distanceMembers.hop2
 
+
+          // console.log("k,membersNow = " , k,membersNow)
+
           for (let j=0;j<membersNow.length;j++){
             let memberID = membersNow[j]
             if (!everyID.includes(memberID)){
-              newSkillFlag = false
               distanceAll[k].push(memberID)
               points[k].push(1)
               everyID.push(memberID)
 
-              persentageNow = (100/numberOfSkills)*(  (25*(4-k))/(100)  ) // (How powerful is this skill) * (what is the distance)
+              
+              percentageNow = (100/numberOfSkills)*( (25*(4-k*1.5))/(100) ) // (How powerful is this skill) * (what is the distance)
+              
+              // if (memberID == "908392557258604544"){
+              //   console.log("percentageNow = " , percentageNow,i,k,j,newSkillFlag)
+                
+              // }
 
-              persentage[k].push(persentageNow)
+              percentage[k].push(percentageNow)
 
+              skillPercentage[k].push([{
+                info: skillData[i]._id,
+                percentage100: percentageNow*numberOfSkills,
+                percentageReal: percentageNow
+              }])
 
-              if (i==1) console.log("add the memberID = " , memberID)
-            } else {
+              
+              // if (newSkillFlag==true) percentage[k].push(percentageNow)
               newSkillFlag = false
+
+
+              // if (i==1) console.log("add the memberID = " , memberID)
+            } else {
               let pos = distanceAll[k].indexOf(memberID)
               // console.log("pos = " , pos)
               if (pos>-1) {
                 points[k][pos] = points[k][pos] + 1
 
-                persentageNow = (100/numberOfSkills)*(  (25*(4-k))/(100)  ) // (How powerful is this skill) * (what is the distance)
+                percentageNow = (100/numberOfSkills)*( (25*(4-k*1.5))/(100) ) // (How powerful is this skill) * (what is the distance)
 
-                persentage[k][pos] = persentage[k][pos] + persentageNow
+                // if (memberID == "908392557258604544"){
+                //   console.log("percentageNow 2= " , percentageNow,i,k,j,newSkillFlag)
+                  
+                // }
+
+                skillPercentage[k][pos].push({
+                  info: skillData[i]._id,
+                  percentage100: percentageNow*numberOfSkills,
+                  percentageReal: percentageNow
+                })
+
+                percentage[k][pos] = percentage[k][pos] + percentageNow
+                // if (newSkillFlag == true) percentage[k][pos] = percentage[k][pos] + percentageNow
+                newSkillFlag = false
+
 
               }
 
@@ -717,7 +749,7 @@ module.exports = {
         }
       }
 
-      console.log("points = " , points)
+      // console.log("points = " , points)
 
       matchSkillsToMembersOutput = []
       
@@ -726,10 +758,11 @@ module.exports = {
         for (let k=0;k<distanceAll[i].length;k++){
           matchSkillsToMembersOutput.push({
             memberID: distanceAll[i][k],
-            // matchPercentage: 25*(3-i) + (25/skillData.length)*points[i][k],
-            matchPercentage: persentage[i][k],
-            // commonSkills: 
-
+            // skillTotalPercentage: 25*(3-i) + (25/skillData.length)*points[i][k],
+            skillTotalPercentage: percentage[i][k],
+            skillsPercentage: skillPercentage[i][k],
+            hoursPerWeek,
+            budgetAmount,
           })
           
         }
@@ -853,13 +886,13 @@ module.exports = {
 
             let pos = projectsID_all.indexOf(projectNowID.toString())
 
-            newMatchPersentage = matchSkillsToMembersOutput[pos].matchPercentage
+            newMatchPercentage = matchSkillsToMembersOutput[pos].matchPercentage
             if (matchSkillsToMembersOutput[pos].matchPercentage<25*(3-i) + (25/skillData.length)*points[i][k]){
-              newMatchPersentage = 25*(3-i) + (25/skillData.length)*points[i][k]
+              newMatchPercentage = 25*(3-i) + (25/skillData.length)*points[i][k]
             }
             matchSkillsToMembersOutput[pos] = {
               projectID: matchSkillsToMembersOutput[pos].projectID,
-              matchPercentage: newMatchPersentage,
+              matchPercentage: newMatchPercentage,
               commonSkillsID: [],
               projectRoles: [{
                 projectRoleID: distanceAll[i][k],
