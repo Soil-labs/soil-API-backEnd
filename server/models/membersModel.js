@@ -113,6 +113,13 @@ const memberSchema = mongoose.Schema({
     taskID: [mongoose.Schema.ObjectId,]
   },
 
+  budget: {
+    totalBudget: String,
+    token: String,
+    perHour: String,
+    perMonth: String,
+  },
+
   registeredAt: Date,
 
   memberRole: mongoose.Schema.ObjectId

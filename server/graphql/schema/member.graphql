@@ -118,13 +118,27 @@ module.exports = `
     type matchMembersToUserOutput {
         matchPercentage: Float,
         member: Members,
-        commonSkills: [Skills]
+        commonSkills: [Skills],
     }
 
     type matchMembersToSkillOutput {
-        matchPercentage: Float,
+        matchPercentage: MatchPercentage,
         member: Members,
-        commonSkills: [Skills]
+        skillsPercentage: [SkillsPercentage]
+        
+    }
+
+    type MatchPercentage {
+        totalPercentage: Float,
+        skillTotalPercentage: Float,
+        hoursPercentage: Float,
+        budgetPercentage: Float,
+    }
+
+    type SkillsPercentage {
+        info: Skills
+        percentage100: Float
+        percentageReal: Float
     }
 
     type matchMembersToProjectOutput {
@@ -208,6 +222,8 @@ module.exports = `
 
     input matchSkillsToMembersInput {
         skillsID: [ID]
+        hoursPerWeek: Int
+        budgetAmount: Float
         serverID: [String]
         page: Int
         limit: Int
