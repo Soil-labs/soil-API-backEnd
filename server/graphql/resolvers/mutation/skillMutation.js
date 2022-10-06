@@ -82,11 +82,11 @@ module.exports = {
           for (let i=0;i<skillCategoryData.length;i++){ // TODO: SOS 🆘 -> add the skill on teh category mongo
             
             console.log("-----------i = " , i)
-            makeConnection_neo4j({
-              node:["Skill","Skill_Category"],
-              id:[skillData._id,skillCategoryData[i]._id],
-              connection:"CATEGORY",
-            })
+            // makeConnection_neo4j({
+            //   node:["Skill","Skill_Category"],
+            //   id:[skillData._id,skillCategoryData[i]._id],
+            //   connection:"CATEGORY",
+            // })
 
             
 
@@ -446,11 +446,11 @@ module.exports = {
             for (let i=0;i<skillCategoryData.length;i++){ // TODO: SOS 🆘 -> add the skill on teh category mongo
               
               console.log("-----------i = " , i)
-              makeConnection_neo4j({
-                node:["Skill","Skill_Category"],
-                id:[skillData._id,skillCategoryData[i]._id],
-                connection:"CATEGORY",
-              })
+              // makeConnection_neo4j({
+              //   node:["Skill","Skill_Category"],
+              //   id:[skillData._id,skillCategoryData[i]._id],
+              //   connection:"CATEGORY",
+              // })
 
               
 
