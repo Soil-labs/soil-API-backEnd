@@ -652,6 +652,7 @@ module.exports = {
       limit=10
     }
 
+    // console.log("change = 1" )
      
     try {
       
@@ -672,6 +673,7 @@ module.exports = {
       let percentage = [[],[],[]]
       let skillPercentage = [[],[],[]]
 
+      // console.log("change = 2" )
       let everyID = []
 
       let newSkillFlag,percentageNow 
@@ -747,6 +749,7 @@ module.exports = {
             }
           }
         }
+        // console.log("change = 3" )
       }
 
       // console.log("points = " , points)
@@ -769,6 +772,8 @@ module.exports = {
         
 
       }
+      // console.log("change = 4" )
+
 
 
       return matchSkillsToMembersOutput.slice(page*limit,(page+1)*limit)
