@@ -433,31 +433,31 @@ module.exports = {
             );
          }
       },
-      member: async (parent, args, context, info) => {
-         // console.log("parent 22322= " , parent)
+      // member: async (parent, args, context, info) => {
+      //    // console.log("parent 22322= " , parent)
 
-         try {
-            const memberID = parent.memberID;
+      //    try {
+      //       const memberID = parent.memberID;
 
 
-            memberData = await Members.findOne({_id: memberID})
+      //       memberData = await Members.findOne({_id: memberID})
             
 
 
 
-            return memberData;
+      //       return memberData;
 
-         } catch (err) {
-            throw new ApolloError(
-               err.message,
-               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
-               {
-                  component: 'userResolver > skills',
-                  user: context.req.user?._id,
-               }
-            );
-         }
-      },
+      //    } catch (err) {
+      //       throw new ApolloError(
+      //          err.message,
+      //          err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+      //          {
+      //             component: 'userResolver > skills',
+      //             user: context.req.user?._id,
+      //          }
+      //       );
+      //    }
+      // },
       matchPercentage: async (parent, args, context, info) => {
          // console.log("parent 22322= rorinsdf" , parent)
          // console.log("info 22322= rorinsdf" , info)
