@@ -801,12 +801,12 @@ module.exports = {
           newmembers.push({
               ...member,
               member: memberNow,
-              // matchPercentage: {
-              //     totalPercentage,
-              //     skillTotalPercentage,
-              //     hoursPercentage,
-              //     budgetPercentage,
-              // }
+              matchPercentage: {
+                  totalPercentage,
+                  skillTotalPercentage,
+                  hoursPercentage,
+                  budgetPercentage,
+              }
             })
           }
         }
