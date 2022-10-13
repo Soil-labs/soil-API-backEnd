@@ -768,12 +768,45 @@ module.exports = {
       // let newmembers = allMembers.map(m_id => dataAllMembers2_object[m_id])
 
       let newmembers = []
+      let memberNow
       matchSkillsToMembersOutput.forEach(member => {
 
-        if (dataAllMembers2_object[member.memberID]){
+        memberNow = dataAllMembers2_object[member.memberID]
+        if (memberNow){
+
+          let hoursPercentage = 0
+          // console.log("memberNow = " , memberNow)
+            if (memberNow.hoursPerWeek && memberNow.hoursPerWeek>0) {
+
+               hoursPercentage = 100 - ((memberNow.hoursPerWeek - hoursPerWeek)**2)/3
+               if (hoursPercentage<0) hoursPercentage = 0
+               if (hoursPercentage>100) hoursPercentage = 100
+            }
+
+
+
+            let budgetPercentage = 0
+
+            if (memberNow.budget && memberNow.budget.totalBudget ) {
+               budgetPercentage = 100 - ((memberNow.budget.totalBudget - budgetAmount)**2)/3
+               
+               if (budgetPercentage<0) budgetPercentage = 0
+               if (budgetPercentage>100) budgetPercentage = 100
+            }
+
+            let skillTotalPercentage = member.skillTotalPercentage
+            let totalPercentage = skillTotalPercentage*0.6 + hoursPercentage*0.2 + budgetPercentage*0.2
+
+
           newmembers.push({
               ...member,
-              member: dataAllMembers2_object[member.memberID],
+              member: memberNow,
+              // matchPercentage: {
+              //     totalPercentage,
+              //     skillTotalPercentage,
+              //     hoursPercentage,
+              //     budgetPercentage,
+              // }
             })
           }
         }
