@@ -806,7 +806,8 @@ module.exports = {
                   skillTotalPercentage,
                   hoursPercentage,
                   budgetPercentage,
-              }
+              },
+              totalPercentage: totalPercentage,
             })
           }
         }
@@ -816,7 +817,7 @@ module.exports = {
 
 
 
-      //  matchSkillsToMembersOutput.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+      newmembers.sort((a, b) => parseFloat(b.totalPercentage) - parseFloat(a.totalPercentage));
 
       // -------------- Clean and Sort ---------------
 
