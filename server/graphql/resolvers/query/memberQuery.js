@@ -813,11 +813,38 @@ module.exports = {
         }
       )
 
-      console.log("dataAllMembers 2= ", newmembers);
+      // console.log("dataAllMembers 2= ", newmembers);
 
 
 
       newmembers.sort((a, b) => parseFloat(b.totalPercentage) - parseFloat(a.totalPercentage));
+
+        
+      // let r = 100/(5)
+      let r = 100/(newmembers.length)
+
+      newmembers = newmembers.map((member,index) => {
+
+
+        let min = 0
+        let max = r/3
+        let randomNum = Math.random() * (max - min) + min
+        // console.log("Math.random() * (max - min) + min) = " , (Math.random() * (max - min) + min))
+
+        let userPercentage = r*( newmembers.length - index) - randomNum
+        
+
+        return ({
+          ...member,
+          matchPercentage:{
+            ...member.matchPercentage,
+            totalPercentage: userPercentage,
+          }
+        })
+      })
+
+
+
 
       // -------------- Clean and Sort ---------------
 
