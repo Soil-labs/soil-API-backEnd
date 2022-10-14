@@ -39,8 +39,7 @@ module.exports = `
 
         gardenUpdate: gardenUpdateType,
 
-        memberRole: RoleTemplate,
-        chat: chatResponse
+        memberRole: RoleTemplate
     }
 
 
@@ -98,11 +97,6 @@ module.exports = `
         picture: String,
         startDate: String,
         endDate: String,
-    }
-
-    type chatResponse {
-        numChat: Int
-        numReply: Int
     }
 
     type projectMemberType {

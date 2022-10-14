@@ -54,10 +54,5 @@ module.exports = `
         exitRoom(fields: enterRoomInput!): Rooms
         updateMemberInRoom(fields: updateMemberInRoomInput): Members
 
-        #  ---------- CHAT MUTATIONS -------
-        addNewChat(fields: addNewChatInput): Chats
-        updateChatReply(fields: updateChatReplyInput): Chats
-        updateChatResult(fields: updateChatResultInput): Chats
-
     }
 `
