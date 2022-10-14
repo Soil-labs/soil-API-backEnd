@@ -7,7 +7,7 @@ const {updateSkillCategory} = require("./mutation/skillCategoryMutation")
 const {updateSkillSubCategory} = require("./mutation/skillSubCategoryMutation")
 const {createProjectUpdate} = require("./mutation/projectUpdateMutation")
 const {createRoom, enterRoom, exitRoom,updateMemberInRoom, roomUpdated, memberUpdatedInRoom} = require("./mutation/roomMutation")
-const { addNewChat, updateChatReply, updateChatResult } = require("./mutation/chatMutation")
+
 
 
 module.exports = {
@@ -42,12 +42,7 @@ module.exports = {
     createProjectUpdate,
 
     //---------------ROOM MUTATION --------------------
-    createRoom, enterRoom, exitRoom, updateMemberInRoom,
-
-     // ------------- CHAT MUTATION -----------------
-     addNewChat,
-     updateChatReply, 
-     updateChatResult
+    createRoom, enterRoom, exitRoom, updateMemberInRoom
 
     
   },

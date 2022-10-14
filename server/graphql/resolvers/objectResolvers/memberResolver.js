@@ -276,7 +276,6 @@ module.exports = {
             );
          }
       },
-      
    },
    
    matchMembersToUserOutput: {
