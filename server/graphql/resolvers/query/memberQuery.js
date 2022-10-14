@@ -894,7 +894,7 @@ module.exports = {
 
       let everyID = [];
 
-      console.log("distanceAll = ", distanceAll);
+      // console.log("distanceAll = ", distanceAll);
       for (let i = 0; i < skillData.length; i++) {
         for (let k = 0; k < 3; k++) {
           let projectsNow;
@@ -926,8 +926,8 @@ module.exports = {
 
       let projectNow_allData = await Projects.find({ "role._id": everyID });
 
-      console.log("everyID = ", everyID);
-      console.log("projectNow_allData = ", projectNow_allData);
+      // console.log("everyID = ", everyID);
+      // console.log("projectNow_allData = ", projectNow_allData);
 
       roleIDtoProjectID = {};
 
@@ -938,6 +938,8 @@ module.exports = {
           roleIDtoProjectID[roleNow._id.toString()] = projectNow._id.toString();
         }
       }
+
+      console.log("change = 1" )
 
       matchSkillsToMembersOutput = [];
       projectsID_all = [];
@@ -953,51 +955,58 @@ module.exports = {
           //   console.log("projectNowData = " , projectNowData)
           // }
 
-          if (projectsID_all.includes(projectNowID.toString())) {
-            let pos = projectsID_all.indexOf(projectNowID.toString());
+          console.log("projectNowID 2 = " , projectNowID)
 
-            newMatchPercentage =
-              matchSkillsToMembersOutput[pos].matchPercentage;
-            if (
-              matchSkillsToMembersOutput[pos].matchPercentage <
-              25 * (3 - i) + (25 / skillData.length) * points[i][k]
-            ) {
+          if (projectNowID){
+            if (projectsID_all.includes(projectNowID.toString())) {
+              let pos = projectsID_all.indexOf(projectNowID.toString());
+
               newMatchPercentage =
-                25 * (3 - i) + (25 / skillData.length) * points[i][k];
-            }
-            matchSkillsToMembersOutput[pos] = {
-              projectID: matchSkillsToMembersOutput[pos].projectID,
-              matchPercentage: newMatchPercentage,
-              commonSkillsID: [],
-              projectRoles: [
-                {
-                  projectRoleID: distanceAll[i][k],
-                  matchPercentage:
-                    25 * (3 - i) + (25 / skillData.length) * points[i][k],
-                  commonSkillsID: [],
-                },
-              ],
-            };
-          } else {
-            matchSkillsToMembersOutput.push({
-              projectID: projectNowID,
-              matchPercentage:
-                25 * (3 - i) + (25 / skillData.length) * points[i][k],
-              commonSkillsID: [],
+                matchSkillsToMembersOutput[pos].matchPercentage;
+              if (
+                matchSkillsToMembersOutput[pos].matchPercentage <
+                25 * (3 - i) + (25 / skillData.length) * points[i][k]
+              ) {
+                newMatchPercentage =
+                  25 * (3 - i) + (25 / skillData.length) * points[i][k];
+              }
+              matchSkillsToMembersOutput[pos] = {
+                projectID: matchSkillsToMembersOutput[pos].projectID,
+                matchPercentage: newMatchPercentage,
+                commonSkillsID: [],
+                projectRoles: [
+                  {
+                    projectRoleID: distanceAll[i][k],
+                    matchPercentage:
+                      25 * (3 - i) + (25 / skillData.length) * points[i][k],
+                    commonSkillsID: [],
+                  },
+                ],
+              };
+            } else {
+              matchSkillsToMembersOutput.push({
+                projectID: projectNowID,
+                matchPercentage:
+                  25 * (3 - i) + (25 / skillData.length) * points[i][k],
+                commonSkillsID: [],
 
-              projectRoles: [
-                {
-                  projectRoleID: distanceAll[i][k],
-                  matchPercentage:
-                    25 * (3 - i) + (25 / skillData.length) * points[i][k],
-                  commonSkillsID: [],
-                },
-              ],
-            });
-            projectsID_all.push(projectNowID.toString());
+                projectRoles: [
+                  {
+                    projectRoleID: distanceAll[i][k],
+                    matchPercentage:
+                      25 * (3 - i) + (25 / skillData.length) * points[i][k],
+                    commonSkillsID: [],
+                  },
+                ],
+              });
+              projectsID_all.push(projectNowID.toString());
+            }
           }
         }
       }
+
+
+      console.log("change = 2" )
 
       return matchSkillsToMembersOutput.slice(page * limit, (page + 1) * limit);
     } catch (err) {

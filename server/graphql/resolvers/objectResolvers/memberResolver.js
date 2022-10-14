@@ -458,68 +458,68 @@ module.exports = {
       //       );
       //    }
       // },
-   //    matchPercentage: async (parent, args, context, info) => {
-   //       // console.log("parent 22322= rorinsdf" , parent)
-   //       // console.log("info 22322= rorinsdf" , info)
+      // matchPercentage: async (parent, args, context, info) => {
+      //    // console.log("parent 22322= rorinsdf" , parent)
+      //    // console.log("info 22322= rorinsdf" , info)
 
-   //       try {
-   //          const memberID = parent.memberID;
+      //    try {
+      //       const memberID = parent.memberID;
 
-   //          // console.log("change = 5" )
+      //       // console.log("change = 5" )
 
 
-   //          memberData = await Members.findOne({_id: memberID})
+      //       memberData = await Members.findOne({_id: memberID})
             
 
 
-   //          let hoursPercentage = 0
-   //          if (memberData && memberData.hoursPerWeek && memberData.hoursPerWeek>0) {
+      //       let hoursPercentage = 0
+      //       if (memberData && memberData.hoursPerWeek && memberData.hoursPerWeek>0) {
 
-   //             hoursPercentage = 100 - ((memberData.hoursPerWeek - parent.hoursPerWeek)**2)/3
-   //             if (hoursPercentage<0) hoursPercentage = 0
-   //             if (hoursPercentage>100) hoursPercentage = 100
-   //          }
+      //          hoursPercentage = 100 - ((memberData.hoursPerWeek - parent.hoursPerWeek)**2)/3
+      //          if (hoursPercentage<0) hoursPercentage = 0
+      //          if (hoursPercentage>100) hoursPercentage = 100
+      //       }
 
 
 
-   //          let budgetPercentage = 0
+      //       let budgetPercentage = 0
 
-   //          if (memberData && memberData.budget && memberData.budget.totalBudget ) {
-   //             budgetPercentage = 100 - ((memberData.budget.totalBudget - parent.budgetAmount)**2)/3
+      //       if (memberData && memberData.budget && memberData.budget.totalBudget ) {
+      //          budgetPercentage = 100 - ((memberData.budget.totalBudget - parent.budgetAmount)**2)/3
                
-   //             if (budgetPercentage<0) budgetPercentage = 0
-   //             if (budgetPercentage>100) budgetPercentage = 100
-   //          }
+      //          if (budgetPercentage<0) budgetPercentage = 0
+      //          if (budgetPercentage>100) budgetPercentage = 100
+      //       }
 
-   //          let skillTotalPercentage = parent.skillTotalPercentage
-   //          let totalPercentage = skillTotalPercentage*0.6 + hoursPercentage*0.2 + budgetPercentage*0.2
-
-
-
-   //          // skillTotalPercentage,
-   //          // hoursPercentage,
-   //          // budgetPercentage,)
-   //          return {
-   //             totalPercentage,
-   //             skillTotalPercentage,
-   //             hoursPercentage,
-   //             budgetPercentage,
-   //          }
+      //       let skillTotalPercentage = parent.skillTotalPercentage
+      //       let totalPercentage = skillTotalPercentage*0.6 + hoursPercentage*0.2 + budgetPercentage*0.2
 
 
-   //          // return parent.matchPercentage;
 
-   //       } catch (err) {
-   //          throw new ApolloError(
-   //             err.message,
-   //             err.extensions?.code || 'DATABASE_SEARCH_ERROR',
-   //             {
-   //                component: 'userResolver > skills',
-   //                user: context.req.user?._id,
-   //             }
-   //          );
-   //       }
-   //    },
+      //       // skillTotalPercentage,
+      //       // hoursPercentage,
+      //       // budgetPercentage,)
+      //       return {
+      //          totalPercentage,
+      //          skillTotalPercentage,
+      //          hoursPercentage,
+      //          budgetPercentage,
+      //       }
+
+
+      //       // return parent.matchPercentage;
+
+      //    } catch (err) {
+      //       throw new ApolloError(
+      //          err.message,
+      //          err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+      //          {
+      //             component: 'userResolver > skills',
+      //             user: context.req.user?._id,
+      //          }
+      //       );
+      //    }
+      // },
    },
    SkillsPercentage: {
       info: async (parent, args, context, info) => {
