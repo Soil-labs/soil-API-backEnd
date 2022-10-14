@@ -5,10 +5,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const SALT_I = 10;
 
-
-
 const memberSchema = mongoose.Schema({
-
   _id: {
     type: String,
     unique: true,
@@ -20,7 +17,7 @@ const memberSchema = mongoose.Schema({
   },
   discordAvatar: String,
   discriminator: String,
-  bio: String, 
+  bio: String,
 
   onbording: {
     signup: {
@@ -38,54 +35,61 @@ const memberSchema = mongoose.Schema({
     mostProud: String,
     showCaseAbility: String,
   },
-  interest:String,
+  interest: String,
 
   invitedBy: String, // ID
 
   hoursPerWeek: Number,
   timeZone: String,
 
-
   serverID: [String],
 
   tweets: [String],
-  skills: [{
-    id: mongoose.Schema.ObjectId,
-    authors: [String],
-    communityLevel: Number,
-    selfEndorsedLevel: Number,
-    level: {
-      type: String,
-      enum: ["learning", "junior","mid","senior"],
+  skills: [
+    {
+      id: mongoose.Schema.ObjectId,
+      authors: [String],
+      communityLevel: Number,
+      selfEndorsedLevel: Number,
+      level: {
+        type: String,
+        enum: ["learning", "junior", "mid", "senior"],
+      },
     },
-  }],
-  projects: [{
-    projectID: mongoose.Schema.ObjectId,
-    roleID: mongoose.Schema.ObjectId,
-    champion: Boolean,
-    phase: {
-      type: String,
-      enum: ["shortlisted", "engaged","committed","rejected","invited"],
-      default: "shortlisted"
+  ],
+  projects: [
+    {
+      projectID: mongoose.Schema.ObjectId,
+      roleID: mongoose.Schema.ObjectId,
+      champion: Boolean,
+      phase: {
+        type: String,
+        enum: ["shortlisted", "engaged", "committed", "rejected", "invited"],
+        default: "shortlisted",
+      },
+      favorite: Boolean,
     },
-    favorite: Boolean,
-  }],
+  ],
   archiveProjects: [mongoose.Schema.ObjectId],
 
-  previusProjects: [{
-    title: String,
-    description: String,
-    positionName: String,
-    link: String,
-    picture: String,
-    startDate: Date,
-    endDate: Date,
-  }],
+  previusProjects: [
+    {
+      title: String,
+      description: String,
+      positionName: String,
+      link: String,
+      picture: String,
+      startDate: Date,
+      endDate: Date,
+    },
+  ],
 
-  links: [{
-    name: String,
-    url: String,
-  }],
+  links: [
+    {
+      name: String,
+      url: String,
+    },
+  ],
 
   attributes: {
     totalVotes: Number,
@@ -100,17 +104,21 @@ const memberSchema = mongoose.Schema({
     Reformer: Number,
   },
 
-  network: [{
-    memberID: String,
-    endorcment: [{
-      skillID: mongoose.Schema.ObjectId,
-      registeredAt: Date,
-    }],
-  }],
+  network: [
+    {
+      memberID: String,
+      endorcment: [
+        {
+          skillID: mongoose.Schema.ObjectId,
+          registeredAt: Date,
+        },
+      ],
+    },
+  ],
 
   gardenUpdate: {
     epicID: [mongoose.Schema.ObjectId],
-    taskID: [mongoose.Schema.ObjectId,]
+    taskID: [mongoose.Schema.ObjectId],
   },
 
   budget: {
@@ -122,11 +130,18 @@ const memberSchema = mongoose.Schema({
 
   registeredAt: Date,
 
-  memberRole: mongoose.Schema.ObjectId
-
-
+  memberRole: mongoose.Schema.ObjectId,
+  chat: {
+    numChat: {
+      type: Number,
+      default: 0,
+    },
+    numReply: {
+      type: Number,
+      default: 0,
+    },
+  },
 });
-
 
 const Members = mongoose.model("Members", memberSchema);
 module.exports = { Members };
