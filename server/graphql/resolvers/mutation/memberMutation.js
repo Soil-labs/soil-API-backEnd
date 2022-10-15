@@ -278,8 +278,10 @@ module.exports = {
           })
 
           // Recalculate the skill match now that neo4j diagram changed
-          await Skills.findOneAndUpdate(
-              {_id: skill._id},
+
+          console.log("change = 22-223-3" ,skill.id)
+          let res2 = await Skills.findOneAndUpdate(
+              {_id: skill.id},
               {
                   $set: {
                       match: {
@@ -293,7 +295,9 @@ module.exports = {
               },
               {new: true}
           )
+          console.log("res2 = " , res2)
         }
+
       }
 
       pubsub.publish(membersData._id, {

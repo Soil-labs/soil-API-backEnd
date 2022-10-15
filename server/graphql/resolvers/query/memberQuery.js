@@ -806,6 +806,7 @@ module.exports = {
                   skillTotalPercentage,
                   hoursPercentage,
                   budgetPercentage,
+                  realTotalPercentage: totalPercentage,
               },
               totalPercentage: totalPercentage,
             })
@@ -829,7 +830,7 @@ module.exports = {
         let min = 0
         let max = r/3
         let randomNum = Math.random() * (max - min) + min
-        // console.log("Math.random() * (max - min) + min) = " , (Math.random() * (max - min) + min))
+        
 
         let userPercentage = r*( newmembers.length - index) - randomNum
         
@@ -839,6 +840,7 @@ module.exports = {
           matchPercentage:{
             ...member.matchPercentage,
             totalPercentage: userPercentage,
+            // realTotalPercentage: 100,
           }
         })
       })
