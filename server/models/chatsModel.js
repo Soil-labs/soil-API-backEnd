@@ -9,6 +9,7 @@ const chatSchema = mongoose.Schema({
   projectID: mongoose.Schema.ObjectId,
   projectRoleID: mongoose.Schema.ObjectId,
   threadID: String,
+  serverID: String,
   reply: {
     sender: Boolean,
     receiver: Boolean

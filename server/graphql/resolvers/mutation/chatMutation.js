@@ -11,6 +11,7 @@ module.exports = {
       projectID,
       projectRoleID,
       threadID,
+      serverID
     } = args.fields;
     console.log("Mutation > addNewChat > args.fields = ", args.fields);
 
@@ -35,6 +36,7 @@ module.exports = {
     if (projectID) fields.projectID = projectID;
     if (projectRoleID) fields.projectRoleID = projectRoleID;
     if (threadID) fields.threadID = threadID;
+    if (serverID) fields.serverID = serverID
 
     try {
       const newChat = await new Chats(fields);

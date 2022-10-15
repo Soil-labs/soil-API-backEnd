@@ -8,6 +8,7 @@ module.exports = `
         projectID: ID
         projectRoleID: ID
         threadID: ID
+        serverID: ID
         reply: replyType
         result: resultEnum
     }
@@ -37,6 +38,7 @@ module.exports = `
         projectID: ID
         projectRoleID: ID
         threadID: ID
+        serverID: ID
     }
 
     input updateChatReplyInput {
