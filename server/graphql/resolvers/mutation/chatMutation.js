@@ -11,12 +11,19 @@ module.exports = {
       projectID,
       projectRoleID,
       threadID,
-      serverID
+      serverID,
     } = args.fields;
     console.log("Mutation > addNewChat > args.fields = ", args.fields);
 
     if (!message)
       throw new ApolloError("The message is required to create a chat");
+    if (!serverID)
+      throw new ApolloError("The serverID is required to create a chat");
+    if (!projectID)
+      throw new ApolloError("The projectID is required to create a chat");
+    if (!threadID)
+      throw new ApolloError("The threadID is required to create a chat");
+
     if (!senderID || !receiverID)
       throw new ApolloError(
         "The senderID and the receiverID is a required field"
@@ -27,7 +34,7 @@ module.exports = {
 
     let fields = {
       createdAt: new Date(),
-      reply: { sender: false, receiver: false },
+      reply: { sender: true, receiver: false },
     };
 
     fields.message = message;
@@ -36,12 +43,33 @@ module.exports = {
     if (projectID) fields.projectID = projectID;
     if (projectRoleID) fields.projectRoleID = projectRoleID;
     if (threadID) fields.threadID = threadID;
-    if (serverID) fields.serverID = serverID
+    if (serverID) fields.serverID = serverID;
 
     try {
       const newChat = await new Chats(fields);
       newChat.save();
       console.log("new chat", newChat);
+      //update the sender chat counter
+      const chatSender = await Members.findOne({ _id: senderID });
+      if (chatSender) {
+        let previousChatCount;
+        if (isEmptyObject(chatSender.chat)) {
+          previousChatCount = { numChat: 0, numReply: 0 };
+        } else {
+          previousChatCount = chatSender.chat;
+        }
+
+        previousChatCount = {
+          ...previousChatCount,
+          numChat: previousChatCount.numChat + 1,
+        };
+
+        await Members.findOneAndUpdate(
+          { _id: senderID },
+          { $set: { chat: previousChatCount } },
+          { new: true }
+        );
+      }
       return newChat;
     } catch (err) {
       throw new ApolloError(err.message, err.extensions?.code || "addNewChat", {
@@ -50,27 +78,21 @@ module.exports = {
     }
   },
   updateChatReply: async (parent, args, context, info) => {
-    const { _id, senderReply, receiverReply } = args.fields;
+    const { _id, receiverReply } = args.fields;
     console.log("Mutation > updateChatReply > args.fields = ", args.fields);
 
     if (!_id) throw new ApolloError("The chat _id is required");
 
-    if (!senderReply && !receiverReply)
-      throw new ApolloError("The senderReply or the receiverReply is required");
+    if (!receiverReply) throw new ApolloError("The receiverReply is required");
 
     //find the chat in the DB
-
     try {
       let chat = await Chats.findOne({ _id: _id });
 
       if (!chat) throw new ApolloError("The chat _id is not valid");
 
       const receiverID = chat.receiverID;
-      const senderID = chat.senderID;
-
       const chatReciever = await Members.findOne({ _id: receiverID });
-      const chatSender = await Members.findOne({ _id: senderID });
-
       //chat receiver exist and replied
       if (chatReciever && receiverReply && !chat.reply.receiver) {
         let chatCountReceiver;
@@ -93,33 +115,12 @@ module.exports = {
         );
       }
 
-      //chat sender exist and replied and has not replied before
-      if (chatSender && senderReply && !chat.reply.sender) {
-        let previousChatCount;
-        if (isEmptyObject(chatSender.chat)) {
-          previousChatCount = { numChat: 0, numReply: 0 };
-        } else {
-          previousChatCount = chatSender.chat;
-        }
-
-        previousChatCount = {
-          ...previousChatCount,
-          numChat: previousChatCount.numChat + 1,
-        };
-
-        await Members.findOneAndUpdate(
-          { _id: senderID },
-          { $set: { chat: previousChatCount } },
-          { new: true }
-        );
-      }
-
       //update the chat with the reply
       chat = await Chats.findOneAndUpdate(
         { _id: _id },
         {
           $set: {
-            reply: { sender: senderReply, receiver: receiverReply },
+            reply: { sender: true, receiver: receiverReply },
           },
         },
         { new: true }
