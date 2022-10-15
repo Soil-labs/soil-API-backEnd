@@ -26,6 +26,7 @@ module.exports = {
 
     let fields = {
       createdAt: new Date(),
+      reply: { sender: false, receiver: false },
     };
 
     fields.message = message;
@@ -50,10 +51,10 @@ module.exports = {
     const { _id, senderReply, receiverReply } = args.fields;
     console.log("Mutation > updateChatReply > args.fields = ", args.fields);
 
-    if (!_id || !senderReply || !receiverReply)
-      throw new ApolloError(
-        "The chat _id with the senderReply and receiverReply field are required"
-      );
+    if (!_id) throw new ApolloError("The chat _id is required");
+
+    if (!senderReply && !receiverReply)
+      throw new ApolloError("The senderReply or the receiverReply is required");
 
     //find the chat in the DB
 
@@ -72,7 +73,7 @@ module.exports = {
       if (chatReciever && receiverReply && !chat.reply.receiver) {
         let chatCountReceiver;
 
-        if (isEmptyObject((chatReciever.chat = {}))) {
+        if (isEmptyObject(chatReciever.chat)) {
           chatCountReceiver = { numChat: 0, numReply: 0 };
         } else {
           chatCountReceiver = chatReciever.chat;
@@ -93,7 +94,7 @@ module.exports = {
       //chat sender exist and replied and has not replied before
       if (chatSender && senderReply && !chat.reply.sender) {
         let previousChatCount;
-        if (isEmptyObject((chatSender.chat = {}))) {
+        if (isEmptyObject(chatSender.chat)) {
           previousChatCount = { numChat: 0, numReply: 0 };
         } else {
           previousChatCount = chatSender.chat;
@@ -164,5 +165,8 @@ module.exports = {
 };
 
 function isEmptyObject(obj) {
-  return JSON.stringify(obj) === "{}";
+  if (obj) {
+    return JSON.stringify(obj) === "{}";
+  }
+  return false;
 }
