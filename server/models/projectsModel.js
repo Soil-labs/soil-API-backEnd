@@ -23,7 +23,7 @@ const projectSchema = mongoose.Schema({
     phase: {
       type: String,
       enum: ["shortlisted", "engaged","committed","rejected","invited"],
-      default: "shortlisted"
+      default: "committed"
     },
   }],
 
