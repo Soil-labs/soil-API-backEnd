@@ -130,6 +130,7 @@ module.exports = `
 
     type MatchPercentage {
         totalPercentage: Float,
+        realTotalPercentage: Float,
         skillTotalPercentage: Float,
         hoursPercentage: Float,
         budgetPercentage: Float,
