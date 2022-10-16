@@ -279,17 +279,22 @@ module.exports = {
 
           // Recalculate the skill match now that neo4j diagram changed
 
+          let skillDataN = await Skills.findOne({_id: skill.id})
+
           console.log("change = 22-223-3" ,skill.id)
+          // console.log("change = 22-223-3" ,skill)
+          console.log("change = 22-223-3" ,skillDataN?.match)
+          console.log("change = 22-223-3" ,skillDataN?.match?.distanceMembers)
           let res2 = await Skills.findOneAndUpdate(
               {_id: skill.id},
               {
                   $set: {
                       match: {
                         recalculateProjectRoles: true,
-                        distanceProjectRoles: skill.distanceProjectRoles,
+                        distanceProjectRoles: skillDataN?.match?.distanceProjectRoles,
                         
                         recalculateMembers: true,
-                        distanceMembers: skill.distanceMembers,
+                        distanceMembers: skillDataN?.match?.distanceMembers,
                       }
                   }
               },
