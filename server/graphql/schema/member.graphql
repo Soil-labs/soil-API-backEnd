@@ -40,6 +40,12 @@ module.exports = `
         gardenUpdate: gardenUpdateType,
 
         memberRole: RoleTemplate
+        chat: chatResponse
+    }
+
+     type chatResponse {
+        numChat: Int
+        numReply: Int
     }
 
 
