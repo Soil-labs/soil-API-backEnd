@@ -185,7 +185,7 @@ module.exports = {
     makeConnection_neo4j: async (req, res) => {
         const { node, id,connection } = req;
 
-        console.log("change -------------makeConnection_neo4j---------= " , node,id, connection)
+        // console.log("change -------------makeConnection_neo4j---------= " , node,id, connection)
         const session = driver.session({database:"neo4j"});
 
         fun = ''
@@ -204,7 +204,35 @@ module.exports = {
             MERGE (n0)-[:${connection}]->(n1)
         `
 
-        console.log("fun = " , fun)
+        // console.log("fun = " , fun)
+        result = await session.writeTransaction(tx => 
+            tx.run(fun)
+        )
+
+        session.close()
+        
+    },
+    deleteConnectionBetweenNodes_neo4j: async (req, res) => {
+        const { skillID,memberID } = req;
+
+        console.log("change -----------deleteConnectionBetweenNodes_neo4j---------= " , skillID,memberID)
+
+
+        if (!skillID) return 
+
+        if (!memberID) return 
+
+
+
+        let fun = `
+            MATCH (n:Skill {_id: '${skillID}'})-[r]-(P:Member{_id: '${memberID}'})
+            DELETE r
+        `
+
+
+        const session = driver.session({database:"neo4j"});
+
+
         result = await session.writeTransaction(tx => 
             tx.run(fun)
         )
