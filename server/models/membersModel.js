@@ -122,7 +122,18 @@ const memberSchema = mongoose.Schema({
 
   registeredAt: Date,
 
-  memberRole: mongoose.Schema.ObjectId
+  memberRole: mongoose.Schema.ObjectId,
+
+  chat: {
+    numChat: {
+      type: Number,
+      default: 0,
+    },
+    numReply: {
+      type: Number,
+      default: 0,
+    },
+  },
 
 
 });

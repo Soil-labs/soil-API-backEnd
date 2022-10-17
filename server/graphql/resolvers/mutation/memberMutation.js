@@ -5,7 +5,7 @@ const { RoleTemplate } = require("../../../models/roleTemplateModal");
 
 const {ApolloError} = require("apollo-server-express");
 const { driver } = require("../../../../server/neo4j_config");
-const {createNode_neo4j,makeConnection_neo4j,updateNode_neo4j_serverID} = require("../../../neo4j/func_neo4j");
+const {createNode_neo4j,makeConnection_neo4j,updateNode_neo4j_serverID,deleteConnectionBetweenNodes_neo4j} = require("../../../neo4j/func_neo4j");
 
 const { PubSub } = require('graphql-subscriptions');
 const pubsub = new PubSub()
@@ -156,11 +156,12 @@ module.exports = {
 
 
     let membersData = await Members.findOne({ _id: fields._id })
+    let membersDataOriginal = membersData
     
 
-    console.log("memberRole = " , memberRole)
-    console.log("skills = " , skills)
-    console.log("membersData.skills = " , membersData.skills)
+    // console.log("memberRole = " , memberRole)
+    // console.log("skills = " , skills)
+    // console.log("membersData.skills = " , membersData.skills)
 
     // -------- Role -> Skill -----------
     if (memberRole){
@@ -190,7 +191,6 @@ module.exports = {
     }
     // -------- Role -> Skill -----------
     // console.log("skills = " , skills)
-    // asdf
 
     if (skills) fields =  {...fields,skills}
 
@@ -255,7 +255,7 @@ module.exports = {
 
         membersData = await Members.findOneAndUpdate({ _id: fields._id }, fields, { new: true });
 
-        console.log("membersData = " , membersData)
+        // console.log("membersData = " , membersData)
         if (fields.serverID){
            updateNode_neo4j_serverID({
             node:"Member",
@@ -268,6 +268,61 @@ module.exports = {
  
     
       if (skills){
+
+
+        //  ---------------- Delete Connection of Deleted Skills ----------------
+        console.log("membersDataOriginal.skills = " , membersDataOriginal.skills)
+        console.log("skills = " , skills)
+
+        
+        let membersDataOriginalArray = membersDataOriginal.skills.map(function(item) {
+          return item.id.toString();
+        });
+
+        let skillsArray = skills.map(function(item) {
+          return item.id.toString();
+        });
+
+        console.log("membersDataOriginalArray = " , membersDataOriginalArray)
+        console.log("skillsArray = " , skillsArray)
+
+        // let difference = skills.filter(x => !membersDataOriginalArray.includes(x.id));
+        let difference = membersDataOriginalArray.filter(x => !skillsArray.includes(x));
+
+        console.log("difference = " , difference)
+
+
+        for (let i = 0; i < difference.length; i++) {
+          let skillID = difference[i]
+          deleteConnectionBetweenNodes_neo4j({
+            skillID: skillID,
+            memberID: membersData._id,
+          })
+
+
+          let skillDataN = await Skills.findOne({_id: skillID})
+          
+          await Skills.findOneAndUpdate(
+              {_id: skillID},
+              {
+                  $set: {
+                      match: {
+                        recalculateProjectRoles: true,
+                        distanceProjectRoles: skillDataN?.match?.distanceProjectRoles,
+                        
+                        recalculateMembers: true,
+                        distanceMembers: skillDataN?.match?.distanceMembers,
+                      }
+                  }
+              },
+              {new: true}
+          )
+        }
+
+        //  ---------------- Delete Connection of Deleted Skills ----------------
+
+
+        
         for (let i=0;i<skills.length;i++){
           let skill = skills[i];
           
@@ -281,10 +336,6 @@ module.exports = {
 
           let skillDataN = await Skills.findOne({_id: skill.id})
 
-          console.log("change = 22-223-3" ,skill.id)
-          // console.log("change = 22-223-3" ,skill)
-          console.log("change = 22-223-3" ,skillDataN?.match)
-          console.log("change = 22-223-3" ,skillDataN?.match?.distanceMembers)
           let res2 = await Skills.findOneAndUpdate(
               {_id: skill.id},
               {
@@ -300,7 +351,7 @@ module.exports = {
               },
               {new: true}
           )
-          console.log("res2 = " , res2)
+          // console.log("res2 = " , res2)
         }
 
       }

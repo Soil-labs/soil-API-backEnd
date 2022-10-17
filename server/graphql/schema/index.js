@@ -13,6 +13,8 @@ const serverTemplateType = require('./serverTemplate.graphql');
 const errorType = require('./errors.graphql');
 const roomType = require('./rooms.graphql');
 const subscription = require('./subscription.graphql');
+const chatType = require('./chat.graphql')
+
 
 const typeDefs = gql`
   ${query}
@@ -28,6 +30,7 @@ const typeDefs = gql`
   ${SkillSubCategoryType}
   ${errorType}
   ${roomType}
+  ${chatType}
   ${subscription}
 
 `;
