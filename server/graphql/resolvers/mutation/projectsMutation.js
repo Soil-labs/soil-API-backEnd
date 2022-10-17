@@ -413,16 +413,16 @@ module.exports = {
     try {
       let projectData = await Projects.findOne({ _id: projectID });
 
-      let roleData = await Role.findOne({_id: roleID });
+      // let roleData = await Role.findOne({_id: roleID });
 
       if (!projectData)
         throw new ApolloError(
           "This project dont exist you need to choose antoher project"
         );
 
-      if (!roleData) {
-        throw new ApolloError("the role don't exist you need to choose another role")
-      }
+      // if (!roleData) {
+      //   throw new ApolloError("the role don't exist you need to choose another role")
+      // }
 
       let foundMember_flag = false;
       projectData.team.forEach((member) => {
