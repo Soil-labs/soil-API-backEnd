@@ -392,7 +392,7 @@ module.exports = {
   },
 
   changeTeamMember_Phase_Project: async (parent, args, context, info) => {
-    const { projectID, memberID, phase } = JSON.parse(
+    const { projectID, memberID, roleID, phase } = JSON.parse(
       JSON.stringify(args.fields)
     );
     console.log(
@@ -402,6 +402,7 @@ module.exports = {
 
     if (!projectID) throw new ApolloError("you need to specify a project ID");
     if (!memberID) throw new ApolloError("you need to specify a tweet ID");
+    if (!roleID) throw new ApolloError("you need to specify a role ID")
     if (phase == null)
       throw new ApolloError(
         "you need to specify if the tweet is approved or not"
@@ -412,15 +413,22 @@ module.exports = {
     try {
       let projectData = await Projects.findOne({ _id: projectID });
 
+      let roleData = await Role.findOne({_id: roleID });
+
       if (!projectData)
         throw new ApolloError(
           "This project dont exist you need to choose antoher project"
         );
 
+      if (!roleData) {
+        throw new ApolloError("the role don't exist you need to choose another role")
+      }
+
       let foundMember_flag = false;
       projectData.team.forEach((member) => {
         if (member.memberID == memberID) {
           member.phase = phase;
+          member.roleID = roleID
           console.log("tuba = ");
           foundMember_flag = true;
         }
@@ -433,6 +441,7 @@ module.exports = {
         projectData.team.push({
           memberID: memberID,
           phase: phase,
+          roleID: roleID
         });
       }
 
@@ -449,7 +458,7 @@ module.exports = {
           //update the phase
           currentProjects = currentProjects.map((project) => {
             if (project.projectID == projectData._id) {
-              return { ...project, phase: phase };
+              return { ...project, phase: phase, roleID: roleID };
             }
             return project;
           });
@@ -459,6 +468,7 @@ module.exports = {
             projectID: projectData._id,
             champion: false,
             phase: phase,
+            roleID: roleID
           });
         }
 

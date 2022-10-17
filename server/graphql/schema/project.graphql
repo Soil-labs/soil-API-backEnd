@@ -193,6 +193,7 @@ module.exports = `
     input changeTeamMember_Phase_ProjectInput {
         projectID: ID
         memberID: ID
+        roleID: ID
         phase: phaseType,
     }
 
