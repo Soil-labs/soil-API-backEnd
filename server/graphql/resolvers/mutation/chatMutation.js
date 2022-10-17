@@ -16,7 +16,7 @@ module.exports = {
     console.log("Mutation > addNewChat > args.fields = ", args.fields);
 
     if (!message)
-      throw new ApolloError("The message is required to create a chat");
+      throw new ApolloError("The message is required to create a chat message");
     if (!serverID)
       throw new ApolloError("The serverID is required to create a chat");
     if (!projectID)
