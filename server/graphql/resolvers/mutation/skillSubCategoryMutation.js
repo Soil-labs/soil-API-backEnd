@@ -10,7 +10,7 @@ module.exports = {
    
 
     const {_id,name,description,skills,categorySkills,id_lightcast,emoji} = args.fields;
-    console.log("Mutation > updateSkillSubCategory > args.fields = " , args.fields)
+    // console.log("Mutation > updateSkillSubCategory > args.fields = " , args.fields)
 
 
     let fields = {
@@ -31,13 +31,17 @@ module.exports = {
         let isNewCategory = false;
 
         let skillSubCategoryData
-        if (_id || id_lightcast) {
+        if (_id || id_lightcast || name) {
 
             if (_id){
               skillSubCategoryData = await SkillSubCategory.findOne({ _id: _id })
-            }else{
+            }else if (id_lightcast){
               skillSubCategoryData = await SkillSubCategory.findOne({ id_lightcast: id_lightcast })
+            } else if (name){
+              skillSubCategoryData = await SkillSubCategory.findOne({ name: name })
             }
+
+            // console.log("skillSubCategoryData = " , skillSubCategoryData) 
             
             if (!skillSubCategoryData) {
                 skillSubCategoryData = await new SkillSubCategory(fields);

@@ -31,12 +31,14 @@ module.exports = {
         let isNewCategory = false;
 
         let skillCategoryData
-        if (_id || id_lightcast) {
+        if (_id || id_lightcast || name) {
 
             if (_id){
               skillCategoryData = await SkillCategory.findOne({ _id: _id })
-            }else{
+            } else if (id_lightcast){
               skillCategoryData = await SkillCategory.findOne({ id_lightcast: id_lightcast })
+            } else if (name){
+              skillCategoryData = await SkillCategory.findOne({ name: name })
             }
 
             if (!skillCategoryData) {
