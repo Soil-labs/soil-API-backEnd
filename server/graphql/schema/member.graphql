@@ -373,6 +373,11 @@ module.exports = `
         serverID: [String]
     }
 
+    input findMemersByIDOrDiscordNameInput {
+        discordName: String
+        _id: ID
+    }
+
     
 
 `

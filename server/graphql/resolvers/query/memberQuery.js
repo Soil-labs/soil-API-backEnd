@@ -719,7 +719,7 @@ module.exports = {
                 percentage[pos] = percentage[pos] + percentageNow;
                 // if (newSkillFlag == true) percentage[pos] = percentage[pos] + percentageNow
                 newSkillFlag = false;
-              } 
+              }
             }
           }
         }
@@ -730,36 +730,33 @@ module.exports = {
 
       matchSkillsToMembersOutput = [];
 
-      console.log("distanceAll = " , distanceAll)
-      console.log("skillPercentage = " , skillPercentage)
+      console.log("distanceAll = ", distanceAll);
+      console.log("skillPercentage = ", skillPercentage);
       // console.log("skillPercentage = " , skillPercentage[0])
       // // console.log("skillPercentage = " , skillPercentage[0][0])
       // // console.log("skillPercentage = " , skillPercentage[0][0][0])
 
       // console.log("skillPercentage = " , skillPercentage[2])
 
-
       allMembers = [];
       for (let i = 0; i < distanceAll.length; i++) {
-          allMembers.push(distanceAll[i]);
+        allMembers.push(distanceAll[i]);
 
-          // memberData = await Members.findOne({_id: distanceAll[i]})
+        // memberData = await Members.findOne({_id: distanceAll[i]})
 
-          // if (memberData && memberData!=null){
+        // if (memberData && memberData!=null){
 
-          matchSkillsToMembersOutput.push({
-            memberID: distanceAll[i],
-            // skillTotalPercentage: 25*(3-i) + (25/skillData.length)*points[i],
-            skillTotalPercentage: percentage[i],
-            skillsPercentage: skillPercentage[i],
-            hoursPerWeek,
-            budgetAmount,
-          });
-          // }
+        matchSkillsToMembersOutput.push({
+          memberID: distanceAll[i],
+          // skillTotalPercentage: 25*(3-i) + (25/skillData.length)*points[i],
+          skillTotalPercentage: percentage[i],
+          skillsPercentage: skillPercentage[i],
+          hoursPerWeek,
+          budgetAmount,
+        });
+        // }
       }
-      console.log("change = 4", matchSkillsToMembersOutput)
-
-
+      console.log("change = 4", matchSkillsToMembersOutput);
 
       // -------------- Clean and Sort ---------------
 
@@ -778,86 +775,76 @@ module.exports = {
 
       // let newmembers = allMembers.map(m_id => dataAllMembers2_object[m_id])
 
-      let newmembers = []
-      let memberNow
-      matchSkillsToMembersOutput.forEach(member => {
-
-        memberNow = dataAllMembers2_object[member.memberID]
-        if (memberNow){
-
-          let hoursPercentage = 0
+      let newmembers = [];
+      let memberNow;
+      matchSkillsToMembersOutput.forEach((member) => {
+        memberNow = dataAllMembers2_object[member.memberID];
+        if (memberNow) {
+          let hoursPercentage = 0;
           // console.log("memberNow = " , memberNow)
-            if (memberNow.hoursPerWeek && memberNow.hoursPerWeek>0) {
+          if (memberNow.hoursPerWeek && memberNow.hoursPerWeek > 0) {
+            hoursPercentage =
+              100 - (memberNow.hoursPerWeek - hoursPerWeek) ** 2 / 3;
+            if (hoursPercentage < 0) hoursPercentage = 0;
+            if (hoursPercentage > 100) hoursPercentage = 100;
+          }
 
-               hoursPercentage = 100 - ((memberNow.hoursPerWeek - hoursPerWeek)**2)/3
-               if (hoursPercentage<0) hoursPercentage = 0
-               if (hoursPercentage>100) hoursPercentage = 100
-            }
+          let budgetPercentage = 0;
 
+          if (memberNow.budget && memberNow.budget.totalBudget) {
+            budgetPercentage =
+              100 - (memberNow.budget.totalBudget - budgetAmount) ** 2 / 3;
 
+            if (budgetPercentage < 0) budgetPercentage = 0;
+            if (budgetPercentage > 100) budgetPercentage = 100;
+          }
 
-            let budgetPercentage = 0
-
-            if (memberNow.budget && memberNow.budget.totalBudget ) {
-               budgetPercentage = 100 - ((memberNow.budget.totalBudget - budgetAmount)**2)/3
-               
-               if (budgetPercentage<0) budgetPercentage = 0
-               if (budgetPercentage>100) budgetPercentage = 100
-            }
-
-            let skillTotalPercentage = member.skillTotalPercentage
-            let totalPercentage = skillTotalPercentage*0.6 + hoursPercentage*0.2 + budgetPercentage*0.2
-
+          let skillTotalPercentage = member.skillTotalPercentage;
+          let totalPercentage =
+            skillTotalPercentage * 0.6 +
+            hoursPercentage * 0.2 +
+            budgetPercentage * 0.2;
 
           newmembers.push({
-              ...member,
-              member: memberNow,
-              matchPercentage: {
-                  totalPercentage,
-                  skillTotalPercentage,
-                  hoursPercentage,
-                  budgetPercentage,
-                  realTotalPercentage: totalPercentage,
-              },
-              totalPercentage: totalPercentage,
-            })
-          }
+            ...member,
+            member: memberNow,
+            matchPercentage: {
+              totalPercentage,
+              skillTotalPercentage,
+              hoursPercentage,
+              budgetPercentage,
+              realTotalPercentage: totalPercentage,
+            },
+            totalPercentage: totalPercentage,
+          });
         }
-      )
+      });
 
       // console.log("dataAllMembers 2= ", newmembers);
 
+      newmembers.sort(
+        (a, b) => parseFloat(b.totalPercentage) - parseFloat(a.totalPercentage)
+      );
 
-
-      newmembers.sort((a, b) => parseFloat(b.totalPercentage) - parseFloat(a.totalPercentage));
-
-        
       // let r = 100/(5)
-      let r = 100/(newmembers.length)
+      let r = 100 / newmembers.length;
 
-      newmembers = newmembers.map((member,index) => {
+      newmembers = newmembers.map((member, index) => {
+        let min = 0;
+        let max = r / 3;
+        let randomNum = Math.random() * (max - min) + min;
 
+        let userPercentage = r * (newmembers.length - index) - randomNum;
 
-        let min = 0
-        let max = r/3
-        let randomNum = Math.random() * (max - min) + min
-        
-
-        let userPercentage = r*( newmembers.length - index) - randomNum
-        
-
-        return ({
+        return {
           ...member,
-          matchPercentage:{
+          matchPercentage: {
             ...member.matchPercentage,
             totalPercentage: userPercentage,
             // realTotalPercentage: 100,
-          }
-        })
-      })
-
-
-
+          },
+        };
+      });
 
       // -------------- Clean and Sort ---------------
 
@@ -980,7 +967,7 @@ module.exports = {
   //               percentage[k][pos] = percentage[k][pos] + percentageNow;
   //               // if (newSkillFlag == true) percentage[k][pos] = percentage[k][pos] + percentageNow
   //               newSkillFlag = false;
-  //             } 
+  //             }
   //             else {
   //               distanceAll[k].push(memberID);
   //               points[k].push(1);
@@ -1025,7 +1012,6 @@ module.exports = {
 
   //     console.log("skillPercentage = " , skillPercentage[2])
 
-
   //     allMembers = [];
   //     for (let i = 0; i < distanceAll.length; i++) {
   //       for (let k = 0; k < distanceAll[i].length; k++) {
@@ -1047,8 +1033,6 @@ module.exports = {
   //       }
   //     }
   //     console.log("change = 4", matchSkillsToMembersOutput)
-
-
 
   //     // -------------- Clean and Sort ---------------
 
@@ -1083,20 +1067,17 @@ module.exports = {
   //              if (hoursPercentage>100) hoursPercentage = 100
   //           }
 
-
-
   //           let budgetPercentage = 0
 
   //           if (memberNow.budget && memberNow.budget.totalBudget ) {
   //              budgetPercentage = 100 - ((memberNow.budget.totalBudget - budgetAmount)**2)/3
-               
+
   //              if (budgetPercentage<0) budgetPercentage = 0
   //              if (budgetPercentage>100) budgetPercentage = 100
   //           }
 
   //           let skillTotalPercentage = member.skillTotalPercentage
   //           let totalPercentage = skillTotalPercentage*0.6 + hoursPercentage*0.2 + budgetPercentage*0.2
-
 
   //         newmembers.push({
   //             ...member,
@@ -1116,24 +1097,18 @@ module.exports = {
 
   //     // console.log("dataAllMembers 2= ", newmembers);
 
-
-
   //     newmembers.sort((a, b) => parseFloat(b.totalPercentage) - parseFloat(a.totalPercentage));
 
-        
   //     // let r = 100/(5)
   //     let r = 100/(newmembers.length)
 
   //     newmembers = newmembers.map((member,index) => {
 
-
   //       let min = 0
   //       let max = r/3
   //       let randomNum = Math.random() * (max - min) + min
-        
 
   //       let userPercentage = r*( newmembers.length - index) - randomNum
-        
 
   //       return ({
   //         ...member,
@@ -1144,9 +1119,6 @@ module.exports = {
   //         }
   //       })
   //     })
-
-
-
 
   //     // -------------- Clean and Sort ---------------
 
@@ -1241,7 +1213,7 @@ module.exports = {
         }
       }
 
-      console.log("change = 1" )
+      console.log("change = 1");
 
       matchSkillsToMembersOutput = [];
       projectsID_all = [];
@@ -1257,9 +1229,9 @@ module.exports = {
           //   console.log("projectNowData = " , projectNowData)
           // }
 
-          console.log("projectNowID 2 = " , projectNowID)
+          console.log("projectNowID 2 = ", projectNowID);
 
-          if (projectNowID){
+          if (projectNowID) {
             if (projectsID_all.includes(projectNowID.toString())) {
               let pos = projectsID_all.indexOf(projectNowID.toString());
 
@@ -1307,8 +1279,7 @@ module.exports = {
         }
       }
 
-
-      console.log("change = 2" )
+      console.log("change = 2");
 
       return matchSkillsToMembersOutput.slice(page * limit, (page + 1) * limit);
     } catch (err) {
@@ -1316,6 +1287,37 @@ module.exports = {
         err.message,
         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
         { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
+  findMemberByIDOrDiscordName: async (parent, args, context, info) => {
+    const { _id, discordName } = args.fields;
+    console.log(
+      "Query > findMemberByIDOrDiscordName > args.fields = ",
+      args.fields
+    );
+
+    if (!_id && !discordName)
+      throw new ApolloError("_id or the discordName is required");
+
+    try {
+      let searchTerm = {};
+
+      if (_id) {
+        searchTerm = { _id: _id };
+      } else if (discordName) {
+        let regEx = new RegExp(discordName, "i");
+        searchTerm = { discordName: { $regex: regEx } };
+      }
+
+      let member = await Members.findOne(searchTerm);
+
+      return member;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findMemberByIDOrDiscordName",
+        { component: "memberQuery > findMemberByIDOrDiscordName" }
       );
     }
   },
