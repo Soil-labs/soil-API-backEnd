@@ -4,8 +4,8 @@ const {
   matchMembersToUser,
   matchMembersToSkills,
   matchMembersToProject,matchMembersToProjectRole,matchPrepareSkillToMembers,matchPrepareSkillToProjectRoles,matchSkillsToMembers,matchSkillsToProjects,
-  members_autocomplete
-
+  members_autocomplete,
+  findMemberByIDOrDiscordName
 } = require("./query/memberQuery");
 const {
   findSkill,
@@ -71,6 +71,7 @@ module.exports = {
     matchMembersToSkills,
     matchMembersToProject,matchMembersToProjectRole,matchPrepareSkillToMembers,matchPrepareSkillToProjectRoles,matchSkillsToMembers,matchSkillsToProjects,
     members_autocomplete,
+    findMemberByIDOrDiscordName,
 
     // ------------- SKILL QUERY -----------------
     findSkill,

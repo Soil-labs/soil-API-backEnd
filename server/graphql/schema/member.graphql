@@ -187,7 +187,6 @@ module.exports = `
     input findMemberInput {
         _id: ID
         serverID: [String]
-        discordName: ID
     }
 
     input findMembersInput {
@@ -373,4 +372,12 @@ module.exports = `
         authorID: ID
         serverID: [String]
     }
+
+    input findMemersByIDOrDiscordNameInput {
+        discordName: String
+        _id: ID
+    }
+
+    
+
 `
