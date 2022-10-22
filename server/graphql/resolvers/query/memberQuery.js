@@ -21,7 +21,7 @@ module.exports = {
     let searchTerm = {};
 
     if (!_id && !discordName) {
-      throw new ApolloError("No id or discord name provided");
+      throw new ApolloError("No _id or discord name provided");
     }
 
     let queryServerID = [];
