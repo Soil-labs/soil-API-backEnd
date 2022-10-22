@@ -15,11 +15,13 @@ const { ApolloError } = require("apollo-server-express");
 
 module.exports = {
   findMember: async (parent, args, context, info) => {
-    const { _id, serverID } = args.fields;
+    const { _id, serverID, discordName } = args.fields;
     console.log("Query > findMember > args.fields = ", args.fields);
 
-    if (!_id) {
-      throw new ApolloError("No id provided");
+    let searchTerm = {};
+
+    if (!_id && !discordName) {
+      throw new ApolloError("No id or discord name provided");
     }
 
     let queryServerID = [];
@@ -34,13 +36,16 @@ module.exports = {
 
       let memberData;
 
-      if (queryServerID.length > 0) {
-        memberData = await Members.findOne({
-          $and: [{ _id: _id }, { $or: queryServerID }],
-        });
-      } else {
-        memberData = await Members.findOne({ _id: _id });
+      if (_id && queryServerID.length > 0) {
+        searchTerm = { $and: [{ _id: _id }, { $or: queryServerID }] };
+      } else if (discordName) {
+        let regEx = new RegExp(discordName, "i");
+        searchTerm = { discordName: { $regex: regEx } };
+      } else if (_id) {
+        searchTerm = { _id: _id };
       }
+
+      memberData = await Members.findOne(searchTerm);
 
       console.log("memberData = ", memberData);
 
@@ -48,7 +53,7 @@ module.exports = {
     } catch (err) {
       throw new ApolloError(
         err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        err.extensions?.code || "findMember",
         { component: "tmemberQuery > findMember" }
       );
     }
@@ -1289,36 +1294,5 @@ module.exports = {
         { component: "tmemberQuery > findMember" }
       );
     }
-  },
-  findMemberByIDOrDiscordName: async (parent, args, context, info) => {
-    const { _id, discordName } = args.fields;
-    console.log(
-      "Query > findMemberByIDOrDiscordName > args.fields = ",
-      args.fields
-    );
-
-    if (!_id && !discordName)
-      throw new ApolloError("_id or the discordName is required");
-
-    try {
-      let searchTerm = {};
-
-      if (_id) {
-        searchTerm = { _id: _id };
-      } else if (discordName) {
-        let regEx = new RegExp(discordName, "i");
-        searchTerm = { discordName: { $regex: regEx } };
-      }
-
-      let member = await Members.findOne(searchTerm);
-
-      return member;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "findMemberByIDOrDiscordName",
-        { component: "memberQuery > findMemberByIDOrDiscordName" }
-      );
-    }
-  },
+  }
 };
