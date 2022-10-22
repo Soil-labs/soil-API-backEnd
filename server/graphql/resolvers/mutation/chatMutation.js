@@ -78,16 +78,21 @@ module.exports = {
     }
   },
   updateChatReply: async (parent, args, context, info) => {
-    const { _id, receiverReply } = args.fields;
+    const { _id, receiverReply, threadID } = args.fields;
     console.log("Mutation > updateChatReply > args.fields = ", args.fields);
 
-    if (!_id) throw new ApolloError("The chat _id is required");
+    if (!_id && !threadID) throw new ApolloError("The chat _id or threadID is required");
 
     if (!receiverReply) throw new ApolloError("The receiverReply is required");
 
     //find the chat in the DB
     try {
-      let chat = await Chats.findOne({ _id: _id });
+      if ( _id ) {
+        searchTerm = { _id: _id}
+      } else if (threadID) {
+        searchTerm = { threadID: threadID }
+      }
+      let chat = await Chats.findOne(searchTerm);
 
       if (!chat) throw new ApolloError("The chat _id is not valid");
 
@@ -138,13 +143,19 @@ module.exports = {
     }
   },
   updateChatResult: async (parent, args, context, info) => {
-    const { _id, result } = args.fields;
+    const { _id, result, threadID } = args.fields;
     console.log("Mutation > addNewChat > args.fields = ", args.fields);
 
-    if (!_id) throw new ApolloError("The _id is required");
+    if (!_id && !threadID) throw new ApolloError("The _id or threadID is required");
     if (!result) throw new ApolloError("The result is required");
     try {
-      let chat = await Chats.findOne({ _id: _id });
+      let searchTerm = {};
+      if ( _id ) {
+        searchTerm = { _id: _id}
+      } else if (threadID) {
+        searchTerm = { threadID: threadID }
+      }
+      let chat = await Chats.findOne(searchTerm);
       if (!chat)
         throw new ApolloError(
           "The chat _id is invalid. Please supply a valid _id"
