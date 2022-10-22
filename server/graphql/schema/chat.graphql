@@ -42,12 +42,15 @@ module.exports = `
     }
 
     input updateChatReplyInput {
-        _id: ID!
+        _id: ID
+        threadID: ID
         receiverReply: Boolean!
+        
     }
 
     input updateChatResultInput {
         _id: ID
+        threadID: ID
         result: resultEnum
     }
 
