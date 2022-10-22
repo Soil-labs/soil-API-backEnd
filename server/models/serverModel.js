@@ -14,6 +14,10 @@ const serverSchema = mongoose.Schema({
   adminID: [String],
   adminRoles: [String],
   adminCommands: [String],
+
+  channel:{
+    chatID: String,
+  }
   
 
 });
