@@ -16,7 +16,7 @@ module.exports = {
   updateServer: async (parent, args, context, info) => {
    
 
-    const {_id,name, adminID , adminRoles , adminCommands } = args.fields;
+    const {_id,name, adminID , adminRoles , adminCommands,channelChatID } = args.fields;
     console.log("Mutation > updateServer > args.fields = " , args.fields)
 
     if (!_id) throw new ApolloError("_id -> serverID is required");
@@ -42,6 +42,14 @@ module.exports = {
         if (_id) {
             serverData = await ServerTemplate.findOne({ _id: _id })
             if (!serverData) {
+
+                fields = {
+                  ...fields,
+                  channel: {
+                    chatID:channelChatID,
+                  }
+                }
+
                 serverData = await new ServerTemplate(fields);
                 serverData.save()
 
@@ -49,6 +57,15 @@ module.exports = {
 
 
             } else {
+
+              fields = {
+                ...fields,
+                channel: {
+                  ...serverData.channel,
+                  chatID:channelChatID,
+                }
+              }
+
                 serverData= await ServerTemplate.findOneAndUpdate(
                     {_id: serverData._id},
                     {
