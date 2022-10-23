@@ -4,7 +4,8 @@ const {
   matchMembersToUser,
   matchMembersToSkills,
   matchMembersToProject,matchMembersToProjectRole,matchPrepareSkillToMembers,matchPrepareSkillToProjectRoles,matchSkillsToMembers,matchSkillsToProjects,
-  members_autocomplete,
+  members_autocomplete
+
 } = require("./query/memberQuery");
 const {
   findSkill,
