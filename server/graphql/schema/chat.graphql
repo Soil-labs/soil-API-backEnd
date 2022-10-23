@@ -45,6 +45,7 @@ module.exports = `
         _id: ID
         threadID: ID
         receiverReply: Boolean!
+        replyUserID: ID
         
     }
 
