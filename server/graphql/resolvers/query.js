@@ -47,6 +47,10 @@ const {
   findSkillSubCategories,
 } = require("./query/skillSubCategoryQuery");
 
+const {
+  findChat
+} = require("./query/chatQuery")
+
 const { errors } = require("./query/errorQuery");
 
 module.exports = {
@@ -102,5 +106,8 @@ module.exports = {
     findProjectUpdates,
     findAllProjectsTeamsAnouncments,
     findGarden,
+
+    // ------------ CHAT QUERY ---------------
+    findChat
   },
 };
