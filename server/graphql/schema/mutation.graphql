@@ -8,7 +8,7 @@ module.exports = `
         updateMember(fields:updateMemberInput!): Members
         addFavoriteProject(fields:addFavoriteProjectInput!): Members
         addSkillToMember(fields:addSkillToMember_Input!):Members
-
+        addEndorsement(fields: addEndorsementInput ): Members
         endorseAttribute(fields:endorseAttributeInput!): Members
 
 

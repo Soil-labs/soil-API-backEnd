@@ -41,6 +41,7 @@ module.exports = `
 
         memberRole: RoleTemplate
         chat: chatResponse
+        endorsements: [endorsements]
     }
 
      type chatResponse {
@@ -179,9 +180,11 @@ module.exports = `
         commonSkills: [Skills]
     }
 
-   
-    
-
+    type endorsements {
+        endorser: Members
+        endorsementMessage: String
+        arweaveTransactionID: String
+    }
 
 
     input findMemberInput {
@@ -372,5 +375,11 @@ module.exports = `
         memberID: ID
         authorID: ID
         serverID: [String]
+    }
+
+    input addEndorsementInput {
+        endorserID: ID
+        endorseeID: ID
+        endorsementMessage: String
     }
 `
