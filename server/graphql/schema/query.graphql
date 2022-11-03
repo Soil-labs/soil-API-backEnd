@@ -71,6 +71,9 @@ module.exports = `
           matchProjectsToMember(fields:matchProjectsToMemberInput): [Project]
           # ----------- MATCH -----------
 
+          # ----------- CHAT QUERY ---------
+          findChat(fields:findChatInput):Chats
+
    
             
         }
