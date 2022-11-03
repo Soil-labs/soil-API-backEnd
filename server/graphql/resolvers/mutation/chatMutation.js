@@ -34,7 +34,7 @@ module.exports = {
 
     let fields = {
       createdAt: new Date(),
-      reply: { sender: true, receiver: false },
+      reply: { sender: false, receiver: false },
     };
 
     fields.message = message;
@@ -164,14 +164,19 @@ module.exports = {
         }
       }
 
-      let reply = {};
+      let reply = chat.reply || {};
+
+      //chat
 
       if (replier == "sender") {
+        
         reply = {
+          ...reply,
           sender: receiverReply,
         };
       } else if (replier == "receiver") {
         reply = {
+          ...reply,
           receiver: receiverReply,
         };
       }
