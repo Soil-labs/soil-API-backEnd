@@ -181,7 +181,7 @@ module.exports = `
     }
 
     type endorsements {
-        endorser: Members
+        endorser: ID
         endorsementMessage: String
         arweaveTransactionID: String
     }

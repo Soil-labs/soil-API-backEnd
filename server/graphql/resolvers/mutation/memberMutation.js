@@ -816,7 +816,6 @@ module.exports = {
           new: true,
         }
       );
-      console.log("endorsee", endorseeMember);
       return endorseeMember;
     } catch (err) {
       throw new ApolloError(
