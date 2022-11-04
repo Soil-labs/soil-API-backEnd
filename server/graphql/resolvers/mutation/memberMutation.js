@@ -771,7 +771,7 @@ module.exports = {
     const { endorserID, endorseeID, endorsementMessage } = args.fields;
     console.log("Mutation > addEndorsement > args.fields = ", args.fields);
     try {
-      if (!endorseeID && !endorserID && !endorsementMessage)
+      if (!endorseeID || !endorserID || !endorsementMessage)
         throw new Error(
           "The endorsee, endorser and endorsement message is required"
         );
