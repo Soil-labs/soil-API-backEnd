@@ -13,9 +13,7 @@ module.exports = {
     endorser: async (parent, args, context, info) => {
       try {
         const memberID = parent.endorser;
-
-        const member = await Members.find({ _id: memberID });
-
+        const member = await Members.findOne({ _id: memberID });
         return member;
       } catch (err) {
         throw new ApolloError(err.message, err.extensions?.code || "endorser", {
