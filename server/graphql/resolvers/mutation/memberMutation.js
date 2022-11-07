@@ -773,7 +773,7 @@ module.exports = {
     try {
       if (!endorseeID || !endorserID || !endorsementMessage)
         throw new Error(
-          "The endorsee, endorser and endorsement message is required 🔥"
+          "The endorsee, endorser and endorsement message is required🔥"
         );
 
       //verify if the endorser and endorsee exist
