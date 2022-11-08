@@ -39,7 +39,7 @@ module.exports = {
       if (_id && queryServerID.length > 0) {
         searchTerm = { $and: [{ _id: _id }, { $or: queryServerID }] };
       } else if (discordName) {
-        let regEx = new RegExp(discordName, "i");
+        let regEx = new RegExp("^" + discordName + "$", "i");
         searchTerm = { discordName: { $regex: regEx } };
       } else if (_id) {
         searchTerm = { _id: _id };
@@ -51,11 +51,9 @@ module.exports = {
 
       return memberData;
     } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "findMember",
-        { component: "tmemberQuery > findMember" }
-      );
+      throw new ApolloError(err.message, err.extensions?.code || "findMember", {
+        component: "tmemberQuery > findMember",
+      });
     }
   },
 
@@ -1294,5 +1292,5 @@ module.exports = {
         { component: "tmemberQuery > findMember" }
       );
     }
-  }
+  },
 };
