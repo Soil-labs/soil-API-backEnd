@@ -20,7 +20,7 @@ const updateAvatar = async (avatar, discordID) => {
       },
 
       {
-        $set: { discordAvater: avatar },
+        $set: { discordAvatar: avatar },
       },
 
       { new: true }
@@ -54,7 +54,7 @@ const cronFunctionToUpdateAvatar = async () => {
     if (currentAvatar && oldAvatar != currentAvatar) {
       //perform the update here
       const newAvatar = `${ImageBaseURL}/avatars/${_id}/${currentAvatar}.png`;
-      console.log("the new avatar was ", newAvatar);
+      console.log("the new avatar is ", newAvatar);
       await updateAvatar(newAvatar, _id);
     }
   }
