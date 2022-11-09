@@ -20,7 +20,7 @@ const updateAvatar = async (avatar, discordID) => {
       },
 
       {
-        $set: { discordAvater: avatar },
+        $set: { discordAvatar: avatar },
       },
 
       { new: true }

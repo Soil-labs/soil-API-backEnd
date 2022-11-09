@@ -130,11 +130,11 @@ async function main() {
     console.log(`apolloServer is ready at http://localhost:${PORT}/graphql`);
   });
 
-  //cron job running every five hours
+  //cron job running every
   cron.schedule("0 */5 * * *", async function () {
     console.log("start running the cron")
     await cronFunctionToUpdateAvatar();
-    console.log("running a task every five hours");
+    console.log("ended the run");
   });
 }
 
