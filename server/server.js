@@ -8,6 +8,8 @@ const { ApolloServer } = require("apollo-server-express");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { logError } = require("./utils/logError");
+const cron = require("node-cron");
+const { cronFunctionToUpdateAvatar } = require("./utils/getDiscordAvatar");
 
 require("dotenv").config();
 
@@ -126,6 +128,13 @@ async function main() {
   // });
   httpServer.listen(PORT, () => {
     console.log(`apolloServer is ready at http://localhost:${PORT}/graphql`);
+  });
+
+  //cron job running every five hours
+  cron.schedule("0 */5 * * *", async function () {
+    console.log("start running the cron")
+    await cronFunctionToUpdateAvatar();
+    console.log("running a task every five hours");
   });
 }
 
