@@ -4,6 +4,8 @@ const axios = require("axios");
 const { DISCORD_BOT_TOKEN } = process.env;
 const ImageBaseURL = "https://cdn.discordapp.com";
 
+const sleepABit = (ms) => new Promise((res) => setTimeout(res, ms));
+
 const _retrieveAvatarHash = (avatar) => {
   if (avatar) {
     const index = avatar.lastIndexOf("/");
@@ -30,17 +32,20 @@ const updateAvatar = async (avatar, discordID) => {
 
 const getDiscordAvatar = async (discordID) => {
   const baseURL = `https://discord.com/api/v10/users/${discordID}`;
-  let res = await axios({
-    method: "GET",
-    url: baseURL,
-    headers: {
-      Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
-    },
-  });
-
-  const jsonData = res.data;
-  const { avatar } = jsonData;
-  return avatar;
+  try {
+    let res = await axios({
+      method: "GET",
+      url: baseURL,
+      headers: {
+        Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
+      },
+    });
+    const jsonData = res.data;
+    const { avatar } = jsonData;
+    return avatar;
+  } catch (error) {
+    console.log("error getting avatar ", error);
+  }
 };
 
 const cronFunctionToUpdateAvatar = async () => {
@@ -51,6 +56,9 @@ const cronFunctionToUpdateAvatar = async () => {
     const { _id, discordAvatar } = members[i];
     const oldAvatar = _retrieveAvatarHash(discordAvatar);
     const currentAvatar = await getDiscordAvatar(_id);
+    console.log("old avatar", oldAvatar)
+    console.log("current avatar", currentAvatar)
+    await sleepABit(2000)
     if (currentAvatar && oldAvatar != currentAvatar) {
       //perform the update here
       const newAvatar = `${ImageBaseURL}/avatars/${_id}/${currentAvatar}.png`;

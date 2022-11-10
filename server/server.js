@@ -131,6 +131,7 @@ async function main() {
   });
 
   //cron job running every five hours
+  await cronFunctionToUpdateAvatar();
   cron.schedule("0 */5 * * *", async function () {
     console.log("start running the cron")
     await cronFunctionToUpdateAvatar();
