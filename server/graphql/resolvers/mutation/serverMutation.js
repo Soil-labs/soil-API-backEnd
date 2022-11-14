@@ -16,7 +16,7 @@ module.exports = {
   updateServer: async (parent, args, context, info) => {
    
 
-    const {_id,name, adminID , adminRoles , adminCommands,channelChatID } = args.fields;
+    const {_id,name, adminID , adminRoles , adminCommands,channelChatID, serverAvatar, serverType } = args.fields;
     console.log("Mutation > updateServer > args.fields = " , args.fields)
 
     if (!_id) throw new ApolloError("_id -> serverID is required");
@@ -32,6 +32,8 @@ module.exports = {
     if (adminID) fields.adminID = adminID;
     if (adminRoles) fields.adminRoles = adminRoles;
     if (adminCommands) fields.adminCommands = adminCommands;
+    if (serverAvatar) fields.serverAvatar = serverAvatar;
+    if (serverType) fields.serverType = serverType;
 
 
     let isNewServer = false;

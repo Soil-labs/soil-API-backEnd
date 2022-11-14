@@ -794,7 +794,7 @@ module.exports = {
 
       const transactionId = await uploadFileToArweave(fileObject);
       //save the endorsement to the member
-
+      
       let newEndorsement = {
         endorser: endorserID, //memberID
         endorsementMessage: endorsementMessage,
