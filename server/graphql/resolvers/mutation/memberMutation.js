@@ -793,8 +793,12 @@ module.exports = {
       };
 
       const transactionId = await uploadFileToArweave(fileObject);
+      if (!transactionId)
+        throw new Error(
+          "No transactionID, check your env if Arweave token is included"
+        );
       //save the endorsement to the member
-      
+
       let newEndorsement = {
         endorser: endorserID, //memberID
         endorsementMessage: endorsementMessage,
@@ -803,7 +807,9 @@ module.exports = {
 
       let previousEndorsements = endorseeMember.endorsements || [];
       previousEndorsements.push(newEndorsement);
-      const reverseEndorsement = previousEndorsements.reverse();
+      const reverseEndorsement = previousEndorsements
+        .reverse()
+        .filter((endo) => endo.arweaveTransactionID != null);
       endorseeMember = await Members.findOneAndUpdate(
         {
           _id: endorseeID,

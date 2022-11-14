@@ -46,10 +46,12 @@ module.exports = {
       }
 
       memberData = await Members.findOne(searchTerm);
-       
-      let reverseEndorsements = memberData.endorsements || []
-       
-      reverseEndorsements = reverseEndorsements.reverse();
+
+      let reverseEndorsements = memberData.endorsements || [];
+
+      reverseEndorsements = reverseEndorsements
+        .reverse()
+        .filter((endo) => endo.arweaveTransactionID != null);
 
       memberData.endorsements = reverseEndorsements;
 
