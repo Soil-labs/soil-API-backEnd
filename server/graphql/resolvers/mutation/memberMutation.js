@@ -803,13 +803,14 @@ module.exports = {
 
       let previousEndorsements = endorseeMember.endorsements || [];
       previousEndorsements.push(newEndorsement);
+      const reverseEndorsement = previousEndorsements.reverse();
       endorseeMember = await Members.findOneAndUpdate(
         {
           _id: endorseeID,
         },
 
         {
-          $set: { endorsements: previousEndorsements },
+          $set: { endorsements: reverseEndorsement },
         },
 
         {
