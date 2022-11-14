@@ -821,10 +821,7 @@ module.exports = {
           new: true,
         }
       );
-      const reverseEndorsement = endorseeMember.endorsements
-        .reverse()
-        .filter((endo) => endo.arweaveTransactionID != null);
-      endorseeMember.endorsements = reverseEndorsement;
+
       return endorseeMember;
     } catch (err) {
       throw new ApolloError(
