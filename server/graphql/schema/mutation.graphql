@@ -21,6 +21,8 @@ module.exports = `
         createNewRole(fields:createNewRoleInput!):Role
         createNewEpic(fields:createNewEpicInput!):Epic
 
+        
+
         #  ---------- SKILL MUTATIONS -------
         createSkill(fields:createSkillInput): Skills
         createSkills(fields:createSkillsInput): [Skills]
@@ -28,6 +30,10 @@ module.exports = `
         approveOrRejectSkill(fields:approveOrRejectSkillInput): Skills
 
         relatedSkills(fields:relatedSkillsInput): Skills
+
+        #  ---------- NODE MUTATIONS -------
+        createNode(fields:createNodeInput): Node
+        relatedNode(fields:relatedNodeInput): Node
 
 
         #  ---------- ROLE MUTATIONS -------

@@ -16,6 +16,11 @@ const {
   skills,
 } = require("./query/skillsQuery");
 
+
+const {
+  findNode,findNodes
+} = require("./query/nodeQuery");
+
 const {
   findProject,
   findProjects,
@@ -83,6 +88,10 @@ module.exports = {
     adminFindAllSkillsEveryState,
     skills,
     skills_autocomplete,
+
+
+    // ------------- NODE QUERY -----------------
+    findNode,findNodes,
 
     // ------------- ROLE TEMPLATE QUERY -----------------
     findRoleTemplate,
