@@ -17,7 +17,13 @@ const serverSchema = mongoose.Schema({
 
   channel:{
     chatID: String,
-  }
+  },
+  serverType: {
+    type: String,
+    enum: ["DAO", "Hackathon","Project"]
+  },
+  serverAvatar: String
+ 
   
 
 });

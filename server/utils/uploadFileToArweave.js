@@ -34,6 +34,7 @@ const uploadFileToArweave = async (fileObject) => {
 
     if (balance < 5000) {
         //contact admin to top up the balance
+        console.log("The balance is getting low")
     } 
     //create a transaction:
     let transaction = await arweave.createTransaction(

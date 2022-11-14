@@ -10,6 +10,7 @@ const jwt = require("jsonwebtoken");
 const { logError } = require("./utils/logError");
 const cron = require("node-cron");
 const { cronFunctionToUpdateAvatar } = require("./utils/getDiscordAvatar");
+const { cronJobToUpdateServerIcon } = require("./utils/getDiscordGuildAvatar");
 
 require("dotenv").config();
 
@@ -136,6 +137,17 @@ async function main() {
     await cronFunctionToUpdateAvatar();
     console.log("running a task every five hours");
   });
+  
+  //running every 2 days at 1am
+  cron.schedule("0 1 * * */2", async function () {
+    console.log("start running the update icon cron")
+    await cronJobToUpdateServerIcon();
+    console.log("ended running the task every 2 days");
+  });
+
+
+
+  
 }
 
 main();
