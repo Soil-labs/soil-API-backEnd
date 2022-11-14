@@ -46,15 +46,6 @@ module.exports = {
       }
 
       memberData = await Members.findOne(searchTerm);
-
-      //let reverseEndorsements = memberData.endorsements || [];
-
-      let reverseEndorsements = memberData.endorsements
-        .reverse()
-        .filter((endo) => endo.arweaveTransactionID != null) || [];
-
-      memberData.endorsements = reverseEndorsements;
-
       console.log("memberData = ", memberData);
 
       return memberData;
