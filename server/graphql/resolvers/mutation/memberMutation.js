@@ -807,22 +807,24 @@ module.exports = {
 
       let previousEndorsements = endorseeMember.endorsements || [];
       previousEndorsements.push(newEndorsement);
-      const reverseEndorsement = previousEndorsements
-        .reverse()
-        .filter((endo) => endo.arweaveTransactionID != null);
+
       endorseeMember = await Members.findOneAndUpdate(
         {
           _id: endorseeID,
         },
 
         {
-          $set: { endorsements: reverseEndorsement },
+          $set: { endorsements: previousEndorsements },
         },
 
         {
           new: true,
         }
       );
+      const reverseEndorsement = endorseeMember.endorsements
+        .reverse()
+        .filter((endo) => endo.arweaveTransactionID != null);
+      endorseeMember.endorsements = reverseEndorsement;
       return endorseeMember;
     } catch (err) {
       throw new ApolloError(
