@@ -55,5 +55,10 @@ module.exports = `
         result: resultEnum
     }
 
+     input findChatInput {
+        _id: ID
+        threadID: ID
+    }
+
 
 `

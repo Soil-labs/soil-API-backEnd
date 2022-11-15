@@ -16,6 +16,11 @@ const {
   skills,
 } = require("./query/skillsQuery");
 
+
+const {
+  findNode,findNodes
+} = require("./query/nodeQuery");
+
 const {
   findProject,
   findProjects,
@@ -46,6 +51,10 @@ const {
   findSkillSubCategory,
   findSkillSubCategories,
 } = require("./query/skillSubCategoryQuery");
+
+const {
+  findChat
+} = require("./query/chatQuery")
 
 const { errors } = require("./query/errorQuery");
 
@@ -80,6 +89,10 @@ module.exports = {
     skills,
     skills_autocomplete,
 
+
+    // ------------- NODE QUERY -----------------
+    findNode,findNodes,
+
     // ------------- ROLE TEMPLATE QUERY -----------------
     findRoleTemplate,
     findRoleTemplates,
@@ -102,5 +115,8 @@ module.exports = {
     findProjectUpdates,
     findAllProjectsTeamsAnouncments,
     findGarden,
+
+    // ------------ CHAT QUERY ---------------
+    findChat
   },
 };

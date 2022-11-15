@@ -6,6 +6,7 @@ const memberType = require('./member.graphql');
 const projectType = require('./project.graphql');
 const projectUpdateType = require('./projectUpdate.graphql');
 const skillsType = require('./skills.graphql');
+const nodeType = require('./node.graphql');
 const SkillCategoryType = require('./skillCategory.graphql');
 const SkillSubCategoryType = require('./skillSubCategory.graphql');
 const roleTemplateType = require('./roleTemplate.graphql');
@@ -21,6 +22,7 @@ const typeDefs = gql`
   ${mutation}
   ${userType}
   ${skillsType}
+  ${nodeType}
   ${memberType}
   ${projectType}
   ${projectUpdateType}

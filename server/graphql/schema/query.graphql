@@ -40,6 +40,9 @@ module.exports = `
             skills(fields:findSkillsInputPaginated): PaginatedSkills
             skills_autocomplete(fields:skills_autocompleteInput): [Skills]
 
+           #  ---------- NODE QUERY -------
+            findNode(fields:findNodeInput): Node
+            findNodes(fields:findNodesInput): [Node]
 
           #  ---------- QUERY TEMPLATE QUERY -------
             findRoleTemplate(fields:findRoleTemplateInput): RoleTemplate
@@ -70,6 +73,9 @@ module.exports = `
           # ----------- MATCH -----------
           matchProjectsToMember(fields:matchProjectsToMemberInput): [Project]
           # ----------- MATCH -----------
+
+          # ----------- CHAT QUERY ---------
+          findChat(fields:findChatInput):Chats
 
    
             

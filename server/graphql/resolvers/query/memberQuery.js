@@ -46,16 +46,13 @@ module.exports = {
       }
 
       memberData = await Members.findOne(searchTerm);
-
       console.log("memberData = ", memberData);
 
       return memberData;
     } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "findMember",
-        { component: "tmemberQuery > findMember" }
-      );
+      throw new ApolloError(err.message, err.extensions?.code || "findMember", {
+        component: "tmemberQuery > findMember",
+      });
     }
   },
 
@@ -1294,5 +1291,5 @@ module.exports = {
         { component: "tmemberQuery > findMember" }
       );
     }
-  }
+  },
 };

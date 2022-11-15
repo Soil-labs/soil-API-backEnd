@@ -1,13 +1,15 @@
 const { Query } = require('./query');
 const { Mutation, Subscription } = require('./mutation');
 
-const { Members,matchMembersToUserOutput,matchMembersToProjectOutput,matchMembersToProjectRoleOutput,matchPrepareSkillToMembersOutput,skillType_member,matchMembersToSkillOutput,SkillsPercentage,matchSkillsToProjectsOutput,matchProjectRoles } = require('./objectResolvers/memberResolver');
+const { Members,matchMembersToUserOutput,matchMembersToProjectOutput,matchMembersToProjectRoleOutput,matchPrepareSkillToMembersOutput,skillType_member,matchMembersToSkillOutput,
+        SkillsPercentage,matchSkillsToProjectsOutput,matchProjectRoles, endorsements } = require('./objectResolvers/memberResolver');
 
 const { Project,teamType,roleType,skillRoleType,
     tweetsProject,
     tweetsType,projectUserMatchType,Team,Role,Epic,
  } = require('./objectResolvers/projectsResolver');
 const { Skills } = require('./objectResolvers/skillsResolver');
+const { Node } = require('./objectResolvers/nodeResolver');
 const { Rooms } = require('./objectResolvers/roomResolver');
 const { RoleTemplate } = require('./objectResolvers/roleTemplateResolver');
 const { SkillCategory } = require('./objectResolvers/skillCategoryResolver');
@@ -23,9 +25,10 @@ module.exports = {
     Mutation,
     Subscription,
     Members,matchMembersToUserOutput,matchMembersToProjectOutput,matchMembersToProjectRoleOutput,matchPrepareSkillToMembersOutput,skillType_member,matchMembersToSkillOutput,SkillsPercentage,matchSkillsToProjectsOutput,matchProjectRoles,
-    Project,teamType,roleType,skillRoleType,
+    Project,teamType,roleType,skillRoleType, endorsements,
     tweetsProject,tweetsType,projectUserMatchType,Team,Role,Epic,
     Skills,
+    Node,
     Rooms,
     RoleTemplate,
     SkillCategory,

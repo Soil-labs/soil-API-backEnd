@@ -34,7 +34,7 @@ module.exports = {
 
     let fields = {
       createdAt: new Date(),
-      reply: { sender: true, receiver: false },
+      reply: { sender: false, receiver: false },
     };
 
     fields.message = message;
@@ -90,6 +90,7 @@ module.exports = {
 
     //find the chat in the DB
     try {
+      let searchTerm = {};
       if (_id) {
         searchTerm = { _id: _id };
       } else if (threadID) {
@@ -163,21 +164,28 @@ module.exports = {
         }
       }
 
-      const reply = {};
+      let reply = chat.reply || {};
+
+      //chat
 
       if (replier == "sender") {
+        
         reply = {
+          ...reply,
           sender: receiverReply,
         };
       } else if (replier == "receiver") {
         reply = {
+          ...reply,
           receiver: receiverReply,
         };
       }
 
+      console.log("reply", reply);
+
       //update the chat with the reply
       chat = await Chats.findOneAndUpdate(
-        { _id: _id },
+        searchTerm,
         {
           $set: {
             reply: reply,
@@ -185,6 +193,8 @@ module.exports = {
         },
         { new: true }
       );
+
+      console.log("chat", chat);
 
       return chat;
     } catch (err) {
