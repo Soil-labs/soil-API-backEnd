@@ -34,6 +34,7 @@ module.exports = `
         #  ---------- NODE MUTATIONS -------
         createNode(fields:createNodeInput): Node
         relatedNode(fields:relatedNodeInput): Node
+        relatedNode_name(fields:relatedNode_nameInput): Node
 
 
         #  ---------- ROLE MUTATIONS -------

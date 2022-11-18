@@ -43,6 +43,11 @@ module.exports = `
         relatedNode_id: ID
     }
 
+    input relatedNode_nameInput {
+        name: String
+        relatedNode_name: String
+    }
+
     input createNodeInput {
         node: String,
 
