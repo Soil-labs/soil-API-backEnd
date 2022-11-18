@@ -145,7 +145,7 @@ module.exports = {
     relatedNodeData = await Node.findOne({_id: relatedNode_id})
 
     try {
-      makeConnection_neo4j({
+      await makeConnection_neo4j({
         node:[nodeData.node,relatedNodeData.node],
         id:[nodeData._id,relatedNodeData._id],
         connection:"related",
@@ -179,7 +179,70 @@ module.exports = {
         },
         {new: true}
       )
-      
+
+
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > addNewMember"}
+      );
+    }
+
+    return nodeData
+
+  },
+
+  relatedNode_name: async (parent, args, context, info) => {
+    
+    const {name,relatedNode_name} = args.fields;
+    console.log("Mutation > relatedNode > args.fields = " , args.fields)
+
+
+    if (!name) throw new ApolloError( "You need to specify the name of the node");
+    if (!relatedNode_name) throw new ApolloError( "You need to specify the relatedNode_name of the node");
+
+    nodeData = await Node.findOne({name})
+
+    relatedNodeData = await Node.findOne({name: relatedNode_name})
+
+    try {
+      await makeConnection_neo4j({
+        node:[nodeData.node,relatedNodeData.node],
+        id:[nodeData._id,relatedNodeData._id],
+        connection:"related",
+      })
+
+      if (!nodeData.relatedNodes.includes(relatedNodeData._id)){
+        nodeData.relatedNodes.push(relatedNodeData._id)
+      }
+
+      await Node.findOneAndUpdate(
+        {_id: nodeData._id},
+        {
+            $set: {
+              relatedNodes: nodeData.relatedNodes,
+            } 
+        },
+        {new: true}
+      )
+
+
+      if (!relatedNodeData.relatedNodes.includes(nodeData._id)){
+        relatedNodeData.relatedNodes.push(nodeData._id)
+      }
+
+      await Node.findOneAndUpdate(
+        {_id: relatedNodeData._id},
+        {
+            $set: {
+              relatedNodes: relatedNodeData.relatedNodes,
+            }
+        },
+        {new: true}
+      )
+
 
 
     } catch (err) {

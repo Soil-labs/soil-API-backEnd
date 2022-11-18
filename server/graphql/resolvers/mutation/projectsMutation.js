@@ -512,6 +512,7 @@ module.exports = {
       championID,
       categoryDiscordlD,
       channelGeneralDiscordID,
+      forumDiscordID,
     } = JSON.parse(JSON.stringify(args.fields));
     console.log("Mutation > createNewTeam > args.fields = ", args.fields);
 
@@ -533,6 +534,7 @@ module.exports = {
     if (projectID) fields = { ...fields, projectID };
     if (name) fields = { ...fields, name };
     if (categoryDiscordlD) fields = { ...fields, categoryDiscordlD };
+    if (forumDiscordID) fields = { ...fields, forumDiscordID };
     if (channelGeneralDiscordID)
       fields = { ...fields, channelGeneralDiscordID };
 

@@ -19,6 +19,8 @@ const teamModalSchema = mongoose.Schema({
     categoryDiscordlD: String,
     channelGeneralDiscordID: String,
 
+    forumDiscordID: String,
+
 
 });
 
