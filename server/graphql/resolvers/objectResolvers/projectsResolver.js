@@ -1,5 +1,6 @@
 // const { User } = require('../../../models/user');
 const { Members } = require('../../../models/membersModel');
+const { Node } = require("../../../models/nodeModal");
 const { Skills } = require('../../../models/skillsModel');
 const { Projects } = require('../../../models/projectsModel');
 const {Team} = require('../../../models/teamModal');
@@ -51,6 +52,44 @@ module.exports = {
                err.extensions?.code || 'DATABASE_SEARCH_ERROR',
                {
                   component: 'userResolver > members',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+      nodes: async (parent, args, context, info) => {
+
+         try {
+            const nodes = parent.nodes;
+
+            nodesID = []
+            if (nodes && nodes.length > 0) {
+               nodes.forEach( node => {
+                  nodesID.push(node._id)
+               })
+               
+               const nodesData = await Node.find({_id: nodesID})
+
+               let res = []
+               nodesData.forEach( node => {
+                  res.push({
+                     nodeData: node,
+                  })
+               })
+               return res;
+            } else {
+               return []
+            }
+
+
+            
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > nodes',
                   user: context.req.user?._id,
                }
             );

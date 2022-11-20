@@ -29,11 +29,11 @@ const nodeSchema = mongoose.Schema({
 
 
   match: {
-    recalculateProject: {
+    recalculateProjectRoles: {
       type: Boolean,
       default: true
     },
-    distanceProject: {
+    distanceProjectRoles: {
       hop0: [mongoose.Schema.ObjectId],
       hop1: [mongoose.Schema.ObjectId],
       hop2: [mongoose.Schema.ObjectId],

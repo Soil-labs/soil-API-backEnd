@@ -24,9 +24,12 @@ module.exports = `
             matchMembersToProject(fields:matchMembersToProjectInput): [matchMembersToProjectOutput]
             matchMembersToProjectRole(fields:matchMembersToProjectRoleInput): [matchMembersToProjectRoleOutput]
             matchPrepareSkillToMembers(fields:matchPrepareSkillToMembersInput): Skills
+            matchPrepareNode(fields:matchPrepareNodeInput): Node
             matchPrepareSkillToProjectRoles(fields:matchPrepareSkillToProjectRolesInput): Skills
             matchSkillsToMembers(fields:matchSkillsToMembersInput): [matchMembersToSkillOutput]
+            matchNodesToMembers(fields:matchNodesToMembersInput): [matchMembersToSkillOutput]
             matchSkillsToProjects(fields:matchSkillsToProjectsInput): [matchSkillsToProjectsOutput]
+            matchNodesToProjects(fields:matchNodesToProjectsInput): [matchSkillsToProjectsOutput]
 
 
 

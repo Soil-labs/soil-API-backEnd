@@ -17,6 +17,8 @@ module.exports = `
 
         team: [teamType]
 
+        nodes: [nodesType]
+
         role: [roleType]
 
 
@@ -278,6 +280,11 @@ module.exports = `
 
         dates: datesInput
 
+    }
+
+    input addNodesToProjectInput {
+        projectID: ID,
+        nodesID: [ID],
     }
 
     input teamInput {

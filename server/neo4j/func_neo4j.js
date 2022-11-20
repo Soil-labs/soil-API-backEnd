@@ -209,6 +209,8 @@ module.exports = {
             tx.run(fun)
         )
 
+        // console.log("result = " , result)
+
         session.close()
         
     },
@@ -540,6 +542,36 @@ module.exports = {
         return([member_oneHopeMatch,member_twoHopeMatch,member_threeHopeMatch])
 
     },
+    matchPrepareAnything_neo4j : async (req, res) => {
+        const {nodeID,node, serverID,find } = req;
+
+
+        let member_oneHopeMatch = await findMatch_translateArray(`
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(p:${find}))
+            RETURN p
+        `)
+        console.log("member_oneHopeMatch = " , member_oneHopeMatch)
+
+
+        let member_twoHopeMatch = await findMatch_translateArray(`
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(p:${find}))
+            WHERE NOT (a:Member OR a:Project)
+            RETURN p
+        `)
+        console.log("member_twoHopeMatch = " , member_twoHopeMatch)
+
+
+        let member_threeHopeMatch = await findMatch_translateArray(`
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(b)-[]-(p:${find}))
+            WHERE NOT (a:Member OR a:Project) AND NOT (b:Member OR b:Project)
+            RETURN p
+        `)
+        console.log("member_threeHopeMatch = " , member_threeHopeMatch)
+
+        
+        return([member_oneHopeMatch,member_twoHopeMatch,member_threeHopeMatch])
+
+    },
     matchPrepareSkillToProjectRoles_neo4j : async (req, res) => {
         console.log("change = 11100011" )
         const {skillID } = req;
@@ -666,4 +698,33 @@ function arrayToString(arrayT) {
     } else {
       return arrayT;
     }
+  }
+
+  async function findMatch_translateArray (shyperCode) {
+    const session = driver.session({database:"neo4j"});
+
+    // // ----------------- One Hope -----------------
+    result_oneHopeMatch = await session.writeTransaction(tx => 
+        tx.run(shyperCode)
+    )
+
+    
+    let names_oneHopeMatch = result_oneHopeMatch.records.map(row => {
+        return row
+    })
+
+
+    member_oneHopeMatch = []
+    if (names_oneHopeMatch.length>0){
+        for (let i = 0; i<names_oneHopeMatch.length; ++i) {
+            if (names_oneHopeMatch[i] && names_oneHopeMatch[i]._fields && names_oneHopeMatch[i]._fields[0]){
+                member_oneHopeMatch.push(names_oneHopeMatch[i]._fields[0].properties)
+            }
+        }
+    }
+    // ----------------- One Hope -----------------
+
+    session.close()
+
+    return (member_oneHopeMatch)
   }

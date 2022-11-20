@@ -67,6 +67,8 @@ module.exports = `
     input findNodesInput {
         _id: [ID]
         node: String
+        recalculateProjectRoles: Boolean
+        recalculateMembers: Boolean
     }
 
 `
