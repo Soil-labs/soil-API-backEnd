@@ -42,13 +42,22 @@ module.exports = `
     }
 
     input updateChatReplyInput {
-        _id: ID!
+        _id: ID
+        threadID: ID
         receiverReply: Boolean!
+        replyUserID: ID
+        
     }
 
     input updateChatResultInput {
         _id: ID
+        threadID: ID
         result: resultEnum
+    }
+
+     input findChatInput {
+        _id: ID
+        threadID: ID
     }
 
 

@@ -52,6 +52,10 @@ const {
   findSkillSubCategories,
 } = require("./query/skillSubCategoryQuery");
 
+const {
+  findChat
+} = require("./query/chatQuery")
+
 const { errors } = require("./query/errorQuery");
 
 module.exports = {
@@ -76,7 +80,6 @@ module.exports = {
     matchMembersToSkills,
     matchMembersToProject,matchMembersToProjectRole,matchPrepareSkillToMembers,matchPrepareNode,matchPrepareSkillToProjectRoles,matchSkillsToMembers,matchNodesToMembers,matchSkillsToProjects,matchNodesToProjects,
     members_autocomplete,
-    findMemberByIDOrDiscordName,
 
     // ------------- SKILL QUERY -----------------
     findSkill,
@@ -112,5 +115,8 @@ module.exports = {
     findProjectUpdates,
     findAllProjectsTeamsAnouncments,
     findGarden,
+
+    // ------------ CHAT QUERY ---------------
+    findChat
   },
 };

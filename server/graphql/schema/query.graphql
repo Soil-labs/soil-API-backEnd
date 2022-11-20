@@ -19,7 +19,6 @@ module.exports = `
           #  ---------- MEMBER QUERY -------
             findMember(fields:findMemberInput): Members
             findMembers(fields:findMembersInput): [Members]
-            findMemberByIDOrDiscordName(fields: findMemersByIDOrDiscordNameInput): Members
             matchMembersToUser(fields:matchMembersToUserInput): [matchMembersToUserOutput]
             matchMembersToSkills(fields:matchMembersToSkillInput): [matchMembersToSkillOutput]
             matchMembersToProject(fields:matchMembersToProjectInput): [matchMembersToProjectOutput]
@@ -77,6 +76,9 @@ module.exports = `
           # ----------- MATCH -----------
           matchProjectsToMember(fields:matchProjectsToMemberInput): [Project]
           # ----------- MATCH -----------
+
+          # ----------- CHAT QUERY ---------
+          findChat(fields:findChatInput):Chats
 
    
             

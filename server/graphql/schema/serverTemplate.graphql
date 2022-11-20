@@ -7,8 +7,9 @@ module.exports = `
         adminID: [String],
         adminRoles: [String],
         adminCommands: [String], 
-
         channel: channelOutput,
+        serverAvatar: String,
+        serverType: String
 
     }
 
@@ -26,8 +27,15 @@ module.exports = `
         adminID: [String],
         adminRoles: [String],
         adminCommands: [String], 
+        channelChatID: ID,
+        serverAvatar: String,
+        serverType: serverTypeEnum
+    }
 
-        channelChatID: ID
+     enum serverTypeEnum {
+        DAO
+        Hackathon
+        Project
     }
 
 

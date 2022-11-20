@@ -34,7 +34,7 @@ module.exports = {
 
     let fields = {
       createdAt: new Date(),
-      reply: { sender: true, receiver: false },
+      reply: { sender: false, receiver: false },
     };
 
     fields.message = message;
@@ -78,53 +78,123 @@ module.exports = {
     }
   },
   updateChatReply: async (parent, args, context, info) => {
-    const { _id, receiverReply } = args.fields;
+    const { _id, receiverReply, threadID, replyUserID } = args.fields;
     console.log("Mutation > updateChatReply > args.fields = ", args.fields);
 
-    if (!_id) throw new ApolloError("The chat _id is required");
+    if (!_id && !threadID)
+      throw new ApolloError("The chat _id or threadID is required");
 
     if (!receiverReply) throw new ApolloError("The receiverReply is required");
 
+    if (!replyUserID) throw new ApolloError("The replyUserID is required");
+
     //find the chat in the DB
     try {
-      let chat = await Chats.findOne({ _id: _id });
+      let searchTerm = {};
+      if (_id) {
+        searchTerm = { _id: _id };
+      } else if (threadID) {
+        searchTerm = { threadID: threadID };
+      }
+      let chat = await Chats.findOne(searchTerm);
 
-      if (!chat) throw new ApolloError("The chat _id is not valid");
+      if (!chat) throw new ApolloError("The chat _id or threadID is not valid");
 
       const receiverID = chat.receiverID;
-      const chatReciever = await Members.findOne({ _id: receiverID });
-      //chat receiver exist and replied
-      if (chatReciever && receiverReply && !chat.reply.receiver) {
-        let chatCountReceiver;
+      const senderID = chat.senderID;
 
-        if (isEmptyObject(chatReciever.chat)) {
-          chatCountReceiver = { numChat: 0, numReply: 0 };
-        } else {
-          chatCountReceiver = chatReciever.chat;
-        }
+      let replier;
 
-        chatCountReceiver = {
-          ...chatCountReceiver,
-          numReply: chatCountReceiver.numReply + 1,
-        };
-
-        await Members.findOneAndUpdate(
-          { _id: receiverID },
-          { $set: { chat: chatCountReceiver } },
-          { new: true }
-        );
+      if (senderID === replyUserID) {
+        replier = "sender";
+      } else if (receiverID === replyUserID) {
+        replier = "receiver";
+      } else {
+        throw new ApolloError("The replyUserID is not valid");
       }
+
+      if (replier == "receiver") {
+        const chatReciever = await Members.findOne({ _id: receiverID });
+        //chat receiver exist and replied
+        if (chatReciever && receiverReply && !chat.reply.receiver) {
+          let chatCountReceiver;
+
+          if (isEmptyObject(chatReciever.chat)) {
+            chatCountReceiver = { numChat: 0, numReply: 0 };
+          } else {
+            chatCountReceiver = chatReciever.chat;
+          }
+
+          chatCountReceiver = {
+            ...chatCountReceiver,
+            numReply: chatCountReceiver.numReply + 1,
+          };
+
+          await Members.findOneAndUpdate(
+            { _id: receiverID },
+            { $set: { chat: chatCountReceiver } },
+            { new: true }
+          );
+        }
+      }
+
+      if (replier == "sender") {
+        const chatSender = await Members.findOne({ _id: senderID });
+
+        //chat receiver exist and replied
+        if (chatSender && receiverReply && !chat.reply.sender) {
+          let chatCountSender;
+
+          if (isEmptyObject(chatSender.chat)) {
+            chatCountSender = { numChat: 0, numReply: 0 };
+          } else {
+            chatCountSender = chatSender.chat;
+          }
+
+          chatCountSender = {
+            ...chatCountSender,
+            numChat: chatCountSender.numChat + 1,
+          };
+
+          await Members.findOneAndUpdate(
+            { _id: receiverID },
+            { $set: { chat: chatCountSender } },
+            { new: true }
+          );
+        }
+      }
+
+      let reply = chat.reply || {};
+
+      //chat
+
+      if (replier == "sender") {
+        
+        reply = {
+          ...reply,
+          sender: receiverReply,
+        };
+      } else if (replier == "receiver") {
+        reply = {
+          ...reply,
+          receiver: receiverReply,
+        };
+      }
+
+      console.log("reply", reply);
 
       //update the chat with the reply
       chat = await Chats.findOneAndUpdate(
-        { _id: _id },
+        searchTerm,
         {
           $set: {
-            reply: { sender: true, receiver: receiverReply },
+            reply: reply,
           },
         },
         { new: true }
       );
+
+      console.log("chat", chat);
 
       return chat;
     } catch (err) {
@@ -138,13 +208,20 @@ module.exports = {
     }
   },
   updateChatResult: async (parent, args, context, info) => {
-    const { _id, result } = args.fields;
+    const { _id, result, threadID } = args.fields;
     console.log("Mutation > addNewChat > args.fields = ", args.fields);
 
-    if (!_id) throw new ApolloError("The _id is required");
+    if (!_id && !threadID)
+      throw new ApolloError("The _id or threadID is required");
     if (!result) throw new ApolloError("The result is required");
     try {
-      let chat = await Chats.findOne({ _id: _id });
+      let searchTerm = {};
+      if (_id) {
+        searchTerm = { _id: _id };
+      } else if (threadID) {
+        searchTerm = { threadID: threadID };
+      }
+      let chat = await Chats.findOne(searchTerm);
       if (!chat)
         throw new ApolloError(
           "The chat _id is invalid. Please supply a valid _id"

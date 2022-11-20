@@ -1,5 +1,7 @@
-const {addNewMember,updateMember,addNodesToMember,addFavoriteProject,addSkillToMember,endorseAttribute, memberUpdated} = require("./mutation/memberMutation");
+
+const {addNewMember,updateMember,addNodesToMember,addFavoriteProject,addSkillToMember,endorseAttribute, memberUpdated,addEndorsement} = require("./mutation/memberMutation");
 const {updateProject,addNodesToProject,newTweetProject,approveTweet,changeTeamMember_Phase_Project,createNewTeam,createNewRole,createNewEpic} = require("./mutation/projectsMutation");
+
 const {createSkill,createSkills,relatedSkills,createApprovedSkill,approveOrRejectSkill} = require("./mutation/skillMutation")
 const {createNode,relatedNode,relatedNode_name} = require("./mutation/nodeMutation")
 const {updateRoleTemplate} = require("./mutation/roleTemplateMutation")
@@ -17,7 +19,9 @@ module.exports = {
     addNewMember,
     updateMember,addNodesToMember,
     endorseAttribute,
-    addFavoriteProject,addSkillToMember,
+    addFavoriteProject,
+    addSkillToMember,
+    addEndorsement,
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,addNodesToProject,

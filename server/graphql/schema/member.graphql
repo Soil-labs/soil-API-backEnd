@@ -42,6 +42,7 @@ module.exports = `
 
         memberRole: RoleTemplate
         chat: chatResponse
+        endorsements: [endorsements]
     }
 
     type nodesType {
@@ -185,14 +186,17 @@ module.exports = `
         commonSkills: [Skills]
     }
 
-   
-    
-
+    type endorsements {
+        endorser: MembersSmallType
+        endorsementMessage: String
+        arweaveTransactionID: String
+    }
 
 
     input findMemberInput {
         _id: ID
         serverID: [String]
+        discordName: ID
     }
 
     input findMembersInput {
@@ -411,11 +415,9 @@ module.exports = `
         serverID: [String]
     }
 
-    input findMemersByIDOrDiscordNameInput {
-        discordName: String
-        _id: ID
+    input addEndorsementInput {
+        endorserID: ID
+        endorseeID: ID
+        endorsementMessage: String
     }
-
-    
-
 `

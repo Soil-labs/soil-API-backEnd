@@ -9,7 +9,7 @@ module.exports = `
         addFavoriteProject(fields:addFavoriteProjectInput!): Members
         addNodesToMember(fields:addNodesToMemberInput!): Members
         addSkillToMember(fields:addSkillToMember_Input!):Members
-
+        addEndorsement(fields: addEndorsementInput ): Members
         endorseAttribute(fields:endorseAttributeInput!): Members
 
 
