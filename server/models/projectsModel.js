@@ -27,6 +27,10 @@ const projectSchema = mongoose.Schema({
     },
   }],
 
+  nodes: [{
+    _id: mongoose.Schema.ObjectId,
+  }],
+
   role: [{
     title: String,
     description: String,

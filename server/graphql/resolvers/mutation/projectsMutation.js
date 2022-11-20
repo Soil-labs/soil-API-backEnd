@@ -1,4 +1,5 @@
 const { Projects } = require("../../../models/projectsModel");
+const { Node } = require("../../../models/nodeModal");
 const { Team } = require("../../../models/teamModal");
 const { Role } = require("../../../models/roleModel");
 const { Members } = require("../../../models/membersModel");
@@ -274,6 +275,117 @@ module.exports = {
         err.message,
         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
         { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
+
+  addNodesToProject: async (parent, args, context, info) => {
+   
+
+    const {projectID,nodesID} = args.fields;
+
+    console.log("Mutation > addNodesToMember > args.fields = " , args.fields)
+
+    if (!projectID) throw new ApolloError( "projectID is required");
+
+
+    
+    try {
+      let projectData = await Projects.findOne({ _id: projectID })
+
+      let nodesData = await Node.find({ _id: nodesID  })
+
+      // check if the nodes are already in the member (projectData.nodes)
+      let nodesDataOriginalArray = projectData.nodes.map(function(item) {
+        return item._id.toString();
+      });
+      
+      // nodesDataOriginalArray = ["6375243c207bff7a7c220e6e"]
+      console.log("nodesDataOriginalArray = " , nodesDataOriginalArray)
+
+      let nodesIDArray = nodesID.map(function(item) {
+        return item.toString();
+      });
+      console.log("nodesIDArray = " , nodesIDArray)
+
+      let differenceNodes = nodesIDArray.filter(x => !nodesDataOriginalArray.includes(x));
+      console.log("differenceNodes = " , differenceNodes)
+
+
+      let nodesDataNew
+
+      console.log("projectData = " , projectData)
+
+      if (differenceNodes.length>0){
+        console.log("projectData.nodes = " )
+        console.log("projectData.nodes = " , projectData.nodes)
+        let nodesDataNew = [...projectData.nodes]
+        console.log("change = 1" )
+        for (let i=0;i<differenceNodes.length;i++){
+          let nodeID = differenceNodes[i]
+          let nodeData = nodesData.find(x => x._id.toString() === nodeID);
+          nodesDataNew.push(nodeData)
+          projectData.nodes.push({_id:nodeID})
+        }
+        console.log("nodesDataNew = " , nodesDataNew)
+
+        // add only the new ones as relationship on Neo4j
+        for (let i=0;i<nodesDataNew.length;i++){
+          let nodeNow = nodesDataNew[i];
+          makeConnection_neo4j({
+            node:["Project",nodeNow.node],
+            id:[projectData._id,nodeNow._id],
+            connection:"connection",
+          })
+
+          // Setup for recalculate the nodes
+          let nodeData2 = await Node.findOneAndUpdate(
+            {_id: nodeNow._id},
+            {
+              $set: {
+                match: {
+                  recalculateProjectRoles: true,
+                  distanceProjectRoles: nodeNow.match.distanceProjectRoles,
+                  
+                  recalculateMembers: true,
+                  distanceMembers: nodeNow.match.distanceMembers,
+                }
+              }
+            },
+            {new: true}
+            )
+        }
+
+        console.log("projectData.nodes = " , projectData.nodes)
+
+        // add all of the nodes on mongoDB
+        projectData2 = await Projects.findOneAndUpdate(
+        {_id: projectID},
+        {
+          $set: {
+            nodes: projectData.nodes
+          }
+        },
+        {new: true}
+        )
+
+        console.log("projectData2 = " , projectData2)
+
+        return projectData2
+      } 
+
+
+
+
+
+      
+      return projectData
+      // return {}
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
       );
     }
   },

@@ -25,6 +25,7 @@ module.exports = `
 
         tweets: [String],
         skills: [skillType_member],
+        nodes: [nodesType]
         projects: [projectMemberType],
         archiveProjects: [String],
         network: [Members],
@@ -41,6 +42,10 @@ module.exports = `
 
         memberRole: RoleTemplate
         chat: chatResponse
+    }
+
+    type nodesType {
+        nodeData: Node
     }
 
      type chatResponse {
@@ -133,6 +138,7 @@ module.exports = `
         skillsPercentage: [SkillsPercentage]
         
     }
+    
 
     type MatchPercentage {
         totalPercentage: Float,
@@ -222,6 +228,17 @@ module.exports = `
         serverID: [String]
     }
 
+     input matchPrepareNodeInput {
+        nodeID: ID
+        serverID: [String]
+        find: findEnum
+    }
+
+    enum findEnum {
+        Member
+        Project
+    }
+
     input matchPrepareSkillToProjectRolesInput {
         skillID: ID
         serverID: [String]
@@ -236,8 +253,24 @@ module.exports = `
         limit: Int
     }
 
+    input matchNodesToMembersInput {
+        nodesID: [ID]
+        hoursPerWeek: Int
+        budgetAmount: Float
+        serverID: [String]
+        page: Int
+        limit: Int
+    }
+
     input matchSkillsToProjectsInput {
         skillsID: [ID]
+        serverID: [String]
+        page: Int
+        limit: Int
+    }
+
+    input matchNodesToProjectsInput {
+        nodesID: [ID]
         serverID: [String]
         page: Int
         limit: Int
@@ -311,6 +344,11 @@ module.exports = `
         memberID: ID
         projectID: ID
         favorite: Boolean
+    }
+
+    input addNodesToMemberInput {
+        memberID: ID
+        nodesID: [String]
     }
 
 

@@ -1,5 +1,6 @@
 // const { User } = require('../../../models/user');
 const { Members } = require('../../../models/membersModel');
+const { Node } = require("../../../models/nodeModal");
 const { Skills } = require('../../../models/skillsModel');
 const { Projects } = require('../../../models/projectsModel');
 const {ProjectUpdate } = require("../../../models/projectUpdateModal");
@@ -86,6 +87,47 @@ module.exports = {
                err.extensions?.code || 'DATABASE_SEARCH_ERROR',
                {
                   component: 'userResolver > skills',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+      nodes: async (parent, args, context, info) => {
+         // console.log("parent = " , parent)
+
+         try {
+            const nodes = parent.nodes;
+
+            console.log("nodes ----= " , nodes)
+
+            nodesID = []
+            nodes.forEach( node => {
+               nodesID.push(node._id)
+            })
+
+            console.log("nodesID = " , nodesID)
+            
+            const nodesData = await Node.find({_id: nodesID})
+
+            let res = []
+            nodesData.forEach( node => {
+               res.push({
+                  nodeData: node,
+               })
+            })
+
+
+            // console.log("nodesData = " , nodesData)
+
+
+            return res;
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > nodes',
                   user: context.req.user?._id,
                }
             );
@@ -395,30 +437,6 @@ module.exports = {
          // console.log("parent 22322= " , parent.skillsPercentage)
 
          try {
-            // const skillsID = parent.commonSkills;
-
-
-            // skillData = await Skills.find({
-            //    $and: [
-            //      { _id: skillsID },
-            //      { state: "approved" },
-            //    ]})
-
-            // const memberID = parent.memberID;
-
-            // memberData = await Members.findOne({_id: memberID})
-            
-            // console.log("memberData.skills.id  = " , memberData.skills.id )
-
-            // skillData = await Skills.find({
-            //    $and: [
-            //      { _id: memberData.skills.id },
-            //      { state: "approved" },
-            //    ]})
-
-
-
-            // return skillData;
             return parent.skillsPercentage;
             // return [{}]
 
@@ -433,93 +451,6 @@ module.exports = {
             );
          }
       },
-      // member: async (parent, args, context, info) => {
-      //    // console.log("parent 22322= " , parent)
-
-      //    try {
-      //       const memberID = parent.memberID;
-
-
-      //       memberData = await Members.findOne({_id: memberID})
-            
-
-
-
-      //       return memberData;
-
-      //    } catch (err) {
-      //       throw new ApolloError(
-      //          err.message,
-      //          err.extensions?.code || 'DATABASE_SEARCH_ERROR',
-      //          {
-      //             component: 'userResolver > skills',
-      //             user: context.req.user?._id,
-      //          }
-      //       );
-      //    }
-      // },
-      // matchPercentage: async (parent, args, context, info) => {
-      //    // console.log("parent 22322= rorinsdf" , parent)
-      //    // console.log("info 22322= rorinsdf" , info)
-
-      //    try {
-      //       const memberID = parent.memberID;
-
-      //       // console.log("change = 5" )
-
-
-      //       memberData = await Members.findOne({_id: memberID})
-            
-
-
-      //       let hoursPercentage = 0
-      //       if (memberData && memberData.hoursPerWeek && memberData.hoursPerWeek>0) {
-
-      //          hoursPercentage = 100 - ((memberData.hoursPerWeek - parent.hoursPerWeek)**2)/3
-      //          if (hoursPercentage<0) hoursPercentage = 0
-      //          if (hoursPercentage>100) hoursPercentage = 100
-      //       }
-
-
-
-      //       let budgetPercentage = 0
-
-      //       if (memberData && memberData.budget && memberData.budget.totalBudget ) {
-      //          budgetPercentage = 100 - ((memberData.budget.totalBudget - parent.budgetAmount)**2)/3
-               
-      //          if (budgetPercentage<0) budgetPercentage = 0
-      //          if (budgetPercentage>100) budgetPercentage = 100
-      //       }
-
-      //       let skillTotalPercentage = parent.skillTotalPercentage
-      //       let totalPercentage = skillTotalPercentage*0.6 + hoursPercentage*0.2 + budgetPercentage*0.2
-
-
-
-      //       // skillTotalPercentage,
-      //       // hoursPercentage,
-      //       // budgetPercentage,)
-      //       return {
-      //          totalPercentage,
-      //          skillTotalPercentage,
-      //          hoursPercentage,
-      //          budgetPercentage,
-      //       }
-
-
-      //       // return parent.matchPercentage;
-
-      //    } catch (err) {
-      //       throw new ApolloError(
-      //          err.message,
-      //          err.extensions?.code || 'DATABASE_SEARCH_ERROR',
-      //          {
-      //             component: 'userResolver > skills',
-      //             user: context.req.user?._id,
-      //          }
-      //       );
-      //    }
-      // },
    },
    SkillsPercentage: {
       info: async (parent, args, context, info) => {
@@ -533,23 +464,7 @@ module.exports = {
 
 
             skillData = await Skills.findOne({_id:skillsID})
-
-            // const memberID = parent.memberID;
-
-            // memberData = await Members.findOne({_id: memberID})
             
-            // console.log("memberData.skills.id  = " , memberData.skills.id )
-
-            // skillData = await Skills.find({
-            //    $and: [
-            //      { _id: memberData.skills.id },
-            //      { state: "approved" },
-            //    ]})
-
-
-
-            // return skillData;
-            // return parent.skillsPercentage;
             return skillData
 
          } catch (err) {

@@ -49,6 +49,7 @@ const memberSchema = mongoose.Schema({
   serverID: [String],
 
   tweets: [String],
+
   skills: [{
     id: mongoose.Schema.ObjectId,
     authors: [String],
@@ -59,6 +60,11 @@ const memberSchema = mongoose.Schema({
       enum: ["learning", "junior","mid","senior"],
     },
   }],
+
+  nodes: [{
+    _id: mongoose.Schema.ObjectId,
+  }],
+
   projects: [{
     projectID: mongoose.Schema.ObjectId,
     roleID: mongoose.Schema.ObjectId,
