@@ -311,7 +311,7 @@ module.exports = `
         content: contentInput
         interest: String
         timeZone: String
-        serverID: String,
+        serverID: [String],
         skills: [skillInput_member]
         
         memberRole: ID
