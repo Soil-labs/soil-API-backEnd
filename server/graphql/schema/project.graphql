@@ -288,6 +288,11 @@ module.exports = `
         nodesID: [ID],
     }
 
+    input deleteNodesToProjectRoleInput {
+        projectRoleID: ID,
+        nodesID: [ID],
+    }
+
     input teamInput {
         memberID: String
         roleID: String

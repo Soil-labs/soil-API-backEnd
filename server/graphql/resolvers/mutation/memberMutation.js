@@ -12,6 +12,8 @@ const {
   updateNode_neo4j_serverID,
   deleteConnectionBetweenNodes_neo4j,
   findAllNodesDistanceRfromNode_neo4j,
+  deleteConnectionANYBetweenNodes_neo4j,
+  deleteNode_neo4j,
 } = require("../../../neo4j/func_neo4j");
 
 const { uploadFileToArweave } = require("../../../utils/uploadFileToArweave");
@@ -408,27 +410,20 @@ module.exports = {
     
     try {
       let memberData = await Members.findOne({ _id: memberID })
-
       let nodesData = await Node.find({ _id: nodesID })
+
 
       // check if the nodes are already in the member (memberData.nodes)
       let nodesDataOriginalArray = memberData.nodes.map(function(item) {
         return item._id.toString();
       });
-      
-      // nodesDataOriginalArray = ["6375243c207bff7a7c220e6e"]
-      // console.log("nodesDataOriginalArray = " , nodesDataOriginalArray)
 
       let nodesIDArray = nodesID.map(function(item) {
         return item.toString();
       });
-      // console.log("nodesIDArray = " , nodesIDArray)
 
       let differenceNodes = nodesIDArray.filter(x => !nodesDataOriginalArray.includes(x));
       console.log("differenceNodes = " , differenceNodes)
-
-
-      let nodesDataNew = []
 
 
       if (differenceNodes.length>0){
@@ -439,7 +434,6 @@ module.exports = {
           nodesDataNew.push(nodeData)
           memberData.nodes.push({_id:nodeID})
         }
-        // console.log("nodesDataNew = " , nodesDataNew)
 
         // add only the new ones as relationship on Neo4j
         for (let i=0;i<nodesDataNew.length;i++){
@@ -449,90 +443,179 @@ module.exports = {
             id:[memberData._id,nodeNow._id],
             connection:"connection",
           })
-          // console.log("nodesDataNew = " , nodesDataNew)
 
           changeMatchByServer(nodeNow,memberData)
 
-            // // ---------- Change matchByServer -----------
-            // let matchByServer = nodeNow.matchByServer
-
-
-            // console.log("serverID_n ----------= " , memberData.serverID)
-
-            // for (let i=0;i<memberData.serverID.length;i++){
-            //   let serverID_n = memberData.serverID[i]
-
-
-            //   console.log("nodeNow = " , nodeNow)
-            //   console.log("matchByServer = " , matchByServer)
-
-            //   if (matchByServer===undefined){
-            //     matchByServer = [{
-            //       serverID:serverID_n,
-            //       match:{
-            //         recalculateProjectRoles: true,
-            //         distanceProjectRoles: [],
-                    
-            //         recalculateMembers: true,
-            //         distanceMembers: [],
-            //       }
-            //     }]
-            //   } else {
-            //     // find the position serverID_n exist on matchByServer dictionary
-            //     let position = matchByServer.findIndex(x => x.serverID == serverID_n)
-
-            //     if (position === -1){
-            //       // if it does not exist, add it
-            //       matchByServer.push({
-            //         serverID:serverID_n,
-            //         match:{
-            //           recalculateProjectRoles: true,
-            //           distanceProjectRoles: [],
-                      
-            //           recalculateMembers: true,
-            //           distanceMembers: [],
-            //         }
-            //       })
-            //     } else {
-            //       // if it exist, change it
-            //       matchByServer[position].match.recalculateProjectRoles = true
-            //       matchByServer[position].match.recalculateMembers = true
-            //     }
-            //   }
-            // }
-            // // ---------- Change matchByServer -----------
-
-            // // Update the node
-            // let nodeData3 = await Node.findOneAndUpdate( 
-            //   {_id: nodeNow._id},
-            //   {
-            //     $set: {
-            //       matchByServer_update: true,
-            //       matchByServer: matchByServer
-            //     }
-            //   },
-            //   {new: true}
-            // )
+            
         }
           
       }
-
-      // console.log("memberData.nodes = " , memberData.nodes)
-
-      // add all of the nodes on mongoDB
+      
       memberData2 = await Members.findOneAndUpdate(
-      {_id: memberID},
-      {
-        $set: {
-          nodes: memberData.nodes
-        }
-      },
-      {new: true}
+        {_id: memberID},
+        {
+          $set: {
+            nodes: memberData.nodes
+          }
+        },
+        {new: true}
       )
+      
+      
+      return memberData2
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+  deleteNodesFromMember: async (parent, args, context, info) => {
+   
 
-        // console.log("memberData2 = " , memberData2)
+    const {memberID,nodesID} = args.fields;
 
-        // return memberData2
+    console.log("Mutation > deleteNodesFromMember > args.fields = " , args.fields)
+
+    if (!memberID) throw new ApolloError( "memberID is required");
+
+
+    
+    try {
+      let memberData = await Members.findOne({ _id: memberID })
+      let nodesData = await Node.find({ _id: nodesID })
+
+
+      // check what nodes exist on memberData.nodes
+      let nodesDataOriginalArray = memberData.nodes.map(function(item) {
+        return item._id.toString();
+      });
+
+      let nodesIDArray = nodesID.map(function(item) {
+        return item.toString();
+      });
+
+      let nodesExistMemberAndNode = nodesDataOriginalArray.filter(x => nodesIDArray.includes(x));
+      console.log("nodesExistMemberAndNode = " , nodesExistMemberAndNode)
+
+      let nodeExistOnlyMember = nodesDataOriginalArray.filter(x => !nodesIDArray.includes(x));
+      console.log("nodeExistOnlyMember = " , nodeExistOnlyMember)
+
+
+      // console.log("change = " , change)
+
+      if (nodesExistMemberAndNode.length>0){
+        let nodesDataNew = []
+        for (let i=0;i<nodesExistMemberAndNode.length;i++){
+          let nodeID = nodesExistMemberAndNode[i]
+          let nodeData = nodesData.find(x => x._id.toString() == nodeID.toString());
+          nodesDataNew.push(nodeData)
+        }
+
+        let nodeExistOnlyMember_id = []
+        for (let i=0;i<nodeExistOnlyMember.length;i++){
+          let nodeID = nodeExistOnlyMember[i]
+          nodeExistOnlyMember_id.push({_id:nodeID})
+        }
+
+        memberData.nodes = nodeExistOnlyMember_id
+
+        // console.log("nodesDataNew = " , nodesDataNew)
+
+        // console.log("memberData = " , memberData)
+
+        // console.log("change = " , change)
+
+        // add only the new ones as relationship on Neo4j
+        for (let i=0;i<nodesDataNew.length;i++){
+          let nodeNow = nodesDataNew[i];
+          deleteConnectionANYBetweenNodes_neo4j({
+            nodeID_1: memberData._id, 
+            nodeID_2: nodeNow._id,
+          })
+
+          changeMatchByServer(nodeNow,memberData)
+
+            
+        }
+          
+      }
+      
+      memberData2 = await Members.findOneAndUpdate(
+        {_id: memberID},
+        {
+          $set: {
+            nodes: memberData.nodes
+          }
+        },
+        {new: true}
+      )
+      
+      
+      return memberData2
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember"}
+      );
+    }
+  },
+  deleteMember: async (parent, args, context, info) => {
+   
+
+    const {memberID} = args.fields;
+
+    console.log("Mutation > deleteMember > args.fields = " , args.fields)
+
+    if (!memberID) throw new ApolloError( "memberID is required");
+
+
+    
+    try {
+      let memberData = await Members.findOne({ _id: memberID })
+
+      if (!memberData) throw new ApolloError( "memberID not found");
+
+      // console.log("memberData = " , memberData)
+
+      // get all nodes from memberData.nodes
+      let nodesData = await Node.find({ _id: memberData.nodes.map(function(item) {
+        return item._id.toString();
+      }) })
+      
+      // console.log("nodesData = " , nodesData)
+
+      // console.log("change = " , change)
+
+
+
+
+      // console.log("change = " , change)
+
+        // add only the new ones as relationship on Neo4j
+        for (let i=0;i<nodesData.length;i++){
+          let nodeNow = nodesData[i];
+          deleteConnectionANYBetweenNodes_neo4j({
+            nodeID_1: memberData._id, 
+            nodeID_2: nodeNow._id,
+          })
+
+          changeMatchByServer(nodeNow,memberData)
+
+            
+        }
+          
+        deleteNode_neo4j({
+          nodeID: memberData._id,
+        })
+      
+      // delete memberData from mongoDB database
+      memberData2 = await Members.findOneAndDelete(
+        {_id: memberID}
+      )
+      
       
       return memberData2
     } catch (err) {

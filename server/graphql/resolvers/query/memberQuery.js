@@ -1486,12 +1486,12 @@ module.exports = {
       );
     }
   },
-  matchNodesToProjects: async (parent, args, context, info) => {
-    const { skillsID, serverID } = args.fields;
+  matchNodesToProjectRoles: async (parent, args, context, info) => {
+    const { nodesID, serverID } = args.fields;
     let { page, limit } = args.fields;
     console.log("Query > matchSkillsToMembers > args.fields = ", args.fields);
 
-    if (!skillsID) throw new ApolloError("projectID is required");
+    if (!nodesID) throw new ApolloError("nodesID is required");
 
     let queryServerID = [];
     if (serverID) {
@@ -1509,12 +1509,14 @@ module.exports = {
     try {
       let project;
 
-      let skillData = await Skills.find({ _id: skillsID });
+      let nodeData = await Node.find({ _id: nodesID });
 
-      if (!skillData) throw new ApolloError("Skill Don't exist");
+      if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      // console.log("skillData[0] = " , skillData[0])
-      // console.log("skillData[0] = " , skillData[0].match)
+      
+
+      // console.log("nodeData[0] = " , nodeData[0])
+      // console.log("nodeData[0] = " , nodeData[0].match)
 
       let distanceAll = [[], [], []];
       let points = [[], [], []];
@@ -1522,15 +1524,34 @@ module.exports = {
       let everyID = [];
 
       // console.log("distanceAll = ", distanceAll);
-      for (let i = 0; i < skillData.length; i++) {
+      for (let i = 0; i < nodeData.length; i++) {
+
+
+        newSkillFlag = true;
+
+
+        let matchByServer = nodeData[i].matchByServer
+        let positionServer = -1
+
+        console.log("matchByServer = " , matchByServer)
+        
+        if (matchByServer===undefined){
+          positionServer = -1
+        } else {  
+          positionServer = matchByServer.findIndex(x => x.serverID == serverID)
+          console.log("positionServer = " , positionServer)
+        }
+
+
+
         for (let k = 0; k < 3; k++) {
           let projectsNow;
           if (k == 0)
-            projectsNow = skillData[i].match.distanceProjectRoles.hop0;
+            projectsNow = matchByServer[positionServer].match.distanceProjectRoles.hop0;
           if (k == 1)
-            projectsNow = skillData[i].match.distanceProjectRoles.hop1;
+            projectsNow = matchByServer[positionServer].match.distanceProjectRoles.hop1;
           if (k == 2)
-            projectsNow = skillData[i].match.distanceProjectRoles.hop2;
+            projectsNow = matchByServer[positionServer].match.distanceProjectRoles.hop2;
 
           for (let j = 0; j < projectsNow.length; j++) {
             let projectID = projectsNow[j];
@@ -1592,10 +1613,10 @@ module.exports = {
                 matchSkillsToMembersOutput[pos].matchPercentage;
               if (
                 matchSkillsToMembersOutput[pos].matchPercentage <
-                25 * (3 - i) + (25 / skillData.length) * points[i][k]
+                25 * (3 - i) + (25 / nodeData.length) * points[i][k]
               ) {
                 newMatchPercentage =
-                  25 * (3 - i) + (25 / skillData.length) * points[i][k];
+                  25 * (3 - i) + (25 / nodeData.length) * points[i][k];
               }
               matchSkillsToMembersOutput[pos] = {
                 projectID: matchSkillsToMembersOutput[pos].projectID,
@@ -1605,7 +1626,7 @@ module.exports = {
                   {
                     projectRoleID: distanceAll[i][k],
                     matchPercentage:
-                      25 * (3 - i) + (25 / skillData.length) * points[i][k],
+                      25 * (3 - i) + (25 / nodeData.length) * points[i][k],
                     commonSkillsID: [],
                   },
                 ],
@@ -1614,14 +1635,14 @@ module.exports = {
               matchSkillsToMembersOutput.push({
                 projectID: projectNowID,
                 matchPercentage:
-                  25 * (3 - i) + (25 / skillData.length) * points[i][k],
+                  25 * (3 - i) + (25 / nodeData.length) * points[i][k],
                 commonSkillsID: [],
 
                 projectRoles: [
                   {
                     projectRoleID: distanceAll[i][k],
                     matchPercentage:
-                      25 * (3 - i) + (25 / skillData.length) * points[i][k],
+                      25 * (3 - i) + (25 / nodeData.length) * points[i][k],
                     commonSkillsID: [],
                   },
                 ],
