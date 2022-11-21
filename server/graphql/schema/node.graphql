@@ -13,8 +13,16 @@ module.exports = `
         
         match: MatchType
 
+        matchByServer_update: Boolean
+        matchByServer: [matchByServerType]
+
         registeredAt: String,
 
+    }
+
+    type matchByServerType {
+        serverID: String
+        match: MatchType
     }
 
     type MatchType {
@@ -67,6 +75,9 @@ module.exports = `
     input findNodesInput {
         _id: [ID]
         node: String
+        recalculateProjectRoles: Boolean
+        recalculateMembers: Boolean
+        matchByServer_update: Boolean
     }
 
 `

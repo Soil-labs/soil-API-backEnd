@@ -29,11 +29,11 @@ const nodeSchema = mongoose.Schema({
 
 
   match: {
-    recalculateProject: {
+    recalculateProjectRoles: {
       type: Boolean,
       default: true
     },
-    distanceProject: {
+    distanceProjectRoles: {
       hop0: [mongoose.Schema.ObjectId],
       hop1: [mongoose.Schema.ObjectId],
       hop2: [mongoose.Schema.ObjectId],
@@ -51,6 +51,38 @@ const nodeSchema = mongoose.Schema({
       hop3: [String],
     }
   },
+
+
+  matchByServer_update: { // when there is any part of the array matchByServer that needs update, this one will become true 
+    type: Boolean,
+    default: true
+  },
+  matchByServer:[{
+    serverID: String,
+    match: {
+      recalculateProjectRoles: {
+        type: Boolean,
+        default: true
+      },
+      distanceProjectRoles: {
+        hop0: [mongoose.Schema.ObjectId],
+        hop1: [mongoose.Schema.ObjectId],
+        hop2: [mongoose.Schema.ObjectId],
+        hop3: [mongoose.Schema.ObjectId],
+      },
+      
+      recalculateMembers: {
+        type: Boolean,
+        default: true
+      },
+      distanceMembers: {
+        hop0: [String],
+        hop1: [String],
+        hop2: [String],
+        hop3: [String],
+      }
+    },
+  }],
 
   registeredAt: Date,
 

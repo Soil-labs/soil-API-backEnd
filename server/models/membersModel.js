@@ -45,31 +45,32 @@ const memberSchema = mongoose.Schema({
   serverID: [String],
 
   tweets: [String],
-  skills: [
-    {
-      id: mongoose.Schema.ObjectId,
-      authors: [String],
-      communityLevel: Number,
-      selfEndorsedLevel: Number,
-      level: {
-        type: String,
-        enum: ["learning", "junior", "mid", "senior"],
-      },
+
+  skills: [{
+    id: mongoose.Schema.ObjectId,
+    authors: [String],
+    communityLevel: Number,
+    selfEndorsedLevel: Number,
+    level: {
+      type: String,
+      enum: ["learning", "junior","mid","senior"],
     },
-  ],
-  projects: [
-    {
-      projectID: mongoose.Schema.ObjectId,
-      roleID: mongoose.Schema.ObjectId,
-      champion: Boolean,
-      phase: {
-        type: String,
-        enum: ["shortlisted", "engaged", "committed", "rejected", "invited"],
-        default: "shortlisted",
-      },
-      favorite: Boolean,
+  }],
+
+  nodes: [{
+    _id: mongoose.Schema.ObjectId,
+  }],
+
+  projects: [{
+    projectID: mongoose.Schema.ObjectId,
+    roleID: mongoose.Schema.ObjectId,
+    champion: Boolean,
+    phase: {
+      type: String,
+      enum: ["shortlisted", "engaged","committed","rejected","invited"],
+      default: "shortlisted"
     },
-  ],
+  }],
   archiveProjects: [mongoose.Schema.ObjectId],
 
   previusProjects: [

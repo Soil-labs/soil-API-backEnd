@@ -31,7 +31,13 @@ module.exports = {
     fields = {
       ...fields,
       state: "approved",
+
     }
+  }
+
+  fields = {
+    ...fields,
+    matchByServer_update: true,
   }
 
   console.log("fields = " , fields)
@@ -295,6 +301,7 @@ async function connect_node_to_subNode (nodeData,subNodes) {
   }
 }
 
+
 async function connect_node_to_aboveNode (nodeData,aboveNodes) {
 
   if (aboveNodes && aboveNodes.length > 0){
@@ -302,15 +309,15 @@ async function connect_node_to_aboveNode (nodeData,aboveNodes) {
     for (let i=0;i<aboveNodesData.length;i++){ 
       
 
-      if (!aboveNodesData[i].aboveNodes.includes(nodeData._id)){
+      if (!aboveNodesData[i].subNodes.includes(nodeData._id)){
 
-        aboveNodesData[i].aboveNodes.push(nodeData._id)
+        aboveNodesData[i].subNodes.push(nodeData._id)
       
         await Node.findOneAndUpdate(
           {_id: aboveNodesData[i]._id},
           {
               $set: {
-                subNodes: aboveNodesData[i].aboveNodes,
+                subNodes: aboveNodesData[i].subNodes,
               }
           },
           {new: true}

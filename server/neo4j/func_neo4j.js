@@ -209,6 +209,8 @@ module.exports = {
             tx.run(fun)
         )
 
+        // console.log("result = " , result)
+
         session.close()
         
     },
@@ -540,6 +542,113 @@ module.exports = {
         return([member_oneHopeMatch,member_twoHopeMatch,member_threeHopeMatch])
 
     },
+    matchPrepareAnything_neo4j : async (req, res) => {
+        const {nodeID,node, serverID,find } = req;
+
+
+        let member_oneHopeMatch = await findMatch_translateArray(`
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(p:${find}))
+            WITH *
+            WHERE '${serverID}' IN p.serverID
+            RETURN p
+        `)
+        // console.log("member_oneHopeMatch = " , member_oneHopeMatch)
+
+
+        let member_twoHopeMatch = await findMatch_translateArray(`
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(p:${find}))
+            WHERE NOT (a:Member OR a:Project)
+            WITH *
+            WHERE '${serverID}' IN p.serverID
+            RETURN p
+        `)
+        // console.log("member_twoHopeMatch = " , member_twoHopeMatch)
+
+
+        let member_threeHopeMatch = await findMatch_translateArray(`
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(b)-[]-(p:${find}))
+            WHERE NOT (a:Member OR a:Project) AND NOT (b:Member OR b:Project)
+            WITH *
+            WHERE '${serverID}' IN p.serverID
+            RETURN p
+        `)
+        // console.log("member_threeHopeMatch = " , member_threeHopeMatch)
+
+        
+        return([member_oneHopeMatch,member_twoHopeMatch,member_threeHopeMatch])
+
+    },
+    findAllNodesDistanceRfromNode_neo4j : async (req, res) => {
+        const {nodeID } = req;
+
+        // console.log("nodeID,node = " , nodeID)
+
+
+        let member_oneHopeMatch = await findMatch_translateArray(`
+            MATCH  ((n {_id: '${nodeID}'})-[]-(p))
+            WHERE NOT (p:Member OR p:Project )
+            RETURN p
+        `)
+        // console.log("member_oneHopeMatch = " , member_oneHopeMatch)
+
+
+        let member_twoHopeMatch = await findMatch_translateArray(`
+            MATCH  ms = ((n {_id: '${nodeID}'})-[]-(a)-[]-(p))
+            WHERE NOT (a:Member OR a:Project OR p:Member OR p:Project )
+            RETURN p
+        `)
+        // console.log("member_twoHopeMatch = " , member_twoHopeMatch)
+
+
+        let member_threeHopeMatch = await findMatch_translateArray(`
+            MATCH  ms = ((n {_id: '${nodeID}'})-[]-(a)-[]-(b)-[]-(p))
+            WHERE NOT (a:Member OR a:Project OR b:Member OR b:Project OR p:Member OR p:Project )
+            RETURN p
+        `)
+        // console.log("member_threeHopeMatch = " , member_threeHopeMatch)
+
+        
+        // put together the object _id of member_oneHopeMatch and member_twoHopeMatch and member_threeHopeMatch
+        // only if it is unique _id
+        let allNodes = [nodeID.toString()]
+        let uniqueNodes = {
+            [nodeID.toString()]: true
+        }
+        for (let i = 0; i<member_oneHopeMatch.length; ++i) {
+            if (member_oneHopeMatch[i] && member_oneHopeMatch[i]._id){
+                if (!uniqueNodes[member_oneHopeMatch[i]._id]){
+                    uniqueNodes[member_oneHopeMatch[i]._id] = true
+                    allNodes.push(member_oneHopeMatch[i]._id)
+                }
+            }
+        }
+        for (let i = 0; i<member_twoHopeMatch.length; ++i) {
+            if (member_twoHopeMatch[i] && member_twoHopeMatch[i]._id){
+                if (!uniqueNodes[member_twoHopeMatch[i]._id]){
+                    uniqueNodes[member_twoHopeMatch[i]._id] = true
+                    allNodes.push(member_twoHopeMatch[i]._id)
+                }
+            }
+        }
+        for (let i = 0; i<member_threeHopeMatch.length; ++i) {
+            if (member_threeHopeMatch[i] && member_threeHopeMatch[i]._id){
+                if (!uniqueNodes[member_threeHopeMatch[i]._id]){
+                    uniqueNodes[member_threeHopeMatch[i]._id] = true
+                    allNodes.push(member_threeHopeMatch[i]._id)
+                }
+            }
+        }
+        // console.log("allNodes = " , allNodes)
+        
+
+        
+
+        // console.log("change = " , change)
+
+        
+        return(allNodes)
+
+    },
     matchPrepareSkillToProjectRoles_neo4j : async (req, res) => {
         console.log("change = 11100011" )
         const {skillID } = req;
@@ -666,4 +775,33 @@ function arrayToString(arrayT) {
     } else {
       return arrayT;
     }
+  }
+
+  async function findMatch_translateArray (shyperCode) {
+    const session = driver.session({database:"neo4j"});
+
+    // // ----------------- One Hope -----------------
+    result_oneHopeMatch = await session.writeTransaction(tx => 
+        tx.run(shyperCode)
+    )
+
+    
+    let names_oneHopeMatch = result_oneHopeMatch.records.map(row => {
+        return row
+    })
+
+
+    member_oneHopeMatch = []
+    if (names_oneHopeMatch.length>0){
+        for (let i = 0; i<names_oneHopeMatch.length; ++i) {
+            if (names_oneHopeMatch[i] && names_oneHopeMatch[i]._fields && names_oneHopeMatch[i]._fields[0]){
+                member_oneHopeMatch.push(names_oneHopeMatch[i]._fields[0].properties)
+            }
+        }
+    }
+    // ----------------- One Hope -----------------
+
+    session.close()
+
+    return (member_oneHopeMatch)
   }
