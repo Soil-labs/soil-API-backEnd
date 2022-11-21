@@ -15,7 +15,7 @@ module.exports = `
 
         #  ---------- PROJECT MUTATIONS -------
         updateProject(fields:updateProjectInput!):Project
-        addNodesToProject(fields:addNodesToProjectInput!):Project
+        addNodesToProjectRole(fields:addNodesToProjectRoleInput!):Project
         newTweetProject(fields:newTweetProjectInput!):tweetsProject
         approveTweet(fields:approveTweetInput!):Project
         changeTeamMember_Phase_Project(fields:changeTeamMember_Phase_ProjectInput!):Project

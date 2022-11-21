@@ -27,15 +27,17 @@ const projectSchema = mongoose.Schema({
     },
   }],
 
-  nodes: [{
-    _id: mongoose.Schema.ObjectId,
-  }],
+  
 
   role: [{
     title: String,
     description: String,
     keyRosponsibilities: String,
     openPositions: Number,
+
+    nodes: [{
+      _id: mongoose.Schema.ObjectId,
+    }],
 
     skills: [{
       _id: mongoose.Schema.ObjectId,

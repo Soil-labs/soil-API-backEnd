@@ -57,44 +57,6 @@ module.exports = {
             );
          }
       },
-      nodes: async (parent, args, context, info) => {
-
-         try {
-            const nodes = parent.nodes;
-
-            nodesID = []
-            if (nodes && nodes.length > 0) {
-               nodes.forEach( node => {
-                  nodesID.push(node._id)
-               })
-               
-               const nodesData = await Node.find({_id: nodesID})
-
-               let res = []
-               nodesData.forEach( node => {
-                  res.push({
-                     nodeData: node,
-                  })
-               })
-               return res;
-            } else {
-               return []
-            }
-
-
-            
-
-         } catch (err) {
-            throw new ApolloError(
-               err.message,
-               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
-               {
-                  component: 'userResolver > nodes',
-                  user: context.req.user?._id,
-               }
-            );
-         }
-      },
       garden_teams: async (parent, args, context, info) => {
 
          try {
@@ -168,6 +130,44 @@ module.exports = {
               );
            }
         },
+        nodes: async (parent, args, context, info) => {
+
+         try {
+            const nodes = parent.nodes;
+
+            nodesID = []
+            if (nodes && nodes.length > 0) {
+               nodes.forEach( node => {
+                  nodesID.push(node._id)
+               })
+               
+               const nodesData = await Node.find({_id: nodesID})
+
+               let res = []
+               nodesData.forEach( node => {
+                  res.push({
+                     nodeData: node,
+                  })
+               })
+               return res;
+            } else {
+               return []
+            }
+
+
+            
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > nodes',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
    },
    skillRoleType: {
       skillData: async (parent, args, context, info) => {

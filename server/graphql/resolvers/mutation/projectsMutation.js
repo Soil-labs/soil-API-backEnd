@@ -15,6 +15,7 @@ const {
   updateNode_neo4j_serverID,
   updateNode_neo4j_serverID_projectID,
   makeConnection_neo4j,
+  findAllNodesDistanceRfromNode_neo4j,
 } = require("../../../neo4j/func_neo4j");
 
 module.exports = {
@@ -279,24 +280,42 @@ module.exports = {
     }
   },
 
-  addNodesToProject: async (parent, args, context, info) => {
+  addNodesToProjectRole: async (parent, args, context, info) => {
    
 
-    const {projectID,nodesID} = args.fields;
+    const {projectRoleID,nodesID} = args.fields;
 
     console.log("Mutation > addNodesToMember > args.fields = " , args.fields)
 
-    if (!projectID) throw new ApolloError( "projectID is required");
+    if (!projectRoleID) throw new ApolloError( "projectRoleID is required");
 
 
     
     try {
-      let projectData = await Projects.findOne({ _id: projectID })
+      let projectData = await Projects.findOne({ "role._id": projectRoleID })
 
       let nodesData = await Node.find({ _id: nodesID  })
 
+
+      projectRoleData = projectData.role.filter((role) => role._id == projectRoleID)
+
+      projectRoleData = projectRoleData[0]
+
+      // console.log("projectRoleData = " , projectRoleData)
+
+      projectRoleData = {
+        _id: projectRoleData._id,
+        title: projectRoleData.title,
+        skills: projectRoleData.skills,
+        nodes: projectRoleData.nodes,
+        serverID: projectData.serverID
+      }
+
+      console.log("projectRoleData = " , projectRoleData)
+
+
       // check if the nodes are already in the member (projectData.nodes)
-      let nodesDataOriginalArray = projectData.nodes.map(function(item) {
+      let nodesDataOriginalArray = projectRoleData.nodes.map(function(item) {
         return item._id.toString();
       });
       
@@ -311,59 +330,51 @@ module.exports = {
       let differenceNodes = nodesIDArray.filter(x => !nodesDataOriginalArray.includes(x));
       console.log("differenceNodes = " , differenceNodes)
 
+      
 
       let nodesDataNew
 
-      console.log("projectData = " , projectData)
+      // console.log("projectRoleData = " , projectRoleData)
 
       if (differenceNodes.length>0){
-        console.log("projectData.nodes = " )
-        console.log("projectData.nodes = " , projectData.nodes)
-        let nodesDataNew = [...projectData.nodes]
-        console.log("change = 1" )
+        let nodesDataNew = []
         for (let i=0;i<differenceNodes.length;i++){
           let nodeID = differenceNodes[i]
-          let nodeData = nodesData.find(x => x._id.toString() === nodeID);
+          let nodeData = nodesData.find(x => x._id.toString() == nodeID);
           nodesDataNew.push(nodeData)
-          projectData.nodes.push({_id:nodeID})
+          projectRoleData.nodes.push({_id:nodeID})
         }
-        console.log("nodesDataNew = " , nodesDataNew)
+        // console.log("projectRoleData = " , projectRoleData)
+
+        // console.log("change = " , change)
 
         // add only the new ones as relationship on Neo4j
         for (let i=0;i<nodesDataNew.length;i++){
           let nodeNow = nodesDataNew[i];
           makeConnection_neo4j({
-            node:["Project",nodeNow.node],
-            id:[projectData._id,nodeNow._id],
+            node:["Role",nodeNow.node],
+            id:[projectRoleData._id,nodeNow._id],
             connection:"connection",
           })
 
-          // Setup for recalculate the nodes
-          let nodeData2 = await Node.findOneAndUpdate(
-            {_id: nodeNow._id},
-            {
-              $set: {
-                match: {
-                  recalculateProjectRoles: true,
-                  distanceProjectRoles: nodeNow.match.distanceProjectRoles,
-                  
-                  recalculateMembers: true,
-                  distanceMembers: nodeNow.match.distanceMembers,
-                }
-              }
-            },
-            {new: true}
-            )
+          await changeMatchByServer(nodeNow,projectRoleData)
         }
 
-        console.log("projectData.nodes = " , projectData.nodes)
+        // console.log("projectRoleData.nodes = " , projectRoleData.nodes)
+
+        // projectRoleData = projectData.role.filter((role) => role._id == projectRoleID)
+
+        let position = projectData.role.findIndex(x => x._id == projectRoleID)
+
+
+        projectData.role[position].nodes = projectRoleData.nodes
 
         // add all of the nodes on mongoDB
         projectData2 = await Projects.findOneAndUpdate(
-        {_id: projectID},
+        {_id: projectData._id},
         {
           $set: {
-            nodes: projectData.nodes
+            role: projectData.role
           }
         },
         {new: true}
@@ -980,3 +991,95 @@ module.exports = {
     }
   },
 };
+
+
+
+// create async function that will change matchByServer
+const changeMatchByServer = async (nodeNow,projectRoleData) => {
+
+  // find all the Nodes that need to change around the nodeNow
+  // console.log("nodeNow = " , nodeNow)
+  let allNodesDistanceR = await findAllNodesDistanceRfromNode_neo4j({
+    nodeID: nodeNow._id
+  })
+
+
+
+  // console.log("allNodesDistanceR = " , allNodesDistanceR)
+  // console.log("change = " , change)
+
+  // find all the node data from the allNodesDistanceR and then loop throw them
+  let allNodesDistanceR_Data = await Node.find({ _id: allNodesDistanceR })
+
+
+  // loop throw all the nodes and change the matchByServer
+  for (let i = 0; i < allNodesDistanceR_Data.length; i++) {
+    let node_n = allNodesDistanceR_Data[i]
+
+
+    // / ---------- Change matchByServer -----------
+      let matchByServer = node_n.matchByServer
+
+
+      console.log("serverID_n ----------= " , projectRoleData.serverID)
+
+      for (let i=0;i<projectRoleData.serverID.length;i++){
+        let serverID_n = projectRoleData.serverID[i]
+
+
+        console.log("node_n = " , node_n)
+        console.log("matchByServer = " , matchByServer)
+
+        if (matchByServer===undefined){
+          matchByServer = [{
+            serverID:serverID_n,
+            match:{
+              recalculateProjectRoles: true,
+              distanceProjectRoles: [],
+              
+              recalculateMembers: true,
+              distanceMembers: [],
+            }
+          }]
+        } else {
+          // find the position serverID_n exist on matchByServer dictionary
+          let position = matchByServer.findIndex(x => x.serverID == serverID_n)
+
+          if (position === -1){
+            // if it does not exist, add it
+            matchByServer.push({
+              serverID:serverID_n,
+              match:{
+                recalculateProjectRoles: true,
+                distanceProjectRoles: [],
+                
+                recalculateMembers: true,
+                distanceMembers: [],
+              }
+            })
+          } else {
+            // if it exist, change it
+            matchByServer[position].match.recalculateProjectRoles = true
+            matchByServer[position].match.recalculateMembers = true
+          }
+        }
+      }
+      // ---------- Change matchByServer -----------
+
+      // console.log("matchByServer = " , matchByServer)
+
+      // console.log("change = " , change)
+
+      // Update the node
+      let nodeData3 = await Node.findOneAndUpdate( 
+        {_id: node_n._id},
+        {
+          $set: {
+            matchByServer_update: true,
+            matchByServer: matchByServer
+          }
+        },
+        {new: true}
+      )
+  }
+}
