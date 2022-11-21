@@ -8,6 +8,8 @@ module.exports = `
         updateMember(fields:updateMemberInput!): Members
         addFavoriteProject(fields:addFavoriteProjectInput!): Members
         addNodesToMember(fields:addNodesToMemberInput!): Members
+        deleteNodesFromMember(fields:deleteNodesFromMemberInput!): Members
+        deleteMember(fields:deleteMemberInput!): Members
         addSkillToMember(fields:addSkillToMember_Input!):Members
         addEndorsement(fields: addEndorsementInput ): Members
         endorseAttribute(fields:endorseAttributeInput!): Members
@@ -16,6 +18,7 @@ module.exports = `
         #  ---------- PROJECT MUTATIONS -------
         updateProject(fields:updateProjectInput!):Project
         addNodesToProjectRole(fields:addNodesToProjectRoleInput!):Project
+        deleteNodesToProjectRole(fields:deleteNodesToProjectRoleInput!):Project
         newTweetProject(fields:newTweetProjectInput!):tweetsProject
         approveTweet(fields:approveTweetInput!):Project
         changeTeamMember_Phase_Project(fields:changeTeamMember_Phase_ProjectInput!):Project

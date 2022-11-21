@@ -29,7 +29,7 @@ module.exports = `
             matchSkillsToMembers(fields:matchSkillsToMembersInput): [matchMembersToSkillOutput]
             matchNodesToMembers(fields:matchNodesToMembersInput): [matchMembersToSkillOutput]
             matchSkillsToProjects(fields:matchSkillsToProjectsInput): [matchSkillsToProjectsOutput]
-            matchNodesToProjects(fields:matchNodesToProjectsInput): [matchSkillsToProjectsOutput]
+            matchNodesToProjectRoles(fields:matchNodesToProjectRolesInput): [matchSkillsToProjectsOutput]
 
 
 

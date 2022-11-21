@@ -274,7 +274,7 @@ module.exports = `
         limit: Int
     }
 
-    input matchNodesToProjectsInput {
+    input matchNodesToProjectRolesInput {
         nodesID: [ID]
         serverID: [String]
         page: Int
@@ -354,6 +354,14 @@ module.exports = `
     input addNodesToMemberInput {
         memberID: ID
         nodesID: [String]
+    }
+
+    input deleteNodesFromMemberInput {
+        memberID: ID
+        nodesID: [String]
+    }
+    input deleteMemberInput {
+        memberID: ID
     }
 
 

@@ -242,6 +242,61 @@ module.exports = {
         session.close()
         
     },
+    deleteConnectionANYBetweenNodes_neo4j: async (req, res) => {
+        const { nodeID_1,nodeID_2 } = req;
+
+        console.log("change -----------deleteConnectionBetweenNodes_neo4j---------= " , nodeID_1,nodeID_2)
+
+
+        if (!nodeID_1) return 
+
+        if (!nodeID_2) return 
+
+
+
+        let fun = `
+            MATCH (n {_id: '${nodeID_1}'})-[r]-(P {_id: '${nodeID_2}'})
+            DELETE r
+        `
+
+
+        const session = driver.session({database:"neo4j"});
+
+
+        result = await session.writeTransaction(tx => 
+            tx.run(fun)
+        )
+
+        session.close()
+        
+    },
+    deleteNode_neo4j: async (req, res) => {
+        const { nodeID } = req;
+
+        console.log("change -----------deleteConnectionBetweenNodes_neo4j---------= " , nodeID)
+
+
+        if (!nodeID) return 
+
+
+
+        let fun = `
+            MATCH (p {_id:'${nodeID}'}) 
+            DETACH DELETE p
+
+        `
+
+
+        const session = driver.session({database:"neo4j"});
+
+
+        result = await session.writeTransaction(tx => 
+            tx.run(fun)
+        )
+
+        session.close()
+        
+    },
     matchMembersToProject_neo4j: async (req, res) => {
         console.log("change = 11100011" )
         const {projectID } = req;
