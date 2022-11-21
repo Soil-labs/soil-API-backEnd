@@ -197,7 +197,7 @@ module.exports = {
           skills = membersData.skills;
         }
 
-        skillID = [];
+        let skillID = [];
         skills.forEach((skill) => {
           skillID.push(skill.id.toString());
         });
@@ -234,7 +234,7 @@ module.exports = {
 
         if (onbording) fields = { ...fields, onbording: onbording };
 
-        if (serverID) fields.serverID = serverID;
+        if (serverID && serverID.length > 0 ) fields.serverID = serverID;
 
         membersData = await new Members(fields);
 
@@ -271,13 +271,17 @@ module.exports = {
         }
 
         if (!membersData.serverID) {
-          if (serverID) fields.serverID = serverID;
+          if (serverID && serverID.length > 0 ) fields.serverID = serverID;
         } else {
           let serverID_new = [...membersData.serverID];
-          if (!membersData.serverID.includes(serverID)) {
-            serverID_new.push(serverID);
+          for (let i=0; i < serverID.length; i++) {
+            const currentServerID = serverID[i];
+            if (!membersData.serverID.includes(currentServerID)) {
+              serverID_new.push(currentServerID);
+            }
           }
-          if (serverID) fields.serverID = serverID_new;
+    
+          if (serverID && serverID.length > 0 ) fields.serverID = serverID_new;
         }
 
         membersData = await Members.findOneAndUpdate(
@@ -287,7 +291,7 @@ module.exports = {
         );
 
         // console.log("membersData = " , membersData)
-        if (fields.serverID) {
+        if (fields.serverID && fields.serverID > 0 ) {
           updateNode_neo4j_serverID({
             node: "Member",
             id: membersData._id,
