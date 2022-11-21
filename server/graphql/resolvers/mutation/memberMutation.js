@@ -11,6 +11,7 @@ const {
   makeConnection_neo4j,
   updateNode_neo4j_serverID,
   deleteConnectionBetweenNodes_neo4j,
+  findAllNodesDistanceRfromNode_neo4j,
 } = require("../../../neo4j/func_neo4j");
 
 const { uploadFileToArweave } = require("../../../utils/uploadFileToArweave");
@@ -408,7 +409,7 @@ module.exports = {
     try {
       let memberData = await Members.findOne({ _id: memberID })
 
-      let nodesData = await Node.find({ _id: nodesID  })
+      let nodesData = await Node.find({ _id: nodesID })
 
       // check if the nodes are already in the member (memberData.nodes)
       let nodesDataOriginalArray = memberData.nodes.map(function(item) {
@@ -416,29 +417,29 @@ module.exports = {
       });
       
       // nodesDataOriginalArray = ["6375243c207bff7a7c220e6e"]
-      console.log("nodesDataOriginalArray = " , nodesDataOriginalArray)
+      // console.log("nodesDataOriginalArray = " , nodesDataOriginalArray)
 
       let nodesIDArray = nodesID.map(function(item) {
         return item.toString();
       });
-      console.log("nodesIDArray = " , nodesIDArray)
+      // console.log("nodesIDArray = " , nodesIDArray)
 
       let differenceNodes = nodesIDArray.filter(x => !nodesDataOriginalArray.includes(x));
       console.log("differenceNodes = " , differenceNodes)
 
 
-      let nodesDataNew
+      let nodesDataNew = []
 
 
       if (differenceNodes.length>0){
-        let nodesDataNew = [...memberData.nodes]
+        let nodesDataNew = []
         for (let i=0;i<differenceNodes.length;i++){
           let nodeID = differenceNodes[i]
-          let nodeData = nodesData.find(x => x._id.toString() === nodeID);
+          let nodeData = nodesData.find(x => x._id.toString() == nodeID.toString());
           nodesDataNew.push(nodeData)
           memberData.nodes.push({_id:nodeID})
         }
-        console.log("nodesDataNew = " , nodesDataNew)
+        // console.log("nodesDataNew = " , nodesDataNew)
 
         // add only the new ones as relationship on Neo4j
         for (let i=0;i<nodesDataNew.length;i++){
@@ -448,49 +449,92 @@ module.exports = {
             id:[memberData._id,nodeNow._id],
             connection:"connection",
           })
+          // console.log("nodesDataNew = " , nodesDataNew)
 
-          // Setup for recalculate the nodes
-          let nodeData2 = await Node.findOneAndUpdate(
-            {_id: nodeNow._id},
-            {
-              $set: {
-                match: {
-                  recalculateProjectRoles: true,
-                  distanceProjectRoles: nodeNow.match.distanceProjectRoles,
-                  
-                  recalculateMembers: true,
-                  distanceMembers: nodeNow.match.distanceMembers,
-                }
-              }
-            },
-            {new: true}
-            )
+          changeMatchByServer(nodeNow,memberData)
+
+            // // ---------- Change matchByServer -----------
+            // let matchByServer = nodeNow.matchByServer
+
+
+            // console.log("serverID_n ----------= " , memberData.serverID)
+
+            // for (let i=0;i<memberData.serverID.length;i++){
+            //   let serverID_n = memberData.serverID[i]
+
+
+            //   console.log("nodeNow = " , nodeNow)
+            //   console.log("matchByServer = " , matchByServer)
+
+            //   if (matchByServer===undefined){
+            //     matchByServer = [{
+            //       serverID:serverID_n,
+            //       match:{
+            //         recalculateProjectRoles: true,
+            //         distanceProjectRoles: [],
+                    
+            //         recalculateMembers: true,
+            //         distanceMembers: [],
+            //       }
+            //     }]
+            //   } else {
+            //     // find the position serverID_n exist on matchByServer dictionary
+            //     let position = matchByServer.findIndex(x => x.serverID == serverID_n)
+
+            //     if (position === -1){
+            //       // if it does not exist, add it
+            //       matchByServer.push({
+            //         serverID:serverID_n,
+            //         match:{
+            //           recalculateProjectRoles: true,
+            //           distanceProjectRoles: [],
+                      
+            //           recalculateMembers: true,
+            //           distanceMembers: [],
+            //         }
+            //       })
+            //     } else {
+            //       // if it exist, change it
+            //       matchByServer[position].match.recalculateProjectRoles = true
+            //       matchByServer[position].match.recalculateMembers = true
+            //     }
+            //   }
+            // }
+            // // ---------- Change matchByServer -----------
+
+            // // Update the node
+            // let nodeData3 = await Node.findOneAndUpdate( 
+            //   {_id: nodeNow._id},
+            //   {
+            //     $set: {
+            //       matchByServer_update: true,
+            //       matchByServer: matchByServer
+            //     }
+            //   },
+            //   {new: true}
+            // )
         }
-
-        console.log("memberData.nodes = " , memberData.nodes)
-
-        // add all of the nodes on mongoDB
-        memberData2 = await Members.findOneAndUpdate(
-        {_id: memberID},
-        {
-          $set: {
-            nodes: memberData.nodes
-          }
-        },
-        {new: true}
-        )
-
-        console.log("memberData2 = " , memberData2)
-
-        return memberData2
+          
       }
 
+      // console.log("memberData.nodes = " , memberData.nodes)
 
+      // add all of the nodes on mongoDB
+      memberData2 = await Members.findOneAndUpdate(
+      {_id: memberID},
+      {
+        $set: {
+          nodes: memberData.nodes
+        }
+      },
+      {new: true}
+      )
 
+        // console.log("memberData2 = " , memberData2)
 
-
+        // return memberData2
       
-      return memberData
+      return memberData2
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -939,3 +983,90 @@ module.exports = {
     }
   },
 };
+
+
+// create async function that will change matchByServer
+const changeMatchByServer = async (nodeNow,memberData) => {
+
+  // find all the Nodes that need to change around the nodeNow
+  // console.log("nodeNow = " , nodeNow)
+  let allNodesDistanceR = await findAllNodesDistanceRfromNode_neo4j({
+    nodeID: nodeNow._id
+  })
+
+
+
+  // console.log("allNodesDistanceR = " , allNodesDistanceR)
+  // console.log("change = " , change)
+
+  // find all the node data from the allNodesDistanceR and then loop throw them
+  let allNodesDistanceR_Data = await Node.find({ _id: allNodesDistanceR })
+
+
+  // loop throw all the nodes and change the matchByServer
+  for (let i = 0; i < allNodesDistanceR_Data.length; i++) {
+    let node_n = allNodesDistanceR_Data[i]
+
+
+    // / ---------- Change matchByServer -----------
+      let matchByServer = node_n.matchByServer
+
+
+      console.log("serverID_n ----------= " , memberData.serverID)
+
+      for (let i=0;i<memberData.serverID.length;i++){
+        let serverID_n = memberData.serverID[i]
+
+
+        console.log("node_n = " , node_n)
+        console.log("matchByServer = " , matchByServer)
+
+        if (matchByServer===undefined){
+          matchByServer = [{
+            serverID:serverID_n,
+            match:{
+              recalculateProjectRoles: true,
+              distanceProjectRoles: [],
+              
+              recalculateMembers: true,
+              distanceMembers: [],
+            }
+          }]
+        } else {
+          // find the position serverID_n exist on matchByServer dictionary
+          let position = matchByServer.findIndex(x => x.serverID == serverID_n)
+
+          if (position === -1){
+            // if it does not exist, add it
+            matchByServer.push({
+              serverID:serverID_n,
+              match:{
+                recalculateProjectRoles: true,
+                distanceProjectRoles: [],
+                
+                recalculateMembers: true,
+                distanceMembers: [],
+              }
+            })
+          } else {
+            // if it exist, change it
+            matchByServer[position].match.recalculateProjectRoles = true
+            matchByServer[position].match.recalculateMembers = true
+          }
+        }
+      }
+      // ---------- Change matchByServer -----------
+
+      // Update the node
+      let nodeData3 = await Node.findOneAndUpdate( 
+        {_id: node_n._id},
+        {
+          $set: {
+            matchByServer_update: true,
+            matchByServer: matchByServer
+          }
+        },
+        {new: true}
+      )
+  }
+}
