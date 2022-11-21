@@ -557,7 +557,7 @@ module.exports = {
 
         let member_twoHopeMatch = await findMatch_translateArray(`
             MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(p:${find}))
-            WHERE NOT (a:Member OR a:Project)
+            WHERE NOT (a:Member OR a:Project OR a:Role)
             WITH *
             WHERE '${serverID}' IN p.serverID
             RETURN p
@@ -567,7 +567,7 @@ module.exports = {
 
         let member_threeHopeMatch = await findMatch_translateArray(`
             MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(b)-[]-(p:${find}))
-            WHERE NOT (a:Member OR a:Project) AND NOT (b:Member OR b:Project)
+            WHERE NOT (a:Member OR a:Project OR a:Role) AND NOT (b:Member OR b:Project OR b:Role)
             WITH *
             WHERE '${serverID}' IN p.serverID
             RETURN p

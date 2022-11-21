@@ -646,7 +646,7 @@ module.exports = {
           // console.log("change = 102", distanceMembers )
           
           recalculateMembers = false;
-        } else if (find=="Project"){
+        } else if (find=="Role"){
           distanceProjectRoles = {
             hop0: distanceMatchHop[0],
             hop1: distanceMatchHop[1],

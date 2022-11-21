@@ -17,8 +17,6 @@ module.exports = `
 
         team: [teamType]
 
-        nodes: [nodesType]
-
         role: [roleType]
 
 
@@ -130,6 +128,9 @@ module.exports = `
         keyRosponsibilities: String,
         openPositions: Int,
 
+
+        nodes: [nodesType]
+        
         skills: [skillRoleType]
 
         archive: Boolean
@@ -282,8 +283,8 @@ module.exports = `
 
     }
 
-    input addNodesToProjectInput {
-        projectID: ID,
+    input addNodesToProjectRoleInput {
+        projectRoleID: ID,
         nodesID: [ID],
     }
 
