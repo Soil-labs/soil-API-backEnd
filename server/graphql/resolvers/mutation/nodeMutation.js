@@ -31,7 +31,13 @@ module.exports = {
     fields = {
       ...fields,
       state: "approved",
+
     }
+  }
+
+  fields = {
+    ...fields,
+    matchByServer_update: true,
   }
 
   console.log("fields = " , fields)

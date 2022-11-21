@@ -112,14 +112,14 @@ module.exports = {
          try {
             const nodes = parent.nodes;
 
-            console.log("nodes ----= " , nodes)
+            // console.log("nodes ----= " , nodes)
 
             nodesID = []
             nodes.forEach( node => {
                nodesID.push(node._id)
             })
 
-            console.log("nodesID = " , nodesID)
+            // console.log("nodesID = " , nodesID)
             
             const nodesData = await Node.find({_id: nodesID})
 

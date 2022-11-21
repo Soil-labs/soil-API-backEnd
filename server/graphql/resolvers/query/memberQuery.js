@@ -1,5 +1,6 @@
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
+const { ServerTemplate } = require("../../../models/serverModel");
 const mongoose = require("mongoose");
 const { Projects } = require("../../../models/projectsModel");
 const { Skills } = require("../../../models/skillsModel");
@@ -548,92 +549,164 @@ module.exports = {
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      console.log("nodeData = ", nodeData);
+      let matchByServer = nodeData.matchByServer
 
-      // ------------ WiseTy -----------------
-
-      console.log("change = 22");
-      result = await matchPrepareAnything_neo4j({
-        nodeID: nodeData._id,
-        node: nodeData.node,
-        serverID: serverID,
-        find,
-      });
-
-      console.log("result 22-2-2 = ", result);
-
-      matchMembers = [];
-      matchIDs = [];
-
-      distanceMatchHop = [[], [], []];
-
-      for (let i = 0; i < 3; i++) {
-        if (!result[i]) continue;
-
-        for (let j = 0; j < result[i].length; j++) {
-          if (matchIDs.includes(result[i][j]._id)) continue;
-          matchIDs.push(result[i][j]._id);
-          // matchMembers.push(result[i][j])
-          matchMembers.push({
-            member: result[i][j]._id,
-            matchPercentage: (3 - i) * 30,
-          });
-          distanceMatchHop[i].push(result[i][j]._id);
-        }
-      }
-
-      let distanceMembers = nodeData.match.distanceMembers;
-      let distanceProjectRoles = nodeData.match.distanceProjectRoles;
-      let recalculateProjectRoles = nodeData.match.recalculateProjectRoles;
-      let recalculateMembers = nodeData.match.recalculateMembers;
-
-      console.log("change = 101" )
-
-      if (find=="Member"){
-        distanceMembers = {
-          hop0: distanceMatchHop[0],
-          hop1: distanceMatchHop[1],
-          hop2: distanceMatchHop[2],
-        };
-        console.log("change = 102", distanceMembers )
-        
-        recalculateMembers = false;
-      } else if (find=="Project"){
-        distanceProjectRoles = {
-          hop0: distanceMatchHop[0],
-          hop1: distanceMatchHop[1],
-          hop2: distanceMatchHop[2],
-        };
-        recalculateProjectRoles = false;
-        console.log("change = 102", distanceProjectRoles )
-      }
       
+      let allServers = await ServerTemplate.find({});
+
+      let matchByServer_update = false
+
+      // loop servers
+      for (let i = 0; i < allServers.length; i++) {
+        let server = allServers[i];
+      
+        result = await matchPrepareAnything_neo4j({
+          nodeID: nodeData._id,
+          node: nodeData.node,
+          serverID: server._id,
+          find,
+        });
+
+        
+
+        matchMembers = [];
+        matchIDs = [];
+
+        distanceMatchHop = [[], [], []];
+
+        for (let i = 0; i < 3; i++) {
+          if (!result[i]) continue;
+
+          for (let j = 0; j < result[i].length; j++) {
+            if (matchIDs.includes(result[i][j]._id)) continue;
+            matchIDs.push(result[i][j]._id);
+            // matchMembers.push(result[i][j])
+            matchMembers.push({
+              member: result[i][j]._id,
+              matchPercentage: (3 - i) * 30,
+            });
+            distanceMatchHop[i].push(result[i][j]._id);
+          }
+        }
+
+        let distanceMembers 
+        let distanceProjectRoles 
+        let recalculateProjectRoles 
+        let recalculateMembers 
+
+        let position = -1
+
+        if (matchByServer===undefined){
+          distanceMembers = []
+          distanceProjectRoles = []
+          recalculateProjectRoles = true
+          recalculateMembers = true
+
+          matchByServer_update = true // we need to run the function again becuase there is new server
+        } else {
+          position = matchByServer.findIndex(x => x.serverID === server._id)
+
+          if (position===-1){
+            distanceMembers = []
+            distanceProjectRoles = []
+            recalculateProjectRoles = true
+            recalculateMembers = true
+
+            matchByServer_update = true // we need to run the function again becuase there is new server
+          } else {
+            distanceMembers = matchByServer[position].match.distanceMembers
+            distanceProjectRoles = matchByServer[position].match.distanceProjectRoles
+            recalculateProjectRoles = matchByServer[position].match.recalculateProjectRoles
+            recalculateMembers = matchByServer[position].match.recalculateMembers
+
+            if (find=="Member"){
+              if (recalculateProjectRoles!=false){
+
+                matchByServer_update = true // we need to run the function again becuase there is new server
+                recalculateProjectRoles = true
+              }
+            } else if (find=="Project"){
+              
+              if (recalculateMembers!=false){
+                matchByServer_update = true // we need to run the function again becuase there is new server
+                recalculateMembers = true
+              }
+            }
+
+          }
+        }
 
 
-      // let nodeData = await Skills.findOne({ "_id": skillID })
+        if (find=="Member"){
+          distanceMembers = {
+            hop0: distanceMatchHop[0],
+            hop1: distanceMatchHop[1],
+            hop2: distanceMatchHop[2],
+          };
+          // console.log("change = 102", distanceMembers )
+          
+          recalculateMembers = false;
+        } else if (find=="Project"){
+          distanceProjectRoles = {
+            hop0: distanceMatchHop[0],
+            hop1: distanceMatchHop[1],
+            hop2: distanceMatchHop[2],
+          };
+          recalculateProjectRoles = false;
+          // console.log("change = 102", distanceProjectRoles )
+        }
+        
+        if (position===-1){
+          matchByServer.push({
+            serverID: server._id,
+            match: {
+              distanceMembers: distanceMembers,
+              distanceProjectRoles: distanceProjectRoles,
+              recalculateProjectRoles: recalculateProjectRoles,
+              recalculateMembers: recalculateMembers,
+            }
+          })
+        } else {
+          matchByServer[position].match.distanceMembers = distanceMembers
+          matchByServer[position].match.distanceProjectRoles = distanceProjectRoles
+          matchByServer[position].match.recalculateProjectRoles = recalculateProjectRoles
+          matchByServer[position].match.recalculateMembers = recalculateMembers
+        }
+        
+
+        // nodeDataNew = await Node.findOneAndUpdate(
+        //   { _id: nodeID },
+        //   {
+        //     $set: {
+        //       match: {
+        //         recalculateMembers,
+        //         distanceMembers,
+        //         recalculateProjectRoles,
+        //         distanceProjectRoles,
+        //         // recalculateMembers: false,
+        //         // distanceMembers: distanceMembers,
+        //         // recalculateProjectRoles: nodeData.match.recalculateProjectRoles,
+        //         // distanceProjectRoles: nodeData.match.distanceProjectRoles,
+        //       },
+        //     },
+        //   },
+        //   { new: true }
+        // );
+
+      }
 
       nodeDataNew = await Node.findOneAndUpdate(
-        { _id: nodeID },
+        {
+          _id: nodeID,
+        },
         {
           $set: {
-            match: {
-              recalculateMembers,
-              distanceMembers,
-              recalculateProjectRoles,
-              distanceProjectRoles,
-              // recalculateMembers: false,
-              // distanceMembers: distanceMembers,
-              // recalculateProjectRoles: nodeData.match.recalculateProjectRoles,
-              // distanceProjectRoles: nodeData.match.distanceProjectRoles,
-            },
+            matchByServer_update: matchByServer_update,
+            matchByServer: matchByServer,
           },
         },
         { new: true }
       );
-
-      // console.log("matchMembers = " , matchMembers)
-
-      // // ------------ WiseTy -----------------
 
       return nodeDataNew;
       // return [{}]
@@ -1016,6 +1089,8 @@ module.exports = {
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
+      
+
       // console.log("nodeData[0] = " , nodeData[0])
       // console.log("nodeData[0] = " , nodeData[0].match)
 
@@ -1033,11 +1108,30 @@ module.exports = {
       // console.log("distanceAll = " , distanceAll)
       for (let i = 0; i < nodeData.length; i++) {
         newSkillFlag = true;
+
+
+        let matchByServer = nodeData[i].matchByServer
+        let positionServer = -1
+
+        console.log("matchByServer = " , matchByServer)
+        
+        if (matchByServer===undefined){
+          positionServer = -1
+        } else {  
+          positionServer = matchByServer.findIndex(x => x.serverID == serverID)
+          console.log("positionServer = " , positionServer)
+        }
+
+
         for (let k = 0; k < 3; k++) {
           let membersNow;
-          if (k == 0) membersNow = nodeData[i].match.distanceMembers.hop0;
-          if (k == 1) membersNow = nodeData[i].match.distanceMembers.hop1;
-          if (k == 2) membersNow = nodeData[i].match.distanceMembers.hop2;
+          if (positionServer===-1){
+            membersNow = []
+          }else {
+            if (k == 0) membersNow = matchByServer[positionServer].match.distanceMembers.hop0;
+            if (k == 1) membersNow = matchByServer[positionServer].match.distanceMembers.hop1;
+            if (k == 2) membersNow = matchByServer[positionServer].match.distanceMembers.hop2;
+          }
 
           // console.log("k,membersNow = " ,i,nodeData[i]._id ,k,membersNow)
 
