@@ -20,8 +20,8 @@ const { IsAuthenticated } = require("../../../utils/authorization");
 
 module.exports = {
   findMember: 
-  combineResolvers(
-  IsAuthenticated,
+  //combineResolvers(
+  //IsAuthenticated,
   async (parent, args, context, info) => {
     const { _id, serverID, discordName } = args.fields;
     console.log("Query > findMember > args.fields = ", args.fields);
@@ -62,8 +62,8 @@ module.exports = {
         component: "tmemberQuery > findMember",
       });
     }
-  }
-  ),
+  },
+  //),
 
   findMembers: async (parent, args, context, info) => {
       const { _id, serverID } = args.fields;
