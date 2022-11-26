@@ -274,14 +274,15 @@ module.exports = {
           if (serverID && serverID.length > 0) fields.serverID = serverID;
         } else {
           let serverID_new = [...membersData.serverID];
-          for (let i = 0; i < serverID.length; i++) {
-            const currentServerID = serverID[i];
-            if (!membersData.serverID.includes(currentServerID)) {
-              serverID_new.push(currentServerID);
+          if (serverID && serverID.length > 0) {
+            for (let i = 0; i < serverID.length; i++) {
+              const currentServerID = serverID[i];
+              if (!membersData.serverID.includes(currentServerID)) {
+                serverID_new.push(currentServerID);
+              }
             }
+            fields.serverID = serverID_new;
           }
-
-          if (serverID && serverID.length > 0) fields.serverID = serverID_new;
         }
 
         membersData = await Members.findOneAndUpdate(
@@ -1052,7 +1053,6 @@ module.exports = {
       );
     }
   },
-
 };
 
 // create async function that will change matchByServer
