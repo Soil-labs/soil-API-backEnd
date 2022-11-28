@@ -1,0 +1,67 @@
+module.exports = `
+    
+
+    type GrantTemplate {
+        _id: ID
+        name: String,
+
+        smallDescription: String,
+
+        tags: [String],
+
+        requirments: [String],
+
+        applicationProcess: [String],
+
+        difficulty: String,
+        discributed: Int,
+
+        resources: [resourcesType],
+
+        amount: String,
+
+        avatar: String,
+
+    }
+
+    type resourcesType {
+        name: String,
+        url: String,
+    }
+
+
+    input findGrantsInput {
+        _id: [ID]
+    }
+
+    input updateGrantInput {
+        _id: ID
+        name: String,
+
+        smallDescription: String,
+
+        tags: [String],
+
+        requirments: [String],
+
+        applicationProcess: [String],
+
+        difficulty: String,
+        discributed: Int,
+
+        resources: [resourcesInput],
+
+        amount: String,
+
+        avatar: String,
+    }
+
+    input resourcesInput {
+        name: String,
+        url: String,
+    }
+
+
+    
+
+`

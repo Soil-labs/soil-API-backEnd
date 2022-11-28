@@ -50,6 +50,10 @@ module.exports = `
         updateServer(fields:updateServerInput): ServerTemplate
 
 
+        #  ---------- GRANT MUTATIONS -------
+        updateGrant(fields:updateGrantInput): GrantTemplate
+
+
         #  ---------- SKILL CATEGORY MUTATIONS -------
         updateSkillCategory(fields:updateSkillCategoryInput): SkillCategory
 

@@ -37,6 +37,7 @@ const {
 } = require("./mutation/nodeMutation");
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
 const { updateServer } = require("./mutation/serverMutation");
+const { updateGrant } = require("./mutation/grantMutation");
 const { updateSkillCategory } = require("./mutation/skillCategoryMutation");
 const {
   updateSkillSubCategory,
@@ -98,6 +99,9 @@ module.exports = {
 
     // ------------- SERVER MUTATION -----------------
     updateServer,
+
+    // ------------- GRANT MUTATION -----------------
+    updateGrant,
 
     // ------------- SKILL CATEGORY MUTATION -----------------
     updateSkillCategory,
