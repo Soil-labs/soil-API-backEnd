@@ -288,6 +288,12 @@ module.exports = `
         nodesID: [ID],
     }
 
+    input addProjectRoleInput {
+        projectID: ID,
+        title: String,
+        description: String,
+    }
+
     input deleteNodesToProjectRoleInput {
         projectRoleID: ID,
         nodesID: [ID],
