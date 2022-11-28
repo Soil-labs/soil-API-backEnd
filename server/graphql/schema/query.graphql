@@ -54,6 +54,9 @@ module.exports = `
             #  ---------- SERVER QUERY -------
             findServers(fields:findServersInput): [ServerTemplate]
 
+            #  ---------- GRANT QUERY -------
+            findGrants(fields:findGrantsInput): [GrantTemplate]
+
 
           #  ---------- SKILL CATEGORY QUERY -------
             findSkillCategory(fields:findSkillCategoryInput): SkillCategory
