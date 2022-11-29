@@ -13,7 +13,7 @@ const grantSchema = mongoose.Schema({
   applicationProcess: [String],
 
   difficulty: String,
-  discributed: Number,
+  distributed: Number,
   maxDistributed: Number,
 
   resources: [
