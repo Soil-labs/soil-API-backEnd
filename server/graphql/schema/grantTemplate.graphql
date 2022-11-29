@@ -5,6 +5,7 @@ module.exports = `
         _id: ID
         name: String,
 
+        description: String,
         smallDescription: String,
 
         tags: [String],
@@ -14,19 +15,36 @@ module.exports = `
         applicationProcess: [String],
 
         difficulty: String,
-        discributed: Int,
+        distributed: Int,
+        maxDistributed: Int,
 
         resources: [resourcesType],
+        
+        membersApplied:[Members],
 
         amount: String,
 
         avatar: String,
+
+        nodes: [nodesType]
+
+        serverID: [String],
 
     }
 
     type resourcesType {
         name: String,
         url: String,
+    }
+
+    input addNodesToGrantInput {
+        grantID: ID
+        nodesID: [String]
+    }
+
+    input applyGrantInput {
+        grantID: ID,
+        memberID: ID,
     }
 
 
@@ -38,6 +56,7 @@ module.exports = `
         _id: ID
         name: String,
 
+        description: String,
         smallDescription: String,
 
         tags: [String],
@@ -47,13 +66,16 @@ module.exports = `
         applicationProcess: [String],
 
         difficulty: String,
-        discributed: Int,
+        distributed: Int,
+        maxDistributed: Int,
 
         resources: [resourcesInput],
 
         amount: String,
 
         avatar: String,
+
+        serverID: [String],
     }
 
     input resourcesInput {

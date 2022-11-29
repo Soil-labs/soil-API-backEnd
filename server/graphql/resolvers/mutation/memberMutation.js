@@ -291,10 +291,10 @@ module.exports = {
           { new: true }
         );
 
-        console.log("change = -----", membersData.serverID);
-        console.log("change = -----", membersData.serverID.length);
-        console.log("change = -----", fields.serverID);
-        console.log("change = -----", fields.serverID.length);
+        // console.log("change = -----", membersData.serverID);
+        // console.log("change = -----", membersData.serverID.length);
+        // console.log("change = -----", fields.serverID);
+        // console.log("change = -----", fields.serverID.length);
 
         // console.log("membersData = " , membersData)
         if (membersData.serverID && membersData.serverID.length > 0) {
