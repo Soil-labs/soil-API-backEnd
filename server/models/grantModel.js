@@ -14,6 +14,7 @@ const grantSchema = mongoose.Schema({
 
   difficulty: String,
   discributed: Number,
+  maxDistributed: Number,
 
   resources: [
     {
@@ -22,9 +23,18 @@ const grantSchema = mongoose.Schema({
     },
   ],
 
+  membersApplied: [String],
+
   amount: String,
 
   avatar: String,
+
+  nodes: [
+    {
+      _id: mongoose.Schema.ObjectId,
+    },
+  ],
+  serverID: [String],
 });
 
 const GrantTemplate = mongoose.model("GrantTemplate", grantSchema);
