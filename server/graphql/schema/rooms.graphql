@@ -46,4 +46,16 @@ module.exports = `
 
         links: [linkInput],
     }
+
+    input addNodesToMemberInRoomInput {
+        memberID: ID
+        nodesID: [String]
+        RoomID: ID
+    }
+
+    input deleteNodesFromMemberInRoomInput {
+        memberID: ID
+        nodesID: [String]
+        RoomID: ID
+    }
 `
