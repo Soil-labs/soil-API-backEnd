@@ -466,6 +466,9 @@ module.exports = {
 				},
 				{ new: true }
 			);
+			pubsub.publish(memberData2._id, {
+				memberUpdated: memberData2,
+			});
 
 			return memberData2;
 		} catch (err) {
@@ -556,6 +559,10 @@ module.exports = {
 				},
 				{ new: true }
 			);
+
+			pubsub.publish(memberData2._id, {
+				memberUpdated: memberData2,
+			});
 			return memberData2;
 		} catch (err) {
 			throw new ApolloError(
