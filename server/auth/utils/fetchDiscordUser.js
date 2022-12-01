@@ -11,7 +11,7 @@ const fetchDiscordUser = async (code, redirect_uri) => {
     client_secret: DISCORD_CLIENT_SECRET?.toString() || "",
     grant_type: "authorization_code",
     code: code,
-    scope: "identify",
+    scope: "identify email guilds",
     redirect_uri: redirect_uri,
   });
 
@@ -33,6 +33,8 @@ const fetchDiscordUser = async (code, redirect_uri) => {
       );
     });
 
+    
+
   let { token_type, access_token } = response;
 
   const authResponse = await axios
@@ -45,10 +47,11 @@ const fetchDiscordUser = async (code, redirect_uri) => {
       console.error(err);
       throw new Error("Failed to get user");
     });
+  
+  
 
   let { user } = authResponse?.data;
-
-  return user;
+  return { user, access_token } ;
 };
 
 module.exports = fetchDiscordUser;
