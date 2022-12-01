@@ -11,7 +11,7 @@ const fetchDiscordUser = async (code, redirect_uri) => {
     client_secret: DISCORD_CLIENT_SECRET?.toString() || "",
     grant_type: "authorization_code",
     code: code,
-    scope: "identify",
+    scope: "identify email guilds",
     redirect_uri: redirect_uri,
   });
 
@@ -48,7 +48,7 @@ const fetchDiscordUser = async (code, redirect_uri) => {
 
   let { user } = authResponse?.data;
 
-  return user;
+  return { user, access_token} ;
 };
 
 module.exports = fetchDiscordUser;
