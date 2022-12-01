@@ -1,17 +1,23 @@
 const jwt = require("jsonwebtoken");
 const { Members } = require("../models/membersModel");
 const fetchDiscordUser = require("./utils/fetchDiscordUser");
+const {
+  retrieveAndMergeServersUserIsIn,
+} = require("../utils/updateUserServersInDB");
 
 const login = async ({ body }, res) => {
   try {
     const { code, redirect_uri } = body;
 
     // get user from discord
-    const user = await fetchDiscordUser(code, redirect_uri);
+    const { user, access_token } = await fetchDiscordUser(
+      code,
+      redirect_uri
+    );
     // Find if user is in database
     let dbUser = await Members.findOne({ _id: user.id });
-    console.log("user", user)
-    console.log({ dbUser });
+    console.log("user", user);
+
 
     // if user is not in database, save user to database
     if (!dbUser) {
@@ -34,7 +40,9 @@ const login = async ({ body }, res) => {
       }
     );
 
-    console.log("auth token", token)
+    console.log("auth token", token);
+
+    await retrieveAndMergeServersUserIsIn(access_token, dbUser);
 
     // Return user and token
     res.json({ discord_user: user, eden_user: dbUser, token });
