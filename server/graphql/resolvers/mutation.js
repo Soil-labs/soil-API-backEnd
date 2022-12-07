@@ -1,69 +1,141 @@
+const {
+	addNewMember,
+	updateMember,
+	addNodesToMember,
+	deleteNodesFromMember,
+	deleteMember,
+	addFavoriteProject,
+	addSkillToMember,
+	endorseAttribute,
+	memberUpdated,
+	addEndorsement,
+} = require("./mutation/memberMutation");
+const {
+	updateProject,
+	addNodesToProjectRole,
+	addProjectRole,
+	deleteNodesToProjectRole,
+	newTweetProject,
+	approveTweet,
+	changeTeamMember_Phase_Project,
+	createNewTeam,
+	createNewRole,
+	createNewEpic,
+} = require("./mutation/projectsMutation");
 
-const {addNewMember,updateMember,addNodesToMember,addFavoriteProject,addSkillToMember,endorseAttribute, memberUpdated,addEndorsement} = require("./mutation/memberMutation");
-const {updateProject,addNodesToProject,newTweetProject,approveTweet,changeTeamMember_Phase_Project,createNewTeam,createNewRole,createNewEpic} = require("./mutation/projectsMutation");
-
-const {createSkill,createSkills,relatedSkills,createApprovedSkill,approveOrRejectSkill} = require("./mutation/skillMutation")
-const {createNode,relatedNode,relatedNode_name} = require("./mutation/nodeMutation")
-const {updateRoleTemplate} = require("./mutation/roleTemplateMutation")
-const {updateServer} = require("./mutation/serverMutation")
-const {updateSkillCategory} = require("./mutation/skillCategoryMutation")
-const {updateSkillSubCategory} = require("./mutation/skillSubCategoryMutation")
-const {createProjectUpdate} = require("./mutation/projectUpdateMutation")
-const {createRoom, enterRoom, exitRoom,updateMemberInRoom, roomUpdated, memberUpdatedInRoom} = require("./mutation/roomMutation")
-const { addNewChat, updateChatReply, updateChatResult } = require("./mutation/chatMutation")
-
+const {
+	createSkill,
+	createSkills,
+	relatedSkills,
+	createApprovedSkill,
+	approveOrRejectSkill,
+} = require("./mutation/skillMutation");
+const {
+	createNode,
+	relatedNode,
+	relatedNode_name,
+} = require("./mutation/nodeMutation");
+const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
+const { updateServer } = require("./mutation/serverMutation");
+const {
+	updateGrant,
+	addNodesToGrant,
+	applyGrant,
+} = require("./mutation/grantMutation");
+const { updateSkillCategory } = require("./mutation/skillCategoryMutation");
+const {
+	updateSkillSubCategory,
+} = require("./mutation/skillSubCategoryMutation");
+const { createProjectUpdate } = require("./mutation/projectUpdateMutation");
+const {
+	createRoom,
+	enterRoom,
+	exitRoom,
+	updateMemberInRoom,
+	addNodesToMemberInRoom,
+	deleteNodesFromMemberInRoom,
+	roomUpdated,
+	memberUpdatedInRoom,
+} = require("./mutation/roomMutation");
+const {
+	addNewChat,
+	updateChatReply,
+	updateChatResult,
+} = require("./mutation/chatMutation");
 
 module.exports = {
-  Mutation: {
-    // ------------- MEMBER MUTATION -----------------
-    addNewMember,
-    updateMember,addNodesToMember,
-    endorseAttribute,
-    addFavoriteProject,
-    addSkillToMember,
-    addEndorsement,
+	Mutation: {
+		// ------------- MEMBER MUTATION -----------------
+		addNewMember,
+		updateMember,
+		addNodesToMember,
+		deleteNodesFromMember,
+		deleteMember,
+		endorseAttribute,
+		addFavoriteProject,
+		addSkillToMember,
+		addEndorsement,
 
-    // ------------- PROJECT MUTATION -----------------
-    updateProject,addNodesToProject,
-    newTweetProject,
-    approveTweet,changeTeamMember_Phase_Project,createNewTeam,createNewRole,createNewEpic,
+		// ------------- PROJECT MUTATION -----------------
+		updateProject,
+		addNodesToProjectRole,
+		addProjectRole,
+		deleteNodesToProjectRole,
+		newTweetProject,
+		approveTweet,
+		changeTeamMember_Phase_Project,
+		createNewTeam,
+		createNewRole,
+		createNewEpic,
 
-    // ------------- SKILL MUTATION -----------------
-    createSkill,createSkills,relatedSkills,createApprovedSkill,approveOrRejectSkill,
+		// ------------- SKILL MUTATION -----------------
+		createSkill,
+		createSkills,
+		relatedSkills,
+		createApprovedSkill,
+		approveOrRejectSkill,
 
-    // ------------- NODE MUTATION -----------------
-    createNode,relatedNode,relatedNode_name,
+		// ------------- NODE MUTATION -----------------
+		createNode,
+		relatedNode,
+		relatedNode_name,
 
-    // ------------- ROLE MUTATION -----------------
-    updateRoleTemplate,
+		// ------------- ROLE MUTATION -----------------
+		updateRoleTemplate,
 
-    // ------------- SERVER MUTATION -----------------
-    updateServer,
+		// ------------- SERVER MUTATION -----------------
+		updateServer,
 
-    // ------------- SKILL CATEGORY MUTATION -----------------
-    updateSkillCategory,
+		// ------------- GRANT MUTATION -----------------
+		updateGrant,
+		addNodesToGrant,
+		applyGrant,
 
-    // ------------- SKILL SUB CATEGORY MUTATION -----------------
-    updateSkillSubCategory,
+		// ------------- SKILL CATEGORY MUTATION -----------------
+		updateSkillCategory,
 
-    // ------------- PROJECT UPDATE MUTATION -----------------
-    createProjectUpdate,
+		// ------------- SKILL SUB CATEGORY MUTATION -----------------
+		updateSkillSubCategory,
 
-    //---------------ROOM MUTATION --------------------
-    createRoom, enterRoom, exitRoom, updateMemberInRoom,
+		// ------------- PROJECT UPDATE MUTATION -----------------
+		createProjectUpdate,
 
-     // ------------- CHAT MUTATION -----------------
-     addNewChat,
-     updateChatReply, 
-     updateChatResult
+		//---------------ROOM MUTATION --------------------
+		createRoom,
+		enterRoom,
+		exitRoom,
+		updateMemberInRoom,
+		addNodesToMemberInRoom,
+		deleteNodesFromMemberInRoom,
 
-
-    
-  },
-  Subscription: {
-    memberUpdated,
-    roomUpdated,
-    memberUpdatedInRoom
-
-  }
+		// ------------- CHAT MUTATION -----------------
+		addNewChat,
+		updateChatReply,
+		updateChatResult,
+	},
+	Subscription: {
+		memberUpdated,
+		roomUpdated,
+		memberUpdatedInRoom,
+	},
 };

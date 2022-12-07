@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const { Projects } = require("../../../models/projectsModel");
 const { Skills } = require("../../../models/skillsModel");
 const { driver } = require("../../../../server/neo4j_config");
+const { combineResolvers } = require("graphql-resolvers");
 
 const {
   matchMembersToProject_neo4j,
@@ -15,9 +16,13 @@ const {
 } = require("../../../neo4j/func_neo4j");
 
 const { ApolloError } = require("apollo-server-express");
+const { IsAuthenticated } = require("../../../utils/authorization");
 
 module.exports = {
-  findMember: async (parent, args, context, info) => {
+  findMember: 
+  //combineResolvers(
+  //IsAuthenticated,
+  async (parent, args, context, info) => {
     const { _id, serverID, discordName } = args.fields;
     console.log("Query > findMember > args.fields = ", args.fields);
 
@@ -58,49 +63,49 @@ module.exports = {
       });
     }
   },
+  //),
 
   findMembers: async (parent, args, context, info) => {
-    const { _id, serverID } = args.fields;
-    console.log("Query > findMembers > args.fields = ", args.fields);
+      const { _id, serverID } = args.fields;
+      console.log("Query > findMembers > args.fields = ", args.fields);
 
-    let queryServerID = [];
-    if (serverID) {
-      serverID.forEach((id) => {
-        queryServerID.push({ serverID: id });
-      });
-    }
-
-    try {
-      let membersData;
-
-      if (_id) {
-        if (queryServerID.length > 0) {
-          membersData = await Members.find({
-            $and: [{ _id: _id }, { $or: queryServerID }],
-          });
-        } else {
-          membersData = await Members.find({ _id: _id });
-        }
-      } else {
-        if (queryServerID.length > 0) {
-          membersData = await Members.find({ $or: queryServerID });
-        } else {
-          membersData = await Members.find({});
-        }
+      let queryServerID = [];
+      if (serverID) {
+        serverID.forEach((id) => {
+          queryServerID.push({ serverID: id });
+        });
       }
 
-      //console.log("membersData = " , membersData)
+      try {
+        let membersData;
 
-      return membersData;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
-    }
-  },
+        if (_id) {
+          if (queryServerID.length > 0) {
+            membersData = await Members.find({
+              $and: [{ _id: _id }, { $or: queryServerID }],
+            });
+          } else {
+            membersData = await Members.find({ _id: _id });
+          }
+        } else {
+          if (queryServerID.length > 0) {
+            membersData = await Members.find({ $or: queryServerID });
+          } else {
+            membersData = await Members.find({});
+          }
+        }
 
+        //console.log("membersData = " , membersData)
+
+        return membersData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
+      }
+    },
   members_autocomplete: async (parent, args, context, info) => {
     const { search } = args.fields;
     console.log("Query > members_autocomplete > args.fields = ", args.fields);
@@ -524,7 +529,7 @@ module.exports = {
     }
   },
   matchPrepareNode: async (parent, args, context, info) => {
-    const { nodeID, serverID,find } = args.fields;
+    const { nodeID, serverID, find } = args.fields;
     console.log(
       "Query > matchPrepareSkillToMembers > args.fields = ",
       args.fields
@@ -541,7 +546,6 @@ module.exports = {
       });
     }
 
-
     try {
       let project;
 
@@ -549,25 +553,22 @@ module.exports = {
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      let matchByServer = nodeData.matchByServer
+      let matchByServer = nodeData.matchByServer;
 
-      
       let allServers = await ServerTemplate.find({});
 
-      let matchByServer_update = false
+      let matchByServer_update = false;
 
       // loop servers
       for (let i = 0; i < allServers.length; i++) {
         let server = allServers[i];
-      
+
         result = await matchPrepareAnything_neo4j({
           nodeID: nodeData._id,
           node: nodeData.node,
           serverID: server._id,
           find,
         });
-
-        
 
         matchMembers = [];
         matchIDs = [];
@@ -589,64 +590,63 @@ module.exports = {
           }
         }
 
-        let distanceMembers 
-        let distanceProjectRoles 
-        let recalculateProjectRoles 
-        let recalculateMembers 
+        let distanceMembers;
+        let distanceProjectRoles;
+        let recalculateProjectRoles;
+        let recalculateMembers;
 
-        let position = -1
+        let position = -1;
 
-        if (matchByServer===undefined){
-          distanceMembers = []
-          distanceProjectRoles = []
-          recalculateProjectRoles = true
-          recalculateMembers = true
+        if (matchByServer === undefined) {
+          distanceMembers = [];
+          distanceProjectRoles = [];
+          recalculateProjectRoles = true;
+          recalculateMembers = true;
 
-          matchByServer_update = true // we need to run the function again becuase there is new server
+          matchByServer_update = true; // we need to run the function again becuase there is new server
         } else {
-          position = matchByServer.findIndex(x => x.serverID === server._id)
+          position = matchByServer.findIndex((x) => x.serverID === server._id);
 
-          if (position===-1){
-            distanceMembers = []
-            distanceProjectRoles = []
-            recalculateProjectRoles = true
-            recalculateMembers = true
+          if (position === -1) {
+            distanceMembers = [];
+            distanceProjectRoles = [];
+            recalculateProjectRoles = true;
+            recalculateMembers = true;
 
-            matchByServer_update = true // we need to run the function again becuase there is new server
+            matchByServer_update = true; // we need to run the function again becuase there is new server
           } else {
-            distanceMembers = matchByServer[position].match.distanceMembers
-            distanceProjectRoles = matchByServer[position].match.distanceProjectRoles
-            recalculateProjectRoles = matchByServer[position].match.recalculateProjectRoles
-            recalculateMembers = matchByServer[position].match.recalculateMembers
+            distanceMembers = matchByServer[position].match.distanceMembers;
+            distanceProjectRoles =
+              matchByServer[position].match.distanceProjectRoles;
+            recalculateProjectRoles =
+              matchByServer[position].match.recalculateProjectRoles;
+            recalculateMembers =
+              matchByServer[position].match.recalculateMembers;
 
-            if (find=="Member"){
-              if (recalculateProjectRoles!=false){
-
-                matchByServer_update = true // we need to run the function again becuase there is new server
-                recalculateProjectRoles = true
+            if (find == "Member") {
+              if (recalculateProjectRoles != false) {
+                matchByServer_update = true; // we need to run the function again becuase there is new server
+                recalculateProjectRoles = true;
               }
-            } else if (find=="Project"){
-              
-              if (recalculateMembers!=false){
-                matchByServer_update = true // we need to run the function again becuase there is new server
-                recalculateMembers = true
+            } else if (find == "Project") {
+              if (recalculateMembers != false) {
+                matchByServer_update = true; // we need to run the function again becuase there is new server
+                recalculateMembers = true;
               }
             }
-
           }
         }
 
-
-        if (find=="Member"){
+        if (find == "Member") {
           distanceMembers = {
             hop0: distanceMatchHop[0],
             hop1: distanceMatchHop[1],
             hop2: distanceMatchHop[2],
           };
           // console.log("change = 102", distanceMembers )
-          
+
           recalculateMembers = false;
-        } else if (find=="Project"){
+        } else if (find == "Role") {
           distanceProjectRoles = {
             hop0: distanceMatchHop[0],
             hop1: distanceMatchHop[1],
@@ -655,8 +655,8 @@ module.exports = {
           recalculateProjectRoles = false;
           // console.log("change = 102", distanceProjectRoles )
         }
-        
-        if (position===-1){
+
+        if (position === -1) {
           matchByServer.push({
             serverID: server._id,
             match: {
@@ -664,15 +664,16 @@ module.exports = {
               distanceProjectRoles: distanceProjectRoles,
               recalculateProjectRoles: recalculateProjectRoles,
               recalculateMembers: recalculateMembers,
-            }
-          })
+            },
+          });
         } else {
-          matchByServer[position].match.distanceMembers = distanceMembers
-          matchByServer[position].match.distanceProjectRoles = distanceProjectRoles
-          matchByServer[position].match.recalculateProjectRoles = recalculateProjectRoles
-          matchByServer[position].match.recalculateMembers = recalculateMembers
+          matchByServer[position].match.distanceMembers = distanceMembers;
+          matchByServer[position].match.distanceProjectRoles =
+            distanceProjectRoles;
+          matchByServer[position].match.recalculateProjectRoles =
+            recalculateProjectRoles;
+          matchByServer[position].match.recalculateMembers = recalculateMembers;
         }
-        
 
         // nodeDataNew = await Node.findOneAndUpdate(
         //   { _id: nodeID },
@@ -692,7 +693,6 @@ module.exports = {
         //   },
         //   { new: true }
         // );
-
       }
 
       nodeDataNew = await Node.findOneAndUpdate(
@@ -718,7 +718,7 @@ module.exports = {
       );
     }
   },
-  
+
   matchPrepareSkillToProjectRoles: async (parent, args, context, info) => {
     const { skillID, serverID } = args.fields;
     console.log(
@@ -1089,8 +1089,6 @@ module.exports = {
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      
-
       // console.log("nodeData[0] = " , nodeData[0])
       // console.log("nodeData[0] = " , nodeData[0].match)
 
@@ -1109,28 +1107,34 @@ module.exports = {
       for (let i = 0; i < nodeData.length; i++) {
         newSkillFlag = true;
 
+        let matchByServer = nodeData[i].matchByServer;
+        let positionServer = -1;
 
-        let matchByServer = nodeData[i].matchByServer
-        let positionServer = -1
+        console.log("matchByServer = ", matchByServer);
 
-        console.log("matchByServer = " , matchByServer)
-        
-        if (matchByServer===undefined){
-          positionServer = -1
-        } else {  
-          positionServer = matchByServer.findIndex(x => x.serverID == serverID)
-          console.log("positionServer = " , positionServer)
+        if (matchByServer === undefined) {
+          positionServer = -1;
+        } else {
+          positionServer = matchByServer.findIndex(
+            (x) => x.serverID == serverID
+          );
+          console.log("positionServer = ", positionServer);
         }
-
 
         for (let k = 0; k < 3; k++) {
           let membersNow;
-          if (positionServer===-1){
-            membersNow = []
-          }else {
-            if (k == 0) membersNow = matchByServer[positionServer].match.distanceMembers.hop0;
-            if (k == 1) membersNow = matchByServer[positionServer].match.distanceMembers.hop1;
-            if (k == 2) membersNow = matchByServer[positionServer].match.distanceMembers.hop2;
+          if (positionServer === -1) {
+            membersNow = [];
+          } else {
+            if (k == 0)
+              membersNow =
+                matchByServer[positionServer].match.distanceMembers.hop0;
+            if (k == 1)
+              membersNow =
+                matchByServer[positionServer].match.distanceMembers.hop1;
+            if (k == 2)
+              membersNow =
+                matchByServer[positionServer].match.distanceMembers.hop2;
           }
 
           // console.log("k,membersNow = " ,i,nodeData[i]._id ,k,membersNow)
@@ -1368,12 +1372,9 @@ module.exports = {
       for (let i = 0; i < nodeData.length; i++) {
         for (let k = 0; k < 3; k++) {
           let projectsNow;
-          if (k == 0)
-            projectsNow = nodeData[i].match.distanceProjectRoles.hop0;
-          if (k == 1)
-            projectsNow = nodeData[i].match.distanceProjectRoles.hop1;
-          if (k == 2)
-            projectsNow = nodeData[i].match.distanceProjectRoles.hop2;
+          if (k == 0) projectsNow = nodeData[i].match.distanceProjectRoles.hop0;
+          if (k == 1) projectsNow = nodeData[i].match.distanceProjectRoles.hop1;
+          if (k == 2) projectsNow = nodeData[i].match.distanceProjectRoles.hop2;
 
           for (let j = 0; j < projectsNow.length; j++) {
             let projectID = projectsNow[j];
@@ -1486,12 +1487,12 @@ module.exports = {
       );
     }
   },
-  matchNodesToProjects: async (parent, args, context, info) => {
-    const { skillsID, serverID } = args.fields;
+  matchNodesToProjectRoles: async (parent, args, context, info) => {
+    const { nodesID, serverID } = args.fields;
     let { page, limit } = args.fields;
     console.log("Query > matchSkillsToMembers > args.fields = ", args.fields);
 
-    if (!skillsID) throw new ApolloError("projectID is required");
+    if (!nodesID) throw new ApolloError("nodesID is required");
 
     let queryServerID = [];
     if (serverID) {
@@ -1509,12 +1510,12 @@ module.exports = {
     try {
       let project;
 
-      let skillData = await Skills.find({ _id: skillsID });
+      let nodeData = await Node.find({ _id: nodesID });
 
-      if (!skillData) throw new ApolloError("Skill Don't exist");
+      if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      // console.log("skillData[0] = " , skillData[0])
-      // console.log("skillData[0] = " , skillData[0].match)
+      // console.log("nodeData[0] = " , nodeData[0])
+      // console.log("nodeData[0] = " , nodeData[0].match)
 
       let distanceAll = [[], [], []];
       let points = [[], [], []];
@@ -1522,15 +1523,34 @@ module.exports = {
       let everyID = [];
 
       // console.log("distanceAll = ", distanceAll);
-      for (let i = 0; i < skillData.length; i++) {
+      for (let i = 0; i < nodeData.length; i++) {
+        newSkillFlag = true;
+
+        let matchByServer = nodeData[i].matchByServer;
+        let positionServer = -1;
+
+        console.log("matchByServer = ", matchByServer);
+
+        if (matchByServer === undefined) {
+          positionServer = -1;
+        } else {
+          positionServer = matchByServer.findIndex(
+            (x) => x.serverID == serverID
+          );
+          console.log("positionServer = ", positionServer);
+        }
+
         for (let k = 0; k < 3; k++) {
           let projectsNow;
           if (k == 0)
-            projectsNow = skillData[i].match.distanceProjectRoles.hop0;
+            projectsNow =
+              matchByServer[positionServer].match.distanceProjectRoles.hop0;
           if (k == 1)
-            projectsNow = skillData[i].match.distanceProjectRoles.hop1;
+            projectsNow =
+              matchByServer[positionServer].match.distanceProjectRoles.hop1;
           if (k == 2)
-            projectsNow = skillData[i].match.distanceProjectRoles.hop2;
+            projectsNow =
+              matchByServer[positionServer].match.distanceProjectRoles.hop2;
 
           for (let j = 0; j < projectsNow.length; j++) {
             let projectID = projectsNow[j];
@@ -1592,10 +1612,10 @@ module.exports = {
                 matchSkillsToMembersOutput[pos].matchPercentage;
               if (
                 matchSkillsToMembersOutput[pos].matchPercentage <
-                25 * (3 - i) + (25 / skillData.length) * points[i][k]
+                25 * (3 - i) + (25 / nodeData.length) * points[i][k]
               ) {
                 newMatchPercentage =
-                  25 * (3 - i) + (25 / skillData.length) * points[i][k];
+                  25 * (3 - i) + (25 / nodeData.length) * points[i][k];
               }
               matchSkillsToMembersOutput[pos] = {
                 projectID: matchSkillsToMembersOutput[pos].projectID,
@@ -1605,7 +1625,7 @@ module.exports = {
                   {
                     projectRoleID: distanceAll[i][k],
                     matchPercentage:
-                      25 * (3 - i) + (25 / skillData.length) * points[i][k],
+                      25 * (3 - i) + (25 / nodeData.length) * points[i][k],
                     commonSkillsID: [],
                   },
                 ],
@@ -1614,14 +1634,14 @@ module.exports = {
               matchSkillsToMembersOutput.push({
                 projectID: projectNowID,
                 matchPercentage:
-                  25 * (3 - i) + (25 / skillData.length) * points[i][k],
+                  25 * (3 - i) + (25 / nodeData.length) * points[i][k],
                 commonSkillsID: [],
 
                 projectRoles: [
                   {
                     projectRoleID: distanceAll[i][k],
                     matchPercentage:
-                      25 * (3 - i) + (25 / skillData.length) * points[i][k],
+                      25 * (3 - i) + (25 / nodeData.length) * points[i][k],
                     commonSkillsID: [],
                   },
                 ],

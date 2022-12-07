@@ -3,9 +3,17 @@ const {
   findMembers,
   matchMembersToUser,
   matchMembersToSkills,
-  matchMembersToProject,matchMembersToProjectRole,matchPrepareSkillToMembers,matchPrepareNode,matchPrepareSkillToProjectRoles,matchSkillsToMembers,matchNodesToMembers,matchSkillsToProjects,matchNodesToProjects,
+  matchMembersToProject,
+  matchMembersToProjectRole,
+  matchPrepareSkillToMembers,
+  matchPrepareNode,
+  matchPrepareSkillToProjectRoles,
+  matchSkillsToMembers,
+  matchNodesToMembers,
+  matchSkillsToProjects,
+  matchNodesToProjectRoles,
   members_autocomplete,
-  findMemberByIDOrDiscordName
+  findMemberByIDOrDiscordName,
 } = require("./query/memberQuery");
 const {
   findSkill,
@@ -16,10 +24,7 @@ const {
   skills,
 } = require("./query/skillsQuery");
 
-
-const {
-  findNode,findNodes
-} = require("./query/nodeQuery");
+const { findNode, findNodes } = require("./query/nodeQuery");
 
 const {
   findProject,
@@ -42,6 +47,7 @@ const {
   findRoleTemplates,
 } = require("./query/roleTemplateQuery");
 const { findServers } = require("./query/serverQuery");
+const { findGrants } = require("./query/grantQuery");
 const { findRoom } = require("./query/roomQuery");
 const {
   findSkillCategory,
@@ -52,9 +58,7 @@ const {
   findSkillSubCategories,
 } = require("./query/skillSubCategoryQuery");
 
-const {
-  findChat
-} = require("./query/chatQuery")
+const { findChat } = require("./query/chatQuery");
 
 const { errors } = require("./query/errorQuery");
 
@@ -78,7 +82,15 @@ module.exports = {
     findMembers,
     matchMembersToUser,
     matchMembersToSkills,
-    matchMembersToProject,matchMembersToProjectRole,matchPrepareSkillToMembers,matchPrepareNode,matchPrepareSkillToProjectRoles,matchSkillsToMembers,matchNodesToMembers,matchSkillsToProjects,matchNodesToProjects,
+    matchMembersToProject,
+    matchMembersToProjectRole,
+    matchPrepareSkillToMembers,
+    matchPrepareNode,
+    matchPrepareSkillToProjectRoles,
+    matchSkillsToMembers,
+    matchNodesToMembers,
+    matchSkillsToProjects,
+    matchNodesToProjectRoles,
     members_autocomplete,
 
     // ------------- SKILL QUERY -----------------
@@ -89,9 +101,9 @@ module.exports = {
     skills,
     skills_autocomplete,
 
-
     // ------------- NODE QUERY -----------------
-    findNode,findNodes,
+    findNode,
+    findNodes,
 
     // ------------- ROLE TEMPLATE QUERY -----------------
     findRoleTemplate,
@@ -99,6 +111,9 @@ module.exports = {
 
     // ------------- SERVER TEMPLATE QUERY -----------------
     findServers,
+
+    // ------------- GRANT TEMPLATE QUERY -----------------
+    findGrants,
 
     // ------------- ROOM TEMPLATE QUERY -----------------
     findRoom,
@@ -117,6 +132,6 @@ module.exports = {
     findGarden,
 
     // ------------ CHAT QUERY ---------------
-    findChat
+    findChat,
   },
 };

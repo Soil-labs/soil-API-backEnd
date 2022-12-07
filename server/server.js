@@ -11,7 +11,9 @@ const { logError } = require("./utils/logError");
 const cron = require("node-cron");
 const { cronFunctionToUpdateAvatar } = require("./utils/getDiscordAvatar");
 const { cronJobToUpdateServerIcon } = require("./utils/getDiscordGuildAvatar");
-
+const contextResolver = require("./auth/contextResolvers");
+const authRoutes = require("./auth");
+const cors = require("cors");
 require("dotenv").config();
 
 const typeDefs = require("./graphql/schema");
@@ -53,28 +55,7 @@ async function main() {
         },
       },
     ],
-    context: ({ req }) => {
-      if (req.body) {
-        req.body.query = req.body.query;
-      }
-      try {
-        req.header["Access-Control-Allow-Origin"] = "*";
-        req.header["Access-Control-Allow-Headers"] =
-          "Origin, X-Requested-With, Content-Type, Accept";
-        if (req.headers.authorization) {
-          req.headers.authorization.replace(/[&#,+()$~%.:*?<>]/g, "");
-          const payload = jwt.decode(
-            req.headers.authorization.replace("Bearer ", "")
-          );
-          const user = { id: payload._id, email: payload.email };
-          req.user = user;
-        }
-      } catch (err) {
-        // console.log(err);
-      }
-
-      return { req };
-    },
+    context: contextResolver,
     formatError: (err) => {
       logError(err);
       return err;
@@ -113,6 +94,9 @@ async function main() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 
+  app.use(cors());
+  app.use("/auth", authRoutes());
+
   if (process.env.NODE_ENV === "production") {
     app.use((req, res, next) => {
       if (req.header("x-forwarded-proto") !== "https")
@@ -133,21 +117,17 @@ async function main() {
 
   //cron job running every five hours
   cron.schedule("0 */5 * * *", async function () {
-    console.log("start running the cron")
+    console.log("start running the cron");
     await cronFunctionToUpdateAvatar();
     console.log("running a task every five hours");
   });
-  
+
   //running every 2 days at 1am
   cron.schedule("0 1 * * */2", async function () {
-    console.log("start running the update icon cron")
+    console.log("start running the update icon cron");
     await cronJobToUpdateServerIcon();
     console.log("ended running the task every 2 days");
   });
-
-
-
-  
 }
 
 main();

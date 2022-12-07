@@ -241,6 +241,7 @@ module.exports = `
     enum findEnum {
         Member
         Project
+        Role
     }
 
     input matchPrepareSkillToProjectRolesInput {
@@ -273,7 +274,7 @@ module.exports = `
         limit: Int
     }
 
-    input matchNodesToProjectsInput {
+    input matchNodesToProjectRolesInput {
         nodesID: [ID]
         serverID: [String]
         page: Int
@@ -310,7 +311,7 @@ module.exports = `
         content: contentInput
         interest: String
         timeZone: String
-        serverID: String,
+        serverID: [String],
         skills: [skillInput_member]
         
         memberRole: ID
@@ -353,6 +354,14 @@ module.exports = `
     input addNodesToMemberInput {
         memberID: ID
         nodesID: [String]
+    }
+
+    input deleteNodesFromMemberInput {
+        memberID: ID
+        nodesID: [String]
+    }
+    input deleteMemberInput {
+        memberID: ID
     }
 
 
