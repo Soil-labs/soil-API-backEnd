@@ -80,5 +80,9 @@ module.exports = `
         updateChatReply(fields: updateChatReplyInput): Chats
         updateChatResult(fields: updateChatResultInput): Chats
 
+        # ------------- AI MUTATIONS ------------
+        addMessage(fields: addMessageInput): AI
+        addMessages(fields: addMessagesInput): [AI]
+
     }
 `

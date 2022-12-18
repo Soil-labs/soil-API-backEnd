@@ -63,6 +63,11 @@ const {
 	updateChatResult,
 } = require("./mutation/chatMutation");
 
+const {
+	addMessage,
+	addMessages
+} = require("./mutation/aiMutation");
+
 module.exports = {
 	Mutation: {
 		// ------------- MEMBER MUTATION -----------------
@@ -132,6 +137,10 @@ module.exports = {
 		addNewChat,
 		updateChatReply,
 		updateChatResult,
+
+		// --------------- AI MUTATION -----------------
+		addMessage,
+		addMessages
 	},
 	Subscription: {
 		memberUpdated,
