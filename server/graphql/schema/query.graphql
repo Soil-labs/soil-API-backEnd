@@ -83,6 +83,10 @@ module.exports = `
           # ----------- CHAT QUERY ---------
           findChat(fields:findChatInput):Chats
 
+
+          # ---------- AI QUERY -------------
+          findMessage(fields: findMessageInput): [AI]
+
    
             
         }

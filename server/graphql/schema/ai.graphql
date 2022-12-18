@@ -28,5 +28,9 @@ module.exports = `
         data: [addMessageInput]
     }
 
+    input findMessageInput {
+        discordID: ID
+    }
+
     
 `
