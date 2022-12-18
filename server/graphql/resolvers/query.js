@@ -59,6 +59,7 @@ const {
 } = require("./query/skillSubCategoryQuery");
 
 const { findChat } = require("./query/chatQuery");
+const { findMessage } = require("./query/aiQuery");
 
 const { errors } = require("./query/errorQuery");
 
@@ -133,5 +134,8 @@ module.exports = {
 
     // ------------ CHAT QUERY ---------------
     findChat,
+
+    //----------- AI QUERY ------------------
+    findMessage
   },
 };
