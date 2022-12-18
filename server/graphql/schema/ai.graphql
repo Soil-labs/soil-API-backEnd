@@ -1,0 +1,32 @@
+module.exports = `
+
+    type AI {
+        _id: ID
+        creator: ID
+        mentioned: [ID]
+        message: String
+        edenAI: EdenAI
+    }
+
+    type EdenAI {
+        keywords: [Keyword],
+        nodes: [ID]
+    }
+
+    type Keyword {
+        keywords: String
+        embedding: [ String ]
+    }
+
+    input addMessageInput {
+        creator: ID
+        mentioned: [ID]
+        message: String
+    }
+
+    input addMessagesInput {
+        data: [addMessageInput]
+    }
+
+    
+`
