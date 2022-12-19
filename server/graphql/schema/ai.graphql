@@ -15,7 +15,7 @@ module.exports = `
 
     type Keyword {
         keywords: String
-        embedding: [ String ]
+        embedding: [ Float ]
     }
 
     input addMessageInput {
@@ -30,6 +30,21 @@ module.exports = `
 
     input findMessageInput {
         discordID: ID
+    }
+
+    input EdenAIInput {
+        keywords: [KeywordInput],
+        nodes: [ID]
+    }
+
+    input KeywordInput {
+        keywords: String
+        embedding: [ Float ]
+    }
+
+    input updateMessageInput {
+        messageID: ID
+        edenAI: EdenAIInput
     }
 
     
