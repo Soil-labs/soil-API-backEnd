@@ -83,7 +83,4 @@ module.exports = `
         url: String,
     }
 
-
-    
-
 `
