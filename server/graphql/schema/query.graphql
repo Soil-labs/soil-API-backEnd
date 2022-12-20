@@ -85,9 +85,7 @@ module.exports = `
 
 
           # ---------- AI QUERY -------------
-          findMessage(fields: findMessageInput): [AI]
-
-   
+          findMessage(fields: findMessageInputPaginated): PaginatedMessages
             
         }
 `;
