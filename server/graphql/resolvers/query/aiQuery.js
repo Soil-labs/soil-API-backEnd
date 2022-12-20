@@ -3,13 +3,24 @@ const { ApolloError } = require("apollo-server-express");
 
 module.exports = {
   findMessage: async (parent, args, context, info) => {
-    const { discordID } = args.fields;
+    const { discordID, serverID } = args.fields;
     console.log("Query > findMessage > args.fields = ", args.fields);
 
-    if (!discordID) throw new ApolloError("The discordID is required");
+    if (!discordID && !serverID)
+      throw new ApolloError("The discordID or serverID is required");
 
     try {
-      const aiData = await AI.find({ creator: discordID });
+      let searchTerm = {};
+
+      if (discordID && serverID) {
+        searchTerm = { creator: discordID, serverID: serverID };
+      } else if (discordID) {
+        searchTerm = { creator: discordID };
+      } else if (serverID) {
+        searchTerm = { serverID: serverID };
+      }
+
+      const aiData = await AI.find(searchTerm);
 
       console.log("creator message data :", aiData);
 

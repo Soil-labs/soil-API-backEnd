@@ -3,7 +3,7 @@ const { ApolloError } = require("apollo-server-express");
 
 module.exports = {
   addMessage: async (parent, args, context, info) => {
-    const { creator, mentioned, message } = args.fields;
+    const { creator, mentioned, message, serverID } = args.fields;
     console.log("Mutation > addMessage > args.fields = ", args.fields);
     try {
       if (!creator)
@@ -14,6 +14,8 @@ module.exports = {
       let fields = {
         createdAt: new Date(),
       };
+
+      if (serverID) fields.serverID = serverID;
 
       fields.message = message;
       fields.creator = creator;
@@ -40,7 +42,7 @@ module.exports = {
       data.forEach((addMessageInputData) => {
         const { creator, mentioned, message } = addMessageInputData;
         let valid = false;
-        if (creator && mentioned && message) {
+        if (creator && mentioned && message ) {
           valid = true;
         }
 

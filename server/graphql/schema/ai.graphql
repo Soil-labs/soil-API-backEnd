@@ -5,6 +5,7 @@ module.exports = `
         creator: ID
         mentioned: [ID]
         message: String
+        serverID: String 
         edenAI: EdenAI
     }
 
@@ -22,6 +23,7 @@ module.exports = `
         creator: ID
         mentioned: [ID]
         message: String
+        serverID: String
     }
 
     input addMessagesInput {
@@ -30,6 +32,7 @@ module.exports = `
 
     input findMessageInput {
         discordID: ID
+        serverID: ID
     }
 
     input EdenAIInput {

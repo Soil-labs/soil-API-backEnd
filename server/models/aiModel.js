@@ -5,6 +5,7 @@ const aiSchema = mongoose.Schema({
   creator: String,
   mentioned: [String],
   message: String,
+  serverID: String,
   edenAI: {
     keywords: [
       {
