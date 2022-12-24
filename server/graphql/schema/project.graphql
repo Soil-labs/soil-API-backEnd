@@ -403,7 +403,10 @@ module.exports = `
         serverID: [String]
         projectID: ID,
         teamID: [ID],
-        
+    }
+
+    input deleteProjectInput {
+        projectID: ID
     }
 
     

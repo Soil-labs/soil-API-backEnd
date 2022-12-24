@@ -17,6 +17,7 @@ const {
   makeConnection_neo4j,
   findAllNodesDistanceRfromNode_neo4j,
   deleteConnectionANYBetweenNodes_neo4j,
+  deleteNode_neo4j,
 } = require("../../../neo4j/func_neo4j");
 
 module.exports = {
@@ -1149,6 +1150,66 @@ module.exports = {
       console.log("epicData.championID = ", epicData.championID);
 
       return epicData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
+  deleteProject: async (parent, args, context, info) => {
+    const { projectID } = args.fields;
+
+    console.log("Mutation > deleteProject > args.fields = ", args.fields);
+
+    if (!projectID) throw new ApolloError("projectID is required");
+
+    try {
+      let projectData = await Projects.findOne({ _id: projectID });
+
+      if (!projectData) throw new ApolloError("project data not found");
+
+      //get the role
+      const role = projectData.role;
+
+      if (role && role.length && role.length > 0) {
+        for (let i = 0; i < role.length; i++) {
+          const currentRole = role[i];
+          // get all nodes from currentRole.nodes
+          let nodesData = await Node.find({
+            _id: currentRole.nodes.map(function (item) {
+              return item._id.toString();
+            }),
+          });
+
+          if (nodesData && nodesData.length && nodesData.length > 0) {
+            for (let j = 0; i < nodesData.length; j++) {
+              let nodeNow = nodesData[j];
+              deleteConnectionANYBetweenNodes_neo4j({
+                nodeID_1: currentRole._id,
+                nodeID_2: nodeNow._id,
+              });
+
+              //changeMatchByServer(nodeNow, memberData);
+            }
+          }
+
+          deleteNode_neo4j({
+            nodeID: currentRole._id,
+          });
+        }
+      }
+
+      //delete the project Node from NEO4j
+      deleteNode_neo4j({
+        nodeID: projectData._id,
+      });
+
+      // delete project data ata from mongoDB database
+      const projectData2 = await Projects.findOneAndDelete({ _id: projectID });
+
+      return projectData2;
     } catch (err) {
       throw new ApolloError(
         err.message,
