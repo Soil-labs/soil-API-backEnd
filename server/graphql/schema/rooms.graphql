@@ -3,6 +3,9 @@ module.exports = `
     type Rooms {
         _id: ID,
         name: String,
+        description: String,
+        avatar: String,
+        serverID: String,
         members: [Members],
         registeredAt: String,
     }
@@ -15,6 +18,9 @@ module.exports = `
     input createRoomInput {
         _id: String,
         name: String,
+        description: String,
+        avatar: String,
+        serverID: String,
     }
 
     input enterRoomInput {
