@@ -1176,28 +1176,32 @@ module.exports = {
       if (role && role.length && role.length > 0) {
         for (let i = 0; i < role.length; i++) {
           const currentRole = role[i];
-          // get all nodes from currentRole.nodes
-          let nodesData = await Node.find({
-            _id: currentRole.nodes.map(function (item) {
-              return item._id.toString();
-            }),
-          });
+          if (currentRole) {
+            // get all nodes from currentRole.nodes
+            let nodesData = await Node.find({
+              _id: currentRole.nodes.map(function (item) {
+                return item._id.toString();
+              }),
+            });
 
-          if (nodesData && nodesData.length && nodesData.length > 0) {
-            for (let j = 0; i < nodesData.length; j++) {
-              let nodeNow = nodesData[j];
-              deleteConnectionANYBetweenNodes_neo4j({
-                nodeID_1: currentRole._id,
-                nodeID_2: nodeNow._id,
-              });
+            if (nodesData && nodesData.length && nodesData.length > 0) {
+              for (let j = 0; i < nodesData.length; j++) {
+                let nodeNow = nodesData[j];
+                if (nodeNow) {
+                  deleteConnectionANYBetweenNodes_neo4j({
+                    nodeID_1: currentRole._id,
+                    nodeID_2: nodeNow._id,
+                  });
+                }
 
-              //changeMatchByServer(nodeNow, memberData);
+                //changeMatchByServer(nodeNow, memberData);
+              }
             }
-          }
 
-          deleteNode_neo4j({
-            nodeID: currentRole._id,
-          });
+            deleteNode_neo4j({
+              nodeID: currentRole._id,
+            });
+          }
         }
       }
 
