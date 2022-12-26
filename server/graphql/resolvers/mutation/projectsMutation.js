@@ -1185,7 +1185,7 @@ module.exports = {
             });
 
             if (nodesData && nodesData.length && nodesData.length > 0) {
-              for (let j = 0; i < nodesData.length; j++) {
+              for (let j = 0; j < nodesData.length; j++) {
                 let nodeNow = nodesData[j];
                 if (nodeNow) {
                   deleteConnectionANYBetweenNodes_neo4j({
