@@ -1316,6 +1316,8 @@ module.exports = {
           a.matchPercentage.realTotalPercentage
       );
 
+      console.log("memberObj = ", memberObj);
+
       return memberArr.slice(page * limit, (page + 1) * limit);
     } catch (err) {
       throw new ApolloError(
