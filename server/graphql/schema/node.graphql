@@ -16,8 +16,31 @@ module.exports = `
         matchByServer_update: Boolean
         matchByServer: [matchByServerType]
 
+        matchRelativePosition_server: [matchRelativePosition_serverType]
+
         registeredAt: String,
 
+    }
+
+    type matchRelativePosition_serverType {
+        serverID: String
+        MR_Member: [MR_MemberType]
+        MR_ProjectRole: [MR_ProjectRoleType]
+    }
+
+    type MR_MemberType {
+        nodeID: String
+        path: [pathType]
+    }
+
+    type MR_ProjectRoleType {
+        nodeID: String
+        path: [pathType]
+    }
+
+    type pathType {
+        hop: Float,
+        weight: Float,
     }
 
     type matchByServerType {
@@ -54,6 +77,7 @@ module.exports = `
     input relatedNode_nameInput {
         name: String
         relatedNode_name: String
+        weight: String
     }
 
     input createNodeInput {
