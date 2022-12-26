@@ -1,6 +1,7 @@
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
 const { ServerTemplate } = require("../../../models/serverModel");
+
 const mongoose = require("mongoose");
 const { Projects } = require("../../../models/projectsModel");
 const { Skills } = require("../../../models/skillsModel");
@@ -12,6 +13,7 @@ const {
   matchMembersToProjectRole_neo4j,
   matchPrepareSkillToMembers_neo4j,
   matchPrepareAnything_neo4j,
+  matchPrepareAnything_neo4j_old,
   matchPrepareSkillToProjectRoles_neo4j,
 } = require("../../../neo4j/func_neo4j");
 
@@ -532,7 +534,7 @@ module.exports = {
       );
     }
   },
-  matchPrepareNode: async (parent, args, context, info) => {
+  matchPrepareNode_old: async (parent, args, context, info) => {
     const { nodeID, serverID, find } = args.fields;
     console.log(
       "Query > matchPrepareSkillToMembers > args.fields = ",
@@ -575,7 +577,7 @@ module.exports = {
 
         // get two variables from function "matchPrepareAnything_neo4j"
 
-        result = await matchPrepareAnything_neo4j({
+        result = await matchPrepareAnything_neo4j_old({
           nodeID: nodeData._id,
           node: nodeData.node,
           serverID: server._id,
@@ -762,6 +764,121 @@ module.exports = {
 
       return nodeDataNew;
       // return [{}]
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
+  matchPrepareNode: async (parent, args, context, info) => {
+    const { nodeID, serverID, find } = args.fields;
+    console.log(
+      "Query > matchPrepareSkillToMembers > args.fields = ",
+      args.fields
+    );
+
+    if (!nodeID) throw new ApolloError("node is required");
+
+    if (!find) throw new ApolloError("find Enum is required");
+
+    let queryServerID = [];
+    if (serverID) {
+      serverID.forEach((id) => {
+        queryServerID.push({ serverID: id });
+      });
+    }
+
+    try {
+      let nodeData = await Node.findOne({ _id: nodeID }).select(
+        "-subNodes -relatedNodes -aboveNodes"
+      );
+
+      if (!nodeData) throw new ApolloError("Node Don't exist");
+
+      let match_v2 = nodeData.match_v2;
+
+      let allServers = await ServerTemplate.find({});
+
+      matchRelativePosition_gl = {};
+      for (let i = 0; i < allServers.length; i++) {
+        // you need to calculate the node for every server in the database
+        let server = allServers[i];
+
+        // get two variables from function "matchPrepareAnything_neo4j"
+
+        typeNeo = find;
+        if (typeNeo == "ProjectRole") typeNeo = "Role";
+        result_matchRelat = await matchPrepareAnything_neo4j({
+          nodeID: nodeData._id,
+          node: nodeData.node,
+          serverID: server._id,
+          find: typeNeo,
+        });
+
+        console.log("-----------SERVERID --------- ", server._id);
+        console.log("result_matchRelat = ", result_matchRelat);
+
+        // check if there is something new that we need to include
+        for (const [key, value] of Object.entries(result_matchRelat)) {
+          if (matchRelativePosition_gl[key] === undefined) {
+            matchRelativePosition_gl[key] = {
+              serverID: [server._id],
+              ...value,
+            };
+          } else {
+            matchRelativePosition_gl[key].serverID.push(server._id);
+          }
+        }
+      }
+
+      // prepare the array to save in the database
+      match_v2 = [];
+      for (const [key, value] of Object.entries(matchRelativePosition_gl)) {
+        match_v2.push({
+          serverID: value.serverID,
+          nodeResID: key,
+          wh_sum: value.WH,
+          numPath: value.N,
+          type: find,
+        });
+      }
+
+      //filter out the ones that have type = "Member"
+      let match_v2_old = nodeData.match_v2.filter((item) => item.type != find);
+
+      // update with the new "Member"
+      match_v2 = [...match_v2_old, ...match_v2];
+
+      match_v2_update = {};
+      // save what was updated
+      if (find == "Member") {
+        match_v2_update = {
+          member: false,
+          projectRole: nodeData.match_v2_update.projectRole,
+        };
+      } else if (find == "ProjectRole") {
+        match_v2_update = {
+          member: nodeData.match_v2_update.member,
+          projectRole: false,
+        };
+      }
+
+      nodeDataNew = await Node.findOneAndUpdate(
+        {
+          _id: nodeID,
+        },
+        {
+          $set: {
+            match_v2_update: match_v2_update,
+            match_v2,
+          },
+        },
+        { new: true }
+      );
+
+      return nodeDataNew;
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -1129,8 +1246,106 @@ module.exports = {
     if (page != null && limit != null) {
     } else {
       page = 0;
+      limit = 30;
+    }
+
+    try {
+      let nodeData = await Node.find({ _id: nodesID }).select("_id match_v2");
+
+      if (!nodeData) throw new ApolloError("Node Don't exist");
+
+      w1 = 0.5; // the weight of the number of paths
+      w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
+      memberObj = {};
+
+      for (let i = 0; i < nodeData.length; i++) {
+        // loop on the nodes
+        let match_v2 = nodeData[i].match_v2;
+
+        for (let j = 0; j < match_v2.length; j++) {
+          // find all the connections for this particular node
+          // check if serverID exist on array match_v2.serverID
+          if (
+            match_v2[j].serverID.includes(serverID) &&
+            match_v2[j].type == "Member"
+          ) {
+            // If this is both have the serverID and is Member
+
+            // Add this user to the memberObj
+            // and Make the calculation for the percentage for this user
+
+            if (memberObj[match_v2[j].nodeResID]) {
+              memberObj[match_v2[j].nodeResID].wh_sum += match_v2[j].wh_sum;
+              memberObj[match_v2[j].nodeResID].numPath += match_v2[j].numPath;
+
+              const N = memberObj[match_v2[j].nodeResID].numPath;
+              const sumi = memberObj[match_v2[j].nodeResID].wh_sum;
+              const pers = ((1 - 1 / N ** 0.7) * w1 + (sumi / N) * w2) * 100;
+
+              memberObj[match_v2[j].nodeResID].pers = Number(pers.toFixed(2));
+            } else {
+              const N = match_v2[j].numPath;
+              const sumi = match_v2[j].wh_sum;
+              const pers = ((1 - 1 / N ** 0.7) * w1 + (sumi / N) * w2) * 100;
+              memberObj[match_v2[j].nodeResID] = {
+                wh_sum: match_v2[j].wh_sum,
+                numPath: match_v2[j].numPath,
+                pers: Number(pers.toFixed(2)),
+              };
+            }
+          }
+        }
+      }
+
+      const memberArr = [];
+      for (const key in memberObj) {
+        // transform the object to array
+        memberArr.push({
+          matchPercentage: {
+            totalPercentage: memberObj[key].pers,
+            realTotalPercentage: memberObj[key].pers,
+          },
+          memberID: key,
+        });
+      }
+
+      memberArr.sort(
+        // sort it by the percentage
+        (a, b) =>
+          b.matchPercentage.realTotalPercentage -
+          a.matchPercentage.realTotalPercentage
+      );
+
+      return memberArr.slice(page * limit, (page + 1) * limit);
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
+  matchNodesToMembers_old: async (parent, args, context, info) => {
+    const { nodesID, hoursPerWeek, budgetAmount, serverID } = args.fields;
+    let { page, limit } = args.fields;
+    console.log("Query > matchSkillsToMembers > args.fields = ", args.fields);
+
+    if (!nodesID) throw new ApolloError("nodesID is required");
+
+    let queryServerID = [];
+    if (serverID) {
+      serverID.forEach((id) => {
+        queryServerID.push({ serverID: id });
+      });
+    }
+
+    if (page != null && limit != null) {
+    } else {
+      page = 0;
       limit = 10;
     }
+
+    // await Node.updateMany({}, { $unset: { matchRelativePosition_server: "" } });
 
     // console.log("change = 1" )
 
