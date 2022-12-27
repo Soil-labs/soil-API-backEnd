@@ -817,8 +817,8 @@ module.exports = {
           find: typeNeo,
         });
 
-        console.log("-----------SERVERID --------- ", server._id);
-        console.log("result_matchRelat = ", result_matchRelat);
+        // console.log("-----------SERVERID --------- ", server._id);
+        // console.log("result_matchRelat = ", result_matchRelat);
 
         // check if there is something new that we need to include
         for (const [key, value] of Object.entries(result_matchRelat)) {
@@ -833,6 +833,8 @@ module.exports = {
         }
       }
 
+      // console.log("matchRelativePosition_gl = ", matchRelativePosition_gl);
+
       // prepare the array to save in the database
       match_v2 = [];
       for (const [key, value] of Object.entries(matchRelativePosition_gl)) {
@@ -842,8 +844,12 @@ module.exports = {
           wh_sum: value.WH,
           numPath: value.N,
           type: find,
+          wh_k: value.wh_k,
+          k_sum: value.k_sum,
         });
       }
+
+      console.log("match_v2 = ", match_v2);
 
       //filter out the ones that have type = "Member"
       let match_v2_old = nodeData.match_v2.filter((item) => item.type != find);
@@ -877,6 +883,8 @@ module.exports = {
         },
         { new: true }
       );
+
+      console.log("nodeDataNew  = ", nodeDataNew);
 
       return nodeDataNew;
     } catch (err) {
@@ -1229,6 +1237,24 @@ module.exports = {
       );
     }
   },
+  setAllMatch_v2: async (parent, args, context, info) => {
+    const { val } = args;
+    console.log("Query > matchSkillsToMembers > args.fields = ", args);
+
+    await Node.updateMany(
+      {},
+      {
+        $set: {
+          match_v2_update: {
+            member: val,
+            projectRole: val,
+          },
+        },
+      }
+    );
+
+    return val;
+  },
   matchNodesToMembers: async (parent, args, context, info) => {
     const { nodesID, hoursPerWeek, budgetAmount, serverID } = args.fields;
     let { page, limit } = args.fields;
@@ -1242,6 +1268,19 @@ module.exports = {
         queryServerID.push({ serverID: id });
       });
     }
+
+    // if (typeof serverID == "string") {
+    //   console.log("change = ", serverID);
+
+    //   serverID = [serverID];
+    //   console.log("change = ", serverID);
+    // }
+
+    const serverID_set = new Set(serverID);
+
+    // console.log("change = ", serverID_set);
+
+    // asdf;
 
     if (page != null && limit != null) {
     } else {
@@ -1270,8 +1309,12 @@ module.exports = {
         for (let j = 0; j < match_v2.length; j++) {
           // find all the connections for this particular node
           // check if serverID exist on array match_v2.serverID
+          // if (
+          //   match_v2[j].serverID.includes(serverID) &&
+          //   match_v2[j].type == "Member"
+          // ) {
           if (
-            match_v2[j].serverID.includes(serverID) &&
+            match_v2[j].serverID.some((value) => serverID_set.has(value)) &&
             match_v2[j].type == "Member"
           ) {
             // If this is both have the serverID and is Member
