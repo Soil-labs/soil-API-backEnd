@@ -1134,7 +1134,6 @@ const changeMatchByServer = async (nodeNow, memberData) => {
     // }
     // // ---------- Change matchByServer -----------
 
-    console.log("node_n._id = ", node_n._id);
     // Update the node
     let nodeData3 = await Node.findOneAndUpdate(
       { _id: node_n._id },
