@@ -488,26 +488,30 @@ module.exports = {
         );
       }
     },
-    project: async (parent, args, context, info) => {
-      // console.log("parent 22322= " , parent)
+    // project: async (parent, args, context, info) => {
+    //   // console.log("parent 22322= " , parent)
 
-      try {
-        const projectID = parent.projectID;
+    //   try {
+    //     const project = parent.project;
 
-        projectData = await Projects.findOne({ _id: projectID });
+    //     // console.log("projectRoleID = ", projectRoleID);
+    //     // // projectData = await Projects.findOne({ _id: projectID });
+    //     // let projectData = await Projects.find({ "role._id": projectRoleID });
 
-        return projectData;
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "DATABASE_SEARCH_ERROR",
-          {
-            component: "userResolver > skills",
-            user: context.req.user?._id,
-          }
-        );
-      }
-    },
+    //     // console.log("projectData = ", projectData);
+
+    //     return project;
+    //   } catch (err) {
+    //     throw new ApolloError(
+    //       err.message,
+    //       err.extensions?.code || "DATABASE_SEARCH_ERROR",
+    //       {
+    //         component: "userResolver > skills",
+    //         user: context.req.user?._id,
+    //       }
+    //     );
+    //   }
+    // },
     projectRoles: async (parent, args, context, info) => {
       // console.log("parent 22322= " , parent)
 

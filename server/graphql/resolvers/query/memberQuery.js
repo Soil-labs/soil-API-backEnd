@@ -1875,6 +1875,143 @@ module.exports = {
     try {
       let project;
 
+      let nodeData = await Node.find({ _id: nodesID }).select("_id match_v2");
+
+      if (!nodeData) throw new ApolloError("Node Don't exist");
+
+      w1 = 0.5; // the weight of the number of paths
+      w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
+      projectRoleObj = {};
+
+      for (let i = 0; i < nodeData.length; i++) {
+        // loop on the nodes
+        let match_v2 = nodeData[i].match_v2;
+
+        for (let j = 0; j < match_v2.length; j++) {
+          // find all the connections for this particular node
+          // check if serverID exist on array match_v2.serverID
+          if (
+            match_v2[j].serverID.includes(serverID) &&
+            match_v2[j].type == "ProjectRole"
+          ) {
+            // If this is both have the serverID and is Member
+
+            // Add this user to the projectRoleObj
+            // and Make the calculation for the percentage for this user
+
+            if (projectRoleObj[match_v2[j].nodeResID]) {
+              projectRoleObj[match_v2[j].nodeResID].wh_sum +=
+                match_v2[j].wh_sum;
+              projectRoleObj[match_v2[j].nodeResID].numPath +=
+                match_v2[j].numPath;
+
+              const N = projectRoleObj[match_v2[j].nodeResID].numPath;
+              const sumi = projectRoleObj[match_v2[j].nodeResID].wh_sum;
+              const pers = ((1 - 1 / N ** 0.7) * w1 + (sumi / N) * w2) * 100;
+
+              projectRoleObj[match_v2[j].nodeResID].pers = Number(
+                pers.toFixed(2)
+              );
+            } else {
+              const N = match_v2[j].numPath;
+              const sumi = match_v2[j].wh_sum;
+              const pers = ((1 - 1 / N ** 0.7) * w1 + (sumi / N) * w2) * 100;
+              projectRoleObj[match_v2[j].nodeResID] = {
+                wh_sum: match_v2[j].wh_sum,
+                numPath: match_v2[j].numPath,
+                pers: Number(pers.toFixed(2)),
+              };
+            }
+          }
+        }
+      }
+
+      console.log("projectRoleObj = ", projectRoleObj);
+
+      // tranform to project
+      let projectObj = {};
+      for (const key in projectRoleObj) {
+        let projectData = await Projects.findOne({ "role._id": key });
+
+        if (projectData) {
+          if (projectObj[projectData._id]) {
+            if (
+              projectObj[projectData._id].matchPercentage <
+              projectRoleObj[key].pers
+            ) {
+              projectObj[projectData._id].matchPercentage =
+                projectRoleObj[key].pers;
+            }
+            projectObj[projectData._id].projectRoles.push({
+              projectRoleID: key,
+              matchPercentage: projectRoleObj[key].pers,
+            });
+          } else {
+            projectObj[projectData._id] = {
+              project: projectData,
+              matchPercentage: projectRoleObj[key].pers,
+              projectRoles: [
+                {
+                  projectRoleID: key,
+                  matchPercentage: projectRoleObj[key].pers,
+                },
+              ],
+            };
+          }
+        }
+      }
+
+      const projectArr = [];
+      for (const key in projectObj) {
+        // transform the object to array
+        projectArr.push({
+          matchPercentage: projectObj[key].matchPercentage,
+          project: projectObj[key].project,
+          projectRoles: projectObj[key].projectRoles,
+        });
+      }
+
+      // console.log("projectObj = ", projectObj);
+
+      projectArr.sort(
+        // sort it by the percentage
+        (a, b) => b.matchPercentage - a.matchPercentage
+      );
+
+      // console.log("projectArr = ", projectArr);
+
+      return projectArr.slice(page * limit, (page + 1) * limit);
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
+  matchNodesToProjectRoles_old: async (parent, args, context, info) => {
+    const { nodesID, serverID } = args.fields;
+    let { page, limit } = args.fields;
+    console.log("Query > matchSkillsToMembers > args.fields = ", args.fields);
+
+    if (!nodesID) throw new ApolloError("nodesID is required");
+
+    let queryServerID = [];
+    if (serverID) {
+      serverID.forEach((id) => {
+        queryServerID.push({ serverID: id });
+      });
+    }
+
+    if (page != null && limit != null) {
+    } else {
+      page = 0;
+      limit = 10;
+    }
+
+    try {
+      let project;
+
       let nodeData = await Node.find({ _id: nodesID });
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
