@@ -1326,22 +1326,31 @@ module.exports = {
               memberObj[match_v2[j].nodeResID].wh_sum += match_v2[j].wh_sum;
               memberObj[match_v2[j].nodeResID].numPath += match_v2[j].numPath;
 
+              memberObj[match_v2[j].nodeResID].wh_k += match_v2[j].wh_k;
+              memberObj[match_v2[j].nodeResID].k_sum += match_v2[j].k_sum;
+
               const N = memberObj[match_v2[j].nodeResID].numPath;
+              const k_sum = memberObj[match_v2[j].nodeResID].k_sum;
+              const wh_k = memberObj[match_v2[j].nodeResID].wh_k;
               const sumi = memberObj[match_v2[j].nodeResID].wh_sum;
-              const pers = ((1 - 1 / N ** 0.3) * w1 + (sumi / N) * w2) * 100;
+              const pers =
+                ((1 - 1 / N ** 0.3) * w1 + (wh_k / k_sum) * w2) * 100;
 
               memberObj[match_v2[j].nodeResID].C1 = 1 - 1 / N ** 0.3;
-              memberObj[match_v2[j].nodeResID].C2 = sumi / N;
+              memberObj[match_v2[j].nodeResID].C2 = wh_k / k_sum;
               memberObj[match_v2[j].nodeResID].pers = Number(pers.toFixed(2));
             } else {
               const N = match_v2[j].numPath;
               const sumi = match_v2[j].wh_sum;
-              const pers = ((1 - 1 / N ** 0.3) * w1 + (sumi / N) * w2) * 100;
+              const k_sum = match_v2[j].k_sum;
+              const wh_k = match_v2[j].wh_k;
+              const pers =
+                ((1 - 1 / N ** 0.3) * w1 + (wh_k / k_sum) * w2) * 100;
               memberObj[match_v2[j].nodeResID] = {
                 wh_sum: match_v2[j].wh_sum,
                 numPath: match_v2[j].numPath,
                 C1: 1 - 1 / N ** 0.3,
-                C2: sumi / N,
+                C2: wh_k / k_sum,
                 pers: Number(pers.toFixed(2)),
               };
             }
