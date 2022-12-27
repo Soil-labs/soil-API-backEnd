@@ -1254,11 +1254,11 @@ module.exports = {
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      w1 = 0.5; // the weight of the number of paths
+      w1 = 0.15; // the weight of the number of paths
       w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
       memberObj = {};
 
-      new_max_m = 40;
+      new_max_m = 20;
       new_min_m = 100;
 
       original_min_m = 110; // will change on the loop
@@ -1287,6 +1287,8 @@ module.exports = {
               const sumi = memberObj[match_v2[j].nodeResID].wh_sum;
               const pers = ((1 - 1 / N ** 0.7) * w1 + (sumi / N) * w2) * 100;
 
+              memberObj[match_v2[j].nodeResID].C1 = 1 - 1 / N ** 0.7;
+              memberObj[match_v2[j].nodeResID].C2 = sumi / N;
               memberObj[match_v2[j].nodeResID].pers = Number(pers.toFixed(2));
             } else {
               const N = match_v2[j].numPath;
@@ -1295,6 +1297,8 @@ module.exports = {
               memberObj[match_v2[j].nodeResID] = {
                 wh_sum: match_v2[j].wh_sum,
                 numPath: match_v2[j].numPath,
+                C1: 1 - 1 / N ** 0.7,
+                C2: sumi / N,
                 pers: Number(pers.toFixed(2)),
               };
             }
@@ -1308,8 +1312,9 @@ module.exports = {
         }
       }
 
-      console.log("original_min_m = ", original_min_m);
-      console.log("original_max_m = ", original_max_m);
+      // console.log("original_min_m = ", original_min_m);
+      // console.log("original_max_m = ", original_max_m);
+      console.log("memberObj = ", memberObj);
 
       const memberArr = [];
       for (const key in memberObj) {

@@ -1,0 +1,83 @@
+module.exports = `
+    
+    type Node {
+        _id: ID
+        name: String
+        node: String
+        
+        relatedNodes: [Node]
+        subNodes: [Node]
+        aboveNodes: [Node]
+
+        state: stateEnum
+        
+        match: MatchType
+
+        matchByServer_update: Boolean
+        matchByServer: [matchByServerType]
+
+        registeredAt: String,
+
+    }
+
+    type matchByServerType {
+        serverID: String
+        match: MatchType
+    }
+
+    type MatchType {
+        recalculateProject: Boolean
+        distanceProject: DistanceType
+        recalculateMembers: Boolean
+        distanceMembers: DistanceType
+    }
+
+    type DistanceType {
+        hop0: [ID]
+        hop1: [ID]
+        hop2: [ID]
+        hop3: [ID]
+    }
+
+
+    enum stateEnum {
+        waiting
+        rejected
+        approved
+    }
+
+    input relatedNodeInput {
+        _id: ID
+        relatedNode_id: ID
+    }
+
+    input relatedNode_nameInput {
+        name: String
+        relatedNode_name: String
+    }
+
+    input createNodeInput {
+        node: String,
+
+        name: String,
+
+
+        subNodes: [ID],
+        aboveNodes: [ID],
+
+        state: stateEnum
+    }
+
+    input findNodeInput {
+        _id: ID
+    }
+
+    input findNodesInput {
+        _id: [ID]
+        node: String
+        recalculateProjectRoles: Boolean
+        recalculateMembers: Boolean
+        matchByServer_update: Boolean
+    }
+
+`

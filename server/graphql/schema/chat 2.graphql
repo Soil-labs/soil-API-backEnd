@@ -1,0 +1,64 @@
+module.exports = `
+
+    type Chats {
+        _id: ID
+        message: String
+        senderID: ID
+        receiverID: ID
+        projectID: ID
+        projectRoleID: ID
+        threadID: ID
+        serverID: ID
+        reply: replyType
+        result: resultEnum
+    }
+
+   
+   type replyType {
+     sender: Boolean
+     receiver: Boolean
+   }
+    
+
+    enum resultEnum {
+        unsuccesful
+        successful
+    }
+
+    input reply {
+     sender: Boolean
+     receiver: Boolean
+   }
+    
+
+    input addNewChatInput {
+        message: String!
+        senderID: ID!
+        receiverID: ID!
+        projectID: ID!
+        projectRoleID: ID
+        threadID: ID!
+        serverID: ID!
+    }
+
+    input updateChatReplyInput {
+        _id: ID
+        threadID: ID
+        receiverReply: Boolean!
+        replyUserID: ID
+        
+    }
+
+    input updateChatResultInput {
+        _id: ID
+        threadID: ID
+        result: resultEnum
+    }
+
+     input findChatInput {
+        _id: ID
+        threadID: ID
+    }
+
+
+`
