@@ -1285,16 +1285,20 @@ module.exports = {
 
               const N = memberObj[match_v2[j].nodeResID].numPath;
               const sumi = memberObj[match_v2[j].nodeResID].wh_sum;
-              const pers = ((1 - 1 / N ** 0.7) * w1 + (sumi / N) * w2) * 100;
+              const pers = ((1 - 1 / N ** 0.3) * w1 + (sumi / N) * w2) * 100;
 
+              memberObj[match_v2[j].nodeResID].C1 = 1 - 1 / N ** 0.3;
+              memberObj[match_v2[j].nodeResID].C2 = sumi / N;
               memberObj[match_v2[j].nodeResID].pers = Number(pers.toFixed(2));
             } else {
               const N = match_v2[j].numPath;
               const sumi = match_v2[j].wh_sum;
-              const pers = ((1 - 1 / N ** 0.7) * w1 + (sumi / N) * w2) * 100;
+              const pers = ((1 - 1 / N ** 0.3) * w1 + (sumi / N) * w2) * 100;
               memberObj[match_v2[j].nodeResID] = {
                 wh_sum: match_v2[j].wh_sum,
                 numPath: match_v2[j].numPath,
+                C1: 1 - 1 / N ** 0.3,
+                C2: sumi / N,
                 pers: Number(pers.toFixed(2)),
               };
             }
@@ -1311,22 +1315,31 @@ module.exports = {
       console.log("original_min_m = ", original_min_m);
       console.log("original_max_m = ", original_max_m);
 
+      console.log("memberObj = ", memberObj);
+
+      threshold_cut_members = 15;
+      if (original_min_m < threshold_cut_members) {
+        original_min_m = threshold_cut_members; // we need to change the original minimum to the threshold
+      }
+
       const memberArr = [];
       for (const key in memberObj) {
         // transform the object to array
 
-        mapped_value =
-          ((memberObj[key].pers - original_min_m) * (new_min_m - new_max_m)) /
-            (original_max_m - original_min_m) +
-          new_max_m;
+        if (memberObj[key].pers > threshold_cut_members) {
+          mapped_value =
+            ((memberObj[key].pers - original_min_m) * (new_min_m - new_max_m)) /
+              (original_max_m - original_min_m) +
+            new_max_m;
 
-        memberArr.push({
-          matchPercentage: {
-            totalPercentage: mapped_value,
-            realTotalPercentage: memberObj[key].pers,
-          },
-          memberID: key,
-        });
+          memberArr.push({
+            matchPercentage: {
+              totalPercentage: mapped_value,
+              realTotalPercentage: memberObj[key].pers,
+            },
+            memberID: key,
+          });
+        }
       }
 
       memberArr.sort(
