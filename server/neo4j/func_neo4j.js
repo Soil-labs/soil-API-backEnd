@@ -1025,6 +1025,15 @@ async function findMatch_translateArray_path(
     return row;
   });
 
+  kt = [
+    [9, 0.7],
+    [3, 0.4],
+    [1, 0],
+  ];
+
+  // k2 = 6
+  // k3 = 1
+
   member_oneHopeMatch = [];
   if (names_oneHopeMatch.length > 0) {
     for (let i = 0; i < names_oneHopeMatch.length; ++i) {
@@ -1033,13 +1042,37 @@ async function findMatch_translateArray_path(
         names_oneHopeMatch[i]._fields &&
         names_oneHopeMatch[i]._fields[0]
       ) {
-        let totalWeight = 1;
-
+        let totalWeight = 0;
+        let N_weight = 0;
+        let mul_weight = 1;
         names_oneHopeMatch[i]._fields[0].segments.forEach((s, idx) => {
           if (s.relationship.properties.weight) {
-            totalWeight *= s.relationship.properties.weight;
+            mul_weight *= s.relationship.properties.weight;
+            totalWeight += s.relationship.properties.weight;
+            N_weight += 1;
+          } else {
+            // it doesn't have weight, so 1
+            totalWeight += 1;
+            N_weight += 1;
           }
         });
+
+        totalWeight_avg = totalWeight;
+        if (N_weight > 0) totalWeight_avg = totalWeight / N_weight;
+
+        // console.log(
+        //   "change = ",
+        //   // totalWeight.toFixed(1),
+        //   N_weight.toFixed(0),
+        //   hop + 1,
+        //   totalWeight_avg.toFixed(1),
+        //   "|",
+        //   (totalWeight_avg ** (N_weight - 1)).toFixed(1),
+        //   (totalWeight_avg ** N_weight).toFixed(1),
+        //   "|",
+        //   mul_weight.toFixed(1),
+        //   (mul_weight ** (N_weight - 1)).toFixed(1)
+        // );
 
         member_oneHopeMatch.push(
           names_oneHopeMatch[i]._fields[0].end.properties
@@ -1047,22 +1080,63 @@ async function findMatch_translateArray_path(
 
         const nodeID = names_oneHopeMatch[i]._fields[0].end.properties._id;
 
+        wh = totalWeight ** hop;
+        // console.log("totalWeight ** hop = ", totalWeight, hop, wh.toFixed(2));
+
         if (matchRelativePosition[nodeID]) {
           let WH_now = matchRelativePosition[nodeID].WH;
           let N_now = matchRelativePosition[nodeID].N;
+
+          let wh_k = matchRelativePosition[nodeID].wh_k;
+          let k_sum = matchRelativePosition[nodeID].k_sum;
+
+          WH_new = totalWeight_avg ** (hop + 1);
+
+          if (WH_new > kt[0][1]) {
+            wh_k += WH_new * kt[0][0];
+            k_sum += kt[0][0];
+          } else if (WH_new > kt[1][1]) {
+            wh_k += WH_new * kt[1][0];
+            k_sum += kt[1][0];
+          } else if (WH_new > kt[2][1]) {
+            wh_k += WH_new * kt[2][0];
+            k_sum += kt[2][0];
+          }
+
           matchRelativePosition[nodeID] = {
-            WH: WH_now + totalWeight ** hop,
+            WH: WH_now + totalWeight_avg ** (hop + 1),
             N: N_now + 1,
+            wh_k,
+            k_sum,
           };
         } else {
+          let wh_k = 0;
+          let k_sum = 0;
+
+          WH_new = totalWeight_avg ** (hop + 1);
+
+          if (WH_new > kt[0][1]) {
+            wh_k += WH_new * kt[0][0];
+            k_sum += kt[0][0];
+          } else if (WH_new > kt[1][1]) {
+            wh_k += WH_new * kt[1][0];
+            k_sum += kt[1][0];
+          } else if (WH_new > kt[2][1]) {
+            wh_k += WH_new * kt[2][0];
+            k_sum += kt[2][0];
+          }
+
           matchRelativePosition[nodeID] = {
-            WH: totalWeight ** hop,
+            WH: totalWeight_avg ** (hop + 1),
             N: 1,
+            wh_k,
+            k_sum,
           };
         }
       }
     }
   }
+  // asdf;
 
   // -----------------  Hope -----------------
 

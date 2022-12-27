@@ -24,64 +24,6 @@ const nodeSchema = mongoose.Schema({
     enum: ["waiting", "rejected", "approved"],
     default: "approved",
   },
-
-  match: {
-    recalculateProjectRoles: {
-      type: Boolean,
-      default: true,
-    },
-    distanceProjectRoles: {
-      hop0: [mongoose.Schema.ObjectId],
-      hop1: [mongoose.Schema.ObjectId],
-      hop2: [mongoose.Schema.ObjectId],
-      hop3: [mongoose.Schema.ObjectId],
-    },
-
-    recalculateMembers: {
-      type: Boolean,
-      default: true,
-    },
-    distanceMembers: {
-      hop0: [String],
-      hop1: [String],
-      hop2: [String],
-      hop3: [String],
-    },
-  },
-
-  matchByServer_update: {
-    // when there is any part of the array matchByServer that needs update, this one will become true
-    type: Boolean,
-    default: true,
-  },
-  matchByServer: [
-    {
-      serverID: String,
-      match: {
-        recalculateProjectRoles: {
-          type: Boolean,
-          default: true,
-        },
-        distanceProjectRoles: {
-          hop0: [mongoose.Schema.ObjectId],
-          hop1: [mongoose.Schema.ObjectId],
-          hop2: [mongoose.Schema.ObjectId],
-          hop3: [mongoose.Schema.ObjectId],
-        },
-
-        recalculateMembers: {
-          type: Boolean,
-          default: true,
-        },
-        distanceMembers: {
-          hop0: [String],
-          hop1: [String],
-          hop2: [String],
-          hop3: [String],
-        },
-      },
-    },
-  ],
   match_v2_update: {
     member: {
       type: Boolean,
@@ -104,33 +46,9 @@ const nodeSchema = mongoose.Schema({
       },
       wh_sum: Number, // sum (weight ** hop)
       numPath: Number, // number of paths
-    },
-  ],
-  matchRelativePosition_server: [
-    {
-      serverID: String,
-      MR_Member: [
-        {
-          nodeID: String,
-          path: [
-            {
-              hop: Number, // 0, 1, 2, 3
-              weight: Number, // 0.5, 0.25, 0.125, 0.0625
-            },
-          ],
-        },
-      ],
-      MR_ProjectRole: [
-        {
-          nodeID: String,
-          path: [
-            {
-              hop: Number, // 0, 1, 2, 3
-              weight: Number, // 0.5, 0.25, 0.125, 0.0625
-            },
-          ],
-        },
-      ],
+
+      wh_k: Number, // sum (weight ** hop) * k // k1,k2,k3 -> which is the weighted average
+      k_sum: Number, // sum(k) // all the k that was used on the above calcuation
     },
   ],
 

@@ -11,15 +11,11 @@ module.exports = `
 
         state: stateEnum
         
-        match: MatchType
 
-        matchByServer_update: Boolean
-        matchByServer: [matchByServerType]
 
         match_v2_update: match_v2_updateType
         match_v2: [match_v2Type]
 
-        matchRelativePosition_server: [matchRelativePosition_serverType]
 
         registeredAt: String,
 
@@ -36,6 +32,8 @@ module.exports = `
         type: typeEnumMP
         wh_sum: Float
         numPath: Float
+        wh_k: Float,
+        k_sum: Float,
     }
 
     enum typeEnumMP {
@@ -43,45 +41,13 @@ module.exports = `
         ProjectRole
     }
 
-    type matchRelativePosition_serverType {
-        serverID: String
-        MR_Member: [MR_MemberType]
-        MR_ProjectRole: [MR_ProjectRoleType]
-    }
 
-    type MR_MemberType {
-        nodeID: String
-        path: [pathType]
-    }
-
-    type MR_ProjectRoleType {
-        nodeID: String
-        path: [pathType]
-    }
 
     type pathType {
         hop: Float,
         weight: Float,
     }
 
-    type matchByServerType {
-        serverID: String
-        match: MatchType
-    }
-
-    type MatchType {
-        recalculateProject: Boolean
-        distanceProject: DistanceType
-        recalculateMembers: Boolean
-        distanceMembers: DistanceType
-    }
-
-    type DistanceType {
-        hop0: [ID]
-        hop1: [ID]
-        hop2: [ID]
-        hop3: [ID]
-    }
 
 
     enum stateEnum {
