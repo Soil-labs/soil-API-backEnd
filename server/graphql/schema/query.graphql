@@ -32,6 +32,7 @@ module.exports = `
             matchNodesToMembers_old(fields:matchNodesToMembersInput): [matchMembersToSkillOutput]
             matchSkillsToProjects(fields:matchSkillsToProjectsInput): [matchSkillsToProjectsOutput]
             matchNodesToProjectRoles(fields:matchNodesToProjectRolesInput): [matchSkillsToProjectsOutput]
+            matchNodesToProjectRoles_old(fields:matchNodesToProjectRolesInput): [matchSkillsToProjectsOutput]
 
 
 

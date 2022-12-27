@@ -490,65 +490,14 @@ const changeMatchByServer = async (nodeNow, memberData) => {
   for (let i = 0; i < allNodesDistanceR_Data.length; i++) {
     let node_n = allNodesDistanceR_Data[i];
 
-    // // / ---------- Change matchByServer -----------
-    // let matchByServer = node_n.matchByServer;
-
-    // console.log("serverID_n ----------= ", memberData.serverID);
-
-    // for (let i = 0; i < memberData.serverID.length; i++) {
-    //   let serverID_n = memberData.serverID[i];
-
-    //   console.log("node_n = ", node_n);
-    //   console.log("matchByServer = ", matchByServer);
-
-    //   if (matchByServer === undefined) {
-    //     matchByServer = [
-    //       {
-    //         serverID: serverID_n,
-    //         match: {
-    //           recalculateProjectRoles: true,
-    //           distanceProjectRoles: [],
-
-    //           recalculateMembers: true,
-    //           distanceMembers: [],
-    //         },
-    //       },
-    //     ];
-    //   } else {
-    //     // find the position serverID_n exist on matchByServer dictionary
-    //     let position = matchByServer.findIndex((x) => x.serverID == serverID_n);
-
-    //     if (position === -1) {
-    //       // if it does not exist, add it
-    //       matchByServer.push({
-    //         serverID: serverID_n,
-    //         match: {
-    //           recalculateProjectRoles: true,
-    //           distanceProjectRoles: [],
-
-    //           recalculateMembers: true,
-    //           distanceMembers: [],
-    //         },
-    //       });
-    //     } else {
-    //       // if it exist, change it
-    //       matchByServer[position].match.recalculateProjectRoles = true;
-    //       matchByServer[position].match.recalculateMembers = true;
-    //     }
-    //   }
-    // }
-    // // ---------- Change matchByServer -----------
-
     // Update the node
     let nodeData3 = await Node.findOneAndUpdate(
       { _id: node_n._id },
       {
         $set: {
-          // matchByServer_update: true,
-          // matchByServer: matchByServer,
           match_v2_update: {
             member: true,
-            projectRole: true,
+            projectRole: node_n.match_v2_update.projectRole,
           },
         },
       },
