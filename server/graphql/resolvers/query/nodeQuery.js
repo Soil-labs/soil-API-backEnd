@@ -1,4 +1,5 @@
 const { Node } = require("../../../models/nodeModal");
+const { ServerTemplate } = require("../../../models/serverModel");
 
 const mongoose = require("mongoose");
 
@@ -35,29 +36,30 @@ module.exports = {
     }
   },
   findNodes: async (parent, args, context, info) => {
-    const { _id,node,recalculateMembers,recalculateProjectRoles,matchByServer_update } = args.fields;
-    console.log("Query > findSkill > args.fields = ", args.fields);
-
-    // if (!_id) throw new ApolloError( "You need to specify the id of the skill");
+    const { _id, node, recalculate_en, show_match_v2 } = args.fields;
+    console.log("Query > findNode > args.fields = ", args.fields);
 
     let searchQuery_and = [];
 
-    if (matchByServer_update!=null) {
-      searchQuery_and.push({ matchByServer_update: matchByServer_update });
-    } else {
-
-      if  (recalculateMembers!=null && recalculateProjectRoles!=null) {
-        searchQuery_and.push({
-          $or: [
-            {"match.recalculateMembers": recalculateMembers},
-            {"match.recalculateProjectRoles": recalculateProjectRoles},
-          ]
-        })
-      } else if (recalculateMembers!=null) {
-        searchQuery_and.push({"match.recalculateMembers": recalculateMembers})
-      } else if (recalculateProjectRoles!=null){
-        searchQuery_and.push({"match.recalculateProjectRoles": recalculateProjectRoles})
-      }
+    if (recalculate_en == "Member") {
+      searchQuery_and.push({
+        "match_v2_update.member": true,
+      });
+    } else if (recalculate_en == "ProjectRole") {
+      searchQuery_and.push({
+        "match_v2_update.projectRole": true,
+      });
+    } else if (recalculate_en == "All") {
+      searchQuery_and.push({
+        $or: [
+          {
+            "match_v2_update.projectRole": true,
+          },
+          {
+            "match_v2_update.member": true,
+          },
+        ],
+      });
     }
 
     if (_id) {
@@ -66,7 +68,7 @@ module.exports = {
       searchQuery_and.push({ node: node });
     }
 
-    if (searchQuery_and.length>0){
+    if (searchQuery_and.length > 0) {
       searchQuery = {
         $and: searchQuery_and,
       };
@@ -74,15 +76,14 @@ module.exports = {
       searchQuery = {};
     }
 
-    console.log("searchQuery = " , searchQuery_and)
-
     try {
-      let nodeData = await Node.find(searchQuery);
-      // let nodeData = await Node.find({"matchByServer_update": true });
-      // let nodeData = await Node.find({});
+      let selectT = "-match_v2"; // optimization because match_v2 is really heavy, the more places we take it out the better
+      if (show_match_v2) {
+        // except if we want to show it
+        selectT = "";
+      }
 
-
-      console.log("nodeData = " , nodeData)
+      let nodeData = await Node.find(searchQuery).select(selectT);
 
       return nodeData;
     } catch (err) {
@@ -93,5 +94,4 @@ module.exports = {
       );
     }
   },
-  
 };

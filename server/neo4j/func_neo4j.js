@@ -640,7 +640,7 @@ module.exports = {
     // return([member_oneHopeMatch,member_twoHopeMatch])
     return [member_oneHopeMatch, member_twoHopeMatch, member_threeHopeMatch];
   },
-  matchPrepareAnything_neo4j: async (req, res) => {
+  matchPrepareAnything_neo4j_old: async (req, res) => {
     const { nodeID, node, serverID, find } = req;
 
     matchRelativePosition = {};
@@ -686,7 +686,8 @@ module.exports = {
 
     // console.log("member_threeHopeMatch = " , member_threeHopeMatch)
 
-    // console.log("matchRelativePosition = ", matchRelativePosition);
+    console.log("matchRelativePosition = ", matchRelativePosition);
+    asdf;
     // loop throw matchRelativePosition which is an object
 
     MR = [];
@@ -725,6 +726,48 @@ module.exports = {
 
     // return [member_oneHopeMatch, member_twoHopeMatch, member_threeHopeMatch];
     // return [member_oneHopeMatch];
+  },
+  matchPrepareAnything_neo4j: async (req, res) => {
+    const { nodeID, node, serverID, find } = req;
+
+    matchRelativePosition = {};
+
+    await findMatch_translateArray_path(
+      `
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(p:${find}))
+            WITH *
+            WHERE '${serverID}' IN p.serverID
+            RETURN ms
+        `,
+      matchRelativePosition,
+      0
+    );
+
+    await findMatch_translateArray_path(
+      `
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(p:${find}))
+            WHERE NOT (a:Member OR a:Project OR a:Role)
+            WITH *
+            WHERE '${serverID}' IN p.serverID
+            RETURN ms
+        `,
+      matchRelativePosition,
+      1
+    );
+
+    await findMatch_translateArray_path(
+      `
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(b)-[]-(p:${find}))
+            WHERE NOT (a:Member OR a:Project OR a:Role) AND NOT (b:Member OR b:Project OR b:Role)
+            WITH *
+            WHERE '${serverID}' IN p.serverID
+            RETURN ms
+        `,
+      matchRelativePosition,
+      2
+    );
+
+    return matchRelativePosition;
   },
   findAllNodesDistanceRfromNode_neo4j: async (req, res) => {
     const { nodeID } = req;
@@ -992,62 +1035,30 @@ async function findMatch_translateArray_path(
       ) {
         let totalWeight = 1;
 
-        // console.log("");
-        // console.log("");
-        // console.log(
-        //   "<<<<<<<<<<<< ",
-        //   names_oneHopeMatch[i]._fields[0].end.properties.name,
-        //   ">>>>>>>>>>>>>>"
-        // );
-
-        connectionsT = [];
-        weightT = [];
         names_oneHopeMatch[i]._fields[0].segments.forEach((s, idx) => {
           if (s.relationship.properties.weight) {
             totalWeight *= s.relationship.properties.weight;
           }
-          connectionsT.push(s.end.properties.name);
-          weightT.push(s.relationship.properties.weight);
-
-          // console.log("-------- = ", idx);
-          // console.log("start = ", s.start.properties.name);
-          // if (s.relationship.properties.weight) {
-          //   console.log(
-          //     "relationship = ",
-          //     s.relationship.type,
-          //     s.relationship.properties.weight
-          //   );
-          // } else {
-          //   console.log("relationship = ", s.relationship.type, 1);
-          // }
-          // console.log("end = ", s.end.properties.name);
         });
-        // console.log(
-        //   "names_oneHopeMatch[i]._fields[0].properties = ",
-        //   names_oneHopeMatch[i]._fields[0].properties
-        // );
+
         member_oneHopeMatch.push(
           names_oneHopeMatch[i]._fields[0].end.properties
         );
 
         const nodeID = names_oneHopeMatch[i]._fields[0].end.properties._id;
-        // if matchRelativePosition has nodeID then add it, or else create it
+
         if (matchRelativePosition[nodeID]) {
-          matchRelativePosition[nodeID].push({
-            hop: hop,
-            weight: totalWeight,
-            // connectionsT,
-            // weightT,
-          });
+          let WH_now = matchRelativePosition[nodeID].WH;
+          let N_now = matchRelativePosition[nodeID].N;
+          matchRelativePosition[nodeID] = {
+            WH: WH_now + totalWeight ** hop,
+            N: N_now + 1,
+          };
         } else {
-          matchRelativePosition[nodeID] = [
-            {
-              hop: hop,
-              weight: totalWeight,
-              // connectionsT,
-              // weightT,
-            },
-          ];
+          matchRelativePosition[nodeID] = {
+            WH: totalWeight ** hop,
+            N: 1,
+          };
         }
       }
     }

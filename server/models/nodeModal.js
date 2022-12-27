@@ -82,6 +82,30 @@ const nodeSchema = mongoose.Schema({
       },
     },
   ],
+  match_v2_update: {
+    member: {
+      type: Boolean,
+      default: true,
+    },
+    projectRole: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  match_v2: [
+    {
+      serverID: [String],
+      nodeResID: String,
+      type: {
+        // if this node is approved to be on the Knowedge Graph
+        type: String,
+        enum: ["Member", "ProjectRole"],
+        default: "Member",
+      },
+      wh_sum: Number, // sum (weight ** hop)
+      numPath: Number, // number of paths
+    },
+  ],
   matchRelativePosition_server: [
     {
       serverID: String,

@@ -16,10 +16,31 @@ module.exports = `
         matchByServer_update: Boolean
         matchByServer: [matchByServerType]
 
+        match_v2_update: match_v2_updateType
+        match_v2: [match_v2Type]
+
         matchRelativePosition_server: [matchRelativePosition_serverType]
 
         registeredAt: String,
 
+    }
+
+    type match_v2_updateType {
+        member: Boolean
+        projectRole: Boolean
+    }
+
+    type match_v2Type {
+        serverID: [ID]
+        nodeResID: ID
+        type: typeEnumMP
+        wh_sum: Float
+        numPath: Float
+    }
+
+    enum typeEnumMP {
+        Member
+        ProjectRole
     }
 
     type matchRelativePosition_serverType {
@@ -99,9 +120,14 @@ module.exports = `
     input findNodesInput {
         _id: [ID]
         node: String
-        recalculateProjectRoles: Boolean
-        recalculateMembers: Boolean
-        matchByServer_update: Boolean
+        recalculate_en: recalculateEnum
+        show_match_v2: Boolean
+    }
+
+    enum recalculateEnum {
+        Member
+        ProjectRole
+        All
     }
 
 `
