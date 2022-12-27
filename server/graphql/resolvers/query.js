@@ -48,7 +48,7 @@ const {
 } = require("./query/roleTemplateQuery");
 const { findServers } = require("./query/serverQuery");
 const { findGrants } = require("./query/grantQuery");
-const { findRoom } = require("./query/roomQuery");
+const { findRoom, findRooms } = require("./query/roomQuery");
 const {
   findSkillCategory,
   findSkillCategories,
@@ -118,6 +118,7 @@ module.exports = {
 
     // ------------- ROOM TEMPLATE QUERY -----------------
     findRoom,
+    findRooms,
 
     // ------------- SKILL CATEGORY QUERY -----------------
     findSkillCategory,
@@ -136,6 +137,6 @@ module.exports = {
     findChat,
 
     //----------- AI QUERY ------------------
-    findMessage
+    findMessage,
   },
 };

@@ -19,7 +19,7 @@ const pubsub = new PubSub();
 
 module.exports = {
   createRoom: async (parent, args, context, info) => {
-    const { _id, name, description, avatar, serverID } = args.fields;
+    const { _id, name, description, avatar, serverID, hostID } = args.fields;
     console.log("Mutation > createRoom > args.fields = ", args.fields);
 
     // if (!_id) throw new ApolloError( "_id is required, the IDs come from Discord");
@@ -35,6 +35,7 @@ module.exports = {
     if (description) fields = { ...fields, description };
     if (avatar) fields = { ...fields, avatar };
     if (serverID) fields = { ...fields, serverID };
+    if (hostID) fields = { ...fields, hostID };
 
     try {
       let roomData;
@@ -42,9 +43,8 @@ module.exports = {
       roomData = await Rooms.findOne({ _id: fields._id });
 
       if (!roomData) {
-        roomData = await new Rooms(fields);
-
-        roomData.save();
+        console.log("fields = ", fields);
+        roomData = await new Rooms(fields).save();
       } else {
         roomData = await Rooms.findOneAndUpdate(
           { name: fields.name },

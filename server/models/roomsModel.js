@@ -5,6 +5,7 @@ const roomSchema = mongoose.Schema({
   description: String,
   avatar: String,
   serverID: String,
+  hostID: [String],
 
   members: [String],
   registeredAt: Date,

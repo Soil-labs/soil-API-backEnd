@@ -6,13 +6,15 @@ module.exports = `
         description: String,
         avatar: String,
         serverID: String,
+        hosts: [Members],
         members: [Members],
         registeredAt: String,
     }
 
 
     input findRoomsInput {
-        _id: ID
+        _id: ID,
+        serverID: String,
     }
 
     input createRoomInput {
@@ -21,6 +23,7 @@ module.exports = `
         description: String,
         avatar: String,
         serverID: String,
+        hostID: [String],
     }
 
     input enterRoomInput {
