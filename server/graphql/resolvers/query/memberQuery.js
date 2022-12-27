@@ -1254,11 +1254,11 @@ module.exports = {
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      w1 = 0.5; // the weight of the number of paths
+      w1 = 0.2; // the weight of the number of paths
       w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
       memberObj = {};
 
-      new_max_m = 40;
+      new_max_m = 20;
       new_min_m = 100;
 
       original_min_m = 110; // will change on the loop
