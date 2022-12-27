@@ -1258,6 +1258,11 @@ module.exports = {
       w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
       memberObj = {};
 
+      new_max_m = 40;
+      new_min_m = 100;
+
+      original_min_m = 110; // will change on the loop
+      original_max_m = -10; // will change on the loop
       for (let i = 0; i < nodeData.length; i++) {
         // loop on the nodes
         let match_v2 = nodeData[i].match_v2;
@@ -1293,16 +1298,31 @@ module.exports = {
                 pers: Number(pers.toFixed(2)),
               };
             }
+            if (memberObj[match_v2[j].nodeResID].pers > original_max_m) {
+              original_max_m = memberObj[match_v2[j].nodeResID].pers;
+            }
+            if (memberObj[match_v2[j].nodeResID].pers < original_min_m) {
+              original_min_m = memberObj[match_v2[j].nodeResID].pers;
+            }
           }
         }
       }
 
+      console.log("original_min_m = ", original_min_m);
+      console.log("original_max_m = ", original_max_m);
+
       const memberArr = [];
       for (const key in memberObj) {
         // transform the object to array
+
+        mapped_value =
+          ((memberObj[key].pers - original_min_m) * (new_min_m - new_max_m)) /
+            (original_max_m - original_min_m) +
+          new_max_m;
+
         memberArr.push({
           matchPercentage: {
-            totalPercentage: memberObj[key].pers,
+            totalPercentage: mapped_value,
             realTotalPercentage: memberObj[key].pers,
           },
           memberID: key,
@@ -1316,7 +1336,7 @@ module.exports = {
           a.matchPercentage.realTotalPercentage
       );
 
-      console.log("memberObj = ", memberObj);
+      // console.log("memberObj = ", memberObj);
 
       return memberArr.slice(page * limit, (page + 1) * limit);
     } catch (err) {
