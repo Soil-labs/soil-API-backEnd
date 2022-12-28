@@ -3,18 +3,27 @@ module.exports = `
     type Rooms {
         _id: ID,
         name: String,
+        description: String,
+        avatar: String,
+        serverID: String,
+        hosts: [Members],
         members: [Members],
         registeredAt: String,
     }
 
 
     input findRoomsInput {
-        _id: ID
+        _id: ID,
+        serverID: String,
     }
 
     input createRoomInput {
         _id: String,
         name: String,
+        description: String,
+        avatar: String,
+        serverID: String,
+        hostID: [String],
     }
 
     input enterRoomInput {

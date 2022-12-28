@@ -11,33 +11,43 @@ module.exports = `
 
         state: stateEnum
         
-        match: MatchType
 
-        matchByServer_update: Boolean
-        matchByServer: [matchByServerType]
+
+        match_v2_update: match_v2_updateType
+        match_v2: [match_v2Type]
+
 
         registeredAt: String,
 
     }
 
-    type matchByServerType {
-        serverID: String
-        match: MatchType
+    type match_v2_updateType {
+        member: Boolean
+        projectRole: Boolean
     }
 
-    type MatchType {
-        recalculateProject: Boolean
-        distanceProject: DistanceType
-        recalculateMembers: Boolean
-        distanceMembers: DistanceType
+    type match_v2Type {
+        serverID: [ID]
+        nodeResID: ID
+        type: typeEnumMP
+        wh_sum: Float
+        numPath: Float
+        wh_k: Float,
+        k_sum: Float,
     }
 
-    type DistanceType {
-        hop0: [ID]
-        hop1: [ID]
-        hop2: [ID]
-        hop3: [ID]
+    enum typeEnumMP {
+        Member
+        ProjectRole
     }
+
+
+
+    type pathType {
+        hop: Float,
+        weight: Float,
+    }
+
 
 
     enum stateEnum {
@@ -54,6 +64,7 @@ module.exports = `
     input relatedNode_nameInput {
         name: String
         relatedNode_name: String
+        weight: String
     }
 
     input createNodeInput {
@@ -75,9 +86,14 @@ module.exports = `
     input findNodesInput {
         _id: [ID]
         node: String
-        recalculateProjectRoles: Boolean
-        recalculateMembers: Boolean
-        matchByServer_update: Boolean
+        recalculate_en: recalculateEnum
+        show_match_v2: Boolean
+    }
+
+    enum recalculateEnum {
+        Member
+        ProjectRole
+        All
     }
 
 `

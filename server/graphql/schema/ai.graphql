@@ -1,0 +1,94 @@
+module.exports = `
+
+    type AI {
+        _id: ID
+        creator: ID
+        mentioned: [ID]
+        message: String
+        serverID: String 
+        edenAI: EdenAI
+    }
+
+    type EdenAI {
+        keywords: [Keyword],
+        nodes: [ID]
+    }
+
+    type Keyword {
+        keywords: String
+        embedding: [ Float ]
+    }
+
+    input addMessageInput {
+        creator: ID
+        mentioned: [ID]
+        message: String
+        serverID: String
+    }
+
+    input addMessagesInput {
+        data: [addMessageInput]
+    }
+
+    input findMessageInput {
+        discordID: ID
+        serverID: ID
+    }
+
+    input EdenAIInput {
+        keywords: [KeywordInput],
+        nodes: [ID]
+    }
+
+    input KeywordInput {
+        keywords: String
+        embedding: [ Float ]
+    }
+
+    input updateMessageInput {
+        messageID: ID
+        edenAI: EdenAIInput
+    }
+
+
+
+
+
+    enum SortableMessageFields {
+        _id
+        createdAt
+    }
+
+    enum SortDirection {
+        ASC
+        DESC
+    }
+    
+    input findMessageInputPaginated {
+        request: findMessageInput
+        after: String
+        before: String
+        limit: Int
+        sortBy: SortByMessage
+    }
+
+    input SortByMessage {
+        field: SortableMessageFields,
+        direction: SortDirection
+    }
+
+
+    type PaginatedMessages {
+        data: [AI]
+        pageInfo: PageInfo
+    }
+
+    type PageInfo {
+        hasNextPage : Boolean
+        hasPrevPage: Boolean
+        start : String
+        end: String
+    }
+
+    
+`

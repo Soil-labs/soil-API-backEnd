@@ -25,11 +25,15 @@ module.exports = `
             matchMembersToProjectRole(fields:matchMembersToProjectRoleInput): [matchMembersToProjectRoleOutput]
             matchPrepareSkillToMembers(fields:matchPrepareSkillToMembersInput): Skills
             matchPrepareNode(fields:matchPrepareNodeInput): Node
+            matchPrepareNode_old(fields:matchPrepareNodeInput): Node
             matchPrepareSkillToProjectRoles(fields:matchPrepareSkillToProjectRolesInput): Skills
             matchSkillsToMembers(fields:matchSkillsToMembersInput): [matchMembersToSkillOutput]
             matchNodesToMembers(fields:matchNodesToMembersInput): [matchMembersToSkillOutput]
+            setAllMatch_v2(val: Boolean): Boolean
+            matchNodesToMembers_old(fields:matchNodesToMembersInput): [matchMembersToSkillOutput]
             matchSkillsToProjects(fields:matchSkillsToProjectsInput): [matchSkillsToProjectsOutput]
             matchNodesToProjectRoles(fields:matchNodesToProjectRolesInput): [matchSkillsToProjectsOutput]
+            matchNodesToProjectRoles_old(fields:matchNodesToProjectRolesInput): [matchSkillsToProjectsOutput]
 
 
 
@@ -74,6 +78,7 @@ module.exports = `
 
           #------------ROOM QUERY ---------
           findRoom(fields: findRoomsInput): Rooms
+          findRooms(fields: findRoomsInput): [Rooms]
 
 
           # ----------- MATCH -----------
@@ -83,7 +88,9 @@ module.exports = `
           # ----------- CHAT QUERY ---------
           findChat(fields:findChatInput):Chats
 
-   
+
+          # ---------- AI QUERY -------------
+          findMessage(fields: findMessageInputPaginated): PaginatedMessages
             
         }
 `;

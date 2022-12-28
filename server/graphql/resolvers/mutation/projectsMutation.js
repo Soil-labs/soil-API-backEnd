@@ -17,6 +17,7 @@ const {
   makeConnection_neo4j,
   findAllNodesDistanceRfromNode_neo4j,
   deleteConnectionANYBetweenNodes_neo4j,
+  deleteNode_neo4j,
 } = require("../../../neo4j/func_neo4j");
 
 module.exports = {
@@ -1157,6 +1158,70 @@ module.exports = {
       );
     }
   },
+  deleteProject: async (parent, args, context, info) => {
+    const { projectID } = args.fields;
+
+    console.log("Mutation > deleteProject > args.fields = ", args.fields);
+
+    if (!projectID) throw new ApolloError("projectID is required");
+
+    try {
+      let projectData = await Projects.findOne({ _id: projectID });
+
+      if (!projectData) throw new ApolloError("project data not found");
+
+      //get the role
+      const role = projectData.role;
+
+      if (role && role.length && role.length > 0) {
+        for (let i = 0; i < role.length; i++) {
+          const currentRole = role[i];
+          if (currentRole) {
+            // get all nodes from currentRole.nodes
+            let nodesData = await Node.find({
+              _id: currentRole.nodes.map(function (item) {
+                return item._id.toString();
+              }),
+            });
+
+            if (nodesData && nodesData.length && nodesData.length > 0) {
+              for (let j = 0; j < nodesData.length; j++) {
+                let nodeNow = nodesData[j];
+                if (nodeNow) {
+                  deleteConnectionANYBetweenNodes_neo4j({
+                    nodeID_1: currentRole._id,
+                    nodeID_2: nodeNow._id,
+                  });
+                }
+
+                //changeMatchByServer(nodeNow, memberData);
+              }
+            }
+
+            deleteNode_neo4j({
+              nodeID: currentRole._id,
+            });
+          }
+        }
+      }
+
+      //delete the project Node from NEO4j
+      deleteNode_neo4j({
+        nodeID: projectData._id,
+      });
+
+      // delete project data ata from mongoDB database
+      const projectData2 = await Projects.findOneAndDelete({ _id: projectID });
+
+      return projectData2;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
 };
 
 // create async function that will change matchByServer
@@ -1177,66 +1242,15 @@ const changeMatchByServer = async (nodeNow, projectRoleData) => {
   for (let i = 0; i < allNodesDistanceR_Data.length; i++) {
     let node_n = allNodesDistanceR_Data[i];
 
-    // / ---------- Change matchByServer -----------
-    let matchByServer = node_n.matchByServer;
-
-    console.log("serverID_n ----------= ", projectRoleData.serverID);
-
-    for (let i = 0; i < projectRoleData.serverID.length; i++) {
-      let serverID_n = projectRoleData.serverID[i];
-
-      console.log("node_n = ", node_n);
-      console.log("matchByServer = ", matchByServer);
-
-      if (matchByServer === undefined) {
-        matchByServer = [
-          {
-            serverID: serverID_n,
-            match: {
-              recalculateProjectRoles: true,
-              distanceProjectRoles: [],
-
-              recalculateMembers: true,
-              distanceMembers: [],
-            },
-          },
-        ];
-      } else {
-        // find the position serverID_n exist on matchByServer dictionary
-        let position = matchByServer.findIndex((x) => x.serverID == serverID_n);
-
-        if (position === -1) {
-          // if it does not exist, add it
-          matchByServer.push({
-            serverID: serverID_n,
-            match: {
-              recalculateProjectRoles: true,
-              distanceProjectRoles: [],
-
-              recalculateMembers: true,
-              distanceMembers: [],
-            },
-          });
-        } else {
-          // if it exist, change it
-          matchByServer[position].match.recalculateProjectRoles = true;
-          matchByServer[position].match.recalculateMembers = true;
-        }
-      }
-    }
-    // ---------- Change matchByServer -----------
-
-    // console.log("matchByServer = " , matchByServer)
-
-    // console.log("change = " , change)
-
     // Update the node
     let nodeData3 = await Node.findOneAndUpdate(
       { _id: node_n._id },
       {
         $set: {
-          matchByServer_update: true,
-          matchByServer: matchByServer,
+          match_v2_update: {
+            member: node_n.match_v2_update.member,
+            projectRole: true,
+          },
         },
       },
       { new: true }

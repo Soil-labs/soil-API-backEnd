@@ -7,11 +7,15 @@ const {
   matchMembersToProjectRole,
   matchPrepareSkillToMembers,
   matchPrepareNode,
+  matchPrepareNode_old,
   matchPrepareSkillToProjectRoles,
   matchSkillsToMembers,
   matchNodesToMembers,
+  setAllMatch_v2,
+  matchNodesToMembers_old,
   matchSkillsToProjects,
   matchNodesToProjectRoles,
+  matchNodesToProjectRoles_old,
   members_autocomplete,
   findMemberByIDOrDiscordName,
 } = require("./query/memberQuery");
@@ -48,7 +52,7 @@ const {
 } = require("./query/roleTemplateQuery");
 const { findServers } = require("./query/serverQuery");
 const { findGrants } = require("./query/grantQuery");
-const { findRoom } = require("./query/roomQuery");
+const { findRoom, findRooms } = require("./query/roomQuery");
 const {
   findSkillCategory,
   findSkillCategories,
@@ -59,6 +63,7 @@ const {
 } = require("./query/skillSubCategoryQuery");
 
 const { findChat } = require("./query/chatQuery");
+const { findMessage } = require("./query/aiQuery");
 
 const { errors } = require("./query/errorQuery");
 
@@ -86,11 +91,15 @@ module.exports = {
     matchMembersToProjectRole,
     matchPrepareSkillToMembers,
     matchPrepareNode,
+    matchPrepareNode_old,
     matchPrepareSkillToProjectRoles,
     matchSkillsToMembers,
     matchNodesToMembers,
+    setAllMatch_v2,
+    matchNodesToMembers_old,
     matchSkillsToProjects,
     matchNodesToProjectRoles,
+    matchNodesToProjectRoles_old,
     members_autocomplete,
 
     // ------------- SKILL QUERY -----------------
@@ -117,6 +126,7 @@ module.exports = {
 
     // ------------- ROOM TEMPLATE QUERY -----------------
     findRoom,
+    findRooms,
 
     // ------------- SKILL CATEGORY QUERY -----------------
     findSkillCategory,
@@ -133,5 +143,8 @@ module.exports = {
 
     // ------------ CHAT QUERY ---------------
     findChat,
+
+    //----------- AI QUERY ------------------
+    findMessage,
   },
 };

@@ -26,6 +26,7 @@ module.exports = `
         createNewTeam(fields:createNewTeamInput!):Team
         createNewRole(fields:createNewRoleInput!):Role
         createNewEpic(fields:createNewEpicInput!):Epic
+        deleteProject(fields:deleteProjectInput):Project
 
         
 
@@ -79,6 +80,11 @@ module.exports = `
         addNewChat(fields: addNewChatInput): Chats
         updateChatReply(fields: updateChatReplyInput): Chats
         updateChatResult(fields: updateChatResultInput): Chats
+
+        # ------------- AI MUTATIONS ------------
+        addMessage(fields: addMessageInput): AI
+        addMessages(fields: addMessagesInput): [AI]
+        updateMessage(fields: updateMessageInput): AI
 
     }
 `

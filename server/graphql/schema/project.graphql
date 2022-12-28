@@ -125,8 +125,12 @@ module.exports = `
         _id: ID
         title: String
         description: String
+        shortDescription: String
         keyRosponsibilities: String,
         openPositions: Int,
+
+        expectations: [String]
+        benefits: [String]
 
 
         nodes: [nodesType]
@@ -137,6 +141,7 @@ module.exports = `
         dateRangeStart: String
         dateRangeEnd: String
         hoursPerWeek: Int
+        ratePerHour: Int
         budget: budgetType
         
     }
@@ -326,8 +331,12 @@ module.exports = `
         _id: ID
         title: String
         description: String
+        shortDescription: String
         keyRosponsibilities: String,
         openPositions: Int,
+        
+        expectations: [String]
+        benefits: [String]
 
         skills: [skillRoleInput]
 
@@ -335,6 +344,7 @@ module.exports = `
         dateRangeStart: String
         dateRangeEnd: String
         hoursPerWeek: Int
+        ratePerHour: Int
         budget: budgetInput
     }
 
@@ -403,7 +413,10 @@ module.exports = `
         serverID: [String]
         projectID: ID,
         teamID: [ID],
-        
+    }
+
+    input deleteProjectInput {
+        projectID: ID
     }
 
     

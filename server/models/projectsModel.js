@@ -1,10 +1,7 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-
-
 const projectSchema = mongoose.Schema({
-
   title: String,
   description: String,
   descriptionOneLine: String,
@@ -15,60 +12,75 @@ const projectSchema = mongoose.Schema({
   serverID: [String],
   gardenServerID: String,
 
-  champion:String,
+  champion: String,
 
-  team: [{
-    memberID: String,
-    roleID: mongoose.Schema.ObjectId,
-    phase: {
-      type: String,
-      enum: ["shortlisted", "engaged","committed","rejected","invited"],
-      default: "committed"
+  team: [
+    {
+      memberID: String,
+      roleID: mongoose.Schema.ObjectId,
+      phase: {
+        type: String,
+        enum: ["shortlisted", "engaged", "committed", "rejected", "invited"],
+        default: "committed",
+      },
     },
-  }],
+  ],
 
-  
+  role: [
+    {
+      title: String,
+      description: String,
+      shortDescription: String,
+      keyRosponsibilities: String,
+      openPositions: Number,
 
-  role: [{
-    title: String,
-    description: String,
-    keyRosponsibilities: String,
-    openPositions: Number,
+      expectations: [String],
+      benefits: [String],
 
-    nodes: [{
-      _id: mongoose.Schema.ObjectId,
-    }],
+      nodes: [
+        {
+          _id: mongoose.Schema.ObjectId,
+        },
+      ],
 
-    skills: [{
-      _id: mongoose.Schema.ObjectId,
-      level: String,
-    }],
-    archive: Boolean,
-    dateRangeStart: Date,
-    dateRangeEnd: Date,
-    hoursPerWeek: String,
-    budget: {
-      totalBudget: String,
-      token: String,
-      perHour: String,
-      perMonth: String,
-    }
-  }],
+      skills: [
+        {
+          _id: mongoose.Schema.ObjectId,
+          level: String,
+        },
+      ],
+      archive: Boolean,
+      dateRangeStart: Date,
+      dateRangeEnd: Date,
+      hoursPerWeek: String,
+      ratePerHour: String,
+      budget: {
+        totalBudget: String,
+        token: String,
+        perHour: String,
+        perMonth: String,
+      },
+    },
+  ],
 
+  tweets: [
+    {
+      title: String,
+      content: String,
+      author: String,
+      registeredAt: Date,
+      approved: Boolean,
+      approved: Boolean,
+    },
+  ],
 
-  tweets: [{
-    title: String,
-    content: String,
-    author: String,
-    registeredAt: Date,
-    approved: Boolean,approved: Boolean,
-  }],
-
-  collaborationLinks: [{
-    title: String,
-    link: String,
-  }],
-  stepsJoinProject:[String],
+  collaborationLinks: [
+    {
+      title: String,
+      link: String,
+    },
+  ],
+  stepsJoinProject: [String],
 
   budget: {
     totalBudget: String,
@@ -82,10 +94,7 @@ const projectSchema = mongoose.Schema({
   },
 
   garden_teams: [mongoose.Schema.ObjectId],
-
-
 });
-
 
 const Projects = mongoose.model("Projects", projectSchema);
 module.exports = { Projects };

@@ -5,90 +5,55 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const SALT_I = 10;
 
-// node = Knowledge Graph Node 
+// node = Knowledge Graph Node
 // for the AI
 
 const nodeSchema = mongoose.Schema({
-
   //  The name of the node on Neo4j
-  node: String, // Role, topic, type_project, subRole 
+  node: String, // Role, topic, type_project, subRole
 
   name: String,
-
 
   relatedNodes: [mongoose.Schema.ObjectId],
   subNodes: [mongoose.Schema.ObjectId],
   aboveNodes: [mongoose.Schema.ObjectId],
 
-  state: { // if this node is approved to be on the Knowedge Graph 
+  state: {
+    // if this node is approved to be on the Knowedge Graph
     type: String,
-    enum: ["waiting","rejected","approved"],
-    default: "approved"
+    enum: ["waiting", "rejected", "approved"],
+    default: "approved",
   },
-
-
-
-  match: {
-    recalculateProjectRoles: {
+  match_v2_update: {
+    member: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    distanceProjectRoles: {
-      hop0: [mongoose.Schema.ObjectId],
-      hop1: [mongoose.Schema.ObjectId],
-      hop2: [mongoose.Schema.ObjectId],
-      hop3: [mongoose.Schema.ObjectId],
-    },
-    
-    recalculateMembers: {
+    projectRole: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    distanceMembers: {
-      hop0: [String],
-      hop1: [String],
-      hop2: [String],
-      hop3: [String],
-    }
   },
+  match_v2: [
+    {
+      serverID: [String],
+      nodeResID: String,
+      type: {
+        // if this node is approved to be on the Knowedge Graph
+        type: String,
+        enum: ["Member", "ProjectRole"],
+        default: "Member",
+      },
+      wh_sum: Number, // sum (weight ** hop)
+      numPath: Number, // number of paths
 
-
-  matchByServer_update: { // when there is any part of the array matchByServer that needs update, this one will become true 
-    type: Boolean,
-    default: true
-  },
-  matchByServer:[{
-    serverID: String,
-    match: {
-      recalculateProjectRoles: {
-        type: Boolean,
-        default: true
-      },
-      distanceProjectRoles: {
-        hop0: [mongoose.Schema.ObjectId],
-        hop1: [mongoose.Schema.ObjectId],
-        hop2: [mongoose.Schema.ObjectId],
-        hop3: [mongoose.Schema.ObjectId],
-      },
-      
-      recalculateMembers: {
-        type: Boolean,
-        default: true
-      },
-      distanceMembers: {
-        hop0: [String],
-        hop1: [String],
-        hop2: [String],
-        hop3: [String],
-      }
+      wh_k: Number, // sum (weight ** hop) * k // k1,k2,k3 -> which is the weighted average
+      k_sum: Number, // sum(k) // all the k that was used on the above calcuation
     },
-  }],
+  ],
 
   registeredAt: Date,
-
-
 });
-
 
 const Node = mongoose.model("Node", nodeSchema);
 module.exports = { Node };

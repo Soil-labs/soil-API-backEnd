@@ -1,6 +1,7 @@
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
 const { ServerTemplate } = require("../../../models/serverModel");
+
 const mongoose = require("mongoose");
 const { Projects } = require("../../../models/projectsModel");
 const { Skills } = require("../../../models/skillsModel");
@@ -12,6 +13,7 @@ const {
   matchMembersToProjectRole_neo4j,
   matchPrepareSkillToMembers_neo4j,
   matchPrepareAnything_neo4j,
+  matchPrepareAnything_neo4j_old,
   matchPrepareSkillToProjectRoles_neo4j,
 } = require("../../../neo4j/func_neo4j");
 
@@ -19,55 +21,18 @@ const { ApolloError } = require("apollo-server-express");
 const { IsAuthenticated } = require("../../../utils/authorization");
 
 module.exports = {
-  findMember: 
-  //combineResolvers(
-  //IsAuthenticated,
-  async (parent, args, context, info) => {
-    const { _id, serverID, discordName } = args.fields;
-    console.log("Query > findMember > args.fields = ", args.fields);
+  findMember:
+    //combineResolvers(
+    //IsAuthenticated,
+    async (parent, args, context, info) => {
+      const { _id, serverID, discordName } = args.fields;
+      console.log("Query > findMember > args.fields = ", args.fields);
 
-    let searchTerm = {};
+      let searchTerm = {};
 
-    if (!_id && !discordName) {
-      throw new ApolloError("No _id or discord name provided");
-    }
-
-    let queryServerID = [];
-    if (serverID) {
-      serverID.forEach((id) => {
-        queryServerID.push({ serverID: id });
-      });
-    }
-
-    try {
-      // let memberData = await Members.findOne({ _id: _id })
-
-      let memberData;
-
-      if (_id && queryServerID.length > 0) {
-        searchTerm = { $and: [{ _id: _id }, { $or: queryServerID }] };
-      } else if (discordName) {
-        let regEx = new RegExp(discordName, "i");
-        searchTerm = { discordName: { $regex: regEx } };
-      } else if (_id) {
-        searchTerm = { _id: _id };
+      if (!_id && !discordName) {
+        throw new ApolloError("No _id or discord name provided");
       }
-
-      memberData = await Members.findOne(searchTerm);
-      console.log("memberData = ", memberData);
-
-      return memberData;
-    } catch (err) {
-      throw new ApolloError(err.message, err.extensions?.code || "findMember", {
-        component: "tmemberQuery > findMember",
-      });
-    }
-  },
-  //),
-
-  findMembers: async (parent, args, context, info) => {
-      const { _id, serverID } = args.fields;
-      console.log("Query > findMembers > args.fields = ", args.fields);
 
       let queryServerID = [];
       if (serverID) {
@@ -77,35 +42,76 @@ module.exports = {
       }
 
       try {
-        let membersData;
+        // let memberData = await Members.findOne({ _id: _id })
 
-        if (_id) {
-          if (queryServerID.length > 0) {
-            membersData = await Members.find({
-              $and: [{ _id: _id }, { $or: queryServerID }],
-            });
-          } else {
-            membersData = await Members.find({ _id: _id });
-          }
-        } else {
-          if (queryServerID.length > 0) {
-            membersData = await Members.find({ $or: queryServerID });
-          } else {
-            membersData = await Members.find({});
-          }
+        let memberData;
+
+        if (_id && queryServerID.length > 0) {
+          searchTerm = { $and: [{ _id: _id }, { $or: queryServerID }] };
+        } else if (discordName) {
+          let regEx = new RegExp(discordName, "i");
+          searchTerm = { discordName: { $regex: regEx } };
+        } else if (_id) {
+          searchTerm = { _id: _id };
         }
 
-        //console.log("membersData = " , membersData)
+        memberData = await Members.findOne(searchTerm);
+        console.log("memberData = ", memberData);
 
-        return membersData;
+        return memberData;
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-          { component: "tmemberQuery > findMember" }
+          err.extensions?.code || "findMember",
+          {
+            component: "tmemberQuery > findMember",
+          }
         );
       }
     },
+  //),
+
+  findMembers: async (parent, args, context, info) => {
+    const { _id, serverID } = args.fields;
+    console.log("Query > findMembers > args.fields = ", args.fields);
+
+    let queryServerID = [];
+    if (serverID) {
+      serverID.forEach((id) => {
+        queryServerID.push({ serverID: id });
+      });
+    }
+
+    try {
+      let membersData;
+
+      if (_id) {
+        if (queryServerID.length > 0) {
+          membersData = await Members.find({
+            $and: [{ _id: _id }, { $or: queryServerID }],
+          });
+        } else {
+          membersData = await Members.find({ _id: _id });
+        }
+      } else {
+        if (queryServerID.length > 0) {
+          membersData = await Members.find({ $or: queryServerID });
+        } else {
+          membersData = await Members.find({});
+        }
+      }
+
+      //console.log("membersData = " , membersData)
+
+      return membersData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
   members_autocomplete: async (parent, args, context, info) => {
     const { search } = args.fields;
     console.log("Query > members_autocomplete > args.fields = ", args.fields);
@@ -528,7 +534,7 @@ module.exports = {
       );
     }
   },
-  matchPrepareNode: async (parent, args, context, info) => {
+  matchPrepareNode_old: async (parent, args, context, info) => {
     const { nodeID, serverID, find } = args.fields;
     console.log(
       "Query > matchPrepareSkillToMembers > args.fields = ",
@@ -559,19 +565,41 @@ module.exports = {
 
       let matchByServer_update = false;
 
+      let MR_Member = [];
+      let MR_ProjectRole = [];
+      let MR = [];
+
       // loop servers
+      let matchRelativePosition_server = [];
+      matchRelativePosition_server = nodeData.matchRelativePosition_server;
       for (let i = 0; i < allServers.length; i++) {
         let server = allServers[i];
 
-        result = await matchPrepareAnything_neo4j({
+        // get two variables from function "matchPrepareAnything_neo4j"
+
+        result = await matchPrepareAnything_neo4j_old({
           nodeID: nodeData._id,
           node: nodeData.node,
           serverID: server._id,
           find,
         });
 
+        // console.log("MR --ds-ds-fs-dfs-sdf-sdf-dfs-- = ", result);
+
+        // split the result in two
+        MR = result.MR;
+        result = { ...result.hop_users };
+
+        // console.log("result = ", result);
+        // console.log("matchRelativePosition = ", matchRelativePosition);
+
+        // asdf;
+        // console.log("matchRelativePosition = ", matchRelativePosition);
+
         matchMembers = [];
         matchIDs = [];
+
+        // console.log("MR --ds-ds-fs-dfs-sdf-sdf-dfs-- = ", MR);
 
         distanceMatchHop = [[], [], []];
 
@@ -623,17 +651,52 @@ module.exports = {
             recalculateMembers =
               matchByServer[position].match.recalculateMembers;
 
+            console.log(
+              "MR --ds-ds-fs-dfs-sdf-sdf-dfs-- =222 ",
+              matchRelativePosition_server
+            );
+            position_MR = matchRelativePosition_server.findIndex((x) => {
+              if (x == undefined) return false;
+              return x.serverID === server._id;
+            });
             if (find == "Member") {
               if (recalculateProjectRoles != false) {
                 matchByServer_update = true; // we need to run the function again becuase there is new server
                 recalculateProjectRoles = true;
+              }
+
+              if (position_MR === -1) {
+                matchRelativePosition_server[position] = {
+                  serverID: server._id,
+                  MR_Member: MR,
+                };
+                console.log("MR --f--f--f--f--f--f-= ", MR);
+              } else {
+                matchRelativePosition_server[position].MR_Member = MR;
               }
             } else if (find == "Project") {
               if (recalculateMembers != false) {
                 matchByServer_update = true; // we need to run the function again becuase there is new server
                 recalculateMembers = true;
               }
+              if (position_MR === -1) {
+                matchRelativePosition_server[position] = {
+                  MR_ProjectRole: MR,
+                  serverID: server._id,
+                };
+              } else {
+                matchRelativePosition_server[position].MR_ProjectRole = MR;
+              }
             }
+          }
+        }
+
+        if (nodeData.matchRelativePosition) {
+          if (nodeData.matchRelativePosition.MR_Member) {
+            MR_Member = nodeData.matchRelativePosition.MR_Member;
+          }
+          if (nodeData.matchRelativePosition.MR_ProjectRole) {
+            MR_ProjectRole = nodeData.matchRelativePosition.MR_ProjectRole;
           }
         }
 
@@ -643,7 +706,9 @@ module.exports = {
             hop1: distanceMatchHop[1],
             hop2: distanceMatchHop[2],
           };
-          // console.log("change = 102", distanceMembers )
+          // console.log("change = 102", distanceMembers);
+
+          matchRelativePosition.push;
 
           recalculateMembers = false;
         } else if (find == "Role") {
@@ -674,26 +739,14 @@ module.exports = {
             recalculateProjectRoles;
           matchByServer[position].match.recalculateMembers = recalculateMembers;
         }
-
-        // nodeDataNew = await Node.findOneAndUpdate(
-        //   { _id: nodeID },
-        //   {
-        //     $set: {
-        //       match: {
-        //         recalculateMembers,
-        //         distanceMembers,
-        //         recalculateProjectRoles,
-        //         distanceProjectRoles,
-        //         // recalculateMembers: false,
-        //         // distanceMembers: distanceMembers,
-        //         // recalculateProjectRoles: nodeData.match.recalculateProjectRoles,
-        //         // distanceProjectRoles: nodeData.match.distanceProjectRoles,
-        //       },
-        //     },
-        //   },
-        //   { new: true }
-        // );
       }
+
+      // console.log("MR_Member ------- = ", MR_Member);
+
+      console.log(
+        "matchRelativePosition_server = ",
+        matchRelativePosition_server
+      );
 
       nodeDataNew = await Node.findOneAndUpdate(
         {
@@ -703,6 +756,7 @@ module.exports = {
           $set: {
             matchByServer_update: matchByServer_update,
             matchByServer: matchByServer,
+            matchRelativePosition_server: matchRelativePosition_server,
           },
         },
         { new: true }
@@ -710,6 +764,129 @@ module.exports = {
 
       return nodeDataNew;
       // return [{}]
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
+  matchPrepareNode: async (parent, args, context, info) => {
+    const { nodeID, serverID, find } = args.fields;
+    console.log(
+      "Query > matchPrepareSkillToMembers > args.fields = ",
+      args.fields
+    );
+
+    if (!nodeID) throw new ApolloError("node is required");
+
+    if (!find) throw new ApolloError("find Enum is required");
+
+    let queryServerID = [];
+    if (serverID) {
+      serverID.forEach((id) => {
+        queryServerID.push({ serverID: id });
+      });
+    }
+
+    try {
+      let nodeData = await Node.findOne({ _id: nodeID }).select(
+        "-subNodes -relatedNodes -aboveNodes"
+      );
+
+      if (!nodeData) throw new ApolloError("Node Don't exist");
+
+      let match_v2 = nodeData.match_v2;
+
+      let allServers = await ServerTemplate.find({});
+
+      matchRelativePosition_gl = {};
+      for (let i = 0; i < allServers.length; i++) {
+        // you need to calculate the node for every server in the database
+        let server = allServers[i];
+
+        // get two variables from function "matchPrepareAnything_neo4j"
+
+        typeNeo = find;
+        if (typeNeo == "ProjectRole") typeNeo = "Role";
+        result_matchRelat = await matchPrepareAnything_neo4j({
+          nodeID: nodeData._id,
+          node: nodeData.node,
+          serverID: server._id,
+          find: typeNeo,
+        });
+
+        // console.log("-----------SERVERID --------- ", server._id);
+        // console.log("result_matchRelat = ", result_matchRelat);
+
+        // check if there is something new that we need to include
+        for (const [key, value] of Object.entries(result_matchRelat)) {
+          if (matchRelativePosition_gl[key] === undefined) {
+            matchRelativePosition_gl[key] = {
+              serverID: [server._id],
+              ...value,
+            };
+          } else {
+            matchRelativePosition_gl[key].serverID.push(server._id);
+          }
+        }
+      }
+
+      // console.log("matchRelativePosition_gl = ", matchRelativePosition_gl);
+
+      // prepare the array to save in the database
+      match_v2 = [];
+      for (const [key, value] of Object.entries(matchRelativePosition_gl)) {
+        match_v2.push({
+          serverID: value.serverID,
+          nodeResID: key,
+          wh_sum: value.WH,
+          numPath: value.N,
+          type: find,
+          wh_k: value.wh_k,
+          k_sum: value.k_sum,
+        });
+      }
+
+      console.log("match_v2 = ", match_v2);
+
+      //filter out the ones that have type = "Member"
+      let match_v2_old = nodeData.match_v2.filter((item) => item.type != find);
+
+      // update with the new "Member"
+      match_v2 = [...match_v2_old, ...match_v2];
+
+      match_v2_update = {};
+      // save what was updated
+      if (find == "Member") {
+        match_v2_update = {
+          member: false,
+          projectRole: nodeData.match_v2_update.projectRole,
+        };
+      } else if (find == "ProjectRole") {
+        match_v2_update = {
+          member: nodeData.match_v2_update.member,
+          projectRole: false,
+        };
+      }
+
+      nodeDataNew = await Node.findOneAndUpdate(
+        {
+          _id: nodeID,
+        },
+        {
+          $set: {
+            match_v2_update: match_v2_update,
+            match_v2,
+          },
+        },
+        { new: true }
+      );
+
+      console.log("nodeDataNew  = ", nodeDataNew);
+
+      return nodeDataNew;
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -1060,7 +1237,182 @@ module.exports = {
       );
     }
   },
+  setAllMatch_v2: async (parent, args, context, info) => {
+    const { val } = args;
+    console.log("Query > matchSkillsToMembers > args.fields = ", args);
+
+    await Node.updateMany(
+      {},
+      {
+        $set: {
+          match_v2_update: {
+            member: val,
+            projectRole: val,
+          },
+        },
+      }
+    );
+
+    return val;
+  },
   matchNodesToMembers: async (parent, args, context, info) => {
+    const { nodesID, hoursPerWeek, budgetAmount, serverID } = args.fields;
+    let { page, limit } = args.fields;
+    console.log("Query > matchSkillsToMembers > args.fields = ", args.fields);
+
+    if (!nodesID) throw new ApolloError("nodesID is required");
+
+    let queryServerID = [];
+    if (serverID) {
+      serverID.forEach((id) => {
+        queryServerID.push({ serverID: id });
+      });
+    }
+
+    const serverID_set = new Set(serverID);
+
+    if (page != null && limit != null) {
+    } else {
+      page = 0;
+      limit = 30;
+    }
+
+    try {
+      let nodeData = await Node.find({ _id: nodesID }).select("_id match_v2");
+
+      if (!nodeData) throw new ApolloError("Node Don't exist");
+
+      w1 = 0.2; // the weight of the number of paths
+      w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
+      memberObj = {};
+
+      new_max_m = 20;
+      new_min_m = 100;
+
+      original_min_m = 110; // will change on the loop
+      original_max_m = -10; // will change on the loop
+      for (let i = 0; i < nodeData.length; i++) {
+        // loop on the nodes
+        let match_v2 = nodeData[i].match_v2;
+
+        for (let j = 0; j < match_v2.length; j++) {
+          // find all the connections for this particular node
+          // check if serverID exist on array match_v2.serverID
+          // if (
+          //   match_v2[j].serverID.includes(serverID) &&
+          //   match_v2[j].type == "Member"
+          // ) {
+          if (
+            match_v2[j].serverID.some((value) => serverID_set.has(value)) &&
+            match_v2[j].type == "Member"
+          ) {
+            // If this is both have the serverID and is Member
+
+            // Add this user to the memberObj
+            // and Make the calculation for the percentage for this user
+
+            if (memberObj[match_v2[j].nodeResID]) {
+              memberObj[match_v2[j].nodeResID].wh_sum += match_v2[j].wh_sum;
+              memberObj[match_v2[j].nodeResID].numPath += match_v2[j].numPath;
+
+              memberObj[match_v2[j].nodeResID].wh_k += match_v2[j].wh_k;
+              memberObj[match_v2[j].nodeResID].k_sum += match_v2[j].k_sum;
+
+              // console.log(
+              //   "change = ",
+              //   memberObj[match_v2[j].nodeResID],
+              //   match_v2[j].wh_k
+              // );
+
+              // adsf;
+
+              const N = memberObj[match_v2[j].nodeResID].numPath;
+              const k_sum = memberObj[match_v2[j].nodeResID].k_sum;
+              const wh_k = memberObj[match_v2[j].nodeResID].wh_k;
+              const sumi = memberObj[match_v2[j].nodeResID].wh_sum;
+              const pers =
+                ((1 - 1 / N ** 0.3) * w1 + (wh_k / k_sum) * w2) * 100;
+
+              memberObj[match_v2[j].nodeResID].C1 = 1 - 1 / N ** 0.3;
+              memberObj[match_v2[j].nodeResID].C2 = wh_k / k_sum;
+              memberObj[match_v2[j].nodeResID].pers = Number(pers.toFixed(2));
+            } else {
+              const N = match_v2[j].numPath;
+              const sumi = match_v2[j].wh_sum;
+              const k_sum = match_v2[j].k_sum;
+              const wh_k = match_v2[j].wh_k;
+              const pers =
+                ((1 - 1 / N ** 0.3) * w1 + (wh_k / k_sum) * w2) * 100;
+              memberObj[match_v2[j].nodeResID] = {
+                wh_sum: match_v2[j].wh_sum,
+                numPath: match_v2[j].numPath,
+                C1: 1 - 1 / N ** 0.3,
+                C2: wh_k / k_sum,
+                pers: Number(pers.toFixed(2)),
+                wh_k: match_v2[j].wh_k,
+                k_sum: match_v2[j].k_sum,
+              };
+            }
+            if (memberObj[match_v2[j].nodeResID].pers > original_max_m) {
+              original_max_m = memberObj[match_v2[j].nodeResID].pers;
+            }
+            if (memberObj[match_v2[j].nodeResID].pers < original_min_m) {
+              original_min_m = memberObj[match_v2[j].nodeResID].pers;
+            }
+          }
+        }
+        console.log("memberObj = ", memberObj);
+      }
+
+      console.log("original_min_m = ", original_min_m);
+      console.log("original_max_m = ", original_max_m);
+
+      console.log("memberObj = ", memberObj);
+
+      threshold_cut_members = 15;
+      if (original_min_m < threshold_cut_members) {
+        original_min_m = threshold_cut_members; // we need to change the original minimum to the threshold
+      }
+
+      const memberArr = [];
+      for (const key in memberObj) {
+        // transform the object to array
+
+        if (memberObj[key].pers > threshold_cut_members) {
+          mapped_value =
+            ((memberObj[key].pers - original_min_m) * (new_min_m - new_max_m)) /
+              (original_max_m - original_min_m) +
+            new_max_m;
+
+          memberArr.push({
+            matchPercentage: {
+              totalPercentage: mapped_value,
+              realTotalPercentage: memberObj[key].pers,
+            },
+            memberID: key,
+          });
+        }
+      }
+
+      memberArr.sort(
+        // sort it by the percentage
+        (a, b) =>
+          b.matchPercentage.realTotalPercentage -
+          a.matchPercentage.realTotalPercentage
+      );
+
+      // console.log("memberObj = ", memberObj);
+
+      return memberArr.slice(page * limit, (page + 1) * limit);
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
+  matchNodesToMembers_old: async (parent, args, context, info) => {
     const { nodesID, hoursPerWeek, budgetAmount, serverID } = args.fields;
     let { page, limit } = args.fields;
     console.log("Query > matchSkillsToMembers > args.fields = ", args.fields);
@@ -1079,6 +1431,8 @@ module.exports = {
       page = 0;
       limit = 10;
     }
+
+    // await Node.updateMany({}, { $unset: { matchRelativePosition_server: "" } });
 
     // console.log("change = 1" )
 
@@ -1103,11 +1457,17 @@ module.exports = {
       let everyID = [];
 
       let newSkillFlag, percentageNow;
+      let matchRelativePosition_serverObj = {};
+
       // console.log("distanceAll = " , distanceAll)
       for (let i = 0; i < nodeData.length; i++) {
+        // inside this function, I nee to replace the way that we calucalte the persentage for every
+        // node and then also replace the order, and then the rest will work!
         newSkillFlag = true;
 
         let matchByServer = nodeData[i].matchByServer;
+        let matchRelativePosition_server =
+          nodeData[i].matchRelativePosition_server;
         let positionServer = -1;
 
         console.log("matchByServer = ", matchByServer);
@@ -1120,6 +1480,37 @@ module.exports = {
           );
           console.log("positionServer = ", positionServer);
         }
+
+        // ---------------- matchRelativePosition_server ------------
+        if (matchRelativePosition_server === undefined) {
+          positionServer_MR = -1;
+        } else {
+          positionServer_MR = matchRelativePosition_server.findIndex(
+            (x) => x.serverID == serverID
+          );
+          console.log("positionServer_MR = ", positionServer_MR);
+        }
+
+        //translate the array to object with key the nodeID
+        if (positionServer_MR != -1) {
+          matchRelativePosition_server[positionServer_MR].MR_Member.forEach(
+            (x) => {
+              if (matchRelativePosition_serverObj[x.nodeID] === undefined) {
+                matchRelativePosition_serverObj[x.nodeID] = x;
+              } else {
+                matchRelativePosition_serverObj[x.nodeID].path =
+                  matchRelativePosition_serverObj[x.nodeID].path.concat(x.path);
+              }
+            }
+          );
+        }
+
+        // console.log(
+        //   "matchRelativePosition_serverObj = ",
+        //   matchRelativePosition_serverObj
+        // );
+        // asdf22;
+        // ---------------- matchRelativePosition_server ------------
 
         for (let k = 0; k < 3; k++) {
           let membersNow;
@@ -1206,6 +1597,59 @@ module.exports = {
 
       console.log("distanceAll = ", distanceAll);
       console.log("skillPercentage = ", skillPercentage);
+
+      // make a loop over distanceAll
+
+      skillPercentage_prepare = [];
+      // ---------------- matchRelativePosition_server ------------
+      w1 = 0.5;
+      w2 = 1 - w1;
+
+      for (let i = 0; i < distanceAll.length; i++) {
+        const nodeID = distanceAll[i];
+        const relativePositionNode = matchRelativePosition_serverObj[nodeID];
+        if (relativePositionNode) {
+          const N = relativePositionNode.path.length;
+          sumi = 0;
+          for (let j = 0; j < N; j++) {
+            obj_t = relativePositionNode.path[j];
+
+            sumi = sumi + obj_t.weight ** obj_t.hop;
+          }
+          sumi = sumi / N;
+
+          pers = (1 - 1 / N ** 0.7) * w1 + sumi * w2;
+
+          pers = pers * 100;
+
+          skillPercentage_prepare.push({
+            info: nodeID,
+            percentage100: pers,
+            percentageReal: pers,
+          });
+        }
+        // console.log("relativePositionNode = ", relativePositionNode);
+        // asdfasfd;
+      }
+
+      // asdfasfd;
+
+      skillPercentage_prepare.sort(
+        (a, b) => parseFloat(b.percentage100) - parseFloat(a.percentage100)
+      );
+
+      distanceAll = [];
+
+      skillPercentage_prepare.forEach((x) => {
+        distanceAll.push(x.info);
+      });
+
+      console.log("skillPercentage_prepare = ", skillPercentage_prepare);
+
+      // ---------------- matchRelativePosition_server ------------
+
+      // asdfasfd;
+
       // console.log("skillPercentage = " , skillPercentage[0])
       // // console.log("skillPercentage = " , skillPercentage[0][0])
       // // console.log("skillPercentage = " , skillPercentage[0][0][0])
@@ -1220,6 +1664,11 @@ module.exports = {
 
         // if (memberData && memberData!=null){
 
+        let realPersentage = -1;
+        if (skillPercentage_prepare.length > 0) {
+          realPersentage = skillPercentage_prepare[i].percentageReal;
+        }
+
         matchSkillsToMembersOutput.push({
           memberID: distanceAll[i],
           // skillTotalPercentage: 25*(3-i) + (25/nodeData.length)*points[i],
@@ -1227,6 +1676,7 @@ module.exports = {
           skillsPercentage: skillPercentage[i],
           hoursPerWeek,
           budgetAmount,
+          realPersentage: realPersentage,
         });
         // }
       }
@@ -1287,7 +1737,7 @@ module.exports = {
               skillTotalPercentage,
               hoursPercentage,
               budgetPercentage,
-              realTotalPercentage: totalPercentage,
+              realTotalPercentage: member.realPersentage,
             },
             totalPercentage: totalPercentage,
           });
@@ -1488,6 +1938,143 @@ module.exports = {
     }
   },
   matchNodesToProjectRoles: async (parent, args, context, info) => {
+    const { nodesID, serverID } = args.fields;
+    let { page, limit } = args.fields;
+    console.log("Query > matchSkillsToMembers > args.fields = ", args.fields);
+
+    if (!nodesID) throw new ApolloError("nodesID is required");
+
+    let queryServerID = [];
+    if (serverID) {
+      serverID.forEach((id) => {
+        queryServerID.push({ serverID: id });
+      });
+    }
+
+    if (page != null && limit != null) {
+    } else {
+      page = 0;
+      limit = 10;
+    }
+
+    try {
+      let project;
+
+      let nodeData = await Node.find({ _id: nodesID }).select("_id match_v2");
+
+      if (!nodeData) throw new ApolloError("Node Don't exist");
+
+      w1 = 0.5; // the weight of the number of paths
+      w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
+      projectRoleObj = {};
+
+      for (let i = 0; i < nodeData.length; i++) {
+        // loop on the nodes
+        let match_v2 = nodeData[i].match_v2;
+
+        for (let j = 0; j < match_v2.length; j++) {
+          // find all the connections for this particular node
+          // check if serverID exist on array match_v2.serverID
+          if (
+            match_v2[j].serverID.includes(serverID) &&
+            match_v2[j].type == "ProjectRole"
+          ) {
+            // If this is both have the serverID and is Member
+
+            // Add this user to the projectRoleObj
+            // and Make the calculation for the percentage for this user
+
+            if (projectRoleObj[match_v2[j].nodeResID]) {
+              projectRoleObj[match_v2[j].nodeResID].wh_sum +=
+                match_v2[j].wh_sum;
+              projectRoleObj[match_v2[j].nodeResID].numPath +=
+                match_v2[j].numPath;
+
+              const N = projectRoleObj[match_v2[j].nodeResID].numPath;
+              const sumi = projectRoleObj[match_v2[j].nodeResID].wh_sum;
+              const pers = ((1 - 1 / N ** 0.7) * w1 + (sumi / N) * w2) * 100;
+
+              projectRoleObj[match_v2[j].nodeResID].pers = Number(
+                pers.toFixed(2)
+              );
+            } else {
+              const N = match_v2[j].numPath;
+              const sumi = match_v2[j].wh_sum;
+              const pers = ((1 - 1 / N ** 0.7) * w1 + (sumi / N) * w2) * 100;
+              projectRoleObj[match_v2[j].nodeResID] = {
+                wh_sum: match_v2[j].wh_sum,
+                numPath: match_v2[j].numPath,
+                pers: Number(pers.toFixed(2)),
+              };
+            }
+          }
+        }
+      }
+
+      console.log("projectRoleObj = ", projectRoleObj);
+
+      // tranform to project
+      let projectObj = {};
+      for (const key in projectRoleObj) {
+        let projectData = await Projects.findOne({ "role._id": key });
+
+        if (projectData) {
+          if (projectObj[projectData._id]) {
+            if (
+              projectObj[projectData._id].matchPercentage <
+              projectRoleObj[key].pers
+            ) {
+              projectObj[projectData._id].matchPercentage =
+                projectRoleObj[key].pers;
+            }
+            projectObj[projectData._id].projectRoles.push({
+              projectRoleID: key,
+              matchPercentage: projectRoleObj[key].pers,
+            });
+          } else {
+            projectObj[projectData._id] = {
+              project: projectData,
+              matchPercentage: projectRoleObj[key].pers,
+              projectRoles: [
+                {
+                  projectRoleID: key,
+                  matchPercentage: projectRoleObj[key].pers,
+                },
+              ],
+            };
+          }
+        }
+      }
+
+      const projectArr = [];
+      for (const key in projectObj) {
+        // transform the object to array
+        projectArr.push({
+          matchPercentage: projectObj[key].matchPercentage,
+          project: projectObj[key].project,
+          projectRoles: projectObj[key].projectRoles,
+        });
+      }
+
+      // console.log("projectObj = ", projectObj);
+
+      projectArr.sort(
+        // sort it by the percentage
+        (a, b) => b.matchPercentage - a.matchPercentage
+      );
+
+      // console.log("projectArr = ", projectArr);
+
+      return projectArr.slice(page * limit, (page + 1) * limit);
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
+  matchNodesToProjectRoles_old: async (parent, args, context, info) => {
     const { nodesID, serverID } = args.fields;
     let { page, limit } = args.fields;
     console.log("Query > matchSkillsToMembers > args.fields = ", args.fields);

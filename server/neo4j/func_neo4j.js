@@ -172,7 +172,7 @@ module.exports = {
     session.close();
   },
   makeConnection_neo4j: async (req, res) => {
-    const { node, id, connection } = req;
+    const { node, id, connection, weight = undefined } = req;
 
     // console.log("change -------------makeConnection_neo4j---------= " , node,id, connection)
     const session = driver.session({ database: "neo4j" });
@@ -190,8 +190,15 @@ module.exports = {
       }
     });
     fun += `
-            MERGE (n0)-[:${connection}]->(n1)
+            MERGE (n0)-[r:${connection}]->(n1)
         `;
+
+    if (weight) {
+      fun += `
+            ON CREATE SET r.weight = ${weight}
+            ON MATCH SET r.weight = ${weight}
+        `;
+    }
 
     // console.log("fun = " , fun)
     result = await session.writeTransaction((tx) => tx.run(fun));
@@ -633,36 +640,134 @@ module.exports = {
     // return([member_oneHopeMatch,member_twoHopeMatch])
     return [member_oneHopeMatch, member_twoHopeMatch, member_threeHopeMatch];
   },
-  matchPrepareAnything_neo4j: async (req, res) => {
+  matchPrepareAnything_neo4j_old: async (req, res) => {
     const { nodeID, node, serverID, find } = req;
 
-    let member_oneHopeMatch = await findMatch_translateArray(`
+    matchRelativePosition = {};
+
+    let member_oneHopeMatch = await findMatch_translateArray_path(
+      `
             MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(p:${find}))
             WITH *
             WHERE '${serverID}' IN p.serverID
-            RETURN p
-        `);
-    // console.log("member_oneHopeMatch = " , member_oneHopeMatch)
+            RETURN ms
+        `,
+      matchRelativePosition,
+      0
+    );
+    // console.log("member_oneHopeMatch = ", member_oneHopeMatch);
+    // console.log("matchRelativePosition = ", matchRelativePosition);
 
-    let member_twoHopeMatch = await findMatch_translateArray(`
+    let member_twoHopeMatch = await findMatch_translateArray_path(
+      `
             MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(p:${find}))
             WHERE NOT (a:Member OR a:Project OR a:Role)
             WITH *
             WHERE '${serverID}' IN p.serverID
-            RETURN p
-        `);
-    // console.log("member_twoHopeMatch = " , member_twoHopeMatch)
+            RETURN ms
+        `,
+      matchRelativePosition,
+      1
+    );
 
-    let member_threeHopeMatch = await findMatch_translateArray(`
+    // // console.log("member_twoHopeMatch = " , member_twoHopeMatch)
+
+    let member_threeHopeMatch = await findMatch_translateArray_path(
+      `
             MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(b)-[]-(p:${find}))
             WHERE NOT (a:Member OR a:Project OR a:Role) AND NOT (b:Member OR b:Project OR b:Role)
             WITH *
             WHERE '${serverID}' IN p.serverID
-            RETURN p
-        `);
+            RETURN ms
+        `,
+      matchRelativePosition,
+      2
+    );
+
     // console.log("member_threeHopeMatch = " , member_threeHopeMatch)
 
-    return [member_oneHopeMatch, member_twoHopeMatch, member_threeHopeMatch];
+    console.log("matchRelativePosition = ", matchRelativePosition);
+    asdf;
+    // loop throw matchRelativePosition which is an object
+
+    MR = [];
+    for (const [key, value] of Object.entries(matchRelativePosition)) {
+      // console.log("key = ", key);
+      // console.log("value = ", value);
+      // console.log("value.connectionsT = ", value.connectionsT);
+      MR.push({
+        nodeID: key,
+        path: value,
+      });
+    }
+
+    // console.log("MR = ", MR);
+    // asdf;
+    // console.log(
+    //   "member_oneHopeMatch, member_twoHopeMatch, member_threeHopeMatch = ",
+    //   member_oneHopeMatch,
+    //   member_twoHopeMatch,
+    //   member_threeHopeMatch
+    // );
+
+    // asdf;
+
+    // return two variables
+    return {
+      hop_users: [
+        member_oneHopeMatch,
+        member_twoHopeMatch,
+        member_threeHopeMatch,
+      ],
+      MR: MR,
+    };
+
+    // return matchRelativePosition;
+
+    // return [member_oneHopeMatch, member_twoHopeMatch, member_threeHopeMatch];
+    // return [member_oneHopeMatch];
+  },
+  matchPrepareAnything_neo4j: async (req, res) => {
+    const { nodeID, node, serverID, find } = req;
+
+    matchRelativePosition = {};
+
+    await findMatch_translateArray_path(
+      `
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(p:${find}))
+            WITH *
+            WHERE '${serverID}' IN p.serverID
+            RETURN ms
+        `,
+      matchRelativePosition,
+      0
+    );
+
+    await findMatch_translateArray_path(
+      `
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(p:${find}))
+            WHERE NOT (a:Member OR a:Project OR a:Role)
+            WITH *
+            WHERE '${serverID}' IN p.serverID
+            RETURN ms
+        `,
+      matchRelativePosition,
+      1
+    );
+
+    await findMatch_translateArray_path(
+      `
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(b)-[]-(p:${find}))
+            WHERE NOT (a:Member OR a:Project OR a:Role) AND NOT (b:Member OR b:Project OR b:Role)
+            WITH *
+            WHERE '${serverID}' IN p.serverID
+            RETURN ms
+        `,
+      matchRelativePosition,
+      2
+    );
+
+    return matchRelativePosition;
   },
   findAllNodesDistanceRfromNode_neo4j: async (req, res) => {
     const { nodeID } = req;
@@ -875,7 +980,7 @@ function arrayToString(arrayT) {
 async function findMatch_translateArray(shyperCode) {
   const session = driver.session({ database: "neo4j" });
 
-  // // ----------------- One Hope -----------------
+  // // ----------------- Hope -----------------
   result_oneHopeMatch = await session.writeTransaction((tx) =>
     tx.run(shyperCode)
   );
@@ -896,7 +1001,144 @@ async function findMatch_translateArray(shyperCode) {
       }
     }
   }
-  // ----------------- One Hope -----------------
+
+  // -----------------  Hope -----------------
+
+  session.close();
+
+  return member_oneHopeMatch;
+}
+
+async function findMatch_translateArray_path(
+  shyperCode,
+  matchRelativePosition,
+  hop
+) {
+  const session = driver.session({ database: "neo4j" });
+
+  // // ----------------- Hope -----------------
+  result_oneHopeMatch = await session.writeTransaction((tx) =>
+    tx.run(shyperCode)
+  );
+
+  let names_oneHopeMatch = result_oneHopeMatch.records.map((row) => {
+    return row;
+  });
+
+  kt = [
+    [9, 0.7],
+    [3, 0.4],
+    [1, 0],
+  ];
+
+  // k2 = 6
+  // k3 = 1
+
+  member_oneHopeMatch = [];
+  if (names_oneHopeMatch.length > 0) {
+    for (let i = 0; i < names_oneHopeMatch.length; ++i) {
+      if (
+        names_oneHopeMatch[i] &&
+        names_oneHopeMatch[i]._fields &&
+        names_oneHopeMatch[i]._fields[0]
+      ) {
+        let totalWeight = 0;
+        let N_weight = 0;
+        let mul_weight = 1;
+        names_oneHopeMatch[i]._fields[0].segments.forEach((s, idx) => {
+          if (s.relationship.properties.weight) {
+            mul_weight *= s.relationship.properties.weight;
+            totalWeight += s.relationship.properties.weight;
+            N_weight += 1;
+          } else {
+            // it doesn't have weight, so 1
+            totalWeight += 1;
+            N_weight += 1;
+          }
+        });
+
+        totalWeight_avg = totalWeight;
+        if (N_weight > 0) totalWeight_avg = totalWeight / N_weight;
+
+        // console.log(
+        //   "change = ",
+        //   // totalWeight.toFixed(1),
+        //   N_weight.toFixed(0),
+        //   hop + 1,
+        //   totalWeight_avg.toFixed(1),
+        //   "|",
+        //   (totalWeight_avg ** (N_weight - 1)).toFixed(1),
+        //   (totalWeight_avg ** N_weight).toFixed(1),
+        //   "|",
+        //   mul_weight.toFixed(1),
+        //   (mul_weight ** (N_weight - 1)).toFixed(1)
+        // );
+
+        member_oneHopeMatch.push(
+          names_oneHopeMatch[i]._fields[0].end.properties
+        );
+
+        const nodeID = names_oneHopeMatch[i]._fields[0].end.properties._id;
+
+        wh = totalWeight ** hop;
+        // console.log("totalWeight ** hop = ", totalWeight, hop, wh.toFixed(2));
+
+        if (matchRelativePosition[nodeID]) {
+          let WH_now = matchRelativePosition[nodeID].WH;
+          let N_now = matchRelativePosition[nodeID].N;
+
+          let wh_k = matchRelativePosition[nodeID].wh_k;
+          let k_sum = matchRelativePosition[nodeID].k_sum;
+
+          WH_new = totalWeight_avg ** (hop + 1);
+
+          if (WH_new > kt[0][1]) {
+            wh_k += WH_new * kt[0][0];
+            k_sum += kt[0][0];
+          } else if (WH_new > kt[1][1]) {
+            wh_k += WH_new * kt[1][0];
+            k_sum += kt[1][0];
+          } else if (WH_new > kt[2][1]) {
+            wh_k += WH_new * kt[2][0];
+            k_sum += kt[2][0];
+          }
+
+          matchRelativePosition[nodeID] = {
+            WH: WH_now + totalWeight_avg ** (hop + 1),
+            N: N_now + 1,
+            wh_k,
+            k_sum,
+          };
+        } else {
+          let wh_k = 0;
+          let k_sum = 0;
+
+          WH_new = totalWeight_avg ** (hop + 1);
+
+          if (WH_new > kt[0][1]) {
+            wh_k += WH_new * kt[0][0];
+            k_sum += kt[0][0];
+          } else if (WH_new > kt[1][1]) {
+            wh_k += WH_new * kt[1][0];
+            k_sum += kt[1][0];
+          } else if (WH_new > kt[2][1]) {
+            wh_k += WH_new * kt[2][0];
+            k_sum += kt[2][0];
+          }
+
+          matchRelativePosition[nodeID] = {
+            WH: totalWeight_avg ** (hop + 1),
+            N: 1,
+            wh_k,
+            k_sum,
+          };
+        }
+      }
+    }
+  }
+  // asdf;
+
+  // -----------------  Hope -----------------
 
   session.close();
 
