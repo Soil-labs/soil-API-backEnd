@@ -1269,18 +1269,7 @@ module.exports = {
       });
     }
 
-    // if (typeof serverID == "string") {
-    //   console.log("change = ", serverID);
-
-    //   serverID = [serverID];
-    //   console.log("change = ", serverID);
-    // }
-
     const serverID_set = new Set(serverID);
-
-    // console.log("change = ", serverID_set);
-
-    // asdf;
 
     if (page != null && limit != null) {
     } else {
@@ -1329,6 +1318,14 @@ module.exports = {
               memberObj[match_v2[j].nodeResID].wh_k += match_v2[j].wh_k;
               memberObj[match_v2[j].nodeResID].k_sum += match_v2[j].k_sum;
 
+              // console.log(
+              //   "change = ",
+              //   memberObj[match_v2[j].nodeResID],
+              //   match_v2[j].wh_k
+              // );
+
+              // adsf;
+
               const N = memberObj[match_v2[j].nodeResID].numPath;
               const k_sum = memberObj[match_v2[j].nodeResID].k_sum;
               const wh_k = memberObj[match_v2[j].nodeResID].wh_k;
@@ -1352,6 +1349,8 @@ module.exports = {
                 C1: 1 - 1 / N ** 0.3,
                 C2: wh_k / k_sum,
                 pers: Number(pers.toFixed(2)),
+                wh_k: match_v2[j].wh_k,
+                k_sum: match_v2[j].k_sum,
               };
             }
             if (memberObj[match_v2[j].nodeResID].pers > original_max_m) {
@@ -1362,6 +1361,7 @@ module.exports = {
             }
           }
         }
+        console.log("memberObj = ", memberObj);
       }
 
       console.log("original_min_m = ", original_min_m);
