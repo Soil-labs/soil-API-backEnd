@@ -7,13 +7,13 @@ const {
 
 const token = async ({ body }, res) => {
   try {
-    const { access_token } = body;
+    const { accessToken } = body;
 
-    if (!access_token) throw new Error("Invalid Token supplied");
+    if (!accessToken) throw new Error("Invalid Token supplied");
     const authResponse = await axios
       .get(`https://discord.com/api/oauth2/@me`, {
         headers: {
-          authorization: `Bearer ${access_token}`,
+          authorization: `Bearer ${accessToken}`,
         },
       })
       .catch((err) => {
@@ -38,7 +38,7 @@ const token = async ({ body }, res) => {
       dbUser = await new Members(fields);
     }
 
-    await retrieveAndMergeServersUserIsIn(access_token, dbUser);
+    await retrieveAndMergeServersUserIsIn(accessToken, dbUser);
 
     const token = jwt.sign(
       { _id: user.id, discordName: user.username },
@@ -48,7 +48,7 @@ const token = async ({ body }, res) => {
       }
     );
 
-    res.json({ eden_token: token });
+    res.json({ edenToken: token });
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
