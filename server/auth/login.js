@@ -4,6 +4,9 @@ const fetchDiscordUser = require("./utils/fetchDiscordUser");
 const {
   retrieveAndMergeServersUserIsIn,
 } = require("../utils/updateUserServersInDB");
+const {
+  createNode_neo4j,
+} = require("../neo4j/func_neo4j");
 
 const login = async ({ body }, res) => {
   try {
@@ -30,6 +33,13 @@ const login = async ({ body }, res) => {
       };
       dbUser = await new Members(fields);
       dbUser.save();
+      //save a connection
+      await createNode_neo4j({
+        node: "Member",
+        id: dbUser._id,
+        name: dbUser.discordName,
+        serverID: [],
+      });
     }
 
     // Generate auth token
