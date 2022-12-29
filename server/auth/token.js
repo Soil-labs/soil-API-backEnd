@@ -36,6 +36,7 @@ const token = async ({ body }, res) => {
         registeredAt: new Date(),
       };
       dbUser = await new Members(fields);
+      dbUser.save();
     }
 
     await retrieveAndMergeServersUserIsIn(accessToken, dbUser);
