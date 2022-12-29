@@ -49,6 +49,23 @@ const nodeSchema = mongoose.Schema({
 
       wh_k: Number, // sum (weight ** hop) * k // k1,k2,k3 -> which is the weighted average
       k_sum: Number, // sum(k) // all the k that was used on the above calcuation
+
+      wh_k_arr: [
+        {
+          // The array has 3 objects, k1,k2,k3 -> k1= ( first object ) - ( the most relevant paths ) /
+          wh_sum: Number, // sum (weight ** hop)
+          numPath: Number, // number of paths
+        },
+      ],
+
+      conn_node_wh: [
+        {
+          // We save the individual nodes that contributed to this result, and how much they contributed, this is the last node before the member or the proejctRole
+          nodeConnID: String, // the nodeID for the connected node
+          wh_sum: Number, // sum (weight ** hop)
+          numPath: Number, // number of paths
+        },
+      ],
     },
   ],
 
