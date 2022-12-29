@@ -1045,6 +1045,7 @@ async function findMatch_translateArray_path(
         let totalWeight = 0;
         let N_weight = 0;
         let mul_weight = 1;
+        nodeConnID = ""; // the nodeID for the connected node
         names_oneHopeMatch[i]._fields[0].segments.forEach((s, idx) => {
           if (s.relationship.properties.weight) {
             mul_weight *= s.relationship.properties.weight;
@@ -1055,24 +1056,14 @@ async function findMatch_translateArray_path(
             totalWeight += 1;
             N_weight += 1;
           }
+          if (idx === names_oneHopeMatch[i]._fields[0].segments.length - 1) {
+            // console.log("s.relationship = ", s.start.properties);
+            nodeConnID = s.start.properties._id;
+          }
         });
 
         totalWeight_avg = totalWeight;
         if (N_weight > 0) totalWeight_avg = totalWeight / N_weight;
-
-        // console.log(
-        //   "change = ",
-        //   // totalWeight.toFixed(1),
-        //   N_weight.toFixed(0),
-        //   hop + 1,
-        //   totalWeight_avg.toFixed(1),
-        //   "|",
-        //   (totalWeight_avg ** (N_weight - 1)).toFixed(1),
-        //   (totalWeight_avg ** N_weight).toFixed(1),
-        //   "|",
-        //   mul_weight.toFixed(1),
-        //   (mul_weight ** (N_weight - 1)).toFixed(1)
-        // );
 
         member_oneHopeMatch.push(
           names_oneHopeMatch[i]._fields[0].end.properties
@@ -1090,40 +1081,91 @@ async function findMatch_translateArray_path(
           let wh_k = matchRelativePosition[nodeID].wh_k;
           let k_sum = matchRelativePosition[nodeID].k_sum;
 
+          let wh_k_arr = matchRelativePosition[nodeID].wh_k_arr;
+
+          let conn_node_wh_obj = matchRelativePosition[nodeID].conn_node_wh_obj;
+
           WH_new = totalWeight_avg ** (hop + 1);
 
           if (WH_new > kt[0][1]) {
             wh_k += WH_new * kt[0][0];
             k_sum += kt[0][0];
+
+            wh_k_arr[0].wh_sum += WH_new;
+            wh_k_arr[0].numPath += 1;
           } else if (WH_new > kt[1][1]) {
             wh_k += WH_new * kt[1][0];
             k_sum += kt[1][0];
+
+            wh_k_arr[1].wh_sum += WH_new;
+            wh_k_arr[1].numPath += 1;
           } else if (WH_new > kt[2][1]) {
             wh_k += WH_new * kt[2][0];
             k_sum += kt[2][0];
+
+            wh_k_arr[2].wh_sum += WH_new;
+            wh_k_arr[2].numPath += 1;
+          }
+
+          let totAvW = totalWeight_avg ** (hop + 1);
+
+          if (conn_node_wh_obj[nodeConnID]) {
+            conn_node_wh_obj[nodeConnID].wh_sum += totAvW;
+            conn_node_wh_obj[nodeConnID].numPath += 1;
+          } else {
+            conn_node_wh_obj[nodeConnID] = {
+              wh_sum: WH_new,
+              numPath: 1,
+            };
           }
 
           matchRelativePosition[nodeID] = {
-            WH: WH_now + totalWeight_avg ** (hop + 1),
+            WH: WH_now + totAvW,
             N: N_now + 1,
             wh_k,
             k_sum,
+            wh_k_arr,
+            conn_node_wh_obj,
           };
         } else {
           let wh_k = 0;
           let k_sum = 0;
 
+          let wh_k_arr = [
+            {
+              wh_sum: 0,
+              numPath: 0,
+            },
+            {
+              wh_sum: 0,
+              numPath: 0,
+            },
+            {
+              wh_sum: 0,
+              numPath: 0,
+            },
+          ];
+
           WH_new = totalWeight_avg ** (hop + 1);
 
           if (WH_new > kt[0][1]) {
             wh_k += WH_new * kt[0][0];
             k_sum += kt[0][0];
+
+            wh_k_arr[0].wh_sum += WH_new;
+            wh_k_arr[0].numPath += 1;
           } else if (WH_new > kt[1][1]) {
             wh_k += WH_new * kt[1][0];
             k_sum += kt[1][0];
+
+            wh_k_arr[1].wh_sum += WH_new;
+            wh_k_arr[1].numPath += 1;
           } else if (WH_new > kt[2][1]) {
             wh_k += WH_new * kt[2][0];
             k_sum += kt[2][0];
+
+            wh_k_arr[2].wh_sum += WH_new;
+            wh_k_arr[2].numPath += 1;
           }
 
           matchRelativePosition[nodeID] = {
@@ -1131,6 +1173,13 @@ async function findMatch_translateArray_path(
             N: 1,
             wh_k,
             k_sum,
+            wh_k_arr,
+            conn_node_wh_obj: {
+              [nodeConnID]: {
+                wh_sum: WH_new,
+                numPath: 1,
+              },
+            },
           };
         }
       }
