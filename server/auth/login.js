@@ -29,6 +29,7 @@ const login = async ({ body }, res) => {
         registeredAt: new Date(),
       };
       dbUser = await new Members(fields);
+      dbUser.save();
     }
 
     // Generate auth token
