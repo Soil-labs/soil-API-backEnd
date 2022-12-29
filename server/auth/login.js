@@ -4,6 +4,9 @@ const fetchDiscordUser = require("./utils/fetchDiscordUser");
 const {
   retrieveAndMergeServersUserIsIn,
 } = require("../utils/updateUserServersInDB");
+const {
+  createNode_neo4j,
+} = require("../neo4j/func_neo4j");
 
 const login = async ({ body }, res) => {
   try {
@@ -21,15 +24,23 @@ const login = async ({ body }, res) => {
 
     // if user is not in database, save user to database
     if (!dbUser) {
+
       let fields = {
         _id: user.id,
-        discordName: user.name,
-        avatar: user.avatar,
+        discordName: user.username,
+        discordAvatar: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`,
         discriminator: user.discriminator,
         registeredAt: new Date(),
       };
       dbUser = await new Members(fields);
       dbUser.save();
+      //save a connection
+      await createNode_neo4j({
+        node: "Member",
+        id: dbUser._id,
+        name: dbUser.discordName,
+        serverID: [],
+      });
     }
 
     // Generate auth token
