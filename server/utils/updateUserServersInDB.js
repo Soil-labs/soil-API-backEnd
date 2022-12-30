@@ -1,6 +1,9 @@
 const { Members } = require("../models/membersModel");
 const { ServerTemplate } = require("../models/serverModel");
 const axios = require("axios");
+const {
+  updateNode_neo4j_serverID,
+} = require("../neo4j/func_neo4j");
 
 const DISCORD_BASE_URL = "https://discord.com/api/v10";
 
@@ -24,7 +27,7 @@ const _getServersLoginUserIn = async (access_token) => {
     });
 
   const serversArray = res.data;
-  console.log("servers array ", serversArray);
+  // console.log("servers array ", serversArray);
   return serversArray;
 };
 
@@ -35,7 +38,7 @@ const _updateUserServerField = async (dbUser, commonServers) => {
   const uniqueServers = new Set([...previousServers, ...commonServers]);
   const newServers = Array.from(uniqueServers);
 
-  console.log("new servers", newServers);
+  // console.log("new servers", newServers);
   await Members.findOneAndUpdate(
     { _id: dbUser._id },
     {
@@ -44,6 +47,13 @@ const _updateUserServerField = async (dbUser, commonServers) => {
       },
     }
   );
+
+  //update the server in Neo4j
+  updateNode_neo4j_serverID({
+    node: "Member",
+    id: dbUser._id,
+    serverID: newServers,
+  });
 };
 
 const retrieveAndMergeServersUserIsIn = async (accessToken, dbUser) => {

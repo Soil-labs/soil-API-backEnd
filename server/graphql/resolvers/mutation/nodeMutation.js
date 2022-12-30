@@ -182,7 +182,7 @@ module.exports = {
   },
 
   relatedNode_name: async (parent, args, context, info) => {
-    const { name, relatedNode_name, weight } = args.fields;
+    const { name, relatedNode_name, weight, connection } = args.fields;
     console.log("Mutation > relatedNode > args.fields = ", args.fields);
 
     if (!name)
@@ -201,14 +201,14 @@ module.exports = {
         await makeConnection_neo4j({
           node: [nodeData.node, relatedNodeData.node],
           id: [nodeData._id, relatedNodeData._id],
-          connection: "related",
+          connection: connection,
           weight: weight,
         });
       } else {
         await makeConnection_neo4j({
           node: [nodeData.node, relatedNodeData.node],
           id: [nodeData._id, relatedNodeData._id],
-          connection: "related",
+          connection: connection,
         });
       }
 

@@ -34,6 +34,19 @@ module.exports = `
         numPath: Float
         wh_k: Float,
         k_sum: Float,
+        wh_k_arr: [wh_k_arrType],
+        conn_node_wh: [conn_node_whType],
+    }
+
+    type conn_node_whType {
+        nodeConnID: String, 
+        wh_sum: Float,
+        numPath: Float, 
+    }
+
+    type wh_k_arrType {
+        wh_sum: Float
+        numPath: Float
     }
 
     enum typeEnumMP {
@@ -65,6 +78,7 @@ module.exports = `
         name: String
         relatedNode_name: String
         weight: String
+        connection: String
     }
 
     input createNodeInput {
