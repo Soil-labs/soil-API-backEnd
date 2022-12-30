@@ -50,6 +50,7 @@ module.exports = `
 
     input findGrantsInput {
         _id: [ID]
+        serverID: [ID]
     }
 
     input updateGrantInput {
