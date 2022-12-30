@@ -136,8 +136,14 @@ module.exports = `
     type matchMembersToSkillOutput {
         matchPercentage: MatchPercentage,
         member: Members,
+        nodesPercentage: [nodesPercentageType]
         skillsPercentage: [SkillsPercentage]
         
+    }
+
+    type nodesPercentageType {
+        node: Node
+        totalPercentage: Float
     }
     
 
