@@ -21,7 +21,8 @@ const {
   createNewTeam,
   createNewRole,
   createNewEpic,
-  deleteProject
+  deleteProject,
+  createProject
 } = require("./mutation/projectsMutation");
 
 const {
@@ -95,6 +96,7 @@ module.exports = {
     createNewRole,
     createNewEpic,
     deleteProject,
+    createProject,
 
     // ------------- SKILL MUTATION -----------------
     createSkill,
