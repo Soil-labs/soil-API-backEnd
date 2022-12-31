@@ -419,7 +419,7 @@ module.exports = {
       let memberData = await Members.findOne({ _id: memberID });
       // let nodesData = await Node.find({ _id: nodesID });
       let nodesData = await Node.find({ _id: nodesID }).select(
-        "_id match_v2_update"
+        "_id node match_v2_update"
       );
 
       // check if the nodes are already in the member (memberData.nodes)
