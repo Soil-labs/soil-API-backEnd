@@ -12,7 +12,7 @@ module.exports = {
         const subNodes = parent.subNodes;
 
         //   nodeData = await Node.find({ _id: subNodes });
-        nodeData = await Node.find({ _id: subNodes }).select("_id name");
+        nodeData = await Node.find({ _id: subNodes }).select("_id name node");
 
         //console.log("nodeData = " , nodeData)
 
@@ -34,7 +34,7 @@ module.exports = {
       try {
         const aboveNodes = parent.aboveNodes;
 
-        nodeData = await Node.find({ _id: aboveNodes }).select("_id name");
+        nodeData = await Node.find({ _id: aboveNodes }).select("_id name node");
 
         //console.log("nodeData = " , nodeData)
 
@@ -56,7 +56,9 @@ module.exports = {
       try {
         const relatedNodes = parent.relatedNodes;
 
-        nodeData = await Node.find({ _id: relatedNodes }).select("_id name");
+        nodeData = await Node.find({ _id: relatedNodes }).select(
+          "_id name node"
+        );
 
         //console.log("nodeData = " , nodeData)
 
