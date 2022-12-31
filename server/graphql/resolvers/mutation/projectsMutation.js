@@ -294,7 +294,7 @@ module.exports = {
 
     try {
       let projectData = await Projects.findOne({ "role._id": projectRoleID });
-      let nodesData = await Node.find({ _id: nodesID }).select("_id");
+      let nodesData = await Node.find({ _id: nodesID }).select("_id name node");
 
       projectRoleData = projectData.role.filter(
         (role) => role._id == projectRoleID
@@ -415,7 +415,7 @@ module.exports = {
     try {
       let projectData = await Projects.findOne({ "role._id": projectRoleID });
 
-      let nodesData = await Node.find({ _id: nodesID }).select("_id");
+      let nodesData = await Node.find({ _id: nodesID }).select("_id name node");
 
       projectRoleData = projectData.role.filter(
         (role) => role._id == projectRoleID
@@ -1183,7 +1183,7 @@ module.exports = {
                 .map(function (item) {
                   return item._id.toString();
                 })
-                .select("_id"),
+                .select("_id name node"),
             });
 
             if (nodesData && nodesData.length && nodesData.length > 0) {
