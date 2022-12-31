@@ -419,6 +419,22 @@ module.exports = `
         projectID: ID
     }
 
+    input createProjectInput{
+        title: String
+        description: String
+        descriptionOneLine: String,
+        emoji: String,
+        backColorEmoji: String,
+        serverID: [String]
+        gardenServerID: String,
+        team: [teamInput]
+        role: [roleInput]
+        collaborationLinks: [collaborationLinksInput]
+        stepsJoinProject: [String]
+        budget: budgetInput
+        dates: datesInput
+    }
+
     
 
     

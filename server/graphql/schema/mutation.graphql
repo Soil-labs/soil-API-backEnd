@@ -27,6 +27,7 @@ module.exports = `
         createNewRole(fields:createNewRoleInput!):Role
         createNewEpic(fields:createNewEpicInput!):Epic
         deleteProject(fields:deleteProjectInput):Project
+        createProject(fields:createProjectInput):Project
 
         
 
