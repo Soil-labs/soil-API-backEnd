@@ -297,7 +297,7 @@ module.exports = {
 
     try {
       let memberData = await Members.findOne({ _id: memberID });
-      let nodesData = await Node.find({ _id: nodesID }).select("_id");
+      let nodesData = await Node.find({ _id: nodesID }).select("_id name node");
 
       // check if the nodes are already in the member (memberData.nodes)
       let nodesDataOriginalArray = memberData.nodes.map(function (item) {
@@ -371,7 +371,7 @@ module.exports = {
 
     try {
       let memberData = await Members.findOne({ _id: memberID });
-      let nodesData = await Node.find({ _id: nodesID }).select("_id");
+      let nodesData = await Node.find({ _id: nodesID }).select("_id name node");
 
       // check what nodes exist on memberData.nodes
       let nodesDataOriginalArray = memberData.nodes.map(function (item) {
