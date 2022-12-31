@@ -45,6 +45,7 @@ module.exports = {
 
       if (!title) throw new ApolloError("The title is required");
       if (!description) throw new ApolloError("The description is required");
+      if (!serverID) throw new ApolloError("The serverID is required");
 
       const champion = user._id;
       let fields = {
