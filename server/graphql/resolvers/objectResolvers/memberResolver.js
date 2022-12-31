@@ -109,7 +109,7 @@ module.exports = {
 
         // console.log("nodesID = " , nodesID)
 
-        const nodesData = await Node.find({ _id: nodesID });
+        const nodesData = await Node.find({ _id: nodesID }).select("_id name");
 
         let res = [];
         nodesData.forEach((node) => {
@@ -454,7 +454,8 @@ module.exports = {
       try {
         const nodeID = parent.nodeID;
 
-        nodeData = await Node.findOne({ _id: nodeID });
+        // nodeData = await Node.findOne({ _id: nodeID });
+        nodeData = await Node.findOne({ _id: nodeID }).select("_id name");
 
         return nodeData;
       } catch (err) {
