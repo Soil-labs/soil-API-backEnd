@@ -1335,12 +1335,13 @@ module.exports = {
               memberObj[match_v2[j].nodeResID].wh_k += match_v2[j].wh_k;
               memberObj[match_v2[j].nodeResID].k_sum += match_v2[j].k_sum;
 
-              wh_k_arr_before += memberObj[match_v2[j].nodeResID].wh_k_arr;
-
               const N = memberObj[match_v2[j].nodeResID].numPath;
               const k_sum = memberObj[match_v2[j].nodeResID].k_sum;
               const wh_k = memberObj[match_v2[j].nodeResID].wh_k;
               const sumi = memberObj[match_v2[j].nodeResID].wh_sum;
+              let conn_node_wh_obj =
+                memberObj[match_v2[j].nodeResID].conn_node_wh_obj;
+
               const wh_k_arr = match_v2[j].wh_k_arr;
 
               memberObj[match_v2[j].nodeResID].wh_k_arr.forEach(
@@ -1351,18 +1352,21 @@ module.exports = {
               );
 
               match_v2[j].conn_node_wh.forEach((conn_node_wh_T, idx) => {
-                if (conn_node_wh_obj[conn_node_wh_T.nodeID]) {
-                  conn_node_wh_obj[conn_node_wh_T.nodeID].wh_sum +=
+                if (conn_node_wh_obj[conn_node_wh_T.nodeConnID]) {
+                  conn_node_wh_obj[conn_node_wh_T.nodeConnID].wh_sum +=
                     conn_node_wh_T.wh_sum;
-                  conn_node_wh_obj[conn_node_wh_T.nodeID].numPath +=
+                  conn_node_wh_obj[conn_node_wh_T.nodeConnID].numPath +=
                     conn_node_wh_T.numPath;
                 } else {
-                  conn_node_wh_obj[conn_node_wh_T.nodeID] = {
+                  // console.log("conn_node_wh_T = ", conn_node_wh_T);
+                  conn_node_wh_obj[conn_node_wh_T.nodeConnID] = {
                     wh_sum: conn_node_wh_T.wh_sum,
                     numPath: conn_node_wh_T.numPath,
                   };
                 }
               });
+              memberObj[match_v2[j].nodeResID].conn_node_wh_obj =
+                conn_node_wh_obj;
 
               const pers =
                 ((1 - 1 / N ** 0.3) * w1 + (wh_k / k_sum) * w2) * 100;
@@ -1432,6 +1436,7 @@ module.exports = {
 
       // console.log("original_min_m = ", original_min_m);
       // console.log("original_max_m = ", original_max_m);
+      // console.log("memberObj = ", memberObj);
 
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
