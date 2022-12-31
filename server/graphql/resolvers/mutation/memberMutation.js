@@ -417,7 +417,10 @@ module.exports = {
 
     try {
       let memberData = await Members.findOne({ _id: memberID });
-      let nodesData = await Node.find({ _id: nodesID });
+      // let nodesData = await Node.find({ _id: nodesID });
+      let nodesData = await Node.find({ _id: nodesID }).select(
+        "_id match_v2_update"
+      );
 
       // check if the nodes are already in the member (memberData.nodes)
       let nodesDataOriginalArray = memberData.nodes.map(function (item) {
@@ -491,7 +494,7 @@ module.exports = {
 
     try {
       let memberData = await Members.findOne({ _id: memberID });
-      let nodesData = await Node.find({ _id: nodesID });
+      let nodesData = await Node.find({ _id: nodesID }).select("_id");
 
       // check what nodes exist on memberData.nodes
       let nodesDataOriginalArray = memberData.nodes.map(function (item) {
@@ -1079,7 +1082,9 @@ const changeMatchByServer = async (nodeNow, memberData) => {
   // console.log("change = " , change)
 
   // find all the node data from the allNodesDistanceR and then loop throw them
-  let allNodesDistanceR_Data = await Node.find({ _id: allNodesDistanceR });
+  let allNodesDistanceR_Data = await Node.find({
+    _id: allNodesDistanceR,
+  }).select("_id match_v2_update");
 
   // loop throw all the nodes and change the matchByServer
   for (let i = 0; i < allNodesDistanceR_Data.length; i++) {

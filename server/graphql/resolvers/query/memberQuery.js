@@ -1918,6 +1918,7 @@ module.exports = {
     }
   },
   matchSkillsToProjects: async (parent, args, context, info) => {
+    // deprecate
     const { nodesID, serverID } = args.fields;
     let { page, limit } = args.fields;
     console.log("Query > matchSkillsToMembers > args.fields = ", args.fields);
