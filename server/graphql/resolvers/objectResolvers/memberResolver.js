@@ -458,6 +458,7 @@ module.exports = {
         nodeData = await Node.findOne({ _id: nodeID }).select("_id name");
 
         return nodeData;
+        return {};
       } catch (err) {
         throw new ApolloError(
           err.message,
