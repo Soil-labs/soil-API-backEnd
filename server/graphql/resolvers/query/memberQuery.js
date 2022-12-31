@@ -1319,10 +1319,6 @@ module.exports = {
         for (let j = 0; j < match_v2.length; j++) {
           // find all the connections for this particular node
           // check if serverID exist on array match_v2.serverID
-          // if (
-          //   match_v2[j].serverID.includes(serverID) &&
-          //   match_v2[j].type == "Member"
-          // ) {
           if (
             match_v2[j].serverID.some((value) => serverID_set.has(value)) &&
             match_v2[j].type == "Member"
@@ -1339,12 +1335,13 @@ module.exports = {
               memberObj[match_v2[j].nodeResID].wh_k += match_v2[j].wh_k;
               memberObj[match_v2[j].nodeResID].k_sum += match_v2[j].k_sum;
 
-              wh_k_arr_before += memberObj[match_v2[j].nodeResID].wh_k_arr;
-
               const N = memberObj[match_v2[j].nodeResID].numPath;
               const k_sum = memberObj[match_v2[j].nodeResID].k_sum;
               const wh_k = memberObj[match_v2[j].nodeResID].wh_k;
               const sumi = memberObj[match_v2[j].nodeResID].wh_sum;
+              let conn_node_wh_obj =
+                memberObj[match_v2[j].nodeResID].conn_node_wh_obj;
+
               const wh_k_arr = match_v2[j].wh_k_arr;
 
               memberObj[match_v2[j].nodeResID].wh_k_arr.forEach(
@@ -1353,6 +1350,23 @@ module.exports = {
                   wh_k_T.numPath = wh_k_arr[idx].numPath;
                 }
               );
+
+              match_v2[j].conn_node_wh.forEach((conn_node_wh_T, idx) => {
+                if (conn_node_wh_obj[conn_node_wh_T.nodeConnID]) {
+                  conn_node_wh_obj[conn_node_wh_T.nodeConnID].wh_sum +=
+                    conn_node_wh_T.wh_sum;
+                  conn_node_wh_obj[conn_node_wh_T.nodeConnID].numPath +=
+                    conn_node_wh_T.numPath;
+                } else {
+                  // console.log("conn_node_wh_T = ", conn_node_wh_T);
+                  conn_node_wh_obj[conn_node_wh_T.nodeConnID] = {
+                    wh_sum: conn_node_wh_T.wh_sum,
+                    numPath: conn_node_wh_T.numPath,
+                  };
+                }
+              });
+              memberObj[match_v2[j].nodeResID].conn_node_wh_obj =
+                conn_node_wh_obj;
 
               const pers =
                 ((1 - 1 / N ** 0.3) * w1 + (wh_k / k_sum) * w2) * 100;
@@ -1384,6 +1398,17 @@ module.exports = {
                 ];
               }
 
+              const conn_node_wh_obj = match_v2[j].conn_node_wh.reduce(
+                (obj, item) => {
+                  obj[item.nodeConnID] = item;
+                  return obj;
+                },
+                {}
+              );
+              // console.log("conn_node_wh_obj = ", conn_node_wh_obj);
+
+              // asdf;
+
               const pers =
                 ((1 - 1 / N ** 0.3) * w1 + (wh_k / k_sum) * w2) * 100;
               memberObj[match_v2[j].nodeResID] = {
@@ -1395,6 +1420,7 @@ module.exports = {
                 wh_k: match_v2[j].wh_k,
                 k_sum: match_v2[j].k_sum,
                 wh_k_arr: wh_k_arr,
+                conn_node_wh_obj,
               };
             }
             if (memberObj[match_v2[j].nodeResID].pers > original_max_m) {
@@ -1410,6 +1436,7 @@ module.exports = {
 
       // console.log("original_min_m = ", original_min_m);
       // console.log("original_max_m = ", original_max_m);
+      // console.log("memberObj = ", memberObj);
 
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
@@ -1449,12 +1476,12 @@ module.exports = {
           original_min_m = pers;
         }
       }
-      for (const [key, value] of Object.entries(memberObj)) {
-        console.log("value = ", value);
-      }
+      // for (const [key, value] of Object.entries(memberObj)) {
+      //   console.log("value = ", key, value);
+      // }
       // console.log("memberObj = ", memberObj);
 
-      // asdf;
+      // asdf2;
 
       threshold_cut_members = 15;
       if (original_min_m < threshold_cut_members) {
@@ -1464,6 +1491,23 @@ module.exports = {
       const memberArr = [];
       for (const key in memberObj) {
         // transform the object to array
+
+        // ------------ conn_node_wh_arr --------------
+        let conn_node_wh_arr = [];
+        let conn_node_wh_obj = memberObj[key].conn_node_wh_obj;
+        for (const key in conn_node_wh_obj) {
+          conn_node_wh_arr.push({
+            nodeID: key,
+            totalPercentage:
+              (conn_node_wh_obj[key].wh_sum / conn_node_wh_obj[key].numPath) *
+              100,
+          });
+        }
+        conn_node_wh_arr.sort(
+          // sort it by the percentage
+          (a, b) => b.totalPercentage - a.totalPercentage
+        );
+        // ------------ conn_node_wh_arr --------------
 
         if (memberObj[key].pers > threshold_cut_members) {
           mapped_value =
@@ -1476,10 +1520,16 @@ module.exports = {
               totalPercentage: mapped_value,
               realTotalPercentage: memberObj[key].pers,
             },
+            nodesPercentage: conn_node_wh_arr,
             memberID: key,
           });
         }
       }
+
+      memberArr.forEach((member) => {
+        console.log("member = ", member);
+        // console.log("member = ", member.nodesPercentage);
+      });
 
       // console.log("memberArr = ", memberArr);
 
@@ -1873,6 +1923,7 @@ module.exports = {
     }
   },
   matchSkillsToProjects: async (parent, args, context, info) => {
+    // deprecate
     const { nodesID, serverID } = args.fields;
     let { page, limit } = args.fields;
     console.log("Query > matchSkillsToMembers > args.fields = ", args.fields);

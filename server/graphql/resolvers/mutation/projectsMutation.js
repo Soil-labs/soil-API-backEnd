@@ -294,7 +294,7 @@ module.exports = {
 
     try {
       let projectData = await Projects.findOne({ "role._id": projectRoleID });
-      let nodesData = await Node.find({ _id: nodesID });
+      let nodesData = await Node.find({ _id: nodesID }).select("_id");
 
       projectRoleData = projectData.role.filter(
         (role) => role._id == projectRoleID
@@ -415,7 +415,7 @@ module.exports = {
     try {
       let projectData = await Projects.findOne({ "role._id": projectRoleID });
 
-      let nodesData = await Node.find({ _id: nodesID });
+      let nodesData = await Node.find({ _id: nodesID }).select("_id");
 
       projectRoleData = projectData.role.filter(
         (role) => role._id == projectRoleID
@@ -1179,9 +1179,11 @@ module.exports = {
           if (currentRole) {
             // get all nodes from currentRole.nodes
             let nodesData = await Node.find({
-              _id: currentRole.nodes.map(function (item) {
-                return item._id.toString();
-              }),
+              _id: currentRole.nodes
+                .map(function (item) {
+                  return item._id.toString();
+                })
+                .select("_id"),
             });
 
             if (nodesData && nodesData.length && nodesData.length > 0) {
@@ -1236,7 +1238,9 @@ const changeMatchByServer = async (nodeNow, projectRoleData) => {
   // console.log("change = " , change)
 
   // find all the node data from the allNodesDistanceR and then loop throw them
-  let allNodesDistanceR_Data = await Node.find({ _id: allNodesDistanceR });
+  let allNodesDistanceR_Data = await Node.find({
+    _id: allNodesDistanceR,
+  }).select("_id match_v2_update");
 
   // loop throw all the nodes and change the matchByServer
   for (let i = 0; i < allNodesDistanceR_Data.length; i++) {

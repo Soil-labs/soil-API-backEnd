@@ -109,7 +109,9 @@ module.exports = {
 
         // console.log("nodesID = " , nodesID)
 
-        const nodesData = await Node.find({ _id: nodesID });
+        const nodesData = await Node.find({ _id: nodesID }).select(
+          "_id name node"
+        );
 
         let res = [];
         nodesData.forEach((node) => {
@@ -415,6 +417,50 @@ module.exports = {
         memberData = await Members.findOne({ _id: memberID });
 
         return memberData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "userResolver > skills",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    nodesPercentage: async (parent, args, context, info) => {
+      // console.log("parent 22322= ", parent);
+
+      try {
+        const nodesPercentage = parent.nodesPercentage;
+
+        // nodeData = await Node.findOne({ _id: nodeID });
+
+        return nodesPercentage;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "userResolver > skills",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+  },
+  nodesPercentageType: {
+    node: async (parent, args, context, info) => {
+      // console.log("parent 22322= ", parent);
+
+      try {
+        const nodeID = parent.nodeID;
+
+        // nodeData = await Node.findOne({ _id: nodeID });
+        nodeData = await Node.findOne({ _id: nodeID }).select("_id name node");
+
+        return nodeData;
+        return {};
       } catch (err) {
         throw new ApolloError(
           err.message,
