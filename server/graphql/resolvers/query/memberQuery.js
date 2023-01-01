@@ -1303,7 +1303,7 @@ module.exports = {
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      w1 = 0.2; // the weight of the number of paths
+      w1 = 0.4; // the weight of the number of paths
       w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
       memberObj = {};
 
@@ -1448,23 +1448,27 @@ module.exports = {
 
         wh_sum = 0;
         numPath = 0;
+        let penaltySmallNumPath = 0;
         wh_k_arr.forEach((wh_k_T, idx) => {
           let wh_sum_n = wh_k_arr[idx].wh_sum;
           let numPath_n = wh_k_arr[idx].numPath;
           numPath_weighted += numPath_n * (((3 - idx) * 3) / (idx + 1));
 
           if (numPath == 0 && numPath_n != 0) {
+            penaltySmallNumPath = 1 - 1 / (numPath_n + 1) ** 1.4;
             wh_sum = wh_sum_n;
             numPath = numPath_n;
           }
         });
         const C1 = 1 - 1 / numPath_weighted ** 0.3;
         const C2 = wh_sum / numPath;
-        const pers = ((C1 * w1 + C2 * w2) * 100).toFixed(2);
+        const pers = ((C1 * w1 + C2 * penaltySmallNumPath * w2) * 100).toFixed(
+          2
+        );
         memberObj[key] = {
           ...value,
           C1,
-          C2,
+          C2: C2 * penaltySmallNumPath,
           pers: pers,
           numPath_weighted: numPath_weighted,
         };
@@ -1476,9 +1480,9 @@ module.exports = {
           original_min_m = pers;
         }
       }
-      // for (const [key, value] of Object.entries(memberObj)) {
-      //   console.log("value = ", key, value);
-      // }
+      for (const [key, value] of Object.entries(memberObj)) {
+        console.log("value = ", key, value);
+      }
       // console.log("memberObj = ", memberObj);
 
       // asdf2;
@@ -1510,10 +1514,15 @@ module.exports = {
         // ------------ conn_node_wh_arr --------------
 
         if (memberObj[key].pers > threshold_cut_members) {
-          mapped_value =
-            ((memberObj[key].pers - original_min_m) * (new_min_m - new_max_m)) /
-              (original_max_m - original_min_m) +
-            new_max_m;
+          if (original_max_m - original_min_m > 0) {
+            mapped_value =
+              ((memberObj[key].pers - original_min_m) *
+                (new_min_m - new_max_m)) /
+                (original_max_m - original_min_m) +
+              new_max_m;
+          } else {
+            mapped_value = memberObj[key].pers;
+          }
 
           memberArr.push({
             matchPercentage: {
@@ -1526,10 +1535,10 @@ module.exports = {
         }
       }
 
-      memberArr.forEach((member) => {
-        console.log("member = ", member);
-        // console.log("member = ", member.nodesPercentage);
-      });
+      // memberArr.forEach((member) => {
+      //   console.log("member = ", member);
+      //   // console.log("member = ", member.nodesPercentage);
+      // });
 
       // console.log("memberArr = ", memberArr);
 

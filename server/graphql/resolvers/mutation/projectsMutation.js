@@ -465,8 +465,8 @@ module.exports = {
         for (let i = 0; i < nodesDataNew.length; i++) {
           let nodeNow = nodesDataNew[i];
           makeConnection_neo4j({
-            node: ["Role", nodeNow.node],
-            id: [projectRoleData._id, nodeNow._id],
+            node: [nodeNow.node, "Role"],
+            id: [nodeNow._id, projectRoleData._id],
             connection: "connection",
           });
 

@@ -734,7 +734,7 @@ module.exports = {
 
     await findMatch_translateArray_path(
       `
-            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(p:${find}))
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]->(p:${find}))
             WITH *
             WHERE '${serverID}' IN p.serverID
             RETURN ms
@@ -745,7 +745,7 @@ module.exports = {
 
     await findMatch_translateArray_path(
       `
-            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(p:${find}))
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]->(a)-[]->(p:${find}))
             WHERE NOT (a:Member OR a:Project OR a:Role)
             WITH *
             WHERE '${serverID}' IN p.serverID
@@ -757,7 +757,7 @@ module.exports = {
 
     await findMatch_translateArray_path(
       `
-            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]-(a)-[]-(b)-[]-(p:${find}))
+            MATCH  ms = ((n:${node}{_id: '${nodeID}'})-[]->(a)-[]->(b)-[]->(p:${find}))
             WHERE NOT (a:Member OR a:Project OR a:Role) AND NOT (b:Member OR b:Project OR b:Role)
             WITH *
             WHERE '${serverID}' IN p.serverID
