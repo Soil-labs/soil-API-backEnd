@@ -181,6 +181,7 @@ module.exports = `
 
     type matchSkillsToProjectsOutput {
         matchPercentage: Float,
+        realPercebtage: Float,
         project: Project,
         commonSkills: [Skills]
         projectRoles: [matchProjectRoles]
@@ -188,6 +189,7 @@ module.exports = `
     
     type matchProjectRoles {
         matchPercentage: Float,
+        realPercebtage: Float,
         projectRole: roleType,
         commonSkills: [Skills]
     }
