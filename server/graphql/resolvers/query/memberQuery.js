@@ -2115,9 +2115,15 @@ module.exports = {
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      w1 = 0.5; // the weight of the number of paths
+      w1 = 0.3; // the weight of the number of paths
       w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
       projectRoleObj = {};
+
+      new_max_m = 20;
+      new_min_m = 100;
+
+      original_min_m = 110; // will change on the loop
+      original_max_m = -10; // will change on the loop
 
       for (let i = 0; i < nodeData.length; i++) {
         // loop on the nodes
@@ -2158,38 +2164,66 @@ module.exports = {
                 pers: Number(pers.toFixed(2)),
               };
             }
+            if (projectRoleObj[match_v2[j].nodeResID].pers > original_max_m) {
+              original_max_m = projectRoleObj[match_v2[j].nodeResID].pers;
+            }
+            if (projectRoleObj[match_v2[j].nodeResID].pers < original_min_m) {
+              original_min_m = projectRoleObj[match_v2[j].nodeResID].pers;
+            }
           }
         }
       }
 
       console.log("projectRoleObj = ", projectRoleObj);
 
+      threshold_cut_members = 15;
+      if (original_min_m < threshold_cut_members) {
+        original_min_m = threshold_cut_members; // we need to change the original minimum to the threshold
+      }
+
       // tranform to project
       let projectObj = {};
+
+      let mapped_value;
       for (const key in projectRoleObj) {
         let projectData = await Projects.findOne({ "role._id": key });
 
         if (projectData) {
+          if (original_max_m - original_min_m > 0) {
+            mapped_value =
+              ((projectRoleObj[key].pers - original_min_m) *
+                (new_min_m - new_max_m)) /
+                (original_max_m - original_min_m) +
+              new_max_m;
+          } else {
+            mapped_value = projectObj[key].pers;
+          }
+
           if (projectObj[projectData._id]) {
             if (
-              projectObj[projectData._id].matchPercentage <
+              projectObj[projectData._id].realPercebtage <
               projectRoleObj[key].pers
             ) {
-              projectObj[projectData._id].matchPercentage =
+              projectObj[projectData._id].realPercebtage =
                 projectRoleObj[key].pers;
+
+              projectObj[projectData._id].matchPercentage = mapped_value;
             }
             projectObj[projectData._id].projectRoles.push({
               projectRoleID: key,
-              matchPercentage: projectRoleObj[key].pers,
+              realPercebtage: projectRoleObj[key].pers,
+              matchPercentage: mapped_value,
             });
           } else {
             projectObj[projectData._id] = {
               project: projectData,
-              matchPercentage: projectRoleObj[key].pers,
+              realPercebtage: projectRoleObj[key].pers,
+              matchPercentage: mapped_value,
               projectRoles: [
                 {
                   projectRoleID: key,
-                  matchPercentage: projectRoleObj[key].pers,
+                  realPercebtage: projectRoleObj[key].pers,
+                  matchPercentage: mapped_value,
                 },
               ],
             };
@@ -2200,8 +2234,10 @@ module.exports = {
       const projectArr = [];
       for (const key in projectObj) {
         // transform the object to array
+
         projectArr.push({
           matchPercentage: projectObj[key].matchPercentage,
+          realPercebtage: projectObj[key].realPercebtage,
           project: projectObj[key].project,
           projectRoles: projectObj[key].projectRoles,
         });
