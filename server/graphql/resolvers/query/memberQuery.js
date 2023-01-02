@@ -1303,7 +1303,7 @@ module.exports = {
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      w1 = 0.4; // the weight of the number of paths
+      w1 = 0.2; // the weight of the number of paths
       w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
       memberObj = {};
 
@@ -2100,6 +2100,8 @@ module.exports = {
       });
     }
 
+    const serverID_set = new Set(serverID);
+
     if (page != null && limit != null) {
     } else {
       page = 0;
@@ -2125,7 +2127,7 @@ module.exports = {
           // find all the connections for this particular node
           // check if serverID exist on array match_v2.serverID
           if (
-            match_v2[j].serverID.includes(serverID) &&
+            match_v2[j].serverID.some((value) => serverID_set.has(value)) &&
             match_v2[j].type == "ProjectRole"
           ) {
             // If this is both have the serverID and is Member
