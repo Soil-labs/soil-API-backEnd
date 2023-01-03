@@ -1055,8 +1055,12 @@ async function findMatch_translateArray_path_K_hop(
         let totalWeight = 0;
         let N_weight = 0;
         let mul_weight = 1;
-        nodeConnID = ""; // the nodeID for the connected node
+        nodeConnID_pathLastConnection = ""; // the nodeID for the connected node
+        pathLength = names_oneHopeMatch[i]._fields[0].segments.length;
+
+        let flag_dontRunIfUseMemberOnPath = false;
         names_oneHopeMatch[i]._fields[0].segments.forEach((s, idx) => {
+          // console.log("s = ", s);
           if (s.relationship.properties.weight) {
             mul_weight *= s.relationship.properties.weight;
             totalWeight += s.relationship.properties.weight;
@@ -1066,11 +1070,22 @@ async function findMatch_translateArray_path_K_hop(
             totalWeight += 1;
             N_weight += 1;
           }
-          if (idx === names_oneHopeMatch[i]._fields[0].segments.length - 1) {
+          if (idx === pathLength - 1) {
             // console.log("s.relationship = ", s.start.properties);
-            nodeConnID = s.start.properties._id;
+            nodeConnID_pathLastConnection = s.start.properties._id;
+          } else {
+            // SOS 🆘 -> Take out all the paths that has in the middle nodes that are not on the knowledge graph and they are Members,Projects, etc.
+            if (
+              s.end.labels[0] == "Member" ||
+              s.end.labels[0] == "Project" ||
+              s.end.labels[0] == "Role"
+            ) {
+              flag_dontRunIfUseMemberOnPath = true;
+            }
           }
         });
+
+        if (flag_dontRunIfUseMemberOnPath == true) continue;
 
         totalWeight_avg = totalWeight;
         if (N_weight > 0) totalWeight_avg = totalWeight / N_weight;
@@ -1121,11 +1136,11 @@ async function findMatch_translateArray_path_K_hop(
 
           let totAvW = totalWeight_avg ** (hop + 1);
 
-          if (conn_node_wh_obj[nodeConnID]) {
-            conn_node_wh_obj[nodeConnID].wh_sum += totAvW;
-            conn_node_wh_obj[nodeConnID].numPath += 1;
+          if (conn_node_wh_obj[nodeConnID_pathLastConnection]) {
+            conn_node_wh_obj[nodeConnID_pathLastConnection].wh_sum += totAvW;
+            conn_node_wh_obj[nodeConnID_pathLastConnection].numPath += 1;
           } else {
-            conn_node_wh_obj[nodeConnID] = {
+            conn_node_wh_obj[nodeConnID_pathLastConnection] = {
               wh_sum: WH_new,
               numPath: 1,
             };
@@ -1187,7 +1202,7 @@ async function findMatch_translateArray_path_K_hop(
             k_sum,
             wh_k_arr,
             conn_node_wh_obj: {
-              [nodeConnID]: {
+              [nodeConnID_pathLastConnection]: {
                 wh_sum: WH_new,
                 numPath: 1,
               },

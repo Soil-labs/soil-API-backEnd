@@ -1473,15 +1473,15 @@ module.exports = {
           numPath_weighted: numPath_weighted,
         };
 
-        if (pers > original_max_m) {
-          original_max_m = pers;
+        if (Number(pers) > Number(original_max_m)) {
+          original_max_m = Number(pers);
         }
-        if (pers < original_min_m) {
-          original_min_m = pers;
+        if (Number(pers) < Number(original_min_m)) {
+          original_min_m = Number(pers);
         }
       }
       for (const [key, value] of Object.entries(memberObj)) {
-        console.log("value = ", key, value);
+        if (key == "472426060441714688") console.log("value = ", key, value);
       }
       // console.log("memberObj = ", memberObj);
 
@@ -1506,6 +1506,10 @@ module.exports = {
               (conn_node_wh_obj[key].wh_sum / conn_node_wh_obj[key].numPath) *
               100,
           });
+        }
+        if (key == "472426060441714688") {
+          console.log("key = ", key);
+          console.log("conn_node_wh_arr = ", conn_node_wh_arr);
         }
         conn_node_wh_arr.sort(
           // sort it by the percentage
