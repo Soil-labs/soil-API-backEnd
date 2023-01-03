@@ -80,7 +80,7 @@ module.exports = {
         },
       });
 
-      //add the champion 
+      //add the champion
       let memberDataChampion = await Members.findOne({ _id: champion });
 
       if (memberDataChampion) {
@@ -260,7 +260,6 @@ module.exports = {
     if (dates) fields = { ...fields, dates };
     if (stepsJoinProject) fields = { ...fields, stepsJoinProject };
     if (gardenServerID) fields = { ...fields, gardenServerID };
-    
 
     console.log("fields = ", fields);
 
@@ -1377,7 +1376,8 @@ module.exports = {
       if (role && role.length && role.length > 0) {
         for (let i = 0; i < role.length; i++) {
           const currentRole = role[i];
-          if (currentRole) {
+          console.log("currentRole = ", currentRole);
+          if (currentRole && currentRole.Node && currentRole.Node.length > 0) {
             // get all nodes from currentRole.nodes
             let nodesData = await Node.find({
               _id: currentRole.nodes
