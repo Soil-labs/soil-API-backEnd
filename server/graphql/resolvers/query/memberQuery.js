@@ -1310,6 +1310,8 @@ module.exports = {
       new_max_m = 20;
       new_min_m = 100;
 
+      console.log("nodeData = ", nodeData);
+
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
       for (let i = 0; i < nodeData.length; i++) {
@@ -1436,7 +1438,7 @@ module.exports = {
 
       // console.log("original_min_m = ", original_min_m);
       // console.log("original_max_m = ", original_max_m);
-      // console.log("memberObj = ", memberObj);
+      console.log("memberObj = ", memberObj);
 
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
