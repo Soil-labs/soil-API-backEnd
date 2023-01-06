@@ -575,6 +575,186 @@ module.exports = {
       );
     }
   },
+
+  updateNodesToMember: async (parent, args, context, info) => {
+    const { memberID, nodesID, nodeType } = args.fields;
+
+    console.log("Mutation > updateNodesToMember > args.fields = ", args.fields);
+
+    if (!memberID) throw new ApolloError("memberID is required");
+
+    try {
+      let nodesData = await Node.find({ _id: nodesID }).select(
+        "_id name node match_v2_update"
+      );
+
+      // ---------- All nodes should be equal to nodeType or else throw error -----------
+      nodesID_array = [];
+      nodesData.forEach((node) => {
+        nodesID_array.push(node._id.toString());
+        if (node.node != nodeType) {
+          throw new ApolloError(
+            "All nodes should be equal to nodeType, problem on nodeID = " +
+              node._id +
+              " with name = " +
+              node.name +
+              " and node = " +
+              node.node +
+              ""
+          );
+        }
+      });
+      // ---------- All nodes should be equal to nodeType or else throw error -----------
+
+      let memberData = await Members.findOne({ _id: memberID }).select(
+        "_id nodes"
+      );
+
+      // check if the nodes are already in the member (memberData.nodes)
+      let nodesDataOriginalArray = memberData.nodes.map(function (item) {
+        return item._id.toString();
+      });
+
+      // --------- Separate all the Nodes, and the nodeTypes ----------------
+      let nodeData_member_all = await Node.find({
+        _id: nodesDataOriginalArray,
+      }).select("_id name node");
+
+      nodeData_member_type = [];
+      nodeID_member_type = [];
+      nodeID_member_all = [];
+      nodeData_member_all.forEach((node) => {
+        nodeID_member_all.push(node._id.toString());
+        if (node.node == nodeType) {
+          nodeData_member_type.push(node);
+          nodeID_member_type.push(node._id.toString());
+        }
+      });
+
+      console.log("nodesID_array = ", nodesID_array);
+      console.log("nodeID_member_type = ", nodeID_member_type);
+
+      // --------- Separate all the Nodes, and the nodeTypes ----------------
+
+      /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
+      let differenceNodes = nodesID_array.filter(
+        (x) => !nodeID_member_type.includes(x)
+      );
+      console.log("differenceNodes = ", differenceNodes);
+
+      // asf;
+      if (differenceNodes.length > 0) {
+        let nodesDataNew = [];
+        for (let i = 0; i < differenceNodes.length; i++) {
+          let nodeID = differenceNodes[i];
+          let nodeData = nodesData.find(
+            (x) => x._id.toString() == nodeID.toString()
+          );
+          nodesDataNew.push(nodeData);
+          nodeData_member_all.push({ _id: nodeID });
+        }
+
+        console.log("nodesDataNew = ", nodesDataNew);
+
+        // asdf;
+
+        // add only the new ones as relationship on Neo4j
+        for (let i = 0; i < nodesDataNew.length; i++) {
+          let nodeNow = nodesDataNew[i];
+          makeConnection_neo4j({
+            node: [nodeNow.node, "Member"],
+            id: [nodeNow._id, memberData._id],
+            connection: "connection",
+          });
+
+          changeMatchByServer(nodeNow, memberData);
+        }
+      }
+      /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
+
+      // -------------- Remove the Nodes that are not in the nodesID_array ----------------
+      let nodesExistMemberAndNode = nodeID_member_type.filter((x) =>
+        nodesID_array.includes(x)
+      );
+      console.log("nodesExistMemberAndNode = ", nodesExistMemberAndNode);
+
+      let nodeExistOnlyMember = nodeID_member_type.filter(
+        (x) => !nodesID_array.includes(x)
+      );
+      console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
+
+      // asdf;
+      // console.log("change = " , change)
+
+      if (nodeExistOnlyMember.length > 0) {
+        // let nodesDataNew = [];
+        // for (let i = 0; i < nodesExistMemberAndNode.length; i++) {
+        //   let nodeID = nodesExistMemberAndNode[i];
+        //   let nodeData = nodesData.find(
+        //     (x) => x._id.toString() == nodeID.toString()
+        //   );
+        //   nodesDataNew.push(nodeData);
+        // }
+
+        // let nodeExistOnlyMember_id = [];
+        // for (let i = 0; i < nodeExistOnlyMember.length; i++) {
+        //   let nodeID = nodeExistOnlyMember[i];
+        //   nodeExistOnlyMember_id.push({ _id: nodeID });
+        // }
+
+        // memberData.nodes = nodeExistOnlyMember_id;
+
+        nodeData_member_all = nodeData_member_all.filter(
+          (element) => !nodeExistOnlyMember.includes(element._id.toString())
+        );
+
+        console.log("nodeData_member_all = ", nodeData_member_all);
+
+        console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
+
+        // asdf;
+
+        // console.log("memberData = " , memberData)
+
+        // console.log("change = " , change)
+
+        // add only the new ones as relationship on Neo4j
+        for (let i = 0; i < nodeExistOnlyMember.length; i++) {
+          let nodeNow = { _id: nodeExistOnlyMember[i] };
+          deleteConnectionANYBetweenNodes_neo4j({
+            nodeID_1: memberData._id,
+            nodeID_2: nodeNow._id,
+          });
+
+          changeMatchByServer(nodeNow, memberData);
+        }
+      }
+      // -------------- Remove the Nodes that are not in the nodesID_array ----------------
+
+      // asdf;
+
+      memberData2 = await Members.findOneAndUpdate(
+        { _id: memberID },
+        {
+          $set: {
+            nodes: nodeData_member_all,
+          },
+        },
+        { new: true }
+      );
+      pubsub.publish(memberData2._id, {
+        memberUpdated: memberData2,
+      });
+
+      return memberData2;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
   deleteMember: async (parent, args, context, info) => {
     const { memberID } = args.fields;
 

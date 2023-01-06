@@ -2,6 +2,7 @@ const {
   addNewMember,
   updateMember,
   addNodesToMember,
+  updateNodesToMember,
   deleteNodesFromMember,
   deleteMember,
   addFavoriteProject,
@@ -22,7 +23,7 @@ const {
   createNewRole,
   createNewEpic,
   deleteProject,
-  createProject
+  createProject,
 } = require("./mutation/projectsMutation");
 
 const {
@@ -69,6 +70,7 @@ const {
   addMessage,
   addMessages,
   updateMessage,
+  useAI_OnMessage,
 } = require("./mutation/aiMutation");
 
 module.exports = {
@@ -77,6 +79,7 @@ module.exports = {
     addNewMember,
     updateMember,
     addNodesToMember,
+    updateNodesToMember,
     deleteNodesFromMember,
     deleteMember,
     endorseAttribute,
@@ -147,6 +150,7 @@ module.exports = {
     addMessage,
     addMessages,
     updateMessage,
+    useAI_OnMessage,
   },
   Subscription: {
     memberUpdated,

@@ -8,6 +8,7 @@ module.exports = `
         updateMember(fields:updateMemberInput!): Members
         addFavoriteProject(fields:addFavoriteProjectInput!): Members
         addNodesToMember(fields:addNodesToMemberInput!): Members
+        updateNodesToMember(fields:updateNodesToMemberInput!): Members
         deleteNodesFromMember(fields:deleteNodesFromMemberInput!): Members
         deleteMember(fields:deleteMemberInput!): Members
         addSkillToMember(fields:addSkillToMember_Input!):Members
@@ -86,6 +87,7 @@ module.exports = `
         addMessage(fields: addMessageInput): AI
         addMessages(fields: addMessagesInput): [AI]
         updateMessage(fields: updateMessageInput): AI
+        useAI_OnMessage(fields: useAI_OnMessageInput): useAI_OnMessageOutput
 
     }
 `
