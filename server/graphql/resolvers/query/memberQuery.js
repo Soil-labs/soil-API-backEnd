@@ -1259,17 +1259,32 @@ module.exports = {
     }
   },
   setAllMatch_v2: async (parent, args, context, info) => {
-    const { val } = args;
+    const { val, node } = args;
     console.log("Query > matchSkillsToMembers > args.fields = ", args);
+
+    let match_v2_update;
+    if (node == "Member") {
+      match_v2_update = {
+        member: val,
+        projectRole: false,
+      };
+    } else if (node == "ProjectRole") {
+      match_v2_update = {
+        member: false,
+        projectRole: val,
+      };
+    } else if (node == "All") {
+      match_v2_update = {
+        member: val,
+        projectRole: val,
+      };
+    }
 
     await Node.updateMany(
       {},
       {
         $set: {
-          match_v2_update: {
-            member: val,
-            projectRole: false,
-          },
+          match_v2_update: match_v2_update,
         },
       }
     );

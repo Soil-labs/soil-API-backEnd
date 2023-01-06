@@ -363,6 +363,12 @@ module.exports = `
         nodesID: [String]
     }
 
+    input updateNodesToMemberInput {
+        memberID: ID
+        nodesID: [String]
+        nodeType: String
+    }
+
     input deleteNodesFromMemberInput {
         memberID: ID
         nodesID: [String]

@@ -50,6 +50,14 @@ module.exports = `
         edenAI: EdenAIInput
     }
 
+    input useAI_OnMessageInput {
+        message: String
+    }
+
+    type useAI_OnMessageOutput {
+        res: [String]
+    }
+
 
 
 
