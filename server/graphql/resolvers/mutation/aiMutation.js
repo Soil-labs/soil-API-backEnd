@@ -1,16 +1,16 @@
 const { AI } = require("../../../models/aiModel");
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
-const { Configuration, OpenAIApi } = require("openai");
+// const { Configuration, OpenAIApi } = require("openai");
 const numeric = require("numeric");
 const math = require("mathjs");
 const fs = require("fs");
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// const configuration = new Configuration({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
 
-const openai = new OpenAIApi(configuration);
+// const openai = new OpenAIApi(configuration);
 
 module.exports = {
   addMessage: async (parent, args, context, info) => {
@@ -185,27 +185,27 @@ module.exports = {
 async function useGPT(prompt, temperature) {
   // let model = "text-curie-001";
   let model = "text-davinci-003";
-  const response = await openai.createCompletion({
-    model,
-    prompt,
-    temperature,
-    max_tokens: 256,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-  });
+  // const response = await openai.createCompletion({
+  //   model,
+  //   prompt,
+  //   temperature,
+  //   max_tokens: 256,
+  //   top_p: 1,
+  //   frequency_penalty: 0,
+  //   presence_penalty: 0,
+  // });
 
-  // ----------- Clean up the Results ---------
-  let generatedText = response.data.choices[0].text;
+  // // ----------- Clean up the Results ---------
+  // let generatedText = response.data.choices[0].text;
 
-  // console.log("generatedText = ", generatedText);
-  generatedText = generatedText.replace("\n", "");
-  // console.log("generatedText = ", generatedText);
+  // // console.log("generatedText = ", generatedText);
+  // generatedText = generatedText.replace("\n", "");
+  // // console.log("generatedText = ", generatedText);
 
-  arr = generatedText.split(", ");
-  // ----------- Clean up the Results ---------
+  // arr = generatedText.split(", ");
+  // // ----------- Clean up the Results ---------
 
-  return arr;
+  // return arr;
 }
 
 async function createEmbedingsGPT(words_n) {
