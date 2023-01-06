@@ -6,6 +6,12 @@ const numeric = require("numeric");
 const math = require("mathjs");
 const fs = require("fs");
 
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const openai = new OpenAIApi(configuration);
+
 module.exports = {
   addMessage: async (parent, args, context, info) => {
     const { creator, mentioned, message, serverID } = args.fields;
@@ -255,14 +261,6 @@ async function cashData(name, array) {
     if (err) throw err;
     console.log("Saved!");
   });
-}
-
-async function apiKeyGPT() {
-  const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  const openai = new OpenAIApi(configuration);
 }
 
 async function addKnowledgeGraph_embedings() {
