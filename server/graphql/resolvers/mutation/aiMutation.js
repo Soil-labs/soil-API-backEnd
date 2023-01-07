@@ -1,8 +1,7 @@
 const { AI } = require("../../../models/aiModel");
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
-// const { Configuration, OpenAIApi } = require("openai");
-// const numeric = require("numeric");
+const { Configuration, OpenAIApi } = require("openai");
 const math = require("mathjs");
 const fs = require("fs");
 
