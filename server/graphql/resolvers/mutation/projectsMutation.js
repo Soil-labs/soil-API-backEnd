@@ -261,7 +261,7 @@ module.exports = {
     if (stepsJoinProject) fields = { ...fields, stepsJoinProject };
     if (gardenServerID) fields = { ...fields, gardenServerID };
 
-    console.log("fields = ", fields);
+    // console.log("fields = ", fields);
 
     try {
       let projectData;
@@ -290,11 +290,9 @@ module.exports = {
             },
           });
         } else {
-          let serverID_new = [...projectData.serverID];
-          if (!projectData.serverID.includes(serverID)) {
-            serverID_new.push(serverID);
-          }
-          if (serverID) fields.serverID = serverID_new;
+          // const serverID_new = [...projectData.serverID];
+
+          fields.serverID = serverID;
 
           projectData = await Projects.findOneAndUpdate(
             { _id: projectData._id },
