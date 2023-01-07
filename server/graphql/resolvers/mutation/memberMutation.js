@@ -611,13 +611,13 @@ module.exports = {
       );
 
       // check if the nodes are already in the member (memberData.nodes)
-      let nodesDataOriginalArray = memberData.nodes.map(function (item) {
+      let nodesID_member = memberData.nodes.map(function (item) {
         return item._id.toString();
       });
 
       // --------- Separate all the Nodes, and the nodeTypes ----------------
       let nodeData_member_all = await Node.find({
-        _id: nodesDataOriginalArray,
+        _id: nodesID_member,
       }).select("_id name node");
 
       nodeData_member_type = [];
@@ -687,23 +687,6 @@ module.exports = {
       // console.log("change = " , change)
 
       if (nodeExistOnlyMember.length > 0) {
-        // let nodesDataNew = [];
-        // for (let i = 0; i < nodesExistMemberAndNode.length; i++) {
-        //   let nodeID = nodesExistMemberAndNode[i];
-        //   let nodeData = nodesData.find(
-        //     (x) => x._id.toString() == nodeID.toString()
-        //   );
-        //   nodesDataNew.push(nodeData);
-        // }
-
-        // let nodeExistOnlyMember_id = [];
-        // for (let i = 0; i < nodeExistOnlyMember.length; i++) {
-        //   let nodeID = nodeExistOnlyMember[i];
-        //   nodeExistOnlyMember_id.push({ _id: nodeID });
-        // }
-
-        // memberData.nodes = nodeExistOnlyMember_id;
-
         nodeData_member_all = nodeData_member_all.filter(
           (element) => !nodeExistOnlyMember.includes(element._id.toString())
         );
@@ -711,12 +694,6 @@ module.exports = {
         console.log("nodeData_member_all = ", nodeData_member_all);
 
         console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
-
-        // asdf;
-
-        // console.log("memberData = " , memberData)
-
-        // console.log("change = " , change)
 
         // add only the new ones as relationship on Neo4j
         for (let i = 0; i < nodeExistOnlyMember.length; i++) {

@@ -14,6 +14,7 @@ const {
 const {
   updateProject,
   addNodesToProjectRole,
+  updateNodesToProjectRole,
   addProjectRole,
   deleteNodesToProjectRole,
   newTweetProject,
@@ -90,6 +91,7 @@ module.exports = {
     // ------------- PROJECT MUTATION -----------------
     updateProject,
     addNodesToProjectRole,
+    updateNodesToProjectRole,
     addProjectRole,
     deleteNodesToProjectRole,
     newTweetProject,
