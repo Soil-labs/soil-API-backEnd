@@ -80,7 +80,7 @@ module.exports = {
         },
       });
 
-      //add the champion 
+      //add the champion
       let memberDataChampion = await Members.findOne({ _id: champion });
 
       if (memberDataChampion) {
@@ -221,267 +221,211 @@ module.exports = {
       return projectData;
     }
   ),
-  updateProject: async (parent, args, context, info) => {
-    const {
-      _id,
-      title,
-      description,
-      descriptionOneLine,
-      emoji,
-      backColorEmoji,
-      champion,
-      team,
-      role,
-      collaborationLinks,
-      budget,
-      dates,
-      stepsJoinProject,
-      serverID,
-      gardenServerID,
-    } = JSON.parse(JSON.stringify(args.fields));
+  updateProject: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, { user }, info) => {
+      const {
+        _id,
+        title,
+        description,
+        descriptionOneLine,
+        emoji,
+        backColorEmoji,
+        team,
+        role,
+        collaborationLinks,
+        budget,
+        dates,
+        stepsJoinProject,
+        serverID,
+        gardenServerID,
+      } = JSON.parse(JSON.stringify(args.fields));
 
-    console.log("Mutation > updateProject > args.fields = ", args.fields);
+      console.log("Mutation > updateProject > args.fields = ", args.fields);
+      const champion = user._id;
 
-    let fields = {
-      _id,
-      registeredAt: new Date(),
-    };
+      if (_id) throw new ApolloError("The project _id is required");
 
-    if (title) fields = { ...fields, title };
-    if (description) fields = { ...fields, description };
-    if (descriptionOneLine) fields = { ...fields, descriptionOneLine };
-    if (emoji) fields = { ...fields, emoji };
-    if (backColorEmoji) fields = { ...fields, backColorEmoji };
-    if (champion) fields = { ...fields, champion };
-    if (team) fields = { ...fields, team };
-    if (role) fields = { ...fields, role };
-    if (collaborationLinks) fields = { ...fields, collaborationLinks };
-    if (budget) fields = { ...fields, budget };
-    if (dates) fields = { ...fields, dates };
-    if (stepsJoinProject) fields = { ...fields, stepsJoinProject };
-    if (gardenServerID) fields = { ...fields, gardenServerID };
-    
+      let fields = {
+        _id,
+      };
 
-    console.log("fields = ", fields);
+      if (title) fields = { ...fields, title };
+      if (description) fields = { ...fields, description };
+      if (descriptionOneLine) fields = { ...fields, descriptionOneLine };
+      if (emoji) fields = { ...fields, emoji };
+      if (backColorEmoji) fields = { ...fields, backColorEmoji };
+      if (team) fields = { ...fields, team };
+      if (role) fields = { ...fields, role };
+      if (collaborationLinks) fields = { ...fields, collaborationLinks };
+      if (budget) fields = { ...fields, budget };
+      if (dates) fields = { ...fields, dates };
+      if (stepsJoinProject) fields = { ...fields, stepsJoinProject };
+      if (gardenServerID) fields = { ...fields, gardenServerID };
 
-    try {
-      let projectData;
+      console.log("fields = ", fields);
 
-      if (_id) {
-        projectData = await Projects.findOne({ _id: fields._id });
+      try {
+        let projectData;
 
-        // console.log("projectData 1 = ", projectData);
-
-        if (!projectData) {
-          if (serverID) fields.serverID = serverID;
-
-          projectData = await new Projects(fields);
-
-          projectData.save();
-
-          console.log("change = -putsigona bagiensld");
-
-          await createNode_neo4j_field({
-            fields: {
-              node: "Project",
-              _id: projectData._id,
-              project_id: projectData._id,
-              name: projectData.title,
-              serverID: projectData.serverID,
-            },
-          });
-        } else {
-          let serverID_new = [...projectData.serverID];
-          if (!projectData.serverID.includes(serverID)) {
-            serverID_new.push(serverID);
-          }
-          if (serverID) fields.serverID = serverID_new;
-
-          projectData = await Projects.findOneAndUpdate(
-            { _id: projectData._id },
-            {
-              $set: fields,
-            },
-            { new: true }
-          );
-
-          if (fields.serverID) {
-            await updateNode_neo4j_serverID({
-              node: "Project",
-              id: projectData._id,
-              serverID: projectData.serverID,
-            });
-          }
-        }
-      } else {
-        if (serverID) fields.serverID = serverID;
-
-        projectData = await new Projects(fields);
-        projectData.save();
-
-        await createNode_neo4j_field({
-          fields: {
-            node: "Project",
-            _id: projectData._id,
-            project_id: projectData._id,
-            name: projectData.title,
-            serverID: projectData.serverID,
-          },
-        });
-      }
-
-      // console.log("projectData 2 = " , projectData)
-      //champion is the creator of the project
-      if (champion) {
-        let memberDataChampion = await Members.findOne({ _id: champion });
-
-        if (memberDataChampion) {
-          let currentProjects = [...memberDataChampion.projects];
-
-          currentProjects.push({
-            projectID: projectData._id,
-            champion: true,
+          projectData = await Projects.findOne({
+            _id: fields._id,
+            champion: champion,
           });
 
-          memberDataUpdate = await Members.findOneAndUpdate(
-            { _id: champion },
-            {
-              $set: { projects: currentProjects },
-            },
-            { new: true }
-          );
+          // console.log("projectData 1 = ", projectData);
 
-          // add champion relationship between project node and member
-          makeConnection_neo4j({
-            node: ["Project", "Member"],
-            id: [projectData._id, memberDataChampion._id],
-            connection: "CHAMPION",
-          });
-        }
-      }
+          if (!projectData) {
+            throw new ApolloError(
+              "project _id not valid or you not the project champion"
+            );
+          } else {
+            //performing the update
+            let serverID_new = [...projectData.serverID];
+            if (!projectData.serverID.includes(serverID)) {
+              serverID_new.push(serverID);
+            }
+            if (serverID) fields.serverID = serverID_new;
 
-      // console.log("team ---- --- -- --  = " , team)
+            projectData = await Projects.findOneAndUpdate(
+              { _id: projectData._id },
+              {
+                $set: fields,
+              },
+              { new: true }
+            );
 
-      if (team && fields.team && fields.team.length > 0) {
-        console.log("team members!!!: ", fields.team); // prints out
-
-        // const session4 = driver.session({database:"neo4j"});
-        for (let i = 0; i < fields.team.length; i++) {
-          // console.log("team ---- --- -- --  = " , i)
-
-          makeConnection_neo4j({
-            node: ["Project", "Member"],
-            id: [projectData._id, fields.team[i].memberID],
-            connection: "TEAM_MEMBER",
-          });
-
-          let memberData = await Members.findOne({
-            _id: fields.team[i].members,
-          });
-          console.log("member data OBJECT 111: ", memberData); //null
-
-          if (memberData) {
-            console.log("member data OBJECT 222: ", memberData); //doesn't print out
-
-            let currentProjects = [...memberData.projects];
-
-            currentProjects.push({
-              projectID: projectData._id,
-              champion: false,
-              roleID: fields.team[i].roleID,
-              phase: fields.team[i].phase,
-            });
-            console.log("Member's current projects = ", currentProjects);
-
-            if (memberData) {
-              // console.log("currentProjects = " , currentProjects)
-              memberDataUpdate = await Members.findOneAndUpdate(
-                { _id: fields.team[i].memberID },
-                {
-                  $set: { projects: currentProjects },
-                },
-                { new: true }
-              );
-              // console.log("memberDataUpdate = " , memberDataUpdate)
+            if (fields.serverID) {
+              await updateNode_neo4j_serverID({
+                node: "Project",
+                id: projectData._id,
+                serverID: projectData.serverID,
+              });
             }
           }
-        }
-      }
+        // console.log("team ---- --- -- --  = " , team)
 
-      if (role && projectData.role && projectData.role.length > 0) {
-        for (let i = 0; i < projectData.role.length; i++) {
-          let RoleNow = projectData.role[i];
+        if (team && fields.team && fields.team.length > 0) {
+          console.log("team members!!!: ", fields.team); // prints out
 
-          console.log("change = 2232");
-
-          await createNode_neo4j_field({
-            fields: {
-              node: "Role",
-              _id: RoleNow._id,
-              project_id: projectData._id,
-              name: RoleNow.title,
-              serverID: projectData.serverID,
-            },
-          });
-
-          makeConnection_neo4j({
-            node: ["Project", "Role"],
-            id: [projectData._id, RoleNow._id],
-            connection: "ROLE",
-          });
-
-          for (let j = 0; j < RoleNow.skills.length; j++) {
-            let SkillNow = RoleNow.skills[j];
+          // const session4 = driver.session({database:"neo4j"});
+          for (let i = 0; i < fields.team.length; i++) {
+            // console.log("team ---- --- -- --  = " , i)
 
             makeConnection_neo4j({
-              node: ["Role", "Skill"],
-              id: [RoleNow._id, SkillNow._id],
-              connection: "ROLE_SKILL",
+              node: ["Project", "Member"],
+              id: [projectData._id, fields.team[i].memberID],
+              connection: "TEAM_MEMBER",
             });
 
-            skillData = await Skills.findOne({ _id: SkillNow._id });
+            let memberData = await Members.findOne({
+              _id: fields.team[i].members,
+            });
+            console.log("member data OBJECT 111: ", memberData); //null
 
-            if (skillData) {
-              // Recalculate the skill match now that neo4j diagram changed
-              await Skills.findOneAndUpdate(
-                { _id: skillData._id },
-                {
-                  $set: {
-                    match: {
-                      recalculateProjectRoles: true,
-                      distanceProjectRoles: skillData.distanceProjectRoles,
+            if (memberData) {
+              console.log("member data OBJECT 222: ", memberData); //doesn't print out
 
-                      recalculateMembers: true,
-                      distanceMembers: skillData.distanceMembers,
-                    },
+              let currentProjects = [...memberData.projects];
+
+              currentProjects.push({
+                projectID: projectData._id,
+                champion: false,
+                roleID: fields.team[i].roleID,
+                phase: fields.team[i].phase,
+              });
+              console.log("Member's current projects = ", currentProjects);
+
+              if (memberData) {
+                // console.log("currentProjects = " , currentProjects)
+                memberDataUpdate = await Members.findOneAndUpdate(
+                  { _id: fields.team[i].memberID },
+                  {
+                    $set: { projects: currentProjects },
                   },
-                },
-                { new: true }
-              );
+                  { new: true }
+                );
+                // console.log("memberDataUpdate = " , memberDataUpdate)
+              }
             }
           }
         }
-      } else if (serverID) {
-        for (let i = 0; i < projectData.role.length; i++) {
-          let RoleNow = projectData.role[i];
 
-          updateNode_neo4j_serverID_projectID({
-            node: "Role",
-            project_id: projectData._id,
-            serverID: projectData.serverID,
-          });
+        if (role && projectData.role && projectData.role.length > 0) {
+          for (let i = 0; i < projectData.role.length; i++) {
+            let RoleNow = projectData.role[i];
+
+            console.log("change = 2232");
+
+            await createNode_neo4j_field({
+              fields: {
+                node: "Role",
+                _id: RoleNow._id,
+                project_id: projectData._id,
+                name: RoleNow.title,
+                serverID: projectData.serverID,
+              },
+            });
+
+            makeConnection_neo4j({
+              node: ["Project", "Role"],
+              id: [projectData._id, RoleNow._id],
+              connection: "ROLE",
+            });
+
+            for (let j = 0; j < RoleNow.skills.length; j++) {
+              let SkillNow = RoleNow.skills[j];
+
+              makeConnection_neo4j({
+                node: ["Role", "Skill"],
+                id: [RoleNow._id, SkillNow._id],
+                connection: "ROLE_SKILL",
+              });
+
+              skillData = await Skills.findOne({ _id: SkillNow._id });
+
+              if (skillData) {
+                // Recalculate the skill match now that neo4j diagram changed
+                await Skills.findOneAndUpdate(
+                  { _id: skillData._id },
+                  {
+                    $set: {
+                      match: {
+                        recalculateProjectRoles: true,
+                        distanceProjectRoles: skillData.distanceProjectRoles,
+
+                        recalculateMembers: true,
+                        distanceMembers: skillData.distanceMembers,
+                      },
+                    },
+                  },
+                  { new: true }
+                );
+              }
+            }
+          }
+        } else if (serverID) {
+          for (let i = 0; i < projectData.role.length; i++) {
+            let RoleNow = projectData.role[i];
+
+            updateNode_neo4j_serverID_projectID({
+              node: "Role",
+              project_id: projectData._id,
+              serverID: projectData.serverID,
+            });
+          }
         }
-      }
 
-      return projectData;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
+        return projectData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "projectMutation",
+          { component: "projectMutation > updateProject" }
+        );
+      }
     }
-  },
+  ),
 
   deleteNodesToProjectRole: async (parent, args, context, info) => {
     const { projectRoleID, nodesID } = args.fields;

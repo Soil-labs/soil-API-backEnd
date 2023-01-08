@@ -271,9 +271,6 @@ module.exports = `
 
         serverID: [String]
         gardenServerID: String,
-
-        champion: String
-
         team: [teamInput]
 
         role: [roleInput]
