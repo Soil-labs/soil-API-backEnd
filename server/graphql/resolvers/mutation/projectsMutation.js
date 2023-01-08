@@ -245,7 +245,7 @@ module.exports = {
       console.log("Mutation > updateProject > args.fields = ", args.fields);
       const champion = user._id;
 
-      if (_id) throw new ApolloError("The project _id is required");
+      if (!_id) throw new ApolloError("The project _id is required");
 
       let fields = {
         _id,
@@ -269,37 +269,36 @@ module.exports = {
       try {
         let projectData;
 
-          projectData = await Projects.findOne({
-            _id: fields._id,
-            champion: champion,
-          });
+        projectData = await Projects.findOne({
+          _id: fields._id,
+          champion: champion,
+        });
 
-          // console.log("projectData 1 = ", projectData);
+        // console.log("projectData 1 = ", projectData);
 
-          if (!projectData) {
-            throw new ApolloError(
-              "project _id not valid or you not the project champion"
-            );
-          } else {
-      
-            fields.serverID = serverID;
+        if (!projectData) {
+          throw new ApolloError(
+            "project _id not valid or you not the project champion"
+          );
+        } else {
+          fields.serverID = serverID;
 
-            projectData = await Projects.findOneAndUpdate(
-              { _id: projectData._id },
-              {
-                $set: fields,
-              },
-              { new: true }
-            );
+          projectData = await Projects.findOneAndUpdate(
+            { _id: projectData._id },
+            {
+              $set: fields,
+            },
+            { new: true }
+          );
 
-            if (fields.serverID) {
-              await updateNode_neo4j_serverID({
-                node: "Project",
-                id: projectData._id,
-                serverID: projectData.serverID,
-              });
-            }
+          if (fields.serverID) {
+            await updateNode_neo4j_serverID({
+              node: "Project",
+              id: projectData._id,
+              serverID: projectData.serverID,
+            });
           }
+        }
         // console.log("team ---- --- -- --  = " , team)
 
         if (team && fields.team && fields.team.length > 0) {
