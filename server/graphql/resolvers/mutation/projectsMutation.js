@@ -743,7 +743,7 @@ module.exports = {
           let nodeData = nodesData.find(
             (x) => x._id.toString() == nodeID.toString()
           );
-          nodesDataNew.push(nodeData);
+          if (nodeData) nodesDataNew.push(nodeData);
           nodeData_projectRole_all.push({ _id: nodeID });
         }
 
