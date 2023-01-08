@@ -192,9 +192,11 @@ module.exports = {
         "You need to specify the relatedNode_name of the node"
       );
 
-    nodeData = await Node.findOne({ name });
+    nodeData = await Node.findOne({ name }).select("name _id node");
 
-    relatedNodeData = await Node.findOne({ name: relatedNode_name });
+    relatedNodeData = await Node.findOne({ name: relatedNode_name }).select(
+      "name _id node"
+    );
 
     try {
       if (weight) {

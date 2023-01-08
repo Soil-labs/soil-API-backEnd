@@ -221,6 +221,7 @@ module.exports = {
       return projectData;
     }
   ),
+
   updateProject: combineResolvers(
     IsAuthenticated,
     async (parent, args, { user }, info) => {
@@ -280,12 +281,8 @@ module.exports = {
               "project _id not valid or you not the project champion"
             );
           } else {
-            //performing the update
-            let serverID_new = [...projectData.serverID];
-            if (!projectData.serverID.includes(serverID)) {
-              serverID_new.push(serverID);
-            }
-            if (serverID) fields.serverID = serverID_new;
+      
+            fields.serverID = serverID;
 
             projectData = await Projects.findOneAndUpdate(
               { _id: projectData._id },
@@ -610,8 +607,8 @@ module.exports = {
         for (let i = 0; i < nodesDataNew.length; i++) {
           let nodeNow = nodesDataNew[i];
           makeConnection_neo4j({
-            node: ["Role", nodeNow.node],
-            id: [projectRoleData._id, nodeNow._id],
+            node: [nodeNow.node, "Role"],
+            id: [nodeNow._id, projectRoleData._id],
             connection: "connection",
           });
 
@@ -641,6 +638,245 @@ module.exports = {
       }
 
       return projectData;
+      // return {}
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
+
+  updateNodesToProjectRole: async (parent, args, context, info) => {
+    const { projectRoleID, nodesID, nodeType } = args.fields;
+
+    console.log(
+      "Mutation > updateNodesToProjectRole > args.fields = ",
+      args.fields
+    );
+
+    if (!projectRoleID) throw new ApolloError("projectRoleID is required");
+
+    try {
+      let nodesData = await Node.find({ _id: nodesID }).select(
+        "_id name node match_v2_update"
+      );
+
+      // ---------- All nodes should be equal to nodeType or else throw error -----------
+      nodesID_array = [];
+      nodesData.forEach((node) => {
+        nodesID_array.push(node._id.toString());
+        if (node.node != nodeType) {
+          throw new ApolloError(
+            "All nodes should be equal to nodeType, problem on nodeID = " +
+              node._id +
+              " with name = " +
+              node.name +
+              " and node = " +
+              node.node +
+              ""
+          );
+        }
+      });
+      // ---------- All nodes should be equal to nodeType or else throw error -----------
+
+      let projectData = await Projects.findOne({
+        "role._id": projectRoleID,
+      }).select("_id title role nodes serverID");
+
+      projectRoleData = projectData.role.filter(
+        (role) => role._id == projectRoleID
+      );
+
+      projectRoleData = projectRoleData[0];
+
+      projectRoleData = {
+        _id: projectRoleData._id,
+        title: projectRoleData.title,
+        nodes: projectRoleData.nodes,
+        serverID: projectData.serverID,
+      };
+
+      console.log("projectRoleData = ", projectRoleData);
+
+      // check if the nodes are already in the member (projectData.nodes)
+      let nodesID_projectRole = projectRoleData.nodes.map(function (item) {
+        return item._id.toString();
+      });
+
+      // nodesID_projectRole = ["6375243c207bff7a7c220e6e"]
+      console.log("nodesID_projectRole = ", nodesID_projectRole);
+
+      // --------- Separate all the Nodes, and the nodeTypes ----------------
+      let nodeData_projectRole_all = await Node.find({
+        _id: nodesID_projectRole,
+      }).select("_id name node");
+
+      nodeData_projectRole_type = [];
+      nodeID_projectRole_type = [];
+      nodeID_projectRole_all = [];
+      nodeData_projectRole_all.forEach((node) => {
+        nodeID_projectRole_all.push(node._id.toString());
+        if (node.node == nodeType) {
+          nodeData_projectRole_type.push(node);
+          nodeID_projectRole_type.push(node._id.toString());
+        }
+      });
+
+      console.log("nodesID_array = ", nodesID_array);
+      console.log("nodeID_projectRole_type = ", nodeID_projectRole_type);
+      console.log("nodeData_projectRole_all = ", nodeData_projectRole_all);
+
+      // --------- Separate all the Nodes, and the nodeTypes ----------------
+
+      /// --------------- Add Nodes that Don't exist already on the projectRole for this specific type of node ----------------
+      let differenceNodes = nodesID_array.filter(
+        (x) => !nodeID_projectRole_type.includes(x)
+      );
+      console.log("differenceNodes = ", differenceNodes);
+
+      // asf;
+      if (differenceNodes.length > 0) {
+        let nodesDataNew = [];
+        for (let i = 0; i < differenceNodes.length; i++) {
+          let nodeID = differenceNodes[i];
+          let nodeData = nodesData.find(
+            (x) => x._id.toString() == nodeID.toString()
+          );
+          nodesDataNew.push(nodeData);
+          nodeData_projectRole_all.push({ _id: nodeID });
+        }
+
+        console.log("nodesDataNew = ", nodesDataNew);
+
+        // asdf;
+
+        // add only the new ones as relationship on Neo4j
+        for (let i = 0; i < nodesDataNew.length; i++) {
+          let nodeNow = nodesDataNew[i];
+          makeConnection_neo4j({
+            node: [nodeNow.node, "Role"],
+            id: [nodeNow._id, projectRoleData._id],
+            connection: "connection",
+          });
+
+          changeMatchByServer(nodeNow, projectRoleData);
+        }
+      }
+      /// --------------- Add Nodes that Don't exist already on the projectRole for this specific type of node ----------------
+
+      // -------------- Remove the Nodes that are not in the nodesID_array ----------------
+      let nodesExistProjectRoleAndNode = nodeID_projectRole_type.filter((x) =>
+        nodesID_array.includes(x)
+      );
+      console.log(
+        "nodesExistProjectRoleAndNode = ",
+        nodesExistProjectRoleAndNode
+      );
+
+      let nodeExistOnlyProjectRole = nodeID_projectRole_type.filter(
+        (x) => !nodesID_array.includes(x)
+      );
+      console.log("nodeExistOnlyProjectRole = ", nodeExistOnlyProjectRole);
+
+      // asdf;
+      // console.log("change = " , change)
+
+      if (nodeExistOnlyProjectRole.length > 0) {
+        nodeData_projectRole_all = nodeData_projectRole_all.filter(
+          (element) =>
+            !nodeExistOnlyProjectRole.includes(element._id.toString())
+        );
+
+        console.log("nodeData_projectRole_all = ", nodeData_projectRole_all);
+
+        console.log("nodeExistOnlyProjectRole = ", nodeExistOnlyProjectRole);
+
+        // add only the new ones as relationship on Neo4j
+        for (let i = 0; i < nodeExistOnlyProjectRole.length; i++) {
+          let nodeNow = { _id: nodeExistOnlyProjectRole[i] };
+          deleteConnectionANYBetweenNodes_neo4j({
+            nodeID_1: projectRoleData._id,
+            nodeID_2: nodeNow._id,
+          });
+
+          changeMatchByServer(nodeNow, projectRoleData);
+        }
+      }
+      // -------------- Remove the Nodes that are not in the nodesID_array ----------------
+
+      let position = projectData.role.findIndex((x) => x._id == projectRoleID);
+
+      projectData.role[position].nodes = nodeData_projectRole_all;
+
+      projectData2 = await Projects.findOneAndUpdate(
+        { _id: projectData._id },
+        {
+          $set: {
+            role: projectData.role,
+          },
+        },
+        { new: true }
+      );
+
+      return projectData2;
+
+      // asdf2;
+
+      // let nodesIDArray = nodesID.map(function (item) {
+      //   return item.toString();
+      // });
+      // console.log("nodesIDArray = ", nodesIDArray);
+
+      // let differenceNodes = nodesIDArray.filter(
+      //   (x) => !nodesID_projectRole.includes(x)
+      // );
+      // console.log("differenceNodes = ", differenceNodes);
+
+      // if (differenceNodes.length > 0) {
+      //   let nodesDataNew = [];
+      //   for (let i = 0; i < differenceNodes.length; i++) {
+      //     let nodeID = differenceNodes[i];
+      //     let nodeData = nodesData.find((x) => x._id.toString() == nodeID);
+      //     nodesDataNew.push(nodeData);
+      //     projectRoleData.nodes.push({ _id: nodeID });
+      //   }
+
+      //   for (let i = 0; i < nodesDataNew.length; i++) {
+      //     let nodeNow = nodesDataNew[i];
+      //     makeConnection_neo4j({
+      //       node: [nodeNow.node, "Role"],
+      //       id: [nodeNow._id, projectRoleData._id],
+      //       connection: "connection",
+      //     });
+
+      //     changeMatchByServer(nodeNow, projectRoleData);
+      //   }
+
+      //   let position = projectData.role.findIndex(
+      //     (x) => x._id == projectRoleID
+      //   );
+
+      //   projectData.role[position].nodes = projectRoleData.nodes;
+
+      //   // add all of the nodes on mongoDB
+      //   projectData2 = await Projects.findOneAndUpdate(
+      //     { _id: projectData._id },
+      //     {
+      //       $set: {
+      //         role: projectData.role,
+      //       },
+      //     },
+      //     { new: true }
+      //   );
+
+      //   console.log("projectData2 = ", projectData2);
+
+      //   return projectData2;
+      // }
+
+      // return projectData;
       // return {}
     } catch (err) {
       throw new ApolloError(
@@ -1321,7 +1557,8 @@ module.exports = {
       if (role && role.length && role.length > 0) {
         for (let i = 0; i < role.length; i++) {
           const currentRole = role[i];
-          if (currentRole) {
+          console.log("currentRole = ", currentRole);
+          if (currentRole && currentRole.Node && currentRole.Node.length > 0) {
             // get all nodes from currentRole.nodes
             let nodesData = await Node.find({
               _id: currentRole.nodes
