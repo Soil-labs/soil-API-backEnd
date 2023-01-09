@@ -3,13 +3,15 @@ const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
 const { Configuration, OpenAIApi } = require("openai");
 const math = require("mathjs");
+const numeric = require("numeric");
 const fs = require("fs");
 
-// const configuration = new Configuration({
-//   apiKey: process.env.OPENAI_API_KEY,
-// });
+const configuration = new Configuration({
+  apiKey: chooseAPIkey(),
+});
 
-// const openai = new OpenAIApi(configuration);
+console.log("chooseAPIkey = ", chooseAPIkey());
+const openai = new OpenAIApi(configuration);
 
 module.exports = {
   addMessage: async (parent, args, context, info) => {
@@ -119,31 +121,65 @@ module.exports = {
     }
   },
   useAI_OnMessage: async (parent, args, context, info) => {
-    const { message } = args.fields;
+    const { message, cash, numberKeywords } = args.fields;
     console.log("Mutation > updateMessage > args.fields = ", args.fields);
 
+    if (numberKeywords == undefined) numberKeywords = 10;
+
     try {
+      // question_ask =
+      //   "Extract keywords from this text, and separate them with comma:\n\n" +
+      //   message +
+      //   "\n\n Result:";
+      // question_ask =
+      //   "Extract 10 different expertise that derives from the context, and show the expertise and the confidence level higher than 8/10:\n\n" +
+      //   message +
+      //   "\n\n separate the result with a comma, and don't show the confidence level:";
       question_ask =
-        "Extract keywords from this text, and separate them with comma:\n\n" +
+        `Extract ${numberKeywords} different expertise that derives from the context, and show the expertise and the confidence level that you have from 0 to 10:` +
+        "\n\n" +
         message +
-        "\n\n Result:";
+        "\n\n" +
+        "result  format like this: \n - expertise: confidence";
 
       let keywords_mes, keyword_embed;
-      if (fs.existsSync("keywords_mes.txt")) {
-        readData("keywords_mes.txt");
+      // if (fs.existsSync("keywords_mes.txt")) {
+      if (fs.existsSync("keywords_mes.txt") && cash == true) {
+        keywords_mes = await readData("keywords_mes.txt");
+        confidence_mes = await readData("confidence_mes.txt");
+        generatedText = await readData("generatedText.txt");
       } else {
-        keywords_mes = await useGPT(keywords_mes, 0.7);
+        [keywords_mes, confidence_mes, generatedText] =
+          await useGPT_withConfidence(question_ask, 0.1);
         cashData("keywords_mes.txt", keywords_mes);
+        cashData("confidence_mes.txt", confidence_mes);
+        cashData("generatedText.txt", generatedText);
       }
 
-      // if (fs.existsSync("keyword_embed.txt")) {
-      //   readData("keyword_embed.txt");
-      // } else {
-      //   keyword_embed = await createEmbedingsGPT(keywords_mes);
-      //   cashData("keyword_embed.txt", keyword_embed);
-      // }
+      console.log("keywords_mes = ", keywords_mes);
+      console.log("confidence_mes = ", confidence_mes);
+      console.log("generatedText = ", generatedText);
+      console.log("  ");
+      console.log("  ");
 
-      // words_n_base_embed = await addKnowledgeGraph_embedings();
+      // console.log("keywords_mes = ", keywords_mes);
+
+      // keywords_mes = [message]; // SOS 🆘 -> Delete, it's just for test, it's not a good idea to use the message as a keyword
+
+      // if (fs.existsSync("keyword_embed.txt")) {
+      if (fs.existsSync("keyword_embed.txt") && cash == true) {
+        keyword_embed = await readData("keyword_embed.txt");
+      } else {
+        keyword_embed = await createEmbedingsGPT(keywords_mes);
+        await cashData("keyword_embed.txt", keyword_embed);
+      }
+
+      // console.log("keyword_embed = " , keyword_embed)
+      // asdf
+      // console.log("keyword_embed = ", keyword_embed);
+
+      // words_n_base = await addKnowledgeGraph_embedings();
+      [words_n_base, words_n_base_embed] = await addKnowledgeGraph_embedings();
 
       // console.log("words_n_base_embed.length = ", words_n_base_embed.length);
       // console.log("words_n_base_embed.length = ", words_n_base_embed[0].length);
@@ -154,18 +190,194 @@ module.exports = {
       // console.log("keyword_embed.length = ", keyword_embed.length);
       // console.log("keyword_embed.length = ", keyword_embed[0].length);
 
-      // let testV = keyword_embed[0];
-
-      // let dotProduct = math.dot(
-      //   words_n_base_embed[0],
-      //   math.transpose(keyword_embed)
+      // console.log(
+      //   "math.transpose(keyword_embed)[0] = ",
+      //   math.transpose(keyword_embed).length
+      // );
+      // console.log(
+      //   "math.transpose(keyword_embed)[0] = ",
+      //   math.transpose(keyword_embed)[0].length
       // );
 
-      // console.log(dotProduct); // Output: 11
+      // let testV = keyword_embed[0];
 
-      // console.log("words_n_base_embed = ", words_n_base_embed);
+      // scores = [];
+      // for (let i = 0; i < words_n_base_embed[0].length; i++) {
+      //   let dot = numeric.dot(
+      //     words_n_base_embed[i],
+      //     math.transpose(keyword_embed)
+      //   );
+      //   // scores.push(
+      //   //   )
+      // }
+      scores = []; // the score of every word in the message with the knowledgegraph
+      maxima_array = []; // the maximum score of every word in the message with the knowledgegraph vertical (Design, frontEnd, etc.)
+      max_graph_vertical = []; // the maximum score of every vertical (Design, frontEnd, etc.)
 
-      return {};
+      maxi_graph_pos = -1; // the position of the maximum score of every vertical (Design, frontEnd, etc.)
+      maxi_graph = -1; // the maximum score of every vertical (Design, frontEnd, etc.)
+      for (let i = 0; i < words_n_base_embed.length; i++) {
+        let dotProduct = numeric.dot(
+          words_n_base_embed[i],
+          math.transpose(keyword_embed)
+        );
+
+        // console.log("dotProduct = ", dotProduct[0]);
+
+        for (let j = 0; j < dotProduct.length; j++) {
+          // SOS 🆘 -> use the confidence of GPT to reduce the score
+          dotProduct[j] = dotProduct[j].map(
+            (element, idx) => element - confidence_mes[idx]
+          );
+        }
+
+        scores.push(dotProduct);
+
+        // console.log("dotProduct = ", dotProduct[0]);
+        // asfd;
+
+        // find maximum in 2D array, in every column
+        let maxi_n_arr = dotProduct.map(function (col) {
+          return Math.max.apply(Math, col);
+        });
+        maxima_array.push(maxi_n_arr);
+
+        // find the average of the maxi_n array, with the fastest way
+        let maxi_n = maxi_n_arr.reduce((a, b) => a + b, 0) / maxi_n_arr.length;
+
+        console.log("maxi_n = ", words_n_base[i][0], " ->", maxi_n);
+
+        max_graph_vertical.push(maxi_n);
+
+        if (maxi_n > maxi_graph) {
+          maxi_graph = maxi_n;
+          maxi_graph_pos = i;
+        }
+      }
+
+      // console.log("maxi_graph_pos = ", maxi_graph_pos);
+
+      // maxi_graph_pos = 0; // SOS 🆘 -> Delete, this is for testing (makes it always FrontEnd result)
+
+      if (maxi_graph < 0.81) {
+        // if (maxi_graph < 0.79) {
+        return {
+          mainExpertise: "",
+          expertiseIdentified: [],
+          keywordsMessage: keywords_mes,
+        };
+      }
+      let knowledgeGraphTopic = "";
+      if (maxi_graph_pos == 0) {
+        knowledgeGraphTopic = words_n_base[0][0];
+      } else if (maxi_graph_pos == 1) {
+        knowledgeGraphTopic = words_n_base[1][0];
+      } else if (maxi_graph_pos == 2) {
+        knowledgeGraphTopic = words_n_base[2][0];
+      } else if (maxi_graph_pos == 3) {
+        knowledgeGraphTopic = words_n_base[3][0];
+      } else if (maxi_graph_pos == 4) {
+        knowledgeGraphTopic = words_n_base[4][0];
+      } else if (maxi_graph_pos == 5) {
+        knowledgeGraphTopic = words_n_base[5][0];
+      }
+
+      console.log("The user is talking about ---> ", knowledgeGraphTopic);
+
+      // console.log("scores[maxi_graph_pos] = ", scores[maxi_graph_pos]);
+
+      console.log("");
+      console.log("");
+      console.log("");
+
+      rolesIdentified = [];
+      rolesIdentified_average_conf = [];
+      min_average_conf = 1;
+      max_average_conf = 0;
+
+      // console.log("scores[maxi_graph_pos] = ", scores[maxi_graph_pos]);
+      // console.log("keywords_mes = ", keywords_mes);
+
+      for (let i = 0; i < scores[maxi_graph_pos].length; i++) {
+        // console.log("scores[maxi_graph_pos][i] = ", scores[maxi_graph_pos][i]);
+        // console.log(
+        //   "words_n_base[maxi_graph_pos][i] = ",
+        //   words_n_base[maxi_graph_pos][i]
+        // );
+        // find the maximum number from scores[maxi_graph_pos][i], and the position of it
+        let max_n = Math.max.apply(Math, scores[maxi_graph_pos][i]);
+        let max_n_pos = scores[maxi_graph_pos][i].indexOf(max_n);
+
+        // sort the scores[maxi_graph_pos][i] but remember the position of the elements
+        let sort_scores = scores[maxi_graph_pos][i].map(function (el, i) {
+          return { index: i, value: math.round(el, 3) };
+        });
+        sort_scores.sort(function (a, b) {
+          return b.value - a.value;
+        });
+        // console.log("sort_scores = ", sort_scores);
+
+        // average the first 4 positions of sort_scores with the fastest way
+        let average_sort_scores =
+          sort_scores.slice(0, 4).reduce((a, b) => a + b.value, 0) / 4;
+        // console.log("average = ", average_sort_scores);
+
+        // asdf;
+
+        // console.log("max_n_pos = ", max_n_pos);
+
+        // console.log("scores[maxi_graph_pos][i] = ", scores[maxi_graph_pos][i]);
+
+        if (average_sort_scores > 0.81) {
+          rolesIdentified.push(words_n_base[maxi_graph_pos][i]);
+          rolesIdentified_average_conf.push(average_sort_scores);
+
+          if (average_sort_scores < min_average_conf) {
+            min_average_conf = average_sort_scores;
+          }
+          if (average_sort_scores > max_average_conf) {
+            max_average_conf = average_sort_scores;
+          }
+
+          console.log(
+            "max_n = ---------------> ",
+            words_n_base[maxi_graph_pos][i],
+            average_sort_scores,
+            keywords_mes[sort_scores[0].index],
+            "\n",
+            keywords_mes[sort_scores[1].index],
+            "\n",
+            keywords_mes[sort_scores[2].index],
+            "\n",
+            keywords_mes[sort_scores[3].index],
+            "\n"
+          );
+          // console.log("ort_scores.slice(0, 4) = ", sort_scores.slice(0, 4));
+          console.log("---------------> = ");
+        }
+      }
+      // console.log("change = ", rolesIdentified);
+
+      let rolesIdentified_final = [];
+      for (let i = 0; i < rolesIdentified.length; i++) {
+        rolesIdentified_average_conf[i] = mapRange(
+          rolesIdentified_average_conf[i],
+          min_average_conf,
+          max_average_conf,
+          0,
+          100
+        );
+
+        if (rolesIdentified_average_conf[i] > 40) {
+          rolesIdentified_final.push(rolesIdentified[i]);
+        }
+      }
+
+      return {
+        mainExpertise: knowledgeGraphTopic,
+        expertiseIdentified: rolesIdentified_final,
+        keywordsMessage: keywords_mes,
+      };
       // return {
       //   res: res,
       // };
@@ -181,40 +393,114 @@ module.exports = {
   },
 };
 
+async function useGPT_withConfidence(prompt, temperature) {
+  // let model = "text-curie-001";
+  let model = "text-davinci-003";
+  const response = await openai.createCompletion({
+    model,
+    prompt,
+    temperature,
+    max_tokens: 256,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+  });
+
+  // // ----------- Clean up the Results ---------
+  let generatedText = response.data.choices[0].text;
+
+  // generatedText =
+  // "generatedText =   level \n 1. Coding: 8\n 2. Javascript: 8\n 3. Neo4j: 6\n 4. Convolutional Neural Networks: 4\n 5. Figma: 4\n 6. Algorithm Design: 3\n 7. Data Structures: 3\n 8. Machine Learning: 3\n 9. Database Design: 2\n 10. UI/UX Design: 2";
+  // generatedText =
+  //   "- Database Design: 10\n - Database Optimization: 10\n - MySQL: 10\n - PostgreSQL: 10\n - MongoDB: 10\n - Problem Solving: 10\n - Project Management: 8\n - Troubleshooting: 9\n - Data Analysis: 8\n - Database Security: 9";
+
+  console.log("generatedText = ", generatedText);
+
+  // separate every new line of generatedText into an array
+  let arr_genText = generatedText.split("\n");
+  // console.log("arr_genText = ", arr_genText);
+  // for every line of the array arr_genText take the words in the middle of the string
+
+  let result = [];
+  let keyword_mes = [];
+  let confidence_mes = [];
+  arr_genText.forEach((item) => {
+    const parts = item.split(":");
+    // console.log("parts = ", parts);
+    // console.log("parts[0].split ", parts[0].split("-"));
+    // console.log("parts[0].split ", parts[0].split("-")[1]);
+    let prs;
+    if (parts[0].indexOf(".") != -1) {
+      prs = parts[0].split(".")[1];
+    } else if (parts[0].indexOf("-") != -1) {
+      prs = parts[0].split("-")[1];
+    }
+
+    if (prs && parts[1]) {
+      const words = prs.trim();
+
+      console.log("words = ", words);
+      const confidence = Number(parts[1].trim());
+      result.push({
+        words: words,
+        confidence: confidence,
+      });
+      keyword_mes.push(words);
+      let confidence_new = mapRange(confidence, 0, 10, 0.1, 0);
+      confidence_mes.push(confidence_new);
+    }
+  });
+  // console.log("result = ", result);
+  // console.log("keyword_mes = ", keyword_mes);
+  // console.log("confidence_mes = ", confidence_mes);
+
+  // asdf;
+  // return keyword_mes;
+  return [keyword_mes, confidence_mes, generatedText];
+}
+
+function mapRange(input, inputMin, inputMax, outputMin, outputMax) {
+  return (
+    ((input - inputMin) * (outputMax - outputMin)) / (inputMax - inputMin) +
+    outputMin
+  );
+}
+
 async function useGPT(prompt, temperature) {
   // let model = "text-curie-001";
   let model = "text-davinci-003";
-  // const response = await openai.createCompletion({
-  //   model,
-  //   prompt,
-  //   temperature,
-  //   max_tokens: 256,
-  //   top_p: 1,
-  //   frequency_penalty: 0,
-  //   presence_penalty: 0,
-  // });
+  const response = await openai.createCompletion({
+    model,
+    prompt,
+    temperature,
+    max_tokens: 256,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+  });
 
-  // // ----------- Clean up the Results ---------
-  // let generatedText = response.data.choices[0].text;
+  // ----------- Clean up the Results ---------
+  let generatedText = response.data.choices[0].text;
 
-  // // console.log("generatedText = ", generatedText);
-  // generatedText = generatedText.replace("\n", "");
-  // // console.log("generatedText = ", generatedText);
+  // console.log("generatedText = ", generatedText);
+  generatedText = generatedText.replace("\n", "");
+  // console.log("generatedText = ", generatedText);
 
-  // arr = generatedText.split(", ");
-  // // ----------- Clean up the Results ---------
+  arr = generatedText.split(", ");
+  // ----------- Clean up the Results ---------
 
-  // return arr;
+  return arr;
 }
 
 async function createEmbedingsGPT(words_n) {
   // words_n = ["node.js", "react", "angular"];
-  let OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  let OPENAI_API_KEY = chooseAPIkey();
   response = await axios.post(
     "https://api.openai.com/v1/embeddings",
     {
       input: words_n,
-      model: "text-embedding-ada-002",
+      model: "text-similarity-davinci-001",
+      // model: "text-embedding-ada-002",
     },
     {
       headers: {
@@ -255,15 +541,30 @@ async function readData(name) {
 }
 
 async function cashData(name, array) {
-  name = name + ".txt";
   fs.writeFile(name, JSON.stringify(array), function (err) {
     if (err) throw err;
     console.log("Saved!");
   });
 }
 
+function chooseAPIkey() {
+  // openAI_keys = [
+  //   "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",
+  //   // "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",
+  //   "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",
+  //   "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",
+  // ];
+  openAI_keys = ["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"];
+
+  // randomly choose one of the keys
+  let randomIndex = Math.floor(Math.random() * openAI_keys.length);
+  let key = openAI_keys[randomIndex];
+
+  return key;
+}
+
 async function addKnowledgeGraph_embedings() {
-  words_n_base = [
+  let words_n_base = [
     [
       "Design",
       "UX/UI",
@@ -274,6 +575,18 @@ async function addKnowledgeGraph_embedings() {
       "General Design support from A-Z",
       "NFT Design",
       "Brand Design",
+      "Design user experiences",
+      "Design interactions",
+      "User flows",
+      "Wireframing and prototyping",
+      "Adobe Creative Suite ",
+      "Illustratio",
+      "Design user experiences",
+      "Design user interfaces",
+      "Prototyping",
+      "Data visualization",
+      "Create graphic designs",
+      "Layout design",
     ],
     [
       "Frontend Developer",
@@ -282,6 +595,18 @@ async function addKnowledgeGraph_embedings() {
       "General Frontend Support",
       "Web Development",
       "App Development",
+      "JavaScript",
+      "Front-end frameworks",
+      "REST APIs",
+      "Data management",
+      "Security best pratices",
+      "Scalability",
+      "Optimize performance",
+      "System design and architecture",
+      "React ",
+      "Angular ",
+      "Vue.js ",
+      "Bootstrap ",
     ],
     [
       "Product Manager",
@@ -292,24 +617,81 @@ async function addKnowledgeGraph_embedings() {
       "Ideation",
       "Interviews",
     ],
+    [
+      "Backend Developer",
+      "Provide General Backend Support",
+      "Develop and implement a REST API",
+      "Design and implement a database schema",
+      "Handle user authentication and authorization",
+      "Integrate third-party APIs",
+      "Write scripts for data migration and processing",
+      "Write unit and integration tests",
+      "Debug and fix issues in the backend code",
+      "Optimize for scalability and performance",
+      "Implement security measures",
+      "Write scripts for routine maintenance tasks",
+      "Integrate the backend with the user interface",
+      "Implement support for internationalization and localization",
+      "Help team refine and prioritize features",
+      "App Architecture",
+    ],
+    [
+      "Blockchain Developer",
+      "Smart Contract Development",
+      "Smart Contract Auditing",
+      "Blockchain Architecture & Design",
+      "Lead a Technical Team",
+      "General Blockchain Support",
+    ],
+    [
+      "AI & Data Science",
+      "Machine learning",
+      "Natural language processing (NLP)",
+      "Computer vision",
+      "Robotics",
+      "Deep learning",
+    ],
   ];
 
+  // - Design: confidence level
+  // - UX/UI: confidence level
+  // - Graphic Design: confidence level
+  // - Web Design: confidence level
+  // - Game Design: confidence level
+  // - Animation: confidence level
+  // - General Design support from A-Z: confidence level
+  // - NFT Design: confidence level
+  // - Brand Design: confidence level
+  // - Design user experiences: confidence level
+  // - Frontend Developer: confidence level
+  // - UI Implementation: confidence level
+  // - Frontend Architecture: confidence level
+  // - General Frontend Support: confidence level
+  // - Web Development: confidence level
+  // - App Development: confidence level
+  // - JavaScript: confidence level
+  // - Front-end frameworks: confidence level
+  // - Product Manager: confidence level
+  // - User Research: confidence level
+  // - Market Research: confidence level
+  // - Technical Team Coordination: confidence level
+  // - Design Team Coordination: confidence level
+  // - Ideation: confidence level
+  // - Interviews: confidence level
+
   let words_n_base_embed = [];
-  if (fs.existsSync("array.txt")) {
-    console.log("array.txt exists");
+  if (fs.existsSync("knowledgeGranphEmb.txt")) {
+    console.log("knowledgeGranphEmb.txt exists");
 
     const fs = require("fs");
 
-    const contents = fs.readFileSync("array.txt");
+    const contents = fs.readFileSync("knowledgeGranphEmb.txt");
     const words_n_base_embed = JSON.parse(contents);
 
-    // console.log(words_n_base_embed.length); // [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
-    // console.log(words_n_base_embed[0].length); // [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
-    // console.log(words_n_base_embed[0][0].length); // [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
-
-    return words_n_base_embed;
+    // return words_n_base_embed;
+    return [words_n_base, words_n_base_embed];
   } else {
-    console.log("array.txt does not exist");
+    console.log("knowledgeGranphEmb.txt does not exist");
 
     // loop words_n_base
     words_n_base_embed = [];
@@ -324,10 +706,13 @@ async function addKnowledgeGraph_embedings() {
 
     const json = JSON.stringify(words_n_base_embed);
 
-    fs.writeFileSync("array.txt", json);
+    fs.writeFileSync("knowledgeGranphEmb.txt", json);
 
-    console.log("json = ", json);
+    // console.log("json = ", json);
 
-    return words_n_base_embed;
+    console.log("words_n_base = ", words_n_base);
+
+    // return words_n_base;
+    return [words_n_base, words_n_base_embed];
   }
 }
