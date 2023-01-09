@@ -52,10 +52,14 @@ module.exports = `
 
     input useAI_OnMessageInput {
         message: String
+        cash: Boolean
+        numberKeywords: Float,
     }
 
     type useAI_OnMessageOutput {
-        res: [String]
+        mainExpertise: String
+        expertiseIdentified: [String]
+        keywordsMessage: [String]
     }
 
 

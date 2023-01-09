@@ -14,6 +14,8 @@ const { cronJobToUpdateServerIcon } = require("./utils/getDiscordGuildAvatar");
 const contextResolver = require("./auth/contextResolvers");
 const authRoutes = require("./auth");
 const cors = require("cors");
+const rateLimit = require("express-rate-limit");
+
 require("dotenv").config();
 
 const typeDefs = require("./graphql/schema");
@@ -21,6 +23,13 @@ const resolvers = require("./graphql/resolvers");
 
 async function main() {
   const app = express();
+
+  app.use(
+    rateLimit({
+      windowMs: 60 * 1000, // 1 minute
+      max: 100, // Limit each IP to 100 requests per windowMs
+    })
+  );
 
   const httpServer = createServer(app);
 
