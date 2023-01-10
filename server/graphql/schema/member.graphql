@@ -43,6 +43,29 @@ module.exports = `
         memberRole: RoleTemplate
         chat: chatResponse
         endorsements: [endorsements]
+
+        preferences: preferencesType
+    }
+
+    type preferencesType {
+        interestedMatch: Boolean,
+        notify: Boolean,
+        findUser: preferencesTypeFind
+        findCoFounder: preferencesTypeFind
+        findMentor: preferencesTypeFind
+        findMentee: preferencesTypeFind
+        findProject: preferencesTypeFind
+    }
+
+    type preferencesTypeFind {
+        interestedMatch: Boolean,
+        notify: Boolean,
+        percentage: Int, 
+        pastSearch: [prefPastSearch],
+    }
+
+    type prefPastSearch {
+        nodesID: [ID],
     }
 
     type nodesType {
@@ -356,6 +379,31 @@ module.exports = `
         memberID: ID
         projectID: ID
         favorite: Boolean
+    }
+
+    input addPreferencesToMemberInput {
+        memberID: ID
+        preferences: [preferencesInput]
+    }
+
+    input preferencesInput {
+        preference: preferencesEnum
+        interestedMatch: Boolean
+        notify: Boolean
+        percentage: Int
+        pastSearch: [pastSearchInput]
+    }
+
+    input pastSearchInput {
+        nodesID: [ID]
+    }
+
+    enum preferencesEnum {
+        findUser
+        findCoFounder
+        findMentor
+        findMentee
+        findProject
     }
 
     input addNodesToMemberInput {

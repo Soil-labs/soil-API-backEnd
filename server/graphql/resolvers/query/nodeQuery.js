@@ -36,7 +36,8 @@ module.exports = {
     }
   },
   findNodes: async (parent, args, context, info) => {
-    const { _id, node, recalculate_en, show_match_v2 } = args.fields;
+    const { _id, node, recalculate_en, show_match_v2, selectedNodes } =
+      args.fields;
     console.log("Query > findNode > args.fields = ", args.fields);
 
     let searchQuery_and = [];
@@ -85,6 +86,16 @@ module.exports = {
 
       let nodeData = await Node.find(searchQuery).select(selectT);
 
+      // return {
+      //   nodeData,
+      //   selectedNodes,
+      // };
+
+      if (selectedNodes != undefined) {
+        // prepare on context for the selected nodes as an ojbect to be faster to find them on the subNodes
+        const entries = selectedNodes.map((str, i) => [str, true]);
+        context.selectedNodes = Object.fromEntries(entries);
+      }
       return nodeData;
     } catch (err) {
       throw new ApolloError(
