@@ -19,6 +19,8 @@ module.exports = `
 
         registeredAt: String,
 
+        selected: Boolean
+
     }
 
     type match_v2_updateType {
@@ -102,6 +104,7 @@ module.exports = `
         node: String
         recalculate_en: recalculateEnum
         show_match_v2: Boolean
+        selectedNodes: [ID]
     }
 
     enum recalculateEnum {

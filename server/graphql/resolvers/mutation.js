@@ -6,6 +6,7 @@ const {
   deleteNodesFromMember,
   deleteMember,
   addFavoriteProject,
+  addPreferencesToMember,
   addSkillToMember,
   endorseAttribute,
   memberUpdated,
@@ -85,6 +86,7 @@ module.exports = {
     deleteMember,
     endorseAttribute,
     addFavoriteProject,
+    addPreferencesToMember,
     addSkillToMember,
     addEndorsement,
 

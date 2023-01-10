@@ -46,31 +46,37 @@ const memberSchema = mongoose.Schema({
 
   tweets: [String],
 
-  skills: [{
-    id: mongoose.Schema.ObjectId,
-    authors: [String],
-    communityLevel: Number,
-    selfEndorsedLevel: Number,
-    level: {
-      type: String,
-      enum: ["learning", "junior","mid","senior"],
+  skills: [
+    {
+      id: mongoose.Schema.ObjectId,
+      authors: [String],
+      communityLevel: Number,
+      selfEndorsedLevel: Number,
+      level: {
+        type: String,
+        enum: ["learning", "junior", "mid", "senior"],
+      },
     },
-  }],
+  ],
 
-  nodes: [{
-    _id: mongoose.Schema.ObjectId,
-  }],
-
-  projects: [{
-    projectID: mongoose.Schema.ObjectId,
-    roleID: mongoose.Schema.ObjectId,
-    champion: Boolean,
-    phase: {
-      type: String,
-      enum: ["shortlisted", "engaged","committed","rejected","invited"],
-      default: "shortlisted"
+  nodes: [
+    {
+      _id: mongoose.Schema.ObjectId,
     },
-  }],
+  ],
+
+  projects: [
+    {
+      projectID: mongoose.Schema.ObjectId,
+      roleID: mongoose.Schema.ObjectId,
+      champion: Boolean,
+      phase: {
+        type: String,
+        enum: ["shortlisted", "engaged", "committed", "rejected", "invited"],
+        default: "shortlisted",
+      },
+    },
+  ],
   archiveProjects: [mongoose.Schema.ObjectId],
 
   previusProjects: [
@@ -151,6 +157,61 @@ const memberSchema = mongoose.Schema({
       arweaveTransactionID: String, //transactionID saved to Arweave
     },
   ],
+
+  preferences: {
+    interestedMatch: Boolean,
+    notify: Boolean,
+    findUser: {
+      interestedMatch: Boolean,
+      notify: Boolean,
+      percentage: Number, // the percentage of the match should be higher than this number to be notified
+      pastSearch: [
+        {
+          nodesID: [mongoose.Schema.ObjectId],
+        },
+      ],
+    },
+    findCoFounder: {
+      interestedMatch: Boolean,
+      notify: Boolean,
+      percentage: Number, // the percentage of the match should be higher than this number to be notified
+      pastSearch: [
+        {
+          nodesID: [mongoose.Schema.ObjectId],
+        },
+      ],
+    },
+    findMentor: {
+      interestedMatch: Boolean,
+      notify: Boolean,
+      percentage: Number, // the percentage of the match should be higher than this number to be notified
+      pastSearch: [
+        {
+          nodesID: [mongoose.Schema.ObjectId],
+        },
+      ],
+    },
+    findMentee: {
+      interestedMatch: Boolean,
+      notify: Boolean,
+      percentage: Number, // the percentage of the match should be higher than this number to be notified
+      pastSearch: [
+        {
+          nodesID: [mongoose.Schema.ObjectId],
+        },
+      ],
+    },
+    findProject: {
+      interestedMatch: Boolean,
+      notify: Boolean,
+      percentage: Number, // the percentage of the match should be higher than this number to be notified
+      pastSearch: [
+        {
+          nodesID: [mongoose.Schema.ObjectId],
+        },
+      ],
+    },
+  },
 });
 
 const Members = mongoose.model("Members", memberSchema);

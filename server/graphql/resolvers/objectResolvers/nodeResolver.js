@@ -6,17 +6,23 @@ const { ApolloError } = require("apollo-server-express");
 module.exports = {
   Node: {
     subNodes: async (parent, args, context, info) => {
-      // console.log("parent = " , parent)
-
       try {
         const subNodes = parent.subNodes;
 
         //   nodeData = await Node.find({ _id: subNodes });
         nodeData = await Node.find({ _id: subNodes }).select("_id name node");
 
-        //console.log("nodeData = " , nodeData)
-
-        return nodeData;
+        if (context.selectedNodes) {
+          nodeData = nodeData.map((node) => {
+            if (context.selectedNodes[node._id]) {
+              node.selected = true;
+            }
+            return node;
+          });
+          return nodeData;
+        } else {
+          return nodeData;
+        }
       } catch (err) {
         throw new ApolloError(
           err.message,
@@ -36,7 +42,17 @@ module.exports = {
 
         nodeData = await Node.find({ _id: aboveNodes }).select("_id name node");
 
-        //console.log("nodeData = " , nodeData)
+        if (context.selectedNodes) {
+          nodeData = nodeData.map((node) => {
+            if (context.selectedNodes[node._id]) {
+              node.selected = true;
+            }
+            return node;
+          });
+          return nodeData;
+        } else {
+          return nodeData;
+        }
 
         return nodeData;
       } catch (err) {
@@ -60,7 +76,17 @@ module.exports = {
           "_id name node"
         );
 
-        //console.log("nodeData = " , nodeData)
+        if (context.selectedNodes) {
+          nodeData = nodeData.map((node) => {
+            if (context.selectedNodes[node._id]) {
+              node.selected = true;
+            }
+            return node;
+          });
+          return nodeData;
+        } else {
+          return nodeData;
+        }
 
         return nodeData;
       } catch (err) {
