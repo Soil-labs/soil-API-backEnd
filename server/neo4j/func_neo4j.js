@@ -174,7 +174,13 @@ module.exports = {
   makeConnection_neo4j: async (req, res) => {
     const { node, id, connection, weight = undefined } = req;
 
-    // console.log("change -------------makeConnection_neo4j---------= " , node,id, connection)
+    console.log(
+      "change -------------makeConnection_neo4j---------= ",
+      node,
+      id,
+      connection,
+      weight
+    );
     const session = driver.session({ database: "neo4j" });
 
     fun = "";
@@ -808,6 +814,7 @@ module.exports = {
 
     // put together the object _id of member_oneHopeMatch and member_twoHopeMatch and member_threeHopeMatch
     // only if it is unique _id
+    console.log("nodeID = ", nodeID);
     let allNodes = [nodeID.toString()];
     let uniqueNodes = {
       [nodeID.toString()]: true,

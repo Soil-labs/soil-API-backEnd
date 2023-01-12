@@ -73,6 +73,7 @@ const {
   addMessages,
   updateMessage,
   useAI_OnMessage,
+  messageToGPT,
 } = require("./mutation/aiMutation");
 
 module.exports = {
@@ -155,6 +156,7 @@ module.exports = {
     addMessages,
     updateMessage,
     useAI_OnMessage,
+    messageToGPT,
   },
   Subscription: {
     memberUpdated,

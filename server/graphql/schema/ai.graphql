@@ -62,6 +62,13 @@ module.exports = `
         keywordsMessage: [String]
     }
 
+    type messageToGPTOutput{
+        message: String
+    }
+
+    input messageToGPTInput {
+        message: String
+    }
 
 
 

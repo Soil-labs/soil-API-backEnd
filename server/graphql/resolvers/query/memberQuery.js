@@ -1292,7 +1292,8 @@ module.exports = {
     return val;
   },
   matchNodesToMembers: async (parent, args, context, info) => {
-    const { nodesID, hoursPerWeek, budgetAmount, serverID } = args.fields;
+    const { nodesID, hoursPerWeek, budgetAmount, serverID, preference } =
+      args.fields;
     let { page, limit } = args.fields;
     console.log("Query > matchSkillsToMembers > args.fields = ", args.fields);
 
@@ -1326,6 +1327,8 @@ module.exports = {
       new_min_m = 100;
 
       console.log("nodeData = ", nodeData);
+
+      memberIDs = [];
 
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
@@ -1392,6 +1395,7 @@ module.exports = {
               memberObj[match_v2[j].nodeResID].C2 = wh_k / k_sum;
               memberObj[match_v2[j].nodeResID].pers = Number(pers.toFixed(2));
             } else {
+              memberIDs.push(match_v2[j].nodeResID);
               const N = match_v2[j].numPath;
               const sumi = match_v2[j].wh_sum;
               const k_sum = match_v2[j].k_sum;
@@ -1453,11 +1457,59 @@ module.exports = {
 
       // console.log("original_min_m = ", original_min_m);
       // console.log("original_max_m = ", original_max_m);
-      console.log("memberObj = ", memberObj);
+      // console.log("memberObj = ", memberObj);
+
+      console.log("memberIDs = ", memberIDs);
+      let dataAllMembers2 = await Members.find({ _id: memberIDs })
+        .select("_id discordName preferences")
+        .lean();
+
+      let memberData_obj = dataAllMembers2.reduce((memObj, member) => {
+        memObj[member._id] = member;
+        return memObj;
+      }, {});
+
+      // console.log("memberData_obj = ", memberData_obj);
+      // asdf;
 
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
       for (const [key, value] of Object.entries(memberObj)) {
+        // ----------- Calculate information about the Member --------------
+
+        if (preference != undefined) {
+          addMember = false;
+          if (memberData_obj[key] == undefined) {
+            addMember = false;
+          } else {
+            if (memberData_obj[key].preferences) {
+              if (memberData_obj[key].preferences.interestedMatch == false) {
+                addMember = false;
+              } else {
+                addMember = false;
+                preference.forEach((pref) => {
+                  if (memberData_obj[key].preferences[pref]) {
+                    if (
+                      memberData_obj[key].preferences[pref].interestedMatch ==
+                      true
+                    ) {
+                      addMember = true;
+                    }
+                  }
+                });
+
+                if (addMember == true) {
+                  addMember = true;
+                  console.log("key = ", key);
+                }
+              }
+            }
+          }
+        } else {
+          addMember = true;
+        }
+        // ----------- Calculate information about the Member --------------
+
         // console.log("value = ", value);
         let wh_k_arr = value.wh_k_arr;
 
@@ -1482,24 +1534,30 @@ module.exports = {
         const pers = ((C1 * w1 + C2 * penaltySmallNumPath * w2) * 100).toFixed(
           2
         );
+
         memberObj[key] = {
           ...value,
           C1,
           C2: C2 * penaltySmallNumPath,
           pers: pers,
           numPath_weighted: numPath_weighted,
+          addMember,
         };
 
-        if (Number(pers) > Number(original_max_m)) {
-          original_max_m = Number(pers);
-        }
-        if (Number(pers) < Number(original_min_m)) {
-          original_min_m = Number(pers);
+        if (addMember == true) {
+          if (Number(pers) > Number(original_max_m)) {
+            original_max_m = Number(pers);
+          }
+          if (Number(pers) < Number(original_min_m)) {
+            original_min_m = Number(pers);
+          }
         }
       }
-      for (const [key, value] of Object.entries(memberObj)) {
-        if (key == "472426060441714688") console.log("value = ", key, value);
-      }
+
+      // asdf;
+      // for (const [key, value] of Object.entries(memberObj)) {
+      //   if (key == "472426060441714688") console.log("value = ", key, value);
+      // }
       // console.log("memberObj = ", memberObj);
 
       // asdf2;
@@ -1513,6 +1571,13 @@ module.exports = {
       for (const key in memberObj) {
         // transform the object to array
 
+        if (memberObj[key].addMember == false) {
+          // Delete the people that are not interested on this specific prefefrences
+          continue;
+        } else {
+          console.log("change = tru ");
+        }
+
         // ------------ conn_node_wh_arr --------------
         let conn_node_wh_arr = [];
         let conn_node_wh_obj = memberObj[key].conn_node_wh_obj;
@@ -1524,10 +1589,7 @@ module.exports = {
               100,
           });
         }
-        if (key == "472426060441714688") {
-          console.log("key = ", key);
-          console.log("conn_node_wh_arr = ", conn_node_wh_arr);
-        }
+
         conn_node_wh_arr.sort(
           // sort it by the percentage
           (a, b) => b.totalPercentage - a.totalPercentage
