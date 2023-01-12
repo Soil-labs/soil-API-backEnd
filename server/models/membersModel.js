@@ -62,6 +62,9 @@ const memberSchema = mongoose.Schema({
   nodes: [
     {
       _id: mongoose.Schema.ObjectId,
+      orderIndex: Number,
+      level: Number,
+      weight: Number,
     },
   ],
 

@@ -409,15 +409,33 @@ module.exports = {
   },
 
   addNodesToMember: async (parent, args, context, info) => {
-    const { memberID, nodesID } = args.fields;
+    let { memberID, nodesID, nodesID_level } = args.fields;
 
     console.log("Mutation > addNodesToMember > args.fields = ", args.fields);
 
     if (!memberID) throw new ApolloError("memberID is required");
 
+    if (!(nodesID == undefined || nodesID_level == undefined))
+      throw new ApolloError(
+        "you need to use nodesID or nodesID_level, you cant use both"
+      );
+
+    let nodesID_level_obj = {};
+    if (nodesID == undefined) {
+      nodesID = nodesID_level.map((item) => item.nodeID);
+
+      // change nodesID_level from array of objects to an object
+      for (let i = 0; i < nodesID_level.length; i++) {
+        let item = nodesID_level[i];
+        nodesID_level_obj[item.nodeID] = item;
+      }
+    }
+    console.log("nodesID_level_obj = ", nodesID_level_obj);
+    // safd;
+
     try {
       let memberData = await Members.findOne({ _id: memberID });
-      // let nodesData = await Node.find({ _id: nodesID });
+
       let nodesData = await Node.find({ _id: nodesID }).select(
         "_id node match_v2_update"
       );
@@ -443,20 +461,48 @@ module.exports = {
           let nodeData = nodesData.find(
             (x) => x._id.toString() == nodeID.toString()
           );
-          nodesDataNew.push(nodeData);
-          memberData.nodes.push({ _id: nodeID });
+
+          if (nodesID_level != undefined) {
+            // caluclate the skill level and add it to the nodes for the next phase
+            let nodeNow_weight = await calculate_skill_level(
+              nodesID_level_obj[nodeID]
+            );
+
+            nodesDataNew.push({
+              ...nodeData._doc,
+              weight: nodeNow_weight.weight_total,
+            });
+            memberData.nodes.push({
+              _id: nodeID,
+              orderIndex: nodeNow_weight.orderIndex,
+              level: nodeNow_weight.level,
+              weight: nodeNow_weight.weight_total,
+            });
+          } else {
+            nodesDataNew.push(nodeData);
+            memberData.nodes.push({ _id: nodeID });
+          }
         }
 
         // add only the new ones as relationship on Neo4j
         for (let i = 0; i < nodesDataNew.length; i++) {
           let nodeNow = nodesDataNew[i];
-          makeConnection_neo4j({
-            node: [nodeNow.node, "Member"],
-            id: [nodeNow._id, memberData._id],
-            connection: "connection",
-          });
 
-          changeMatchByServer(nodeNow, memberData);
+          if (nodeNow.weight != undefined) {
+            makeConnection_neo4j({
+              node: [nodeNow.node, "Member"],
+              id: [nodeNow._id, memberData._id],
+              connection: "connection",
+              // weight: "0.1",
+              weight: nodeNow.weight.toFixed(3),
+            });
+          } else {
+            makeConnection_neo4j({
+              node: [nodeNow.node, "Member"],
+              id: [nodeNow._id, memberData._id],
+              connection: "connection",
+            });
+          }
         }
       }
 
@@ -469,6 +515,7 @@ module.exports = {
         },
         { new: true }
       );
+
       pubsub.publish(memberData2._id, {
         memberUpdated: memberData2,
       });
@@ -577,16 +624,36 @@ module.exports = {
   },
 
   updateNodesToMember: async (parent, args, context, info) => {
-    const { memberID, nodesID, nodeType } = args.fields;
+    let { memberID, nodesID, nodesID_level, nodeType } = args.fields;
 
     console.log("Mutation > updateNodesToMember > args.fields = ", args.fields);
 
     if (!memberID) throw new ApolloError("memberID is required");
 
+    if (!(nodesID == undefined || nodesID_level == undefined))
+      throw new ApolloError(
+        "you need to use nodesID or nodesID_level, you cant use both"
+      );
+
     try {
+      let nodesID_level_obj = {};
+      if (nodesID == undefined) {
+        nodesID = nodesID_level.map((item) => item.nodeID);
+
+        // change nodesID_level from array of objects to an object
+        for (let i = 0; i < nodesID_level.length; i++) {
+          let item = nodesID_level[i];
+          nodesID_level_obj[item.nodeID] = item;
+        }
+      }
+      console.log("nodesID_level_obj = ", nodesID_level_obj);
+
       let nodesData = await Node.find({ _id: nodesID }).select(
         "_id name node match_v2_update"
       );
+
+      console.log("nodesData = ", nodesData);
+      // sdf;
 
       // ---------- All nodes should be equal to nodeType or else throw error -----------
       nodesID_array = [];
@@ -610,6 +677,13 @@ module.exports = {
         "_id nodes"
       );
 
+      let nodes_member_obj = {};
+      for (let i = 0; i < memberData.nodes.length; i++) {
+        let item = memberData.nodes[i];
+        nodes_member_obj[item._id] = item;
+      }
+      console.log("nodes_member_obj = ", nodes_member_obj);
+
       // check if the nodes are already in the member (memberData.nodes)
       let nodesID_member = memberData.nodes.map(function (item) {
         return item._id.toString();
@@ -620,21 +694,57 @@ module.exports = {
         _id: nodesID_member,
       }).select("_id name node");
 
+      // console.log("nodeData_member_all = ", nodeData_member_all);
+      // // sdf;
+
       nodeData_member_type = [];
       nodeID_member_type = [];
       nodeID_member_all = [];
-      nodeData_member_all.forEach((node) => {
+      nodeData_member_all.forEach((node, idx) => {
         nodeID_member_all.push(node._id.toString());
-        if (node.node == nodeType) {
-          nodeData_member_type.push(node);
-          nodeID_member_type.push(node._id.toString());
+        // console.log(
+        //   "change = ",
+        //   nodes_member_obj[node._id.toString()].level,
+        //   nodesID_level_obj[node._id.toString()].level
+        // );
+
+        if (nodes_member_obj[node._id] && nodesID_level_obj[node._id]) {
+          if (
+            nodes_member_obj[node._id].level ==
+              nodesID_level_obj[node._id].level &&
+            nodes_member_obj[node._id].orderIndex ==
+              nodesID_level_obj[node._id].orderIndex
+          ) {
+            if (node.node == nodeType) {
+              nodeData_member_type.push(node);
+              nodeID_member_type.push(node._id.toString());
+            }
+          }
+        } else {
+          if (node.node == nodeType) {
+            nodeData_member_type.push(node);
+            nodeID_member_type.push(node._id.toString());
+          }
         }
+
+        nodeData_member_all[idx] = {
+          ...nodeData_member_all[idx]._doc,
+          ...nodes_member_obj[node._id.toString()]._doc,
+          ...nodesID_level_obj[node._id.toString()],
+        };
       });
+
+      // asfd;
 
       console.log("nodesID_array = ", nodesID_array);
       console.log("nodeID_member_type = ", nodeID_member_type);
 
+      console.log("nodeData_member_all = ", nodeData_member_all);
+      // asdf;
+
       // --------- Separate all the Nodes, and the nodeTypes ----------------
+
+      // asdf;
 
       /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
       let differenceNodes = nodesID_array.filter(
@@ -650,22 +760,56 @@ module.exports = {
           let nodeData = nodesData.find(
             (x) => x._id.toString() == nodeID.toString()
           );
-          nodesDataNew.push(nodeData);
-          nodeData_member_all.push({ _id: nodeID });
+
+          if (nodesID_level != undefined) {
+            // caluclate the skill level and add it to the nodes for the next phase
+            let nodeNow_weight = await calculate_skill_level(
+              nodesID_level_obj[nodeID]
+            );
+
+            // console.log("nodeNow_weight = ", nodeNow_weight);
+            // sadf;
+
+            nodesDataNew.push({
+              ...nodeData._doc,
+              weight: nodeNow_weight.weight_total,
+            });
+            nodeData_member_all.push({
+              _id: nodeID,
+              orderIndex: nodeNow_weight.orderIndex,
+              level: nodeNow_weight.level,
+              weight: nodeNow_weight.weight_total,
+            });
+          } else {
+            nodesDataNew.push(nodeData);
+            nodeData_member_all.push({ _id: nodeID });
+          }
+          // nodesDataNew.push(nodeData);
+          // nodeData_member_all.push({ _id: nodeID });
         }
 
-        console.log("nodesDataNew = ", nodesDataNew);
+        // console.log("nodesDataNew = ", nodesDataNew);
 
         // asdf;
 
         // add only the new ones as relationship on Neo4j
         for (let i = 0; i < nodesDataNew.length; i++) {
           let nodeNow = nodesDataNew[i];
-          makeConnection_neo4j({
-            node: [nodeNow.node, "Member"],
-            id: [nodeNow._id, memberData._id],
-            connection: "connection",
-          });
+
+          if (nodeNow.weight != undefined) {
+            makeConnection_neo4j({
+              node: [nodeNow.node, "Member"],
+              id: [nodeNow._id, memberData._id],
+              connection: "connection",
+              weight: nodeNow.weight.toFixed(3),
+            });
+          } else {
+            makeConnection_neo4j({
+              node: [nodeNow.node, "Member"],
+              id: [nodeNow._id, memberData._id],
+              connection: "connection",
+            });
+          }
 
           changeMatchByServer(nodeNow, memberData);
         }
@@ -682,8 +826,10 @@ module.exports = {
         (x) => !nodesID_array.includes(x)
       );
       console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
+      console.log("nodeID_member_type = ", nodeID_member_type);
+      console.log("nodesID_array = ", nodesID_array);
+      // asd;
 
-      // asdf;
       // console.log("change = " , change)
 
       if (nodeExistOnlyMember.length > 0) {
@@ -708,6 +854,7 @@ module.exports = {
       }
       // -------------- Remove the Nodes that are not in the nodesID_array ----------------
 
+      console.log("nodeData_member_all = ", nodeData_member_all);
       // asdf;
 
       memberData2 = await Members.findOneAndUpdate(
@@ -1359,4 +1506,49 @@ const changeMatchByServer = async (nodeNow, memberData) => {
       { new: true }
     );
   }
+};
+
+// create async function that will calculate the equation for skill level
+const calculate_skill_level = async (nodeNow) => {
+  console.log("nodeNow = ", nodeNow);
+
+  // ------ Give some weight based on what is the order on the user ---------
+  maxReward = 0.8;
+  minReward = 0.3;
+  decredationFactor = 0.7; // steepness
+
+  if (nodeNow.orderIndex) {
+    orderIndex = nodeNow.orderIndex;
+
+    weight_orderIndex =
+      (maxReward - minReward) / orderIndex ** decredationFactor + minReward;
+  } else {
+    weight_orderIndex = 0;
+  }
+  // ------ Give some weight based on what is the order on the user ---------
+
+  // ------ Give some weight based on the level of expertise---------
+  x0 = 5; // midpoint of the equation
+  k = 0.8; // steepness of the curve
+
+  if (nodeNow.level) {
+    level = nodeNow.level;
+    weight_level = 1 / (1 + 2.71 ** (-k * (level - x0)));
+  } else {
+    weight_level = 0;
+  }
+  // ------ Give some weight based on the level of expertise---------
+
+  // ----- Combine the two -----------
+  w1 = 0.5;
+  w2 = 0.5;
+
+  weight_total = w1 * weight_orderIndex + w2 * weight_level;
+  // ----- Combine the two -----------
+
+  nodeNow.weight_orderIndex = weight_orderIndex;
+  nodeNow.weight_level = weight_level;
+  nodeNow.weight_total = weight_total;
+  // asdf;
+  return nodeNow;
 };

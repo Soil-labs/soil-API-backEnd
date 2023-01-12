@@ -70,6 +70,9 @@ module.exports = `
 
     type nodesType {
         nodeData: Node
+        orderIndex: Int
+        level: Int 
+        weight: Float
     }
 
      type chatResponse {
@@ -295,7 +298,9 @@ module.exports = `
         serverID: [String]
         page: Int
         limit: Int
+        preference: [preferencesEnum]
     }
+
 
     input matchSkillsToProjectsInput {
         skillsID: [ID]
@@ -409,12 +414,22 @@ module.exports = `
     input addNodesToMemberInput {
         memberID: ID
         nodesID: [String]
+        nodesID_level: [nodesID_levelInput]
     }
+
+    input nodesID_levelInput {
+        nodeID: ID
+        orderIndex: Int
+        level: Float 
+    }
+    
 
     input updateNodesToMemberInput {
         memberID: ID
         nodesID: [String]
         nodeType: String
+        nodesID_level: [nodesID_levelInput]
+        
     }
 
     input deleteNodesFromMemberInput {

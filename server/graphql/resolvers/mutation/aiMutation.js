@@ -120,6 +120,22 @@ module.exports = {
       );
     }
   },
+  messageToGPT: async (parent, args, context, info) => {
+    const { message } = args.fields;
+    console.log("Mutation > messageToGPT > args.fields = ", args.fields);
+    if (!message) throw new ApolloError("The message is required");
+    try {
+      return { message };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updateMessage",
+        {
+          component: "aiMutation > updateMessage",
+        }
+      );
+    }
+  },
   useAI_OnMessage: async (parent, args, context, info) => {
     const { message, cash, numberKeywords } = args.fields;
     console.log("Mutation > updateMessage > args.fields = ", args.fields);
