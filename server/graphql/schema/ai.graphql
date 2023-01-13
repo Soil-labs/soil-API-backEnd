@@ -68,6 +68,13 @@ module.exports = `
 
     input messageToGPTInput {
         message: String
+        category: CategoryEnum
+    }
+
+    enum CategoryEnum {
+        project
+        skill
+        role
     }
 
 
