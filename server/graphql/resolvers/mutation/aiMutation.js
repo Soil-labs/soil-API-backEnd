@@ -153,7 +153,6 @@ module.exports = {
     let generatedText = response.data.choices[0].text;
     let result = generatedText.replace(/\n\n/g, "");
     try {
-      console.log("generatedText====>>>>>", generatedText);
       return { message: result };
     } catch (err) {
       throw new ApolloError(
