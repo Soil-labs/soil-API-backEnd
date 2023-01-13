@@ -50,6 +50,7 @@ module.exports = `
            #  ---------- NODE QUERY -------
             findNode(fields:findNodeInput): Node
             findNodes(fields:findNodesInput): [Node]
+            treeOfRelatedNodes(fields:treeOfRelatedNodesInput): [Node]
 
           #  ---------- QUERY TEMPLATE QUERY -------
             findRoleTemplate(fields:findRoleTemplateInput): RoleTemplate

@@ -20,6 +20,14 @@ module.exports = {
             return node;
           });
           return nodeData;
+        } else if (context.relatedNodes_obj) {
+          nodeData = nodeData.map((node) => {
+            if (context.relatedNodes_obj[node._id]) {
+              node.star = true;
+            }
+            return node;
+          });
+          return nodeData;
         } else {
           return nodeData;
         }
