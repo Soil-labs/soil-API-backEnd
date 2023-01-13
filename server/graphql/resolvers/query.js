@@ -28,7 +28,11 @@ const {
   skills,
 } = require("./query/skillsQuery");
 
-const { findNode, findNodes } = require("./query/nodeQuery");
+const {
+  findNode,
+  findNodes,
+  treeOfRelatedNodes,
+} = require("./query/nodeQuery");
 
 const {
   findProject,
@@ -113,6 +117,7 @@ module.exports = {
     // ------------- NODE QUERY -----------------
     findNode,
     findNodes,
+    treeOfRelatedNodes,
 
     // ------------- ROLE TEMPLATE QUERY -----------------
     findRoleTemplate,

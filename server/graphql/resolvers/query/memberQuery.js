@@ -773,7 +773,7 @@ module.exports = {
     }
   },
   matchPrepareNode: async (parent, args, context, info) => {
-    const { nodeID, serverID, find } = args.fields;
+    const { nodeID, serverID, find, weightSkills } = args.fields;
     console.log(
       "Query > matchPrepareSkillToMembers > args.fields = ",
       args.fields
@@ -815,6 +815,7 @@ module.exports = {
           node: nodeData.node,
           serverID: server._id,
           find: typeNeo,
+          weightSkills: weightSkills,
         });
 
         // console.log("-----------SERVERID --------- ", server._id);

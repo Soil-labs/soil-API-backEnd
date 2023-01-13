@@ -270,6 +270,7 @@ module.exports = `
         nodeID: ID
         serverID: [String]
         find: findEnum
+        weightSkills: Boolean
     }
 
     enum findEnum {
