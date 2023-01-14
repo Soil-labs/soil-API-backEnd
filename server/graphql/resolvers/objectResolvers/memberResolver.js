@@ -100,14 +100,15 @@ module.exports = {
       try {
         const nodes = parent.nodes;
 
-        // console.log("nodes ----= " , nodes)
+        let nodesObj = {};
+        nodes.forEach((node) => {
+          nodesObj[node._id] = node;
+        });
 
         nodesID = [];
         nodes.forEach((node) => {
           nodesID.push(node._id);
         });
-
-        // console.log("nodesID = " , nodesID)
 
         const nodesData = await Node.find({ _id: nodesID }).select(
           "_id name node"
@@ -117,10 +118,11 @@ module.exports = {
         nodesData.forEach((node) => {
           res.push({
             nodeData: node,
+            orderIndex: nodesObj[node._id].orderIndex,
+            level: nodesObj[node._id].level,
+            weight: nodesObj[node._id].weight,
           });
         });
-
-        // console.log("nodesData = " , nodesData)
 
         return res;
       } catch (err) {

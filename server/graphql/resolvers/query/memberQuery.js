@@ -773,7 +773,7 @@ module.exports = {
     }
   },
   matchPrepareNode: async (parent, args, context, info) => {
-    const { nodeID, serverID, find } = args.fields;
+    const { nodeID, serverID, find, weightSkills } = args.fields;
     console.log(
       "Query > matchPrepareSkillToMembers > args.fields = ",
       args.fields
@@ -815,6 +815,7 @@ module.exports = {
           node: nodeData.node,
           serverID: server._id,
           find: typeNeo,
+          weightSkills: weightSkills,
         });
 
         // console.log("-----------SERVERID --------- ", server._id);
@@ -1259,17 +1260,32 @@ module.exports = {
     }
   },
   setAllMatch_v2: async (parent, args, context, info) => {
-    const { val } = args;
+    const { val, node } = args;
     console.log("Query > matchSkillsToMembers > args.fields = ", args);
+
+    let match_v2_update;
+    if (node == "Member") {
+      match_v2_update = {
+        member: val,
+        projectRole: false,
+      };
+    } else if (node == "ProjectRole") {
+      match_v2_update = {
+        member: false,
+        projectRole: val,
+      };
+    } else if (node == "All") {
+      match_v2_update = {
+        member: val,
+        projectRole: val,
+      };
+    }
 
     await Node.updateMany(
       {},
       {
         $set: {
-          match_v2_update: {
-            member: val,
-            projectRole: false,
-          },
+          match_v2_update: match_v2_update,
         },
       }
     );
@@ -1277,7 +1293,8 @@ module.exports = {
     return val;
   },
   matchNodesToMembers: async (parent, args, context, info) => {
-    const { nodesID, hoursPerWeek, budgetAmount, serverID } = args.fields;
+    const { nodesID, hoursPerWeek, budgetAmount, serverID, preference } =
+      args.fields;
     let { page, limit } = args.fields;
     console.log("Query > matchSkillsToMembers > args.fields = ", args.fields);
 
@@ -1309,6 +1326,10 @@ module.exports = {
 
       new_max_m = 20;
       new_min_m = 100;
+
+      console.log("nodeData = ", nodeData);
+
+      memberIDs = [];
 
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
@@ -1375,6 +1396,7 @@ module.exports = {
               memberObj[match_v2[j].nodeResID].C2 = wh_k / k_sum;
               memberObj[match_v2[j].nodeResID].pers = Number(pers.toFixed(2));
             } else {
+              memberIDs.push(match_v2[j].nodeResID);
               const N = match_v2[j].numPath;
               const sumi = match_v2[j].wh_sum;
               const k_sum = match_v2[j].k_sum;
@@ -1438,9 +1460,57 @@ module.exports = {
       // console.log("original_max_m = ", original_max_m);
       // console.log("memberObj = ", memberObj);
 
+      console.log("memberIDs = ", memberIDs);
+      let dataAllMembers2 = await Members.find({ _id: memberIDs })
+        .select("_id discordName preferences")
+        .lean();
+
+      let memberData_obj = dataAllMembers2.reduce((memObj, member) => {
+        memObj[member._id] = member;
+        return memObj;
+      }, {});
+
+      // console.log("memberData_obj = ", memberData_obj);
+      // asdf;
+
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
       for (const [key, value] of Object.entries(memberObj)) {
+        // ----------- Calculate information about the Member --------------
+
+        if (preference != undefined) {
+          addMember = false;
+          if (memberData_obj[key] == undefined) {
+            addMember = false;
+          } else {
+            if (memberData_obj[key].preferences) {
+              if (memberData_obj[key].preferences.interestedMatch == false) {
+                addMember = false;
+              } else {
+                addMember = false;
+                preference.forEach((pref) => {
+                  if (memberData_obj[key].preferences[pref]) {
+                    if (
+                      memberData_obj[key].preferences[pref].interestedMatch ==
+                      true
+                    ) {
+                      addMember = true;
+                    }
+                  }
+                });
+
+                if (addMember == true) {
+                  addMember = true;
+                  console.log("key = ", key);
+                }
+              }
+            }
+          }
+        } else {
+          addMember = true;
+        }
+        // ----------- Calculate information about the Member --------------
+
         // console.log("value = ", value);
         let wh_k_arr = value.wh_k_arr;
 
@@ -1448,36 +1518,46 @@ module.exports = {
 
         wh_sum = 0;
         numPath = 0;
+        let penaltySmallNumPath = 0;
         wh_k_arr.forEach((wh_k_T, idx) => {
           let wh_sum_n = wh_k_arr[idx].wh_sum;
           let numPath_n = wh_k_arr[idx].numPath;
           numPath_weighted += numPath_n * (((3 - idx) * 3) / (idx + 1));
 
           if (numPath == 0 && numPath_n != 0) {
+            penaltySmallNumPath = 1 - 1 / (numPath_n + 1) ** 1.4;
             wh_sum = wh_sum_n;
             numPath = numPath_n;
           }
         });
         const C1 = 1 - 1 / numPath_weighted ** 0.3;
         const C2 = wh_sum / numPath;
-        const pers = ((C1 * w1 + C2 * w2) * 100).toFixed(2);
+        const pers = ((C1 * w1 + C2 * penaltySmallNumPath * w2) * 100).toFixed(
+          2
+        );
+
         memberObj[key] = {
           ...value,
           C1,
-          C2,
+          C2: C2 * penaltySmallNumPath,
           pers: pers,
           numPath_weighted: numPath_weighted,
+          addMember,
         };
 
-        if (pers > original_max_m) {
-          original_max_m = pers;
-        }
-        if (pers < original_min_m) {
-          original_min_m = pers;
+        if (addMember == true) {
+          if (Number(pers) > Number(original_max_m)) {
+            original_max_m = Number(pers);
+          }
+          if (Number(pers) < Number(original_min_m)) {
+            original_min_m = Number(pers);
+          }
         }
       }
+
+      // asdf;
       // for (const [key, value] of Object.entries(memberObj)) {
-      //   console.log("value = ", key, value);
+      //   if (key == "472426060441714688") console.log("value = ", key, value);
       // }
       // console.log("memberObj = ", memberObj);
 
@@ -1492,6 +1572,13 @@ module.exports = {
       for (const key in memberObj) {
         // transform the object to array
 
+        if (memberObj[key].addMember == false) {
+          // Delete the people that are not interested on this specific prefefrences
+          continue;
+        } else {
+          console.log("change = tru ");
+        }
+
         // ------------ conn_node_wh_arr --------------
         let conn_node_wh_arr = [];
         let conn_node_wh_obj = memberObj[key].conn_node_wh_obj;
@@ -1503,6 +1590,7 @@ module.exports = {
               100,
           });
         }
+
         conn_node_wh_arr.sort(
           // sort it by the percentage
           (a, b) => b.totalPercentage - a.totalPercentage
@@ -1510,10 +1598,15 @@ module.exports = {
         // ------------ conn_node_wh_arr --------------
 
         if (memberObj[key].pers > threshold_cut_members) {
-          mapped_value =
-            ((memberObj[key].pers - original_min_m) * (new_min_m - new_max_m)) /
-              (original_max_m - original_min_m) +
-            new_max_m;
+          if (original_max_m - original_min_m > 0) {
+            mapped_value =
+              ((memberObj[key].pers - original_min_m) *
+                (new_min_m - new_max_m)) /
+                (original_max_m - original_min_m) +
+              new_max_m;
+          } else {
+            mapped_value = memberObj[key].pers;
+          }
 
           memberArr.push({
             matchPercentage: {
@@ -1526,10 +1619,10 @@ module.exports = {
         }
       }
 
-      memberArr.forEach((member) => {
-        console.log("member = ", member);
-        // console.log("member = ", member.nodesPercentage);
-      });
+      // memberArr.forEach((member) => {
+      //   console.log("member = ", member);
+      //   // console.log("member = ", member.nodesPercentage);
+      // });
 
       // console.log("memberArr = ", memberArr);
 
@@ -2091,6 +2184,8 @@ module.exports = {
       });
     }
 
+    const serverID_set = new Set(serverID);
+
     if (page != null && limit != null) {
     } else {
       page = 0;
@@ -2104,9 +2199,15 @@ module.exports = {
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      w1 = 0.5; // the weight of the number of paths
+      w1 = 0.3; // the weight of the number of paths
       w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
       projectRoleObj = {};
+
+      new_max_m = 20;
+      new_min_m = 100;
+
+      original_min_m = 110; // will change on the loop
+      original_max_m = -10; // will change on the loop
 
       for (let i = 0; i < nodeData.length; i++) {
         // loop on the nodes
@@ -2116,7 +2217,7 @@ module.exports = {
           // find all the connections for this particular node
           // check if serverID exist on array match_v2.serverID
           if (
-            match_v2[j].serverID.includes(serverID) &&
+            match_v2[j].serverID.some((value) => serverID_set.has(value)) &&
             match_v2[j].type == "ProjectRole"
           ) {
             // If this is both have the serverID and is Member
@@ -2147,38 +2248,66 @@ module.exports = {
                 pers: Number(pers.toFixed(2)),
               };
             }
+            if (projectRoleObj[match_v2[j].nodeResID].pers > original_max_m) {
+              original_max_m = projectRoleObj[match_v2[j].nodeResID].pers;
+            }
+            if (projectRoleObj[match_v2[j].nodeResID].pers < original_min_m) {
+              original_min_m = projectRoleObj[match_v2[j].nodeResID].pers;
+            }
           }
         }
       }
 
       console.log("projectRoleObj = ", projectRoleObj);
 
+      threshold_cut_members = 15;
+      if (original_min_m < threshold_cut_members) {
+        original_min_m = threshold_cut_members; // we need to change the original minimum to the threshold
+      }
+
       // tranform to project
       let projectObj = {};
+
+      let mapped_value;
       for (const key in projectRoleObj) {
         let projectData = await Projects.findOne({ "role._id": key });
 
         if (projectData) {
+          if (original_max_m - original_min_m > 0) {
+            mapped_value =
+              ((projectRoleObj[key].pers - original_min_m) *
+                (new_min_m - new_max_m)) /
+                (original_max_m - original_min_m) +
+              new_max_m;
+          } else {
+            mapped_value = projectObj[key].pers;
+          }
+
           if (projectObj[projectData._id]) {
             if (
-              projectObj[projectData._id].matchPercentage <
+              projectObj[projectData._id].realPercebtage <
               projectRoleObj[key].pers
             ) {
-              projectObj[projectData._id].matchPercentage =
+              projectObj[projectData._id].realPercebtage =
                 projectRoleObj[key].pers;
+
+              projectObj[projectData._id].matchPercentage = mapped_value;
             }
             projectObj[projectData._id].projectRoles.push({
               projectRoleID: key,
-              matchPercentage: projectRoleObj[key].pers,
+              realPercebtage: projectRoleObj[key].pers,
+              matchPercentage: mapped_value,
             });
           } else {
             projectObj[projectData._id] = {
               project: projectData,
-              matchPercentage: projectRoleObj[key].pers,
+              realPercebtage: projectRoleObj[key].pers,
+              matchPercentage: mapped_value,
               projectRoles: [
                 {
                   projectRoleID: key,
-                  matchPercentage: projectRoleObj[key].pers,
+                  realPercebtage: projectRoleObj[key].pers,
+                  matchPercentage: mapped_value,
                 },
               ],
             };
@@ -2189,8 +2318,10 @@ module.exports = {
       const projectArr = [];
       for (const key in projectObj) {
         // transform the object to array
+
         projectArr.push({
           matchPercentage: projectObj[key].matchPercentage,
+          realPercebtage: projectObj[key].realPercebtage,
           project: projectObj[key].project,
           projectRoles: projectObj[key].projectRoles,
         });

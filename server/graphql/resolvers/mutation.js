@@ -2,9 +2,11 @@ const {
   addNewMember,
   updateMember,
   addNodesToMember,
+  updateNodesToMember,
   deleteNodesFromMember,
   deleteMember,
   addFavoriteProject,
+  addPreferencesToMember,
   addSkillToMember,
   endorseAttribute,
   memberUpdated,
@@ -13,6 +15,7 @@ const {
 const {
   updateProject,
   addNodesToProjectRole,
+  updateNodesToProjectRole,
   addProjectRole,
   deleteNodesToProjectRole,
   newTweetProject,
@@ -21,7 +24,8 @@ const {
   createNewTeam,
   createNewRole,
   createNewEpic,
-  deleteProject
+  deleteProject,
+  createProject,
 } = require("./mutation/projectsMutation");
 
 const {
@@ -68,6 +72,8 @@ const {
   addMessage,
   addMessages,
   updateMessage,
+  useAI_OnMessage,
+  messageToGPT,
 } = require("./mutation/aiMutation");
 
 module.exports = {
@@ -76,16 +82,19 @@ module.exports = {
     addNewMember,
     updateMember,
     addNodesToMember,
+    updateNodesToMember,
     deleteNodesFromMember,
     deleteMember,
     endorseAttribute,
     addFavoriteProject,
+    addPreferencesToMember,
     addSkillToMember,
     addEndorsement,
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
     addNodesToProjectRole,
+    updateNodesToProjectRole,
     addProjectRole,
     deleteNodesToProjectRole,
     newTweetProject,
@@ -95,6 +104,7 @@ module.exports = {
     createNewRole,
     createNewEpic,
     deleteProject,
+    createProject,
 
     // ------------- SKILL MUTATION -----------------
     createSkill,
@@ -145,6 +155,8 @@ module.exports = {
     addMessage,
     addMessages,
     updateMessage,
+    useAI_OnMessage,
+    messageToGPT,
   },
   Subscription: {
     memberUpdated,

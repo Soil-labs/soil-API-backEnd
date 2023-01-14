@@ -183,7 +183,7 @@ module.exports = {
 
   relatedNode_name: async (parent, args, context, info) => {
     const { name, relatedNode_name, weight, connection } = args.fields;
-    console.log("Mutation > relatedNode > args.fields = ", args.fields);
+    console.log("Mutation > relatedNode_name > args.fields = ", args.fields);
 
     if (!name)
       throw new ApolloError("You need to specify the name of the node");
@@ -192,23 +192,32 @@ module.exports = {
         "You need to specify the relatedNode_name of the node"
       );
 
-    nodeData = await Node.findOne({ name });
+    nodeData = await Node.findOne({ name }).select("name _id node");
 
-    relatedNodeData = await Node.findOne({ name: relatedNode_name });
+    relatedNodeData = await Node.findOne({ name: relatedNode_name }).select(
+      "name _id node"
+    );
 
+    console.log("before = ");
+    let connection_n = connection.replace(" ", "_");
+    console.log("after = ");
+
+    console.log("res nodeData = ", nodeData);
+    console.log("res relatedNodeData = ", relatedNodeData);
+    console.log("connection_n = ", connection_n);
     try {
       if (weight) {
         await makeConnection_neo4j({
           node: [nodeData.node, relatedNodeData.node],
           id: [nodeData._id, relatedNodeData._id],
-          connection: connection,
+          connection: connection_n,
           weight: weight,
         });
       } else {
         await makeConnection_neo4j({
           node: [nodeData.node, relatedNodeData.node],
           id: [nodeData._id, relatedNodeData._id],
-          connection: connection,
+          connection: connection_n,
         });
       }
 

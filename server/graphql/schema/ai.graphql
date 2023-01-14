@@ -50,6 +50,32 @@ module.exports = `
         edenAI: EdenAIInput
     }
 
+    input useAI_OnMessageInput {
+        message: String
+        cash: Boolean
+        numberKeywords: Float,
+    }
+
+    type useAI_OnMessageOutput {
+        mainExpertise: String
+        expertiseIdentified: [String]
+        keywordsMessage: [String]
+    }
+
+    type messageToGPTOutput{
+        message: String
+    }
+
+    input messageToGPTInput {
+        message: String
+        category: CategoryEnum
+    }
+
+    enum CategoryEnum {
+        project
+        skill
+        role
+    }
 
 
 

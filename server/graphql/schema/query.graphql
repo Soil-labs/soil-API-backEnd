@@ -29,7 +29,7 @@ module.exports = `
             matchPrepareSkillToProjectRoles(fields:matchPrepareSkillToProjectRolesInput): Skills
             matchSkillsToMembers(fields:matchSkillsToMembersInput): [matchMembersToSkillOutput]
             matchNodesToMembers(fields:matchNodesToMembersInput): [matchMembersToSkillOutput]
-            setAllMatch_v2(val: Boolean): Boolean
+            setAllMatch_v2(val: Boolean,node: String): Boolean
             matchNodesToMembers_old(fields:matchNodesToMembersInput): [matchMembersToSkillOutput]
             matchSkillsToProjects(fields:matchSkillsToProjectsInput): [matchSkillsToProjectsOutput]
             matchNodesToProjectRoles(fields:matchNodesToProjectRolesInput): [matchSkillsToProjectsOutput]
@@ -50,6 +50,7 @@ module.exports = `
            #  ---------- NODE QUERY -------
             findNode(fields:findNodeInput): Node
             findNodes(fields:findNodesInput): [Node]
+            treeOfRelatedNodes(fields:treeOfRelatedNodesInput): [Node]
 
           #  ---------- QUERY TEMPLATE QUERY -------
             findRoleTemplate(fields:findRoleTemplateInput): RoleTemplate

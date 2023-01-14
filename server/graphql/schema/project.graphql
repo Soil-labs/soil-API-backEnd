@@ -271,9 +271,6 @@ module.exports = `
 
         serverID: [String]
         gardenServerID: String,
-
-        champion: String
-
         team: [teamInput]
 
         role: [roleInput]
@@ -291,6 +288,12 @@ module.exports = `
     input addNodesToProjectRoleInput {
         projectRoleID: ID,
         nodesID: [ID],
+    }
+
+    input updateNodesToProjectRoleInput {
+        projectRoleID: ID,
+        nodesID: [ID],
+        nodeType: String,
     }
 
     input addProjectRoleInput {
@@ -417,6 +420,22 @@ module.exports = `
 
     input deleteProjectInput {
         projectID: ID
+    }
+
+    input createProjectInput{
+        title: String
+        description: String
+        descriptionOneLine: String,
+        emoji: String,
+        backColorEmoji: String,
+        serverID: [String]
+        gardenServerID: String,
+        team: [teamInput]
+        role: [roleInput]
+        collaborationLinks: [collaborationLinksInput]
+        stepsJoinProject: [String]
+        budget: budgetInput
+        dates: datesInput
     }
 
     

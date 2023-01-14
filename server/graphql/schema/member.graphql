@@ -43,10 +43,36 @@ module.exports = `
         memberRole: RoleTemplate
         chat: chatResponse
         endorsements: [endorsements]
+
+        preferences: preferencesType
+    }
+
+    type preferencesType {
+        interestedMatch: Boolean,
+        notify: Boolean,
+        findUser: preferencesTypeFind
+        findCoFounder: preferencesTypeFind
+        findMentor: preferencesTypeFind
+        findMentee: preferencesTypeFind
+        findProject: preferencesTypeFind
+    }
+
+    type preferencesTypeFind {
+        interestedMatch: Boolean,
+        notify: Boolean,
+        percentage: Int, 
+        pastSearch: [prefPastSearch],
+    }
+
+    type prefPastSearch {
+        nodesID: [ID],
     }
 
     type nodesType {
         nodeData: Node
+        orderIndex: Int
+        level: Int 
+        weight: Float
     }
 
      type chatResponse {
@@ -181,6 +207,7 @@ module.exports = `
 
     type matchSkillsToProjectsOutput {
         matchPercentage: Float,
+        realPercebtage: Float,
         project: Project,
         commonSkills: [Skills]
         projectRoles: [matchProjectRoles]
@@ -188,6 +215,7 @@ module.exports = `
     
     type matchProjectRoles {
         matchPercentage: Float,
+        realPercebtage: Float,
         projectRole: roleType,
         commonSkills: [Skills]
     }
@@ -242,6 +270,7 @@ module.exports = `
         nodeID: ID
         serverID: [String]
         find: findEnum
+        weightSkills: Boolean
     }
 
     enum findEnum {
@@ -270,7 +299,9 @@ module.exports = `
         serverID: [String]
         page: Int
         limit: Int
+        preference: [preferencesEnum]
     }
+
 
     input matchSkillsToProjectsInput {
         skillsID: [ID]
@@ -356,9 +387,50 @@ module.exports = `
         favorite: Boolean
     }
 
+    input addPreferencesToMemberInput {
+        memberID: ID
+        preferences: [preferencesInput]
+    }
+
+    input preferencesInput {
+        preference: preferencesEnum
+        interestedMatch: Boolean
+        notify: Boolean
+        percentage: Int
+        pastSearch: [pastSearchInput]
+    }
+
+    input pastSearchInput {
+        nodesID: [ID]
+    }
+
+    enum preferencesEnum {
+        findUser
+        findCoFounder
+        findMentor
+        findMentee
+        findProject
+    }
+
     input addNodesToMemberInput {
         memberID: ID
         nodesID: [String]
+        nodesID_level: [nodesID_levelInput]
+    }
+
+    input nodesID_levelInput {
+        nodeID: ID
+        orderIndex: Int
+        level: Float 
+    }
+    
+
+    input updateNodesToMemberInput {
+        memberID: ID
+        nodesID: [String]
+        nodeType: String
+        nodesID_level: [nodesID_levelInput]
+        
     }
 
     input deleteNodesFromMemberInput {
