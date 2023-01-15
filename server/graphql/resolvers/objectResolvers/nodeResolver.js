@@ -10,7 +10,9 @@ module.exports = {
         const subNodes = parent.subNodes;
 
         //   nodeData = await Node.find({ _id: subNodes });
-        nodeData = await Node.find({ _id: subNodes }).select("_id name node");
+        nodeData = await Node.find({ _id: subNodes }).select(
+          "_id name node subNodes"
+        );
 
         if (context.selectedNodes) {
           nodeData = nodeData.map((node) => {
