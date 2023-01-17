@@ -238,37 +238,37 @@ module.exports = {
       console.log("node_general_obj = ", node_general_obj);
       console.log("node_after = ", node_after);
 
-      // final_res = []; // create the final result array using the object node_general_obj
-      // for (const [key, value] of Object.entries(node_general_obj)) {
-      //   if (value.level == 0) {
-      //     // console.log("key = ", key);
-      //     // console.log("value = ", value);
+      final_res = []; // create the final result array using the object node_general_obj
+      for (const [key, value] of Object.entries(node_general_obj)) {
+        if (value.level == 0) {
+          // console.log("key = ", key);
+          // console.log("value = ", value);
 
-      //     let subNodes = [];
-      //     let flag_open = false;
-      //     for (let i = 0; i < value.subNodes.length; i++) {
-      //       let subNode = value.subNodes[i];
-      //       subNodes.push({
-      //         _id: subNode,
-      //         subNodes: node_general_obj[subNode].subNodes,
-      //       });
-      //       // if (relatedNodes_obj[subNode] != undefined) {
-      //       //   subNodes[i].star = relatedNodes_obj[subNode].star;
-      //       //   flag_open = true;
-      //       // }
-      //     }
-      //     let node_temp = await Node.findOne({ _id: key }).select(
-      //       "_id name node"
-      //     );
-      //     final_res.push({
-      //       _id: key,
-      //       subNodes: subNodes,
-      //       name: node_temp.name,
-      //       node: node_temp.node,
-      //     });
-      //     if (flag_open == true) final_res[final_res.length - 1].open = true;
-      //   }
-      // }
+          let subNodes = [];
+          let flag_open = false;
+          for (let i = 0; i < value.subNodes.length; i++) {
+            let subNode = value.subNodes[i];
+            subNodes.push({
+              _id: subNode,
+              subNodes: node_general_obj[subNode].subNodes,
+            });
+            // if (relatedNodes_obj[subNode] != undefined) {
+            //   subNodes[i].star = relatedNodes_obj[subNode].star;
+            //   flag_open = true;
+            // }
+          }
+          let node_temp = await Node.findOne({ _id: key }).select(
+            "_id name node"
+          );
+          final_res.push({
+            _id: key,
+            subNodes: subNodes,
+            name: node_temp.name,
+            node: node_temp.node,
+          });
+          if (flag_open == true) final_res[final_res.length - 1].open = true;
+        }
+      }
 
       // // context.relatedNodes_obj = relatedNodes_obj;
 
