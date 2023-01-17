@@ -277,9 +277,9 @@ module.exports = {
       // //   console.log("node.subNodes = ", node.subNodes);
       // // });
 
-      // context.nodeTree = true;
+      context.nodeTree = true;
 
-      // return final_res;
+      return final_res;
       return nodes_search;
     } catch (err) {
       throw new ApolloError(
