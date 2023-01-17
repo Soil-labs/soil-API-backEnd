@@ -1316,12 +1316,29 @@ module.exports = {
     }
 
     try {
-      let nodeData = await Node.find({ _id: nodesID }).select("_id match_v2");
+      let nodeData = await Node.find({ _id: nodesID }).select(
+        "_id node match_v2"
+      );
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      w1 = 0.2; // the weight of the number of paths
-      w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
+      w1_numNodes = 0.2; // the weight of the number of paths
+      w2_WH = 1 - w1_numNodes; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
+
+      w1_expertise = 0.8; // the weight of the expertise nodes
+      w2_typeProject = 1 - w1_expertise; // the weight of the type of project nodes
+
+      // wh_sum -> the sum of all the weights^hop
+      // numPath -> Number of Paths to create this WH
+      // N -> number of paths to create this WH
+      // K -> splits the WH to 3 parts based on WH value (WH>0.7) (0.7>WH>0.3) (WH<0.3) and give different K points (9) (3) (1) -> in order to create weighted average
+      // k_sum -> the sum of all K values that were given
+      // wh_k -> The total weighted average of the WH based on K values
+      // wh_k_arr -> split the WH to 3 parts based on WH value (was analysed on K)
+      // C1 -> the first part of the equation, based on the number of paths
+      // C2 -> the second part of the equation, based on the weighted average of the WH
+      // pers -> the final percentage of the -> pers = w1_numNodes*C1 + w2_WH*C2
+      // conn_node_wh_obj -> the object with nodes and the WH of every node
       memberObj = {};
 
       new_max_m = 20;
@@ -1337,6 +1354,19 @@ module.exports = {
         // loop on the nodes
         let match_v2 = nodeData[i].match_v2;
 
+        let w_node = 1;
+        if (
+          nodeData[i].node == "sub_expertise" ||
+          nodeData[i].node == "expertise"
+        ) {
+          w_node = w1_expertise;
+        } else if (
+          nodeData[i].node == "typeProject" ||
+          nodeData[i].node == "sub_typeProject"
+        ) {
+          w_node = w2_typeProject;
+        }
+
         for (let j = 0; j < match_v2.length; j++) {
           // find all the connections for this particular node
           // check if serverID exist on array match_v2.serverID
@@ -1350,6 +1380,7 @@ module.exports = {
             // and Make the calculation for the percentage for this user
 
             if (memberObj[match_v2[j].nodeResID]) {
+              // If it already exist on the memberObj
               memberObj[match_v2[j].nodeResID].wh_sum += match_v2[j].wh_sum;
               memberObj[match_v2[j].nodeResID].numPath += match_v2[j].numPath;
 
@@ -1367,7 +1398,7 @@ module.exports = {
 
               memberObj[match_v2[j].nodeResID].wh_k_arr.forEach(
                 (wh_k_T, idx) => {
-                  wh_k_T.wh_sum = wh_k_arr[idx].wh_sum;
+                  wh_k_T.wh_sum = wh_k_arr[idx].wh_sum; // * w_node;
                   wh_k_T.numPath = wh_k_arr[idx].numPath;
                 }
               );
@@ -1389,19 +1420,28 @@ module.exports = {
               memberObj[match_v2[j].nodeResID].conn_node_wh_obj =
                 conn_node_wh_obj;
 
-              const pers =
-                ((1 - 1 / N ** 0.3) * w1 + (wh_k / k_sum) * w2) * 100;
+              let pers =
+                ((1 - 1 / N ** 0.3) * w1_numNodes + (wh_k / k_sum) * w2_WH) *
+                100;
+
+              pers = pers * w_node;
 
               memberObj[match_v2[j].nodeResID].C1 = 1 - 1 / N ** 0.3;
               memberObj[match_v2[j].nodeResID].C2 = wh_k / k_sum;
               memberObj[match_v2[j].nodeResID].pers = Number(pers.toFixed(2));
             } else {
+              // If it doesn't exist on the memberObj
               memberIDs.push(match_v2[j].nodeResID);
               const N = match_v2[j].numPath;
               const sumi = match_v2[j].wh_sum;
               const k_sum = match_v2[j].k_sum;
               const wh_k = match_v2[j].wh_k;
               const wh_k_arr = match_v2[j].wh_k_arr;
+
+              // wh_k_arr.forEach((wh_k_T, idx) => {
+              //   wh_k_T.wh_sum = wh_k_arr[idx].wh_sum * w_node;
+              //   wh_k_T.numPath = wh_k_arr[idx].numPath;
+              // });
 
               if (wh_k_arr.length == 0) {
                 wh_k_arr = [
@@ -1431,8 +1471,12 @@ module.exports = {
 
               // asdf;
 
-              const pers =
-                ((1 - 1 / N ** 0.3) * w1 + (wh_k / k_sum) * w2) * 100;
+              let pers =
+                ((1 - 1 / N ** 0.3) * w1_numNodes + (wh_k / k_sum) * w2_WH) *
+                100;
+
+              pers = pers * w_node;
+
               memberObj[match_v2[j].nodeResID] = {
                 wh_sum: match_v2[j].wh_sum,
                 numPath: match_v2[j].numPath,
@@ -1476,7 +1520,7 @@ module.exports = {
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
       for (const [key, value] of Object.entries(memberObj)) {
-        // ----------- Calculate information about the Member --------------
+        // ----------- Calculate preferences of user (mentor, mentee, find porject, ...) --------------
 
         if (preference != undefined) {
           addMember = false;
@@ -1509,9 +1553,9 @@ module.exports = {
         } else {
           addMember = true;
         }
-        // ----------- Calculate information about the Member --------------
+        // ----------- Calculate preferences of user (mentor, mentee, find porject, ...) --------------
 
-        // console.log("value = ", value);
+        // ---------- Recalculate the persentage based on wh_k_arr ------------
         let wh_k_arr = value.wh_k_arr;
 
         let numPath_weighted = 0;
@@ -1532,9 +1576,11 @@ module.exports = {
         });
         const C1 = 1 - 1 / numPath_weighted ** 0.3;
         const C2 = wh_sum / numPath;
-        const pers = ((C1 * w1 + C2 * penaltySmallNumPath * w2) * 100).toFixed(
-          2
-        );
+        const pers = (
+          (C1 * w1_numNodes + C2 * penaltySmallNumPath * w2_WH) *
+          100
+        ).toFixed(2);
+        // ---------- Recalculate the persentage based on wh_k_arr ------------
 
         memberObj[key] = {
           ...value,
@@ -1834,8 +1880,8 @@ module.exports = {
 
       skillPercentage_prepare = [];
       // ---------------- matchRelativePosition_server ------------
-      w1 = 0.5;
-      w2 = 1 - w1;
+      w1_numNodes = 0.5;
+      w2_WH = 1 - w1_numNodes;
 
       for (let i = 0; i < distanceAll.length; i++) {
         const nodeID = distanceAll[i];
@@ -1850,7 +1896,7 @@ module.exports = {
           }
           sumi = sumi / N;
 
-          pers = (1 - 1 / N ** 0.7) * w1 + sumi * w2;
+          pers = (1 - 1 / N ** 0.7) * w1_numNodes + sumi * w2_WH;
 
           pers = pers * 100;
 
@@ -2199,8 +2245,8 @@ module.exports = {
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      w1 = 0.3; // the weight of the number of paths
-      w2 = 1 - w1; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
+      w1_numNodes = 0.3; // the weight of the number of paths
+      w2_WH = 1 - w1_numNodes; // the weight of the weight_path^hop (this is really confusing but, second weight is the weight of the path)
       projectRoleObj = {};
 
       new_max_m = 20;
@@ -2233,7 +2279,8 @@ module.exports = {
 
               const N = projectRoleObj[match_v2[j].nodeResID].numPath;
               const sumi = projectRoleObj[match_v2[j].nodeResID].wh_sum;
-              const pers = ((1 - 1 / N ** 0.7) * w1 + (sumi / N) * w2) * 100;
+              const pers =
+                ((1 - 1 / N ** 0.7) * w1_numNodes + (sumi / N) * w2_WH) * 100;
 
               projectRoleObj[match_v2[j].nodeResID].pers = Number(
                 pers.toFixed(2)
@@ -2241,7 +2288,8 @@ module.exports = {
             } else {
               const N = match_v2[j].numPath;
               const sumi = match_v2[j].wh_sum;
-              const pers = ((1 - 1 / N ** 0.7) * w1 + (sumi / N) * w2) * 100;
+              const pers =
+                ((1 - 1 / N ** 0.7) * w1_numNodes + (sumi / N) * w2_WH) * 100;
               projectRoleObj[match_v2[j].nodeResID] = {
                 wh_sum: match_v2[j].wh_sum,
                 numPath: match_v2[j].numPath,

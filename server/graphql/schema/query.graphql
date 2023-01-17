@@ -50,6 +50,7 @@ module.exports = `
            #  ---------- NODE QUERY -------
             findNode(fields:findNodeInput): Node
             findNodes(fields:findNodesInput): [Node]
+            nodes_autocomplete(fields:nodes_autocompleteInput): [Node]
             treeOfRelatedNodes(fields:treeOfRelatedNodesInput): [Node]
 
           #  ---------- QUERY TEMPLATE QUERY -------

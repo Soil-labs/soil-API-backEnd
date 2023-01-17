@@ -31,6 +31,7 @@ const {
 const {
   findNode,
   findNodes,
+  nodes_autocomplete,
   treeOfRelatedNodes,
 } = require("./query/nodeQuery");
 
@@ -117,6 +118,7 @@ module.exports = {
     // ------------- NODE QUERY -----------------
     findNode,
     findNodes,
+    nodes_autocomplete,
     treeOfRelatedNodes,
 
     // ------------- ROLE TEMPLATE QUERY -----------------
