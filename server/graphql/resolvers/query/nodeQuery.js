@@ -189,54 +189,54 @@ module.exports = {
       console.log("node_after = ", node_after.length);
       console.log("node_after = ", node_after);
 
-      // idx = 0;
-      // while (node_after.length > 0) {
-      //   let nodeNow = node_after[idx];
+      idx = 0;
+      while (node_after.length > 0) {
+        let nodeNow = node_after[idx];
 
-      //   flag_foundPosition = true;
-      //   nodeNow.aboveNodes.forEach((node_above) => {
-      //     if (
-      //       node_general_obj[node_above]
-      //       // && node_general_obj[nodeNow._id] == undefined
-      //     ) {
-      //       node_general_obj[node_above].subNodes.push(nodeNow._id);
+        flag_foundPosition = true;
+        nodeNow.aboveNodes.forEach((node_above) => {
+          if (
+            node_general_obj[node_above]
+            // && node_general_obj[nodeNow._id] == undefined
+          ) {
+            node_general_obj[node_above].subNodes.push(nodeNow._id);
 
-      //       // flag_foundPosition = true;
+            // flag_foundPosition = true;
 
-      //       node_general_obj[nodeNow._id] = {
-      //         open: false,
-      //         star: false,
-      //         subNodes: [],
-      //         level: node_general_obj[node_above].level + 1,
-      //       };
-      //     } else {
-      //       flag_foundPosition = false;
-      //       // console.log("didn't work yet = ", node_above);
-      //     }
-      //   });
-      //   // console.log("nodeNow = ", nodeNow, idx, flag_foundPosition);
+            node_general_obj[nodeNow._id] = {
+              open: false,
+              star: false,
+              subNodes: [],
+              level: node_general_obj[node_above].level + 1,
+            };
+          } else {
+            flag_foundPosition = false;
+            // console.log("didn't work yet = ", node_above);
+          }
+        });
+        // console.log("nodeNow = ", nodeNow, idx, flag_foundPosition);
 
-      //   if (flag_foundPosition == true) {
-      //     // console.log("change = ");
-      //     // node_after = node_after.filter(
-      //     //   (_id) => _id.toString() != nodeNow._id.toString()
-      //     // ); // Delete the node from the array, because I already searched this one
+        if (flag_foundPosition == true) {
+          // console.log("change = ");
+          // node_after = node_after.filter(
+          //   (_id) => _id.toString() != nodeNow._id.toString()
+          // ); // Delete the node from the array, because I already searched this one
 
-      //     node_after = node_after.filter(function (node) {
-      //       return node._id.toString() != nodeNow._id.toString();
-      //     });
-      //   }
-      //   // console.log("node_after = ", node_after.length);
+          node_after = node_after.filter(function (node) {
+            return node._id.toString() != nodeNow._id.toString();
+          });
+        }
+        // console.log("node_after = ", node_after.length);
 
-      //   // asdf;
+        // asdf;
 
-      //   idx = idx + 1;
-      //   if (idx >= node_after.length) idx = 0;
-      // }
+        idx = idx + 1;
+        if (idx >= node_after.length) idx = 0;
+      }
 
-      // console.log("change = -------------2--------");
-      // console.log("node_general_obj = ", node_general_obj);
-      // console.log("node_after = ", node_after);
+      console.log("change = -------------2--------");
+      console.log("node_general_obj = ", node_general_obj);
+      console.log("node_after = ", node_after);
 
       // final_res = []; // create the final result array using the object node_general_obj
       // for (const [key, value] of Object.entries(node_general_obj)) {
