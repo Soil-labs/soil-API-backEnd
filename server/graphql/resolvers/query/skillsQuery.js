@@ -1,4 +1,5 @@
 const { Skills } = require("../../../models/skillsModel");
+const { Node } = require("../../../models/nodeModal");
 
 const mongoose = require("mongoose");
 
@@ -37,29 +38,30 @@ module.exports = {
     }
   },
   findSkills: async (parent, args, context, info) => {
-    const { _id, id_lightcast,recalculateMembers,recalculateProjectRoles } = args.fields;
+    const { _id, id_lightcast, recalculateMembers, recalculateProjectRoles } =
+      args.fields;
     console.log("Query > findSkills > args.fields = ", args.fields);
 
     let searchQuery = {};
 
     let searchQuery_and = [{ state: "approved" }];
 
-    if (recalculateMembers!=null) {
-      searchQuery_and.push({"match.recalculateMembers": recalculateMembers})
+    if (recalculateMembers != null) {
+      searchQuery_and.push({ "match.recalculateMembers": recalculateMembers });
     }
-    if (recalculateProjectRoles!=null){
-      searchQuery_and.push({"match.recalculateProjectRoles": recalculateProjectRoles})
+    if (recalculateProjectRoles != null) {
+      searchQuery_and.push({
+        "match.recalculateProjectRoles": recalculateProjectRoles,
+      });
     }
 
-    console.log("searchQuery_and = " , searchQuery_and)
+    console.log("searchQuery_and = ", searchQuery_and);
 
     if (_id) {
       searchQuery_and.push({ _id: _id });
     } else if (id_lightcast) {
       searchQuery_and.push({ id_lightcast: id_lightcast });
     }
-
-
 
     searchQuery = {
       $and: searchQuery_and,
@@ -73,7 +75,7 @@ module.exports = {
       // skillData = await Skills.find({});
 
       // for (let i=0;i<skillData.length;i++){
-        
+
       //   skillDataNow = await Skills.findOneAndUpdate(
       //     {_id: skillData[i]._id},
       //     {
@@ -87,7 +89,6 @@ module.exports = {
       //     {new: true}
       // )
       // }
-
 
       return skillData;
     } catch (err) {
@@ -208,27 +209,43 @@ module.exports = {
     const { search } = args.fields;
     console.log("Query > skills_autocomplete > args.fields = ", args.fields);
 
-    let collection = mongoose.connection.db.collection("skills");
+    let collection = mongoose.connection.db.collection("nodes");
+    // let collection = mongoose.connection.db.collection("skills");
 
     try {
-      console.log("change = 1", search);
-      let result = await collection
-        .aggregate([
-          {
-            $search: {
-              autocomplete: {
-                query: search,
-                path: "name",
-                fuzzy: {
-                  maxEdits: 1,
-                },
+      // let result = await collection
+      //   .aggregate([
+      //     {
+      //       $search: {
+      //         autocomplete: {
+      //           query: search,
+      //           path: "name",
+      //           fuzzy: {
+      //             maxEdits: 1,
+      //           },
+      //         },
+      //       },
+      //     },
+      //   ])
+      //   .toArray();
+
+      let result = await Node.aggregate([
+        {
+          $search: {
+            autocomplete: {
+              query: search,
+              path: "name",
+              fuzzy: {
+                maxEdits: 1,
               },
             },
           },
-        ])
-        .toArray();
+        },
+        { $project: { _id: 1, name: 1 } },
+      ]);
 
       console.log("result = ", result);
+      asdf;
 
       return result;
     } catch (err) {

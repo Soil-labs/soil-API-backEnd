@@ -110,6 +110,10 @@ module.exports = `
         selectedNodes: [ID] # The nodes taht are selected, we return back the structured array but on this nodes we put selected for the frontend
     }
 
+    input nodes_autocompleteInput { 
+        search: String
+    }
+
     input treeOfRelatedNodesInput {
         memberID: ID
         relatedNodes:[relatedNodesTreeInput]

@@ -7,31 +7,62 @@ module.exports = {
   Node: {
     subNodes: async (parent, args, context, info) => {
       try {
-        const subNodes = parent.subNodes;
+        const subNodes_parent = parent.subNodes;
 
         //   nodeData = await Node.find({ _id: subNodes });
-        nodeData = await Node.find({ _id: subNodes }).select(
+        nodeData = await Node.find({ _id: subNodes_parent }).select(
           "_id name node subNodes"
         );
 
-        if (context.selectedNodes) {
-          nodeData = nodeData.map((node) => {
-            if (context.selectedNodes[node._id]) {
-              node.selected = true;
-            }
-            return node;
+        if (context.nodeTree == true) {
+          const subNodes_parent_obj = subNodes_parent.reduce((obj, item) => {
+            obj[item._id] = item.subNodes;
+            return obj;
+          }, {});
+
+          let res_final = [];
+          nodeData.forEach((node) => {
+            res_final.push({
+              ...node._doc,
+              subNodes: subNodes_parent_obj[node._id],
+            });
           });
-          return nodeData;
-        } else if (context.relatedNodes_obj) {
-          nodeData = nodeData.map((node) => {
-            if (context.relatedNodes_obj[node._id]) {
-              node.star = true;
-            }
-            return node;
-          });
-          return nodeData;
+
+          // console.log("res_final = ", res_final);
+
+          // nodeData[0].subNodes = subNodes_parent[0].subNodes;
+          // console.log("subNodes +++++++++= ", nodeData);
+          // console.log("subNodes ---------= ", subNodes_parent[0].subNodes);
+          // // return {
+          // //   ...nodeData,
+          // //   subNodes: subNodes[0].subNodes,
+          // // };
+          // // return subNodes;
+          // return nodeData;
+          return res_final;
         } else {
-          return nodeData;
+          nodeData = await Node.find({ _id: subNodes_parent }).select(
+            "_id name node subNodes"
+          );
+          if (context.selectedNodes) {
+            nodeData = nodeData.map((node) => {
+              if (context.selectedNodes[node._id]) {
+                node.selected = true;
+              }
+              return node;
+            });
+            return nodeData;
+          } else if (context.relatedNodes_obj) {
+            nodeData = nodeData.map((node) => {
+              if (context.relatedNodes_obj[node._id]) {
+                node.star = true;
+              }
+              return node;
+            });
+            return nodeData;
+          } else {
+            return nodeData;
+          }
         }
       } catch (err) {
         throw new ApolloError(
