@@ -145,7 +145,7 @@ module.exports = {
     const response = await openai.createCompletion({
       model,
       prompt: promptDescription(category),
-      max_tokens: 300,
+      max_tokens: 200,
       top_p: 1,
       frequency_penalty: 0,
       presence_penalty: 0,
