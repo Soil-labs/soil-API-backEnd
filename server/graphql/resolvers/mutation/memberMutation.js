@@ -1029,17 +1029,18 @@ module.exports = {
         message: endorsementMessage,
       };
 
-      const transactionId = await uploadFileToArweave(fileObject);
-      if (!transactionId)
-        throw new Error(
-          "No transactionID, check your env if Arweave token is included"
-        );
-      //save the endorsement to the member
+      //const transactionId = await uploadFileToArweave(fileObject);
+      // if (!transactionId)
+      //   throw new Error(
+      //     "No transactionID, check your env if Arweave token is included"
+      //   );
+      // //save the endorsement to the member
 
       let newEndorsement = {
         endorser: endorserID, //memberID
         endorsementMessage: endorsementMessage,
-        arweaveTransactionID: transactionId,
+        //arweaveTransactionID: transactionId,
+        arweaveTransactionID: "https://www.arweave.org/"
       };
 
       let previousEndorsements = endorseeMember.endorsements || [];
