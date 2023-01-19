@@ -73,6 +73,7 @@ module.exports = `
         orderIndex: Int
         level: Int 
         weight: Float
+        aboveNodes: [Node]
     }
 
      type chatResponse {
@@ -422,6 +423,7 @@ module.exports = `
         nodeID: ID
         orderIndex: Int
         level: Float 
+        aboveNodes: [ID]
     }
     
 

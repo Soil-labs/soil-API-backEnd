@@ -14,56 +14,126 @@ module.exports = {
           "_id name node subNodes"
         );
 
-        if (context.nodeTree == true) {
-          const subNodes_parent_obj = subNodes_parent.reduce((obj, item) => {
-            obj[item._id] = item.subNodes;
-            return obj;
-          }, {});
+        //  ----- save the info of the subNodes for -> for their subSubNodes -> or for info about open and level --------
+        let subNodes_parent_obj;
+        subNodes_parent_obj = subNodes_parent.reduce((obj, item) => {
+          obj[item._id] = item;
+          return obj;
+        }, {});
 
-          let res_final = [];
-          nodeData.forEach((node) => {
-            res_final.push({
-              ...node._doc,
-              subNodes: subNodes_parent_obj[node._id],
-            });
+        if (
+          context.selectedNodes != undefined ||
+          context.relatedNodes_obj != undefined ||
+          context.nodeTree == true
+        ) {
+          // if there is info that we need to use on the nodeData then we will loop throw them
+          nodeData = nodeData.map((node) => {
+            let node_new = {};
+            if (context.selectedNodes && context.selectedNodes[node._id]) {
+              node_new.selected = true;
+            }
+            // from the related we take the started skills
+            if (
+              context.relatedNodes_obj &&
+              context.relatedNodes_obj[node._id]
+            ) {
+              node_new.star = true;
+            }
+
+            // if it is a nodeTree then we should just use the subNodes that were given and not create new ones
+            if (context.nodeTree == true) {
+              node_new.subNodes = subNodes_parent_obj[node._id].subNodes;
+            }
+            // open or close for the realted nodes
+            if (
+              subNodes_parent_obj[node._id] &&
+              subNodes_parent_obj[node._id].open == true
+            ) {
+              node_new.open = true;
+            }
+            // level of the node, for the color
+            if (
+              subNodes_parent_obj[node._id] &&
+              subNodes_parent_obj[node._id].level
+            ) {
+              node_new.level = subNodes_parent_obj[node._id].level;
+            }
+
+            node_new._id = node._id;
+            node_new.name = node.name;
+            node_new.node = node.node;
+
+            return node_new;
           });
 
-          // console.log("res_final = ", res_final);
-
-          // nodeData[0].subNodes = subNodes_parent[0].subNodes;
-          // console.log("subNodes +++++++++= ", nodeData);
-          // console.log("subNodes ---------= ", subNodes_parent[0].subNodes);
-          // // return {
-          // //   ...nodeData,
-          // //   subNodes: subNodes[0].subNodes,
-          // // };
-          // // return subNodes;
-          // return nodeData;
-          return res_final;
+          return nodeData;
         } else {
-          nodeData = await Node.find({ _id: subNodes_parent }).select(
-            "_id name node subNodes"
-          );
-          if (context.selectedNodes) {
-            nodeData = nodeData.map((node) => {
-              if (context.selectedNodes[node._id]) {
-                node.selected = true;
-              }
-              return node;
-            });
-            return nodeData;
-          } else if (context.relatedNodes_obj) {
-            nodeData = nodeData.map((node) => {
-              if (context.relatedNodes_obj[node._id]) {
-                node.star = true;
-              }
-              return node;
-            });
-            return nodeData;
-          } else {
-            return nodeData;
-          }
+          return nodeData;
         }
+
+        // if (context.selectedNodes) {
+        //   nodeData = nodeData.map((node) => {
+        //     if (context.selectedNodes[node._id]) {
+        //       node.selected = true;
+        //     }
+        //     if (context.nodeTree == true) {
+        //       node.subNodes = subNodes_parent_obj[node._id];
+        //     }
+        //     return node;
+        //   });
+
+        //   return nodeData;
+        // } else if (context.relatedNodes_obj) {
+        //   nodeData = nodeData.map((node) => {
+        //     if (context.relatedNodes_obj[node._id]) {
+        //       node.star = true;
+        //     }
+        //     if (context.nodeTree == true) {
+        //       node.subNodes = subNodes_parent_obj[node._id];
+        //     }
+        //     return node;
+        //   });
+
+        //   return nodeData;
+        // } else {
+        //   return nodeData;
+        // }
+
+        // if (context.nodeTree == true) {
+        //   const subNodes_parent_obj = subNodes_parent.reduce((obj, item) => {
+        //     obj[item._id] = item.subNodes;
+        //     return obj;
+        //   }, {});
+
+        //   let res_final = [];
+        //   nodeData.forEach((node) => {
+        //     res_final.push({
+        //       ...node._doc,
+        //       subNodes: subNodes_parent_obj[node._id],
+        //     });
+        //   });
+        //   return res_final;
+        // } else {
+        //   if (context.selectedNodes) {
+        //     nodeData = nodeData.map((node) => {
+        //       if (context.selectedNodes[node._id]) {
+        //         node.selected = true;
+        //       }
+        //       return node;
+        //     });
+        //     return nodeData;
+        //   } else if (context.relatedNodes_obj) {
+        //     nodeData = nodeData.map((node) => {
+        //       if (context.relatedNodes_obj[node._id]) {
+        //         node.star = true;
+        //       }
+        //       return node;
+        //     });
+        //     return nodeData;
+        //   } else {
+        //     return nodeData;
+        //   }
+        // }
       } catch (err) {
         throw new ApolloError(
           err.message,

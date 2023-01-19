@@ -65,6 +65,7 @@ const memberSchema = mongoose.Schema({
       orderIndex: Number,
       level: Number,
       weight: Number,
+      aboveNodes: [mongoose.Schema.ObjectId],
     },
   ],
 
