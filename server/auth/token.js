@@ -4,9 +4,8 @@ const { Members } = require("../models/membersModel");
 const {
   retrieveAndMergeServersUserIsIn,
 } = require("../utils/updateUserServersInDB");
-const {
-  createNode_neo4j,
-} = require("../neo4j/func_neo4j");
+const { createNode_neo4j } = require("../neo4j/func_neo4j");
+const { ACCESS_LEVELS, OPERATORS } = require("./constants");
 
 const token = async ({ body }, res) => {
   try {
@@ -40,19 +39,30 @@ const token = async ({ body }, res) => {
       };
       dbUser = await new Members(fields);
       dbUser.save();
-        //save a connection
-        await createNode_neo4j({
-          node: "Member",
-          id: dbUser._id,
-          name: dbUser.discordName,
-          serverID: [],
-        });
+      //save a connection
+      await createNode_neo4j({
+        node: "Member",
+        id: dbUser._id,
+        name: dbUser.discordName,
+        serverID: [],
+      });
     }
 
     await retrieveAndMergeServersUserIsIn(accessToken, dbUser);
 
+    // Check if user is an operator
+    if (OPERATORS.includes(user.id)) {
+      user.accessLevel = ACCESS_LEVELS.OPERATOR_ACCESS;
+    } else {
+      user.accessLevel = ACCESS_LEVELS.MEMBER_ACCESS;
+    }
+
     const token = jwt.sign(
-      { _id: user.id, discordName: user.username },
+      {
+        _id: user.id,
+        discordName: user.username,
+        accessLevel: user.accessLevel,
+      },
       process.env.JWT_SECRET || "",
       {
         expiresIn: "7d",
