@@ -69,7 +69,6 @@ module.exports = `
     input messageToGPTInput {
         message: String
         category: CategoryEnum
-        prompt: String
     }
 
     enum CategoryEnum {
