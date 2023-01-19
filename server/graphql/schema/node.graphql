@@ -23,6 +23,7 @@ module.exports = `
 
         star: Boolean # on the tree structure if they have a star
         open: Boolean # on the tree structure if they are originally open 
+        level: Int # Shows the level of the Node for the user, this can be used on the UI -> treeOfRelatedNodes
 
     }
 
