@@ -121,7 +121,7 @@ module.exports = {
     }
   },
   messageToGPT: async (parent, args, context, info) => {
-    const { message, category } = args.fields;
+    const { message, category, prompt } = args.fields;
     console.log("Mutation > messageToGPT > args.fields = ", args.fields);
     if (!message) throw new ApolloError("The message is required");
     let model = "text-davinci-003";
@@ -134,18 +134,18 @@ module.exports = {
     const promptDescription = (descriptionOf) => {
       if (descriptionOf === "project") {
         return reason.project + message;
-      }
-      if (descriptionOf === "skill") {
+      } else if (descriptionOf === "skill") {
         return reason.skill + message;
-      }
-      if (descriptionOf === "role") {
+      } else if (descriptionOf === "role") {
         return reason.role + message;
+      } else {
+        return descriptionOf + message;
       }
     };
     const response = await openai.createCompletion({
       model,
-      prompt: promptDescription(category),
-      max_tokens: 300,
+      prompt: promptDescription(prompt ? prompt : category),
+      max_tokens: 200,
       top_p: 1,
       frequency_penalty: 0,
       presence_penalty: 0,
