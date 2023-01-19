@@ -47,29 +47,19 @@ module.exports = {
       let serverData;
       if (_id) {
         serverData = await ServerTemplate.findOne({ _id: _id });
+        fields = {
+          ...fields,
+          channel: {
+            chatID: channelChatID ? channelChatID : serverData.channel.chatID,
+            forumID: forumChatID ? forumChatID : serverData.channel.forumID,
+          },
+        };
         if (!serverData) {
-          fields = {
-            ...fields,
-            channel: {
-              chatID: channelChatID,
-              forumID: forumChatID,
-            },
-          };
-
           serverData = await new ServerTemplate(fields);
           serverData.save();
 
           isNewServer = true;
         } else {
-          fields = {
-            ...fields,
-            channel: {
-              ...serverData.channel,
-              chatID: channelChatID,
-              forumID: forumChatID,
-            },
-          };
-
           serverData = await ServerTemplate.findOneAndUpdate(
             { _id: serverData._id },
             {
