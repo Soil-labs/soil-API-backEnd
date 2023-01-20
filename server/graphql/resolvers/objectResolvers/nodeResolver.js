@@ -151,6 +151,8 @@ module.exports = {
       try {
         const aboveNodes = parent.aboveNodes;
 
+        console.log("aboveNodes = ", parent);
+
         nodeData = await Node.find({ _id: aboveNodes }).select("_id name node");
 
         if (context.selectedNodes) {
