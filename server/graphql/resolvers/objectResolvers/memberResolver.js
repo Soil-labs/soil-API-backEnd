@@ -111,7 +111,7 @@ module.exports = {
         });
 
         const nodesData = await Node.find({ _id: nodesID }).select(
-          "_id name node"
+          "_id name node aboveNodes subNodes"
         );
 
         let res = [];

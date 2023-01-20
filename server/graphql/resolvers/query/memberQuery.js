@@ -1424,7 +1424,7 @@ module.exports = {
                 ((1 - 1 / N ** 0.3) * w1_numNodes + (wh_k / k_sum) * w2_WH) *
                 100;
 
-              pers = pers * w_node;
+              // pers = pers * w_node;
 
               memberObj[match_v2[j].nodeResID].C1 = 1 - 1 / N ** 0.3;
               memberObj[match_v2[j].nodeResID].C2 = wh_k / k_sum;
@@ -1475,7 +1475,7 @@ module.exports = {
                 ((1 - 1 / N ** 0.3) * w1_numNodes + (wh_k / k_sum) * w2_WH) *
                 100;
 
-              pers = pers * w_node;
+              // pers = pers * w_node;
 
               memberObj[match_v2[j].nodeResID] = {
                 wh_sum: match_v2[j].wh_sum,
