@@ -76,6 +76,8 @@ const {
   messageToGPT,
 } = require("./mutation/aiMutation");
 
+const { createError } = require("./mutation/errorsMutation");
+
 module.exports = {
   Mutation: {
     // ------------- MEMBER MUTATION -----------------
@@ -157,6 +159,9 @@ module.exports = {
     updateMessage,
     useAI_OnMessage,
     messageToGPT,
+
+    // ------------- ERROR MUTATION -----------------
+    createError,
   },
   Subscription: {
     memberUpdated,
