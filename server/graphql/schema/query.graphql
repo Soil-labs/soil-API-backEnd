@@ -3,7 +3,7 @@ module.exports = `
 
 
           #  ---------- ERROR QUERY (DEV ONLY) -------
-            errors:[ErrorLog]
+            errors(fields:errorsInput):[ErrorLog]
 
           
           #  ---------- PROJECT QUERY -------
