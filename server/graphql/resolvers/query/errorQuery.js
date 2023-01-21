@@ -24,14 +24,23 @@ module.exports = {
         let errorsData;
 
         if (_id) {
-          errorsData = await ErrorLog.find({ _id: _id });
+          errorsData = await ErrorLog.find({ _id: _id }).sort({
+            createdAt: -1,
+          });
         } else if (errorType) {
-          errorsData = await ErrorLog.find({ errorType: errorType });
+          errorsData = await ErrorLog.find({ errorType: errorType }).sort({
+            createdAt: -1,
+          });
         } else {
-          errorsData = await ErrorLog.find({});
+          errorsData = await ErrorLog.find({}).sort({ createdAt: -1 });
         }
 
-        return errorsData;
+        return {
+          errorsData,
+          pageInfo: {
+            totalResults: errorsData.length,
+          },
+        };
       } catch (err) {
         throw new ApolloError(
           err.message,

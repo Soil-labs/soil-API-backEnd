@@ -19,7 +19,6 @@ module.exports = `
         memberInfo: Members
         url: String
        
-
     }
 
     input errorsInput {
@@ -45,11 +44,32 @@ module.exports = `
 
     }
     
+    input deleteErrorInput {
+        _id: ID
+
+    }
     
     enum errorTypeEnum {
         SERVER
         FRONTEND
         BOT
+    }
+
+    type PaginatedErrorLogs {
+        errorsData: [ErrorLog]
+        pageInfo: PageInfo
+
+    }
+
+
+    type PageInfo {
+        hasNextPage : Boolean
+        hasPrevPage: Boolean
+        start : String
+        end: String
+        currentPage: Int
+        totalPages: Int
+        totalResults: Int
     }
 
 `
