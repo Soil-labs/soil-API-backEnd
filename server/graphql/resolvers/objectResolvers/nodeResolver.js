@@ -11,7 +11,7 @@ module.exports = {
 
         //   nodeData = await Node.find({ _id: subNodes });
         nodeData = await Node.find({ _id: subNodes_parent }).select(
-          "_id name node subNodes"
+          "_id name node subNodes aboveNodes"
         );
 
         //  ----- save the info of the subNodes for -> for their subSubNodes -> or for info about open and level --------
