@@ -1,6 +1,17 @@
 const { driver } = require("../../server/neo4j_config");
 
 module.exports = {
+  generalFunc_neo4j: async (req, res) => {
+    const { request } = req;
+
+    const session = driver.session({ database: "neo4j" });
+
+    result = await session.writeTransaction((tx) => tx.run(request));
+
+    session.close();
+
+    return result;
+  },
   createNode_neo4j: async (req, res) => {
     const { name, node, id, serverID } = req;
 
