@@ -93,6 +93,11 @@ module.exports = `
 
           # ---------- AI QUERY -------------
           findMessage(fields: findMessageInputPaginated): PaginatedMessages
+
+          # ---------- GRAPH VISUAL QUERY -------------
+          findMemberGraph(fields: findMemberGraphInput): Graph
+
+
             
         }
 `;

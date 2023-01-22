@@ -12,6 +12,7 @@ const SkillSubCategoryType = require("./skillSubCategory.graphql");
 const roleTemplateType = require("./roleTemplate.graphql");
 const serverTemplateType = require("./serverTemplate.graphql");
 const grantTemplateType = require("./grantTemplate.graphql");
+const graphVisualType = require("./graphVisual.graphql");
 const errorType = require("./errors.graphql");
 const roomType = require("./rooms.graphql");
 const subscription = require("./subscription.graphql");
@@ -30,6 +31,7 @@ const typeDefs = gql`
   ${roleTemplateType}
   ${serverTemplateType}
   ${grantTemplateType}
+  ${graphVisualType}
   ${SkillCategoryType}
   ${SkillSubCategoryType}
   ${errorType}
