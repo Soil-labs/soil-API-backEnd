@@ -21,5 +21,9 @@ module.exports = `
         memberID: ID
     }
 
+    input findProjectGraphInput {
+        projectID: ID
+    }
+
     
 `

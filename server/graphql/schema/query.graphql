@@ -96,8 +96,7 @@ module.exports = `
 
           # ---------- GRAPH VISUAL QUERY -------------
           findMemberGraph(fields: findMemberGraphInput): Graph
+          findProjectGraph(fields: findProjectGraphInput): Graph
 
-
-            
         }
 `;

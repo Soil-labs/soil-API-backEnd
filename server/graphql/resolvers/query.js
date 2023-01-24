@@ -69,7 +69,7 @@ const {
 
 const { findChat } = require("./query/chatQuery");
 const { findMessage } = require("./query/aiQuery");
-const { findMemberGraph } = require("./query/graphVisualQuery");
+const { findMemberGraph, findProjectGraph } = require("./query/graphVisualQuery");
 
 const { errors } = require("./query/errorQuery");
 
@@ -157,5 +157,6 @@ module.exports = {
 
     //----------- GRAPH VISUAL QUERY ------------------
     findMemberGraph,
+    findProjectGraph,
   },
 };
