@@ -4,6 +4,7 @@ const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
 
 const { generalFunc_neo4j } = require("../../../neo4j/func_neo4j");
+const _ = require('lodash');
 
 const DEFAULT_PAGE_LIMIT = 20;
 
@@ -75,6 +76,8 @@ module.exports = {
 
       // console.log("nodesObj = ", nodesObj);
       // console.log("edgesArr = ", edgesArr);
+
+      
 
       return {
         nodes: nodesArr,
@@ -242,9 +245,11 @@ module.exports = {
       //console.log("nodesObj = ", nodesObj);
       //console.log("edgesArr = ", edgesArr);
 
+      const uniqueEdges = _.uniqWith(edgesArr, _.isEqual);
+
       return {
         nodes: nodesArr,
-        edges: edgesArr,
+        edges: uniqueEdges,
       };
     } catch (err) {
       throw new ApolloError(
