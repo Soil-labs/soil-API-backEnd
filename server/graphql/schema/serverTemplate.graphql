@@ -15,6 +15,7 @@ module.exports = `
 
     type channelOutput {
         chatID: ID,
+        forumID: ID,
     }
 
     input findServersInput {
@@ -28,6 +29,7 @@ module.exports = `
         adminRoles: [String],
         adminCommands: [String], 
         channelChatID: ID,
+        forumChatID: ID,
         serverAvatar: String,
         serverType: serverTypeEnum
     }

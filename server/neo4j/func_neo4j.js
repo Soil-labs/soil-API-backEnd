@@ -1,6 +1,17 @@
 const { driver } = require("../../server/neo4j_config");
 
 module.exports = {
+  generalFunc_neo4j: async (req, res) => {
+    const { request } = req;
+
+    const session = driver.session({ database: "neo4j" });
+
+    result = await session.writeTransaction((tx) => tx.run(request));
+
+    session.close();
+
+    return result;
+  },
   createNode_neo4j: async (req, res) => {
     const { name, node, id, serverID } = req;
 
@@ -1276,8 +1287,17 @@ async function findMatch_translateArray_path(
     [1, 0],
   ];
 
-  // k2 = 6
-  // k3 = 1
+  // wh_sum -> the sum of all the weights^hop
+  // numPath -> Number of Paths to create this WH
+  // N -> number of paths to create this WH
+  // K -> splits the WH to 3 parts based on WH value (WH>0.7) (0.7>WH>0.3) (WH<0.3) and give different K points (9) (3) (1) -> in order to create weighted average
+  // k_sum -> the sum of all K values that were given
+  // wh_k -> The total weighted average of the WH based on K values
+  // wh_k_arr -> split the WH to 3 parts based on WH value (was analysed on K)
+  // C1 -> the first part of the equation, based on the number of paths
+  // C2 -> the second part of the equation, based on the weighted average of the WH
+  // pers -> the final percentage of the -> pers = w1*C1 + w2*C2
+  // conn_node_wh_obj -> the object with nodes and the WH of every node
 
   member_oneHopeMatch = [];
   if (names_oneHopeMatch.length > 0) {

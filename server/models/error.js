@@ -1,16 +1,26 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
-const errorSchema = mongoose.Schema({
-    name: String,       // error.name
-    code: String,       // error.extensions.code
-    component: String,  // component name
-    message: String,    // error.message
+const errorSchema = mongoose.Schema(
+  {
+    errorType: String, // error.extensions.errorType
+    createdAt: Date,
+
+    // server, frontend, bot
+    name: String, // error.name
+    component: String, // component name
+    message: String, // error.message
+    code: String, // error.extensions.code
+    path: [String], // mutation name
+
+    // server data
     stacktrace: [String], // error.extensions.stacktrace
-    user: {             // req.user.id
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    },
-}, { timestamps: true })
 
-const ErrorLog = mongoose.model('ErrorLog', errorSchema);
+    // frontend data
+    memberID: String, // req.user._id
+    url: String, // req.url
+  },
+  { timestamps: true }
+);
+
+const ErrorLog = mongoose.model("ErrorLog", errorSchema);
 module.exports = { ErrorLog };

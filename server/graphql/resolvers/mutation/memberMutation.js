@@ -431,7 +431,6 @@ module.exports = {
       }
     }
     console.log("nodesID_level_obj = ", nodesID_level_obj);
-    // safd;
 
     try {
       let memberData = await Members.findOne({ _id: memberID });
@@ -477,6 +476,7 @@ module.exports = {
               orderIndex: nodeNow_weight.orderIndex,
               level: nodeNow_weight.level,
               weight: nodeNow_weight.weight_total,
+              aboveNodes: nodesID_level_obj[nodeID].aboveNodes,
             });
           } else {
             nodesDataNew.push(nodeData);
@@ -505,6 +505,9 @@ module.exports = {
           }
         }
       }
+
+      console.log("memberData.nodes = ", memberData.nodes);
+      // safd2;
 
       memberData2 = await Members.findOneAndUpdate(
         { _id: memberID },
@@ -779,6 +782,7 @@ module.exports = {
               orderIndex: nodeNow_weight.orderIndex,
               level: nodeNow_weight.level,
               weight: nodeNow_weight.weight_total,
+              aboveNodes: nodesID_level_obj[nodeID].aboveNodes,
             });
           } else {
             nodesDataNew.push(nodeData);
@@ -1431,17 +1435,18 @@ module.exports = {
         message: endorsementMessage,
       };
 
-      const transactionId = await uploadFileToArweave(fileObject);
-      if (!transactionId)
-        throw new Error(
-          "No transactionID, check your env if Arweave token is included"
-        );
-      //save the endorsement to the member
+      //const transactionId = await uploadFileToArweave(fileObject);
+      // if (!transactionId)
+      //   throw new Error(
+      //     "No transactionID, check your env if Arweave token is included"
+      //   );
+      // //save the endorsement to the member
 
       let newEndorsement = {
         endorser: endorserID, //memberID
         endorsementMessage: endorsementMessage,
-        arweaveTransactionID: transactionId,
+        //arweaveTransactionID: transactionId,
+        arweaveTransactionID: "https://www.arweave.org/"
       };
 
       let previousEndorsements = endorseeMember.endorsements || [];
@@ -1451,11 +1456,9 @@ module.exports = {
         {
           _id: endorseeID,
         },
-
         {
           $set: { endorsements: previousEndorsements },
         },
-
         {
           new: true,
         }

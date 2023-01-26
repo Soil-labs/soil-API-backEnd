@@ -5,6 +5,7 @@ const {
   Members,
   matchMembersToUserOutput,
   matchMembersToProjectOutput,
+  nodesType,
   matchMembersToProjectRoleOutput,
   matchPrepareSkillToMembersOutput,
   skillType_member,
@@ -43,6 +44,8 @@ const {
   teamsType,
 } = require("./objectResolvers/projectUpdateResolver");
 
+const { ErrorLog } = require("./objectResolvers/errorResolver");
+
 // const { PubSub } = require('graphql-subscriptions');
 // const pubsub = new PubSub()
 
@@ -54,6 +57,7 @@ module.exports = {
   Members,
   matchMembersToUserOutput,
   matchMembersToProjectOutput,
+  nodesType,
   matchMembersToProjectRoleOutput,
   matchPrepareSkillToMembersOutput,
   skillType_member,
@@ -82,4 +86,5 @@ module.exports = {
   ProjectUpdate,
   findAllProjectsTeamsAnouncmentsOutput,
   teamsType,
+  ErrorLog,
 };

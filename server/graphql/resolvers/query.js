@@ -31,6 +31,7 @@ const {
 const {
   findNode,
   findNodes,
+  nodes_autocomplete,
   treeOfRelatedNodes,
 } = require("./query/nodeQuery");
 
@@ -68,6 +69,7 @@ const {
 
 const { findChat } = require("./query/chatQuery");
 const { findMessage } = require("./query/aiQuery");
+const { findMemberGraph, findProjectGraph, findMemberToProjectGraph } = require("./query/graphVisualQuery");
 
 const { errors } = require("./query/errorQuery");
 
@@ -117,6 +119,7 @@ module.exports = {
     // ------------- NODE QUERY -----------------
     findNode,
     findNodes,
+    nodes_autocomplete,
     treeOfRelatedNodes,
 
     // ------------- ROLE TEMPLATE QUERY -----------------
@@ -151,5 +154,10 @@ module.exports = {
 
     //----------- AI QUERY ------------------
     findMessage,
+
+    //----------- GRAPH VISUAL QUERY ------------------
+    findMemberGraph,
+    findProjectGraph,
+    findMemberToProjectGraph
   },
 };

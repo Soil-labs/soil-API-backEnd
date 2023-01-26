@@ -1,10 +1,7 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-
-
 const serverSchema = mongoose.Schema({
-
   _id: {
     type: String,
     unique: true,
@@ -15,19 +12,16 @@ const serverSchema = mongoose.Schema({
   adminRoles: [String],
   adminCommands: [String],
 
-  channel:{
+  channel: {
     chatID: String,
+    forumID: String,
   },
   serverType: {
     type: String,
-    enum: ["DAO", "Hackathon","Project"]
+    enum: ["DAO", "Hackathon", "Project"],
   },
-  serverAvatar: String
- 
-  
-
+  serverAvatar: String,
 });
-
 
 const ServerTemplate = mongoose.model("ServerTemplate", serverSchema);
 module.exports = { ServerTemplate };

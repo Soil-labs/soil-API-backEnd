@@ -1,0 +1,33 @@
+module.exports = `
+    
+    type NodeVis {
+        _id: ID
+        name: String
+        type: String
+    }
+
+    type Edge {
+        source: ID
+        target: ID
+        type: String
+    }
+
+    type Graph {
+        nodes: [NodeVis]
+        edges: [Edge]
+    }
+
+    input findMemberGraphInput {
+        memberID: ID
+    }
+
+    input findProjectGraphInput {
+        projectID: ID
+    }
+
+    input findMemberToProjectGraphInput {
+        memberID: ID
+    }
+
+    
+`

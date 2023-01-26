@@ -1,11 +1,75 @@
 module.exports = `
+
     type ErrorLog {
-        _id:ID!
+        _id: ID!
+        errorType: String
+        createdAt: String
+
+        # SERVER, FRONTEND, BOT 
         name: String
-        code: String
         component: String
         message: String
+        code: String
+        path: [String]
+
+        # SERVER
         stacktrace: [String]
-        createdAt: String
-        user: User
-    }`
+
+        # FRONTEND
+        memberInfo: Members
+        url: String
+       
+    }
+
+    input errorsInput {
+        _id: ID,
+         errorType: errorTypeEnum
+    }
+    
+    input createErrorInput {
+        errorType: errorTypeEnum
+
+        name: String
+        component: String
+        message: String
+        code: String
+        path: [String]
+
+        # SERVER
+        stacktrace: [String]
+
+        # FRONTEND
+        memberID: String
+        url: String
+
+    }
+    
+    input deleteErrorInput {
+        _id: ID
+
+    }
+    
+    enum errorTypeEnum {
+        SERVER
+        FRONTEND
+        BOT
+    }
+
+    type PaginatedErrorLogs {
+        errorsData: [ErrorLog]
+        pageInfo: PageInfo
+
+    }
+
+
+    type PageInfo {
+        hasNextPage : Boolean
+        hasPrevPage: Boolean
+        start : String
+        end: String
+        currentPage: Int
+        totalPages: Int
+        totalResults: Int
+    }
+
+`

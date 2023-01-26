@@ -3,7 +3,7 @@ module.exports = `
 
 
           #  ---------- ERROR QUERY (DEV ONLY) -------
-            errors:[ErrorLog]
+            errors(fields:errorsInput):PaginatedErrorLogs
 
           
           #  ---------- PROJECT QUERY -------
@@ -50,6 +50,7 @@ module.exports = `
            #  ---------- NODE QUERY -------
             findNode(fields:findNodeInput): Node
             findNodes(fields:findNodesInput): [Node]
+            nodes_autocomplete(fields:nodes_autocompleteInput): [Node]
             treeOfRelatedNodes(fields:treeOfRelatedNodesInput): [Node]
 
           #  ---------- QUERY TEMPLATE QUERY -------
@@ -92,6 +93,11 @@ module.exports = `
 
           # ---------- AI QUERY -------------
           findMessage(fields: findMessageInputPaginated): PaginatedMessages
-            
+
+          # ---------- GRAPH VISUAL QUERY -------------
+          findMemberGraph(fields: findMemberGraphInput): Graph
+          findProjectGraph(fields: findProjectGraphInput): Graph
+          findMemberToProjectGraph(fields: findMemberToProjectGraphInput): Graph
+
         }
 `;

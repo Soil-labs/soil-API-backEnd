@@ -23,6 +23,7 @@ module.exports = `
 
         star: Boolean # on the tree structure if they have a star
         open: Boolean # on the tree structure if they are originally open 
+        level: Int # Shows the level of the Node for the user, this can be used on the UI -> treeOfRelatedNodes
 
     }
 
@@ -108,6 +109,10 @@ module.exports = `
         recalculate_en: recalculateEnum # Only return the nodes that need to be recalculated based on teh enum
         show_match_v2: Boolean # its always hiden in order to save on speed, exchept if you make this variable true 
         selectedNodes: [ID] # The nodes taht are selected, we return back the structured array but on this nodes we put selected for the frontend
+    }
+
+    input nodes_autocompleteInput { 
+        search: String
     }
 
     input treeOfRelatedNodesInput {

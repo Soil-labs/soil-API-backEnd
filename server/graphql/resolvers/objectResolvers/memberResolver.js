@@ -111,7 +111,7 @@ module.exports = {
         });
 
         const nodesData = await Node.find({ _id: nodesID }).select(
-          "_id name node"
+          "_id name node aboveNodes subNodes"
         );
 
         let res = [];
@@ -121,6 +121,7 @@ module.exports = {
             orderIndex: nodesObj[node._id].orderIndex,
             level: nodesObj[node._id].level,
             weight: nodesObj[node._id].weight,
+            aboveNodes: nodesObj[node._id].aboveNodes,
           });
         });
 
@@ -336,6 +337,28 @@ module.exports = {
         memberData = await Members.findOne({ _id: member });
 
         return memberData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "userResolver > skills",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+  },
+  nodesType: {
+    aboveNodes: async (parent, args, context, info) => {
+      // console.log("parent 22322= " , parent)
+
+      try {
+        const aboveNodes = parent.aboveNodes;
+
+        nodesData = await Node.find({ _id: aboveNodes });
+
+        return nodesData;
       } catch (err) {
         throw new ApolloError(
           err.message,
