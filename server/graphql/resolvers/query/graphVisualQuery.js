@@ -8,6 +8,7 @@ const DEFAULT_PAGE_LIMIT = 20;
 
 module.exports = {
   findMemberGraph: async (parent, args, context, info) => {
+    // find the graph of the member
     const { memberID } = args.fields;
     console.log("Query > findMemberGraph > args.fields = ", args.fields);
 
