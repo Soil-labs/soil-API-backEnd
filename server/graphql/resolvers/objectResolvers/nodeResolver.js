@@ -8,6 +8,7 @@ module.exports = {
     subNodes: async (parent, args, context, info) => {
       try {
         const subNodes_parent = parent.subNodes;
+        // console.log("subNodes_parent = ", subNodes_parent);
 
         //   nodeData = await Node.find({ _id: subNodes });
         nodeData = await Node.find({ _id: subNodes_parent }).select(
@@ -26,9 +27,30 @@ module.exports = {
           context.relatedNodes_obj != undefined ||
           context.nodeTree == true
         ) {
+          let nodeDataRes = [];
           // if there is info that we need to use on the nodeData then we will loop throw them
-          nodeData = nodeData.map((node) => {
+          for (i = 0; i < nodeData.length; i++) {
+            // nodeData = nodeData.forEach((node) => {
+            const node = nodeData[i];
             let node_new = {};
+            // console.log("node = ", subNodes_parent_obj[node._id]);
+            // console.log("change = ", subNodes_parent_obj[node._id]);
+            console.log(
+              "change = ",
+              node._id,
+              subNodes_parent_obj[node._id].level,
+              subNodes_parent_obj[node._id].level == undefined,
+              node.node != "skill",
+              node.node
+            );
+            if (
+              subNodes_parent_obj[node._id] &&
+              subNodes_parent_obj[node._id].level == undefined &&
+              node.node != "skill"
+            ) {
+              console.log("change = - -- -- -- - ---  ", node._id);
+              continue;
+            }
             if (context.selectedNodes && context.selectedNodes[node._id]) {
               node_new.selected = true;
             }
@@ -63,10 +85,11 @@ module.exports = {
             node_new.name = node.name;
             node_new.node = node.node;
 
-            return node_new;
-          });
+            // return node_new;
+            nodeDataRes.push(node_new);
+          }
 
-          return nodeData;
+          return nodeDataRes;
         } else {
           return nodeData;
         }
@@ -151,7 +174,7 @@ module.exports = {
       try {
         const aboveNodes = parent.aboveNodes;
 
-        console.log("aboveNodes = ", parent);
+        // console.log("aboveNodes = ", parent);
 
         nodeData = await Node.find({ _id: aboveNodes }).select("_id name node");
 
