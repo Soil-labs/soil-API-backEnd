@@ -98,7 +98,6 @@ module.exports = `
           findMemberGraph(fields: findMemberGraphInput): Graph
           findProjectGraph(fields: findProjectGraphInput): Graph
           findMemberToProjectGraph(fields: findMemberToProjectGraphInput): Graph
-          findMemberToMemberGraph(fields: findMemberToMemberGraphInput): Graph
 
         }
 `;
