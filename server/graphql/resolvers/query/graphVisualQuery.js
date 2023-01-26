@@ -1,10 +1,10 @@
 const { Members } = require("../../../models/membersModel");
-const { Projects } = require("../../../models/projectsModel")
+const { Projects } = require("../../../models/projectsModel");
 const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
 
 const { generalFunc_neo4j } = require("../../../neo4j/func_neo4j");
-const _ = require('lodash');
+const _ = require("lodash");
 
 const DEFAULT_PAGE_LIMIT = 20;
 
@@ -78,8 +78,6 @@ module.exports = {
       // console.log("nodesObj = ", nodesObj);
       // console.log("edgesArr = ", edgesArr);
 
-      
-
       return {
         nodes: nodesArr,
         edges: edgesArr,
@@ -94,7 +92,7 @@ module.exports = {
       );
     }
   },
-  findProjectGraph:  async (parent, args, context, info) => {
+  findProjectGraph: async (parent, args, context, info) => {
     const { projectID } = args.fields;
     console.log("Query > findProjectGraph > args.fields = ", args.fields);
 
@@ -119,7 +117,7 @@ module.exports = {
 
       nodesObj = {};
       edgesArr = [];
-      
+
       for (let i = 0; i < res.records.length; i++) {
         let record = res.records[i];
 
@@ -178,31 +176,42 @@ module.exports = {
     }
   },
   findMemberToProjectGraph: async (parent, args, context, info) => {
-    const { memberID } = args.fields;
-    console.log("Query > findMemberToProjectGraph > args.fields = ", args.fields);
+    const { memberID, projectID } = args.fields;
+    console.log(
+      "Query > findMemberToProjectGraph > args.fields = ",
+      args.fields
+    );
 
     if (!memberID) throw new ApolloError("The memberID is required");
 
     try {
-      let memberData = await Members.findOne({ _id: memberID }).select(
-        "_id"
-      );
+      let memberData = await Members.findOne({ _id: memberID }).select("_id");
 
       if (!memberData) throw new ApolloError("Member not found");
 
       console.log("memberData = ", memberData);
 
-      res = await generalFunc_neo4j({
-        request: `
-         MATCH res = ((m)-[]-(p)-[]-(r)-[]-(o))
-         WHERE m._id = "${memberID}" AND (p:Project) AND (r: Role) AND (o:sub_expertise or o:sub_typeProject)
-         RETURN res
+      if (projectID == undefined) {
+        res = await generalFunc_neo4j({
+          request: `
+            MATCH res = ((m)-[]-(o)-[]-(r)-[]-(p))
+            WHERE m._id = "${memberID}" AND (p:Project) AND (r: Role) AND (o:sub_expertise or o:sub_typeProject)
+            RETURN res
         `,
-      });
+        });
+      } else {
+        res = await generalFunc_neo4j({
+          request: `
+              MATCH res = ((m)-[]-(o)-[]-(r)-[]-(p))
+              WHERE m._id = "${memberID}" AND (p._id="${projectID}") AND (r: Role) AND (o:sub_expertise or o:sub_typeProject)
+              RETURN res
+        `,
+        });
+      }
 
       nodesObj = {};
       edgesArr = [];
-      
+
       for (let i = 0; i < res.records.length; i++) {
         let record = res.records[i];
 
@@ -261,9 +270,5 @@ module.exports = {
         }
       );
     }
-
-
-
-  }
-
+  },
 };
