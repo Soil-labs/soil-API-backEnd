@@ -113,6 +113,8 @@ module.exports = `
 
     input nodes_autocompleteInput { 
         search: String
+        nodeType: String
+        rootType: String
     }
 
     input treeOfRelatedNodesInput {
