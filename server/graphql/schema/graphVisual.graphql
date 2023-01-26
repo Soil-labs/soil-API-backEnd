@@ -29,5 +29,10 @@ module.exports = `
         memberID: ID
     }
 
+    input findMemberToMemberGraphInput {
+        memberOneID: ID
+        memberTwoID: ID
+    }
+
     
 `
