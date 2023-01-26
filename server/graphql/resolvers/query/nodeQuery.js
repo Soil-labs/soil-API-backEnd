@@ -107,7 +107,7 @@ module.exports = {
     }
   },
   nodes_autocomplete: async (parent, args, context, info) => {
-    const { search } = args.fields;
+    const { search, nodeType, rootType } = args.fields;
     console.log("Query > nodes_autocomplete > args.fields = ", args.fields);
 
     try {
@@ -123,20 +123,25 @@ module.exports = {
             },
           },
         },
-        { $project: { _id: 1, name: 1 } },
+        { $project: { _id: 1, name: 1, node: 1 } },
       ]);
 
       // ----------- initialise arrays to find above nodes ----------
       let nodes_initial = []; // this is the ndoes that will be used to find the node tree
       let nodes_initial_obj = {}; // quick index for teh initial nodes
       nodes_search.forEach((node) => {
-        nodes_initial.push(node._id);
-        if (nodes_initial_obj[node._id] == undefined)
-          nodes_initial_obj[node._id] = {
-            accepted: true,
-            notAcceptedNode: "", // this is the node that is not accepted -> In case that we use the same node level it will rejected it
-          };
+        if (node.node == nodeType) {
+          nodes_initial.push(node._id);
+          if (nodes_initial_obj[node._id] == undefined)
+            nodes_initial_obj[node._id] = {
+              accepted: true,
+              notAcceptedNode: "", // this is the node that is not accepted -> In case that we use the same node level it will rejected it
+              nodeInfo: node,
+            };
+        }
       });
+
+      console.log("nodes_initial_obj = ", nodes_initial_obj);
 
       node_general_obj = {}; // The general node that hold all the nodes and subNodes, and will be used at the end to create the Tree
       node_after = []; // The nodes that will be used after to search for the subNodes
@@ -261,23 +266,29 @@ module.exports = {
             subNodes.push({
               _id: subNode,
               subNodes: node_general_obj[subNode].subNodes,
+              level: node_general_obj[subNode].level,
             });
           }
           let node_temp = await Node.findOne({ _id: key }).select(
             "_id name node"
           );
-          final_res.push({
-            _id: key,
-            subNodes: subNodes,
-            name: node_temp.name,
-            node: node_temp.node,
-          });
-          if (flag_open == true) final_res[final_res.length - 1].open = true;
+          if (node_temp.node == rootType) {
+            final_res.push({
+              _id: key,
+              subNodes: subNodes,
+              name: node_temp.name,
+              node: node_temp.node,
+              level: node_general_obj[key].level,
+            });
+            if (flag_open == true) final_res[final_res.length - 1].open = true;
+          }
         }
       }
       // ------------- Create the Tree -------------
 
       context.nodeTree = true;
+
+      // console.log("final_res = ", final_res);
 
       return final_res;
     } catch (err) {
@@ -477,6 +488,7 @@ module.exports = {
 
               subSubNodes.push({
                 _id: subSubNode,
+                level: memberNode_obj[subSubNode].level,
               });
               // Put the level based on the memberNode information
               if (
@@ -500,6 +512,7 @@ module.exports = {
             subNodes.push({
               _id: subNode,
               subNodes: subSubNodes,
+              level: memberNode_obj[subNode].level,
             });
             if (level_mid != -1) subNodes[i].level = level_mid;
             if (memberNode_obj[subNode] && memberNode_obj[subNode].level) {
@@ -529,6 +542,7 @@ module.exports = {
             subNodes: subNodes,
             name: node_temp.name,
             node: node_temp.node,
+            level: memberNode_obj[key].level,
           });
 
           if (level_root != -1)
@@ -544,6 +558,8 @@ module.exports = {
 
       context.relatedNodes_obj = relatedNodes_obj; // This will be used on the nodeResolver, for SubNode
       context.nodeTree = true;
+
+      console.log("final_res = ", final_res);
 
       return final_res;
     } catch (err) {
