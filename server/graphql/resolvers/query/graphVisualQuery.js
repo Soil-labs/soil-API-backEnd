@@ -191,7 +191,7 @@ module.exports = {
 
       console.log("memberData = ", memberData);
 
-      if (projectID == undefined) {
+      if (projectID == undefined || projectID == "") {
         res = await generalFunc_neo4j({
           request: `
             MATCH res = ((m)-[]-(o)-[]-(r)-[]-(p))
@@ -273,17 +273,21 @@ module.exports = {
   },
   findMemberToMemberGraph: async (parent, args, context, info) => {
     const { memberOneID, memberTwoID } = args.fields;
-    console.log("Query > findMemberToMemberGraph > args.fields = ", args.fields);
+    console.log(
+      "Query > findMemberToMemberGraph > args.fields = ",
+      args.fields
+    );
 
-    if (!memberOneID && !memberTwoID) throw new ApolloError("The memberIDs is required");
+    if (!memberOneID && !memberTwoID)
+      throw new ApolloError("The memberIDs is required");
 
     try {
-      let memberData = await Members.find({ _id: [memberOneID, memberTwoID] }).select(
-        "_id"
-      );
+      let memberData = await Members.find({
+        _id: [memberOneID, memberTwoID],
+      }).select("_id");
 
-
-      if (memberData && memberData.length < 2) throw new ApolloError("Member data not found");
+      if (memberData && memberData.length < 2)
+        throw new ApolloError("Member data not found");
 
       console.log("memberData = ", memberData);
 
@@ -297,7 +301,7 @@ module.exports = {
 
       nodesObj = {};
       edgesArr = [];
-      
+
       for (let i = 0; i < res.records.length; i++) {
         let record = res.records[i];
 
@@ -359,15 +363,15 @@ module.exports = {
   },
   findOneMemberToMembersGraph: async (parent, args, context, info) => {
     const { memberID } = args.fields;
-    console.log("Query > findOneMemberToMembersGraph > args.fields = ", args.fields);
+    console.log(
+      "Query > findOneMemberToMembersGraph > args.fields = ",
+      args.fields
+    );
 
     if (!memberID) throw new ApolloError("The memberID is required");
 
     try {
-      let memberData = await Members.find({ _id: memberID }).select(
-        "_id"
-      );
-
+      let memberData = await Members.find({ _id: memberID }).select("_id");
 
       if (!memberData) throw new ApolloError("Member data not found");
 
@@ -383,7 +387,7 @@ module.exports = {
 
       nodesObj = {};
       edgesArr = [];
-      
+
       for (let i = 0; i < res.records.length; i++) {
         let record = res.records[i];
 
@@ -442,5 +446,5 @@ module.exports = {
         }
       );
     }
-  }
+  },
 };
