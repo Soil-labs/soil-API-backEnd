@@ -369,6 +369,121 @@ module.exports = {
       );
     }
   },
+  findMultipleMembersProjectsGraph: async (parent, args, context, info) => {
+    const { membersID, projectsID } = args.fields;
+    console.log(
+      "Query > findMultipleMembersProjectsGraph > args.fields = ",
+      args.fields
+    );
+
+    // if (!memberOneID && !memberTwoID)
+    //   throw new ApolloError("The memberIDs is required");
+
+    try {
+      let membersData = await Members.find({
+        _id: membersID,
+      }).select("_id");
+
+      let projectsData = await Projects.find({
+        _id: projectsID,
+      }).select("_id");
+
+      // console.log("membersData = ", membersData);
+      // console.log("projectsData = ", projectsData);
+      // asdf;
+
+      membersIDString = `['`;
+      membersData.map((member, index) => {
+        if (index == membersData.length - 1) {
+          membersIDString += `${member._id}']`;
+        } else {
+          membersIDString += `${member._id}', '`;
+        }
+      });
+      console.log("membersIDString = ", membersIDString);
+
+      projectsIDString = `['`;
+      projectsData.map((project, index) => {
+        if (index == projectsData.length - 1) {
+          projectsIDString += `${project._id}']`;
+        } else {
+          projectsIDString += `${project._id}', '`;
+        }
+      });
+      console.log("projectsIDString = ", projectsIDString);
+      // asdf;
+
+      res = await generalFunc_neo4j({
+        request: `
+        MATCH ms = ((z) - []-(m:Member)-[r*2..3]-(p:Project)-[] - (q))
+        WHERE m._id IN ${membersIDString}
+        AND p._id IN ${projectsIDString}
+        RETURN ms
+        `,
+      });
+
+      nodesObj = {};
+      edgesArr = [];
+
+      for (let i = 0; i < res.records.length; i++) {
+        let record = res.records[i];
+
+        for (let j = 0; j < record._fields[0].segments.length; j++) {
+          let segment = record._fields[0].segments[j];
+
+          let start = segment.start;
+          let end = segment.end;
+          if (nodesObj[start.properties._id] == undefined) {
+            nodesObj[start.properties._id] = {
+              _id: start.properties._id,
+              name: start.properties.name,
+              type: start.labels[0],
+            };
+          }
+          if (nodesObj[end.properties._id] == undefined) {
+            nodesObj[end.properties._id] = {
+              _id: end.properties._id,
+              name: end.properties.name,
+              type: end.labels[0],
+            };
+          }
+
+          edgesArr.push({
+            source: start.properties._id,
+            target: end.properties._id,
+            type: segment.relationship.type,
+          });
+        }
+      }
+
+      let nodesArr = [];
+      for (let key in nodesObj) {
+        nodesArr.push({
+          _id: nodesObj[key]._id,
+          name: nodesObj[key].name,
+          type: nodesObj[key].type,
+        });
+      }
+
+      //console.log("nodesObj = ", nodesObj);
+      //console.log("edgesArr = ", edgesArr);
+
+      const uniqueEdges = _.uniqWith(edgesArr, _.isEqual);
+
+      return {
+        nodes: nodesArr,
+        edges: uniqueEdges,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findMemberToProjectGraph",
+        {
+          component: "graphVisual > findMemberToProjectGraph",
+        }
+      );
+    }
+  },
   findOneMemberToMembersGraph: async (parent, args, context, info) => {
     const { memberID } = args.fields;
     console.log(

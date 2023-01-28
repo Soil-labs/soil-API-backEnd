@@ -74,7 +74,8 @@ const {
   findProjectGraph,
   findMemberToProjectGraph,
   findMemberToMemberGraph,
-  findOneMemberToMembersGraph
+  findMultipleMembersProjectsGraph,
+  findOneMemberToMembersGraph,
 } = require("./query/graphVisualQuery");
 
 const { errors } = require("./query/errorQuery");
@@ -166,6 +167,7 @@ module.exports = {
     findProjectGraph,
     findMemberToProjectGraph,
     findMemberToMemberGraph,
-    findOneMemberToMembersGraph
+    findMultipleMembersProjectsGraph,
+    findOneMemberToMembersGraph,
   },
 };

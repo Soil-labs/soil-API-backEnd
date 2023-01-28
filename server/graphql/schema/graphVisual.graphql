@@ -40,6 +40,12 @@ module.exports = `
         showAvatar: Boolean
     }
 
+    input findMultipleMembersProjectsGraphInput {
+        membersID: [ID]
+        projectsID: [ID]
+        showAvatar: Boolean
+    }
+
     input findOneMemberToMembersGraphInput {
         memberID: ID
         showAvatar: Boolean
