@@ -4,6 +4,7 @@ module.exports = `
         _id: ID
         name: String
         type: String
+        avatar: String
     }
 
     type Edge {
@@ -19,24 +20,29 @@ module.exports = `
 
     input findMemberGraphInput {
         memberID: ID
+        showAvatar: Boolean
     }
 
     input findProjectGraphInput {
         projectID: ID
+        showAvatar: Boolean
     }
 
     input findMemberToProjectGraphInput {
         memberID: ID
         projectID: ID
+        showAvatar: Boolean
     }
 
     input findMemberToMemberGraphInput {
         memberOneID: ID
         memberTwoID: ID
+        showAvatar: Boolean
     }
 
     input findOneMemberToMembersGraphInput {
         memberID: ID
+        showAvatar: Boolean
     }
 
     

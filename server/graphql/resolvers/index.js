@@ -32,6 +32,7 @@ const {
 } = require("./objectResolvers/projectsResolver");
 const { Skills } = require("./objectResolvers/skillsResolver");
 const { Node } = require("./objectResolvers/nodeResolver");
+const { Graph } = require("./objectResolvers/graphVisualResolver");
 const { Rooms } = require("./objectResolvers/roomResolver");
 const { RoleTemplate } = require("./objectResolvers/roleTemplateResolver");
 const { SkillCategory } = require("./objectResolvers/skillCategoryResolver");
@@ -79,6 +80,7 @@ module.exports = {
   Epic,
   Skills,
   Node,
+  Graph,
   Rooms,
   RoleTemplate,
   SkillCategory,
