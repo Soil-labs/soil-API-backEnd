@@ -67,4 +67,20 @@ module.exports = `
         nodesID: [String]
         RoomID: ID
     }
+
+    type PaginatedRooms {
+        roomsData: [Rooms]
+        pageInfo: PageInfo
+    }
+
+
+    type PageInfo {
+        hasNextPage : Boolean
+        hasPrevPage: Boolean
+        start : String
+        end: String
+        currentPage: Int
+        totalPages: Int
+        totalResults: Int
+    }
 `
