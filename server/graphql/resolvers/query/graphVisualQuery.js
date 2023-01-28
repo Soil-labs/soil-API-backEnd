@@ -415,7 +415,7 @@ module.exports = {
 
       res = await generalFunc_neo4j({
         request: `
-        MATCH ms = ((z) - []-(m:Member)-[r*2..3]-(p:Project)-[] - (q))
+        MATCH ms = ((x) - []-(z) - []-(m:Member)-[r*2..3]-(p:Project)-[] - (q))
         WHERE m._id IN ${membersIDString}
         AND p._id IN ${projectsIDString}
         RETURN ms
