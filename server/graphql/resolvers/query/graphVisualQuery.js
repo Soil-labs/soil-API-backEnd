@@ -5,25 +5,33 @@ const mongoose = require("mongoose");
 
 const { generalFunc_neo4j } = require("../../../neo4j/func_neo4j");
 const _ = require("lodash");
+const e = require("express");
 
 const DEFAULT_PAGE_LIMIT = 20;
 
 module.exports = {
   findMemberGraph: async (parent, args, context, info) => {
     // find the graph of the member
-    const { memberID } = args.fields;
+    const { memberID, showAvatar } = args.fields;
     console.log("Query > findMemberGraph > args.fields = ", args.fields);
 
     if (!memberID) throw new ApolloError("The memberID is required");
 
     try {
-      let memberData = await Members.findOne({ _id: memberID }).select(
-        "_id discordName nodes"
-      );
+      let memberData;
+      if (showAvatar == true) {
+        memberData = await Members.findOne({ _id: memberID }).select(
+          "_id discordName nodes discordAvatar"
+        );
+      } else {
+        memberData = await Members.findOne({ _id: memberID }).select(
+          "_id discordName nodes"
+        );
+      }
 
       if (!memberData) throw new ApolloError("Member not found");
 
-      console.log("memberData = ", memberData);
+      // console.log("memberData = ", memberData);
 
       res = await generalFunc_neo4j({
         request: `//find node -> and node around of Type
