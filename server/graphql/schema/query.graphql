@@ -99,6 +99,7 @@ module.exports = `
           findProjectGraph(fields: findProjectGraphInput): Graph
           findMemberToProjectGraph(fields: findMemberToProjectGraphInput): Graph
           findMemberToMemberGraph(fields: findMemberToMemberGraphInput ): Graph
+          findMultipleMembersProjectsGraph(fields: findMultipleMembersProjectsGraphInput ): Graph
           findOneMemberToMembersGraph(fields: findOneMemberToMembersGraphInput): Graph
 
         }
