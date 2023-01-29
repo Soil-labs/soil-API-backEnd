@@ -1,5 +1,7 @@
 const { Members } = require("../../../models/membersModel");
 const { Projects } = require("../../../models/projectsModel");
+const { Node } = require("../../../models/nodeModal");
+
 const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
 
@@ -8,6 +10,11 @@ const _ = require("lodash");
 const e = require("express");
 
 const DEFAULT_PAGE_LIMIT = 20;
+
+const replaceTypeNodes = {
+  sub_expertise: true,
+  sub_typeProject: true,
+};
 
 module.exports = {
   findMemberGraph: async (parent, args, context, info) => {
@@ -41,8 +48,11 @@ module.exports = {
         `,
       });
 
-      nodesObj = {};
-      edgesArr = [];
+      let nodesObj = {};
+      let nodesArrID = [];
+      let nodesArrReplaceID = [];
+      let edgesArr = [];
+      let nodesArr = [];
       for (let i = 0; i < res.records.length; i++) {
         let record = res.records[i];
 
@@ -51,19 +61,42 @@ module.exports = {
 
           let start = segment.start;
           let end = segment.end;
+
           if (nodesObj[start.properties._id] == undefined) {
             nodesObj[start.properties._id] = {
               _id: start.properties._id,
               name: start.properties.name,
               type: start.labels[0],
+              show: true,
             };
+            nodesArrID.push(start.properties._id);
+            nodesArr.push({
+              _id: start.properties._id,
+              name: start.properties.name,
+              type: start.labels[0],
+            });
+
+            if (replaceTypeNodes[start.labels[0]] == true) {
+              nodesArrReplaceID.push(start.properties._id);
+            }
           }
           if (nodesObj[end.properties._id] == undefined) {
             nodesObj[end.properties._id] = {
               _id: end.properties._id,
               name: end.properties.name,
               type: end.labels[0],
+              show: true,
             };
+            nodesArrID.push(end.properties._id);
+            nodesArr.push({
+              _id: end.properties._id,
+              name: end.properties.name,
+              type: end.labels[0],
+            });
+
+            if (replaceTypeNodes[end.labels[0]] == true) {
+              nodesArrReplaceID.push(end.properties._id);
+            }
           }
 
           edgesArr.push({
@@ -74,21 +107,19 @@ module.exports = {
         }
       }
 
-      let nodesArr = [];
-      for (let key in nodesObj) {
-        nodesArr.push({
-          _id: nodesObj[key]._id,
-          name: nodesObj[key].name,
-          type: nodesObj[key].type,
-        });
-      }
+      let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
+        nodesArr,
+        nodesObj,
+        nodesArrID,
+        edgesArr,
+        nodesArrReplaceID
+      );
 
-      // console.log("nodesObj = ", nodesObj);
-      // console.log("edgesArr = ", edgesArr);
+      // console.log("nodesArrNew = ", nodesArrNew);
 
       return {
-        nodes: nodesArr,
-        edges: edgesArr,
+        nodes: nodesArrNew,
+        edges: edgesArrNew,
       };
     } catch (err) {
       throw new ApolloError(
@@ -571,3 +602,118 @@ module.exports = {
     }
   },
 };
+
+// create function that will check for the above nodes and replace with expertise the edges
+async function replaceSubNodesPlusCalcDistance(
+  nodesArr,
+  nodesObj,
+  nodesArrID,
+  edgesArr,
+  nodesArrReplaceID
+) {
+  console.log("nodesObj = ", nodesObj);
+  console.log("nodesArrID = ", nodesArrID);
+  console.log("nodesArrReplaceID = ", nodesArrReplaceID);
+  let nodesData = await Node.find({ _id: nodesArrReplaceID }).select(
+    "_id aboveNodes node"
+  );
+
+  console.log("nodesData = ", nodesData);
+  // asdf;
+
+  let aboveNodesID = [];
+  for (let i = 0; i < nodesData.length; i++) {
+    if (nodesObj[nodesData[i]._id] != undefined) {
+      aboveNodeID = nodesData[i].aboveNodes[0];
+      console.log("nodesData[i].aboveNodes = ", nodesData[i].aboveNodes);
+      nodesObj[nodesData[i]._id].aboveNodes = aboveNodeID;
+
+      aboveNodesID.push(aboveNodeID);
+
+      if (nodesObj[aboveNodeID] == undefined) {
+        nodesObj[aboveNodeID] = {
+          _id: aboveNodeID,
+          subNode: nodesData[i]._id,
+        };
+      }
+    }
+  }
+  console.log("nodesObj = ", nodesObj);
+
+  let aboveNodesData = await Node.find({ _id: aboveNodesID }).select(
+    "_id name node"
+  );
+
+  console.log("aboveNodesData = ", aboveNodesData);
+
+  for (let i = 0; i < aboveNodesData.length; i++) {
+    if (nodesObj[aboveNodesData[i]._id] != undefined) {
+      nodesObj[aboveNodesData[i]._id].type = aboveNodesData[i].node;
+      nodesObj[aboveNodesData[i]._id].name = aboveNodesData[i].name;
+    }
+  }
+  // console.log("nodesObj = ", nodesObj);
+
+  console.log("edgesArr = ", edgesArr);
+
+  console.log("----------------------");
+
+  let edgesArrNew = [];
+
+  for (let i = 0; i < edgesArr.length; i++) {
+    let nodeNow = nodesObj[edgesArr[i].source];
+    let edgeSource = edgesArr[i].source;
+    let edgeTarget = edgesArr[i].target;
+
+    let flatAddEdge = true;
+    if (nodeNow && replaceTypeNodes[nodeNow.type]) {
+      console.log("change = ");
+      flatAddEdge = false;
+    }
+
+    console.log("dokiii = ", i);
+
+    nodeNow = nodesObj[edgesArr[i].target];
+    if (nodeNow && replaceTypeNodes[nodeNow.type]) {
+      flatAddEdge = false;
+
+      console.log("change = ", nodeNow, i);
+      // and then add two, one from source to above node
+      edgesArrNew.push({
+        source: edgeSource,
+        target: nodeNow.aboveNodes,
+      });
+      // and the other one from above to target node
+      edgesArrNew.push({
+        source: nodeNow.aboveNodes,
+        target: edgeTarget,
+      });
+
+      nodesObj[nodeNow.aboveNodes].show = true;
+    }
+
+    if (flatAddEdge == true) {
+      edgesArrNew.push({
+        source: edgeSource,
+        target: edgeTarget,
+      });
+    }
+  }
+  console.log("----------------------");
+
+  console.log("edgesArrNew = ", edgesArrNew);
+  console.log("nodesObj = ", nodesObj);
+
+  let nodesArrNew = [];
+  for (let key in nodesObj) {
+    if (nodesObj[key].show == true) {
+      nodesArrNew.push(nodesObj[key]);
+    }
+  }
+
+  // asdf;
+  return {
+    nodesArrNew: nodesArrNew,
+    edgesArrNew: edgesArrNew,
+  };
+}
