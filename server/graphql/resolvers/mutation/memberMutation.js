@@ -18,126 +18,140 @@ const {
 
 const { uploadFileToArweave } = require("../../../utils/uploadFileToArweave");
 
+const { combineResolvers } = require("graphql-resolvers");
+const { IsAuthenticated } = require("../../../utils/authorization");
+const { ACCESS_LEVELS } = require("../../../auth/constants");
+
 const { PubSub } = require("graphql-subscriptions");
 const pubsub = new PubSub();
 
 module.exports = {
-  addNewMember: async (parent, args, context, info) => {
-    const {
-      discordName,
-      _id,
-      discordAvatar,
-      discriminator,
-      bio,
-      hoursPerWeek,
-      previusProjects,
-      invitedBy,
-      serverID,
-    } = args.fields;
-    console.log("Mutation > addNewMember > args.fields = ", args.fields);
+  addNewMember: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, context, info) => {
+      const {
+        discordName,
+        _id,
+        discordAvatar,
+        discriminator,
+        bio,
+        hoursPerWeek,
+        previusProjects,
+        invitedBy,
+        serverID,
+      } = args.fields;
 
-    if (!_id)
-      throw new ApolloError("_id is required, the IDs come from Discord");
+      if (
+        !context.user &&
+        context.user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS
+      )
+        throw new ApolloError("Not Authorized");
 
-    let fields = {
-      _id,
-      registeredAt: new Date(),
-    };
+      console.log("Mutation > addNewMember > args.fields = ", args.fields);
 
-    if (discordName) fields.discordName = discordName;
-    if (discordAvatar) fields.discordAvatar = discordAvatar;
-    if (discriminator) fields.discriminator = discriminator;
-    if (bio) fields.bio = bio;
-    if (hoursPerWeek) fields.hoursPerWeek = hoursPerWeek;
-    if (previusProjects) fields.previusProjects = previusProjects;
-    if (invitedBy) fields.invitedBy = invitedBy;
+      if (!_id)
+        throw new ApolloError("_id is required, the IDs come from Discord");
 
-    // console.log("fields = " , fields)
+      let fields = {
+        _id,
+        registeredAt: new Date(),
+      };
 
-    try {
-      let membersData = await Members.findOne({ _id: fields._id });
+      if (discordName) fields.discordName = discordName;
+      if (discordAvatar) fields.discordAvatar = discordAvatar;
+      if (discriminator) fields.discriminator = discriminator;
+      if (bio) fields.bio = bio;
+      if (hoursPerWeek) fields.hoursPerWeek = hoursPerWeek;
+      if (previusProjects) fields.previusProjects = previusProjects;
+      if (invitedBy) fields.invitedBy = invitedBy;
 
-      //console.log("membersData = " , membersData)
+      // console.log("fields = " , fields)
 
-      if (!membersData) {
-        let newAttributes = {
-          Director: 0,
-          Motivator: 0,
-          Inspirer: 0,
-          Helper: 0,
-          Supporter: 0,
-          Coordinator: 0,
-          Observer: 0,
-          Reformer: 0,
-        };
+      try {
+        let membersData = await Members.findOne({ _id: fields._id });
 
-        fields = { ...fields, attributes: newAttributes };
+        //console.log("membersData = " , membersData)
 
-        if (serverID) fields.serverID = serverID;
+        if (!membersData) {
+          let newAttributes = {
+            Director: 0,
+            Motivator: 0,
+            Inspirer: 0,
+            Helper: 0,
+            Supporter: 0,
+            Coordinator: 0,
+            Observer: 0,
+            Reformer: 0,
+          };
 
-        membersData = await new Members(fields);
+          fields = { ...fields, attributes: newAttributes };
 
-        membersData.save();
+          if (serverID) fields.serverID = serverID;
 
-        //add member node to neo4j
-        await createNode_neo4j({
-          node: "Member",
-          id: fields._id,
-          name: fields.discordName,
-          serverID: membersData.serverID,
-        });
+          membersData = await new Members(fields);
 
-        if (invitedBy) {
-          await makeConnection_neo4j({
-            node: ["Member", "Member"],
-            id: [fields._id, invitedBy],
-            connection: "INVITED_BY",
-          });
-        }
-      } else {
-        if (!membersData.serverID) {
-          membersData = await Members.findOneAndUpdate(
-            { _id: membersData._id },
-            { serverID: serverID },
-            { new: true }
-          );
+          membersData.save();
 
-          updateNode_neo4j_serverID({
+          //add member node to neo4j
+          await createNode_neo4j({
             node: "Member",
-            id: membersData._id,
+            id: fields._id,
+            name: fields.discordName,
             serverID: membersData.serverID,
           });
-        } else {
-          let serverID_new = [...membersData.serverID];
-          if (!membersData.serverID.includes(serverID)) {
-            serverID_new.push(serverID);
+
+          if (invitedBy) {
+            await makeConnection_neo4j({
+              node: ["Member", "Member"],
+              id: [fields._id, invitedBy],
+              connection: "INVITED_BY",
+            });
           }
-          membersData = await Members.findOneAndUpdate(
-            { _id: membersData._id },
-            { serverID: serverID_new },
-            { new: true }
-          );
+        } else {
+          if (!membersData.serverID) {
+            membersData = await Members.findOneAndUpdate(
+              { _id: membersData._id },
+              { serverID: serverID },
+              { new: true }
+            );
 
-          updateNode_neo4j_serverID({
-            node: "Member",
-            id: membersData._id,
-            serverID: serverID_new,
-          });
+            updateNode_neo4j_serverID({
+              node: "Member",
+              id: membersData._id,
+              serverID: membersData.serverID,
+            });
+          } else {
+            let serverID_new = [...membersData.serverID];
+            if (!membersData.serverID.includes(serverID)) {
+              serverID_new.push(serverID);
+            }
+            membersData = await Members.findOneAndUpdate(
+              { _id: membersData._id },
+              { serverID: serverID_new },
+              { new: true }
+            );
+
+            updateNode_neo4j_serverID({
+              node: "Member",
+              id: membersData._id,
+              serverID: serverID_new,
+            });
+          }
         }
-      }
 
-      pubsub.publish(membersData._id, {
-        memberUpdated: membersData,
-      });
-      return membersData;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > addNewMember" }
-      );
+        pubsub.publish(membersData._id, {
+          memberUpdated: membersData,
+        });
+        return membersData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > addNewMember" }
+        );
+      }
     }
-  },
+  ),
   updateMember: async (parent, args, context, info) => {
     const {
       discordName,
@@ -1446,7 +1460,7 @@ module.exports = {
         endorser: endorserID, //memberID
         endorsementMessage: endorsementMessage,
         //arweaveTransactionID: transactionId,
-        arweaveTransactionID: "https://www.arweave.org/"
+        arweaveTransactionID: "https://www.arweave.org/",
       };
 
       let previousEndorsements = endorseeMember.endorsements || [];
