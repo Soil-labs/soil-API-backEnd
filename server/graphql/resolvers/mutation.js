@@ -61,6 +61,7 @@ const {
   deleteNodesFromMemberInRoom,
   roomUpdated,
   memberUpdatedInRoom,
+  updateNodesToMemberInRoom
 } = require("./mutation/roomMutation");
 const {
   addNewChat,
@@ -147,6 +148,7 @@ module.exports = {
     updateMemberInRoom,
     addNodesToMemberInRoom,
     deleteNodesFromMemberInRoom,
+    updateNodesToMemberInRoom,
 
     // ------------- CHAT MUTATION -----------------
     addNewChat,
