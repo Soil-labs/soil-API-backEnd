@@ -79,6 +79,7 @@ module.exports = `
         nodesID: [String]
         nodeType: String
         nodesID_level: [nodesID_levelInput]
+        roomID: ID
     }
 
     type PaginatedRooms {

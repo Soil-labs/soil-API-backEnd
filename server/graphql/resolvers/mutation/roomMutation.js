@@ -458,7 +458,7 @@ module.exports = {
     async (parent, args, { user }, info) => {
       const memberID = user._id;
       console.log("Mutation > updateNodesToMemberInRoom > args.fields = ", args.fields);
-      let { nodesID, nodesID_level, nodeType } = args.fields;
+      let { nodesID, nodesID_level, nodeType, roomID } = args.fields;
     
       if (!(nodesID == undefined || nodesID_level == undefined))
         throw new ApolloError(
@@ -694,7 +694,7 @@ module.exports = {
           { new: true }
         );
 
-        pubsub.publish("SKILL_UPDATED_IN_ROOM" + RoomID, {
+        pubsub.publish("SKILL_UPDATED_IN_ROOM" + roomID, {
           memberUpdatedInRoom: memberData2,
         });
   
