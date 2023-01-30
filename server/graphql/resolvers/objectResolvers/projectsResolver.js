@@ -120,20 +120,29 @@ module.exports = {
       try {
         const nodes = parent.nodes;
 
-        nodesID = [];
         if (nodes && nodes.length > 0) {
+          let nodesObj = {};
+          nodes.forEach((node) => {
+            nodesObj[node._id] = node;
+          });
+
+          let nodesID = [];
           nodes.forEach((node) => {
             nodesID.push(node._id);
           });
 
           const nodesData = await Node.find({ _id: nodesID }).select(
-            "_id name node"
+            "_id name node aboveNodes subNodes"
           );
 
           let res = [];
           nodesData.forEach((node) => {
             res.push({
               nodeData: node,
+              orderIndex: nodesObj[node._id].orderIndex,
+              level: nodesObj[node._id].level,
+              weight: nodesObj[node._id].weight,
+              aboveNodes: nodesObj[node._id].aboveNodes,
             });
           });
           return res;
