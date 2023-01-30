@@ -682,11 +682,13 @@ async function replaceSubNodesPlusCalcDistance(
       edgesArrNew.push({
         source: edgeSource,
         target: nodeNow.aboveNodes,
+        distanceRation: 0.7, // Big Distance between the main node and the category
       });
       // and the other one from above to target node
       edgesArrNew.push({
         source: nodeNow.aboveNodes,
         target: edgeTarget,
+        distanceRation: 0.2, // small distancec between category and subCategory
       });
 
       nodesObj[nodeNow.aboveNodes].show = true;
@@ -696,6 +698,7 @@ async function replaceSubNodesPlusCalcDistance(
       edgesArrNew.push({
         source: edgeSource,
         target: edgeTarget,
+        distanceRation: 0.6, // the distance here is average for this two nodes
       });
     }
   }

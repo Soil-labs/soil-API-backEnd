@@ -11,6 +11,7 @@ module.exports = `
         source: ID
         target: ID
         type: String
+        distanceRation: Float
     }
 
     type Graph {
