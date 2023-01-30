@@ -1062,115 +1062,144 @@ module.exports = {
     }
   },
 
-  changeTeamMember_Phase_Project: async (parent, args, context, info) => {
-    const { projectID, memberID, roleID, phase } = JSON.parse(
-      JSON.stringify(args.fields)
-    );
-    console.log(
-      "Mutation > changeTeamMember_Phase_Project > args.fields = ",
-      args.fields
-    );
-
-    if (!projectID) throw new ApolloError("you need to specify a project ID");
-    if (!memberID) throw new ApolloError("you need to specify a tweet ID");
-    if (!roleID) throw new ApolloError("you need to specify a role ID");
-    if (phase == null)
-      throw new ApolloError(
-        "you need to specify if the tweet is approved or not"
+  changeTeamMember_Phase_Project: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, { user }, info) => {
+      const { projectID, memberID, roleID, phase } = JSON.parse(
+        JSON.stringify(args.fields)
+      );
+      console.log(
+        "Mutation > changeTeamMember_Phase_Project > args.fields = ",
+        args.fields
       );
 
-    console.log("projectID,memberID,phase = ", projectID, memberID, phase);
-
-    try {
-      let projectData = await Projects.findOne({ _id: projectID });
-
-      // let roleData = await Role.findOne({_id: roleID });
-
-      if (!projectData)
+      if (!projectID) throw new ApolloError("you need to specify a project ID");
+      if (!memberID) throw new ApolloError("you need to specify a tweet ID");
+      if (!roleID) throw new ApolloError("you need to specify a role ID");
+      if (phase == null)
         throw new ApolloError(
-          "This project dont exist you need to choose antoher project"
+          "you need to specify if the tweet is approved or not"
         );
 
-      // if (!roleData) {
-      //   throw new ApolloError("the role don't exist you need to choose another role")
-      // }
+      try {
+        let projectData = await Projects.findOne({ _id: projectID });
 
-      let foundMember_flag = false;
-      projectData.team.forEach((member) => {
-        if (member.memberID == memberID) {
-          member.phase = phase;
-          member.roleID = roleID;
-          console.log("tuba = ");
-          foundMember_flag = true;
-        }
-      });
+        // let roleData = await Role.findOne({_id: roleID });
 
-      console.log("foundMember_flag = ", foundMember_flag);
+        if (!projectData)
+          throw new ApolloError(
+            "This project dont exist you need to choose antoher project"
+          );
 
-      if (foundMember_flag == false) {
-        console.log("foundMember_flag = ");
-        projectData.team.push({
-          memberID: memberID,
-          phase: phase,
-          roleID: roleID,
+        // if (!roleData) {
+        //   throw new ApolloError("the role don't exist you need to choose another role")
+        // }
+
+        if (projectData.champion === memberID)
+          throw new ApolloError(
+            "can not change phase of the champion of project"
+          );
+
+        if (
+          projectData.champion !== user._id &&
+          (phase === "invited" ||
+            phase === "rejected" ||
+            phase === "shortlisted")
+        )
+          throw new ApolloError(
+            "only the project champion change the phase of this member"
+          );
+
+        if (
+          (projectData.champion !== user._id || memberID !== user._id) &&
+          phase === "committed"
+        )
+          throw new ApolloError(
+            "only the project champion or the member can change the phase of this member to committed"
+          );
+
+        if (memberID !== user._id && phase === "engaged")
+          throw new ApolloError(
+            "only the member can change the phase of this member to engaged"
+          );
+
+        let foundMember_flag = false;
+        projectData.team.forEach((member) => {
+          if (member.memberID == memberID) {
+            member.phase = phase;
+            member.roleID = roleID;
+            console.log("tuba = ");
+            foundMember_flag = true;
+          }
         });
-      }
 
-      let memberData = await Members.findOne({ _id: memberID });
+        console.log("foundMember_flag = ", foundMember_flag);
 
-      if (memberData) {
-        let currentProjects = [...memberData.projects];
-
-        const projectExist = currentProjects.includes(
-          (project) => project.projectID == projectData._id
-        );
-
-        if (projectExist) {
-          //update the phase
-          currentProjects = currentProjects.map((project) => {
-            if (project.projectID == projectData._id) {
-              return { ...project, phase: phase, roleID: roleID };
-            }
-            return project;
-          });
-        } else {
-          //push a new project
-          currentProjects.push({
-            projectID: projectData._id,
-            champion: false,
+        if (foundMember_flag == false) {
+          // console.log("foundMember_flag = ");
+          projectData.team.push({
+            memberID: memberID,
             phase: phase,
             roleID: roleID,
           });
         }
 
-        console.log("currentProjects = ", currentProjects);
+        let memberData = await Members.findOne({ _id: memberID });
 
-        memberDataUpdate = await Members.findOneAndUpdate(
-          { _id: memberID },
+        if (memberData) {
+          let currentProjects = [...memberData.projects];
+
+          const projectExist = currentProjects.includes(
+            (project) => project.projectID == projectData._id
+          );
+
+          if (projectExist) {
+            //update the phase
+            currentProjects = currentProjects.map((project) => {
+              if (project.projectID == projectData._id) {
+                return { ...project, phase: phase, roleID: roleID };
+              }
+              return project;
+            });
+          } else {
+            //push a new project
+            currentProjects.push({
+              projectID: projectData._id,
+              champion: false,
+              phase: phase,
+              roleID: roleID,
+            });
+          }
+
+          console.log("currentProjects = ", currentProjects);
+
+          memberDataUpdate = await Members.findOneAndUpdate(
+            { _id: memberID },
+            {
+              $set: { projects: currentProjects },
+            },
+            { new: true }
+          );
+        }
+
+        projectDataUpdate = await Projects.findOneAndUpdate(
+          { _id: projectID },
           {
-            $set: { projects: currentProjects },
+            $set: { team: projectData.team },
           },
           { new: true }
         );
+
+        return projectDataUpdate;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
       }
-
-      projectDataUpdate = await Projects.findOneAndUpdate(
-        { _id: projectID },
-        {
-          $set: { team: projectData.team },
-        },
-        { new: true }
-      );
-
-      return projectDataUpdate;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
     }
-  },
+  ),
 
   createNewTeam: async (parent, args, context, info) => {
     const {
