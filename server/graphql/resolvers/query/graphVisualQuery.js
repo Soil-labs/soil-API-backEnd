@@ -16,6 +16,26 @@ const replaceTypeNodes = {
   sub_typeProject: true,
 };
 
+const coreTypeNodes = {
+  Member: true,
+  Project: true,
+};
+
+const distancesBasedOnNumCoreType = {
+  1: {
+    close: 0.2,
+    far: 0.7,
+  },
+  2: {
+    close: 0.2,
+    far: 0.4,
+  },
+  else: {
+    close: 0.3,
+    far: 0.35,
+  },
+};
+
 module.exports = {
   findMemberGraph: async (parent, args, context, info) => {
     // find the graph of the member
@@ -48,74 +68,15 @@ module.exports = {
         `,
       });
 
-      let nodesObj = {};
-      let nodesArrID = [];
-      let nodesArrReplaceID = [];
-      let edgesArr = [];
-      let nodesArr = [];
-      for (let i = 0; i < res.records.length; i++) {
-        let record = res.records[i];
-
-        for (let j = 0; j < record._fields[0].segments.length; j++) {
-          let segment = record._fields[0].segments[j];
-
-          let start = segment.start;
-          let end = segment.end;
-
-          if (nodesObj[start.properties._id] == undefined) {
-            nodesObj[start.properties._id] = {
-              _id: start.properties._id,
-              name: start.properties.name,
-              type: start.labels[0],
-              show: true,
-            };
-            nodesArrID.push(start.properties._id);
-            nodesArr.push({
-              _id: start.properties._id,
-              name: start.properties.name,
-              type: start.labels[0],
-            });
-
-            if (replaceTypeNodes[start.labels[0]] == true) {
-              nodesArrReplaceID.push(start.properties._id);
-            }
-          }
-          if (nodesObj[end.properties._id] == undefined) {
-            nodesObj[end.properties._id] = {
-              _id: end.properties._id,
-              name: end.properties.name,
-              type: end.labels[0],
-              show: true,
-            };
-            nodesArrID.push(end.properties._id);
-            nodesArr.push({
-              _id: end.properties._id,
-              name: end.properties.name,
-              type: end.labels[0],
-            });
-
-            if (replaceTypeNodes[end.labels[0]] == true) {
-              nodesArrReplaceID.push(end.properties._id);
-            }
-          }
-
-          edgesArr.push({
-            source: start.properties._id,
-            target: end.properties._id,
-            type: segment.relationship.type,
-          });
-        }
-      }
+      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
+        await neo4jToNodeEdgeGraph(res);
 
       let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
-        nodesArr,
         nodesObj,
-        nodesArrID,
         edgesArr,
-        nodesArrReplaceID
+        nodesArrReplaceID,
+        numberCoreTypeNodes
       );
-
-      // console.log("nodesArrNew = ", nodesArrNew);
 
       return {
         nodes: nodesArrNew,
@@ -154,56 +115,71 @@ module.exports = {
         `,
       });
 
-      nodesObj = {};
-      edgesArr = [];
+      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
+        await neo4jToNodeEdgeGraph(res);
 
-      for (let i = 0; i < res.records.length; i++) {
-        let record = res.records[i];
-
-        for (let j = 0; j < record._fields[0].segments.length; j++) {
-          let segment = record._fields[0].segments[j];
-
-          let start = segment.start;
-          let end = segment.end;
-          if (nodesObj[start.properties._id] == undefined) {
-            nodesObj[start.properties._id] = {
-              _id: start.properties._id,
-              name: start.properties.name,
-              type: start.labels[0],
-            };
-          }
-          if (nodesObj[end.properties._id] == undefined) {
-            nodesObj[end.properties._id] = {
-              _id: end.properties._id,
-              name: end.properties.name,
-              type: end.labels[0],
-            };
-          }
-
-          edgesArr.push({
-            source: start.properties._id,
-            target: end.properties._id,
-            type: segment.relationship.type,
-          });
-        }
-      }
-
-      let nodesArr = [];
-      for (let key in nodesObj) {
-        nodesArr.push({
-          _id: nodesObj[key]._id,
-          name: nodesObj[key].name,
-          type: nodesObj[key].type,
-        });
-      }
-
-      //console.log("nodesObj = ", nodesObj);
-      //console.log("edgesArr = ", edgesArr);
+      let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
+        nodesObj,
+        edgesArr,
+        nodesArrReplaceID,
+        numberCoreTypeNodes
+      );
 
       return {
-        nodes: nodesArr,
-        edges: edgesArr,
+        nodes: nodesArrNew,
+        edges: edgesArrNew,
       };
+
+      // nodesObj = {};
+      // edgesArr = [];
+
+      // for (let i = 0; i < res.records.length; i++) {
+      //   let record = res.records[i];
+
+      //   for (let j = 0; j < record._fields[0].segments.length; j++) {
+      //     let segment = record._fields[0].segments[j];
+
+      //     let start = segment.start;
+      //     let end = segment.end;
+      //     if (nodesObj[start.properties._id] == undefined) {
+      //       nodesObj[start.properties._id] = {
+      //         _id: start.properties._id,
+      //         name: start.properties.name,
+      //         type: start.labels[0],
+      //       };
+      //     }
+      //     if (nodesObj[end.properties._id] == undefined) {
+      //       nodesObj[end.properties._id] = {
+      //         _id: end.properties._id,
+      //         name: end.properties.name,
+      //         type: end.labels[0],
+      //       };
+      //     }
+
+      //     edgesArr.push({
+      //       source: start.properties._id,
+      //       target: end.properties._id,
+      //       type: segment.relationship.type,
+      //     });
+      //   }
+      // }
+
+      // let nodesArr = [];
+      // for (let key in nodesObj) {
+      //   nodesArr.push({
+      //     _id: nodesObj[key]._id,
+      //     name: nodesObj[key].name,
+      //     type: nodesObj[key].type,
+      //   });
+      // }
+
+      // //console.log("nodesObj = ", nodesObj);
+      // //console.log("edgesArr = ", edgesArr);
+
+      // return {
+      //   nodes: nodesArr,
+      //   edges: edgesArr,
+      // };
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -247,59 +223,124 @@ module.exports = {
         `,
         });
       }
+      // let nodesObj = {};
+      // let nodesArrReplaceID = [];
+      // let edgesArr = [];
+      // for (let i = 0; i < res.records.length; i++) {
+      //   let record = res.records[i];
 
-      nodesObj = {};
-      edgesArr = [];
+      //   for (let j = 0; j < record._fields[0].segments.length; j++) {
+      //     let segment = record._fields[0].segments[j];
 
-      for (let i = 0; i < res.records.length; i++) {
-        let record = res.records[i];
+      //     let start = segment.start;
+      //     let end = segment.end;
 
-        for (let j = 0; j < record._fields[0].segments.length; j++) {
-          let segment = record._fields[0].segments[j];
+      //     if (nodesObj[start.properties._id] == undefined) {
+      //       nodesObj[start.properties._id] = {
+      //         _id: start.properties._id,
+      //         name: start.properties.name,
+      //         type: start.labels[0],
+      //         show: true,
+      //       };
 
-          let start = segment.start;
-          let end = segment.end;
-          if (nodesObj[start.properties._id] == undefined) {
-            nodesObj[start.properties._id] = {
-              _id: start.properties._id,
-              name: start.properties.name,
-              type: start.labels[0],
-            };
-          }
-          if (nodesObj[end.properties._id] == undefined) {
-            nodesObj[end.properties._id] = {
-              _id: end.properties._id,
-              name: end.properties.name,
-              type: end.labels[0],
-            };
-          }
+      //       if (replaceTypeNodes[start.labels[0]] == true) {
+      //         nodesArrReplaceID.push(start.properties._id);
+      //       }
+      //     }
+      //     if (nodesObj[end.properties._id] == undefined) {
+      //       nodesObj[end.properties._id] = {
+      //         _id: end.properties._id,
+      //         name: end.properties.name,
+      //         type: end.labels[0],
+      //         show: true,
+      //       };
 
-          edgesArr.push({
-            source: start.properties._id,
-            target: end.properties._id,
-            type: segment.relationship.type,
-          });
-        }
-      }
+      //       if (replaceTypeNodes[end.labels[0]] == true) {
+      //         nodesArrReplaceID.push(end.properties._id);
+      //       }
+      //     }
 
-      let nodesArr = [];
-      for (let key in nodesObj) {
-        nodesArr.push({
-          _id: nodesObj[key]._id,
-          name: nodesObj[key].name,
-          type: nodesObj[key].type,
-        });
-      }
+      //     edgesArr.push({
+      //       source: start.properties._id,
+      //       target: end.properties._id,
+      //       type: segment.relationship.type,
+      //     });
+      //   }
+      // }
+
+      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
+        await neo4jToNodeEdgeGraph(res);
+
+      // console.log("numberCoreTypeNodes = ", numberCoreTypeNodes);
+      // asdf;
+
+      let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
+        nodesObj,
+        edgesArr,
+        nodesArrReplaceID,
+        numberCoreTypeNodes
+      );
+
+      // console.log("nodesArrNew = ", nodesArrNew);
+
+      return {
+        nodes: nodesArrNew,
+        edges: edgesArrNew,
+      };
+
+      // nodesObj = {};
+      // let nodesArrID = [];
+      // let nodesArrReplaceID = [];
+      // edgesArr = [];
+      // for (let i = 0; i < res.records.length; i++) {
+      //   let record = res.records[i];
+
+      //   for (let j = 0; j < record._fields[0].segments.length; j++) {
+      //     let segment = record._fields[0].segments[j];
+
+      //     let start = segment.start;
+      //     let end = segment.end;
+      //     if (nodesObj[start.properties._id] == undefined) {
+      //       nodesObj[start.properties._id] = {
+      //         _id: start.properties._id,
+      //         name: start.properties.name,
+      //         type: start.labels[0],
+      //       };
+      //     }
+      //     if (nodesObj[end.properties._id] == undefined) {
+      //       nodesObj[end.properties._id] = {
+      //         _id: end.properties._id,
+      //         name: end.properties.name,
+      //         type: end.labels[0],
+      //       };
+      //     }
+
+      //     edgesArr.push({
+      //       source: start.properties._id,
+      //       target: end.properties._id,
+      //       type: segment.relationship.type,
+      //     });
+      //   }
+      // }
+
+      // let nodesArr = [];
+      // for (let key in nodesObj) {
+      //   nodesArr.push({
+      //     _id: nodesObj[key]._id,
+      //     name: nodesObj[key].name,
+      //     type: nodesObj[key].type,
+      //   });
+      // }
 
       //console.log("nodesObj = ", nodesObj);
       //console.log("edgesArr = ", edgesArr);
 
-      const uniqueEdges = _.uniqWith(edgesArr, _.isEqual);
+      // const uniqueEdges = _.uniqWith(edgesArr, _.isEqual);
 
-      return {
-        nodes: nodesArr,
-        edges: uniqueEdges,
-      };
+      // return {
+      //   nodes: nodesArr,
+      //   edges: uniqueEdges,
+      // };
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -453,58 +494,72 @@ module.exports = {
         `,
       });
 
-      nodesObj = {};
-      edgesArr = [];
+      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
+        await neo4jToNodeEdgeGraph(res);
 
-      for (let i = 0; i < res.records.length; i++) {
-        let record = res.records[i];
-
-        for (let j = 0; j < record._fields[0].segments.length; j++) {
-          let segment = record._fields[0].segments[j];
-
-          let start = segment.start;
-          let end = segment.end;
-          if (nodesObj[start.properties._id] == undefined) {
-            nodesObj[start.properties._id] = {
-              _id: start.properties._id,
-              name: start.properties.name,
-              type: start.labels[0],
-            };
-          }
-          if (nodesObj[end.properties._id] == undefined) {
-            nodesObj[end.properties._id] = {
-              _id: end.properties._id,
-              name: end.properties.name,
-              type: end.labels[0],
-            };
-          }
-
-          edgesArr.push({
-            source: start.properties._id,
-            target: end.properties._id,
-            type: segment.relationship.type,
-          });
-        }
-      }
-
-      let nodesArr = [];
-      for (let key in nodesObj) {
-        nodesArr.push({
-          _id: nodesObj[key]._id,
-          name: nodesObj[key].name,
-          type: nodesObj[key].type,
-        });
-      }
-
-      //console.log("nodesObj = ", nodesObj);
-      //console.log("edgesArr = ", edgesArr);
-
-      const uniqueEdges = _.uniqWith(edgesArr, _.isEqual);
+      let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
+        nodesObj,
+        edgesArr,
+        nodesArrReplaceID,
+        numberCoreTypeNodes
+      );
 
       return {
-        nodes: nodesArr,
-        edges: uniqueEdges,
+        nodes: nodesArrNew,
+        edges: edgesArrNew,
       };
+      // nodesObj = {};
+      // edgesArr = [];
+
+      // for (let i = 0; i < res.records.length; i++) {
+      //   let record = res.records[i];
+
+      //   for (let j = 0; j < record._fields[0].segments.length; j++) {
+      //     let segment = record._fields[0].segments[j];
+
+      //     let start = segment.start;
+      //     let end = segment.end;
+      //     if (nodesObj[start.properties._id] == undefined) {
+      //       nodesObj[start.properties._id] = {
+      //         _id: start.properties._id,
+      //         name: start.properties.name,
+      //         type: start.labels[0],
+      //       };
+      //     }
+      //     if (nodesObj[end.properties._id] == undefined) {
+      //       nodesObj[end.properties._id] = {
+      //         _id: end.properties._id,
+      //         name: end.properties.name,
+      //         type: end.labels[0],
+      //       };
+      //     }
+
+      //     edgesArr.push({
+      //       source: start.properties._id,
+      //       target: end.properties._id,
+      //       type: segment.relationship.type,
+      //     });
+      //   }
+      // }
+
+      // let nodesArr = [];
+      // for (let key in nodesObj) {
+      //   nodesArr.push({
+      //     _id: nodesObj[key]._id,
+      //     name: nodesObj[key].name,
+      //     type: nodesObj[key].type,
+      //   });
+      // }
+
+      // //console.log("nodesObj = ", nodesObj);
+      // //console.log("edgesArr = ", edgesArr);
+
+      // const uniqueEdges = _.uniqWith(edgesArr, _.isEqual);
+
+      // return {
+      //   nodes: nodesArr,
+      //   edges: uniqueEdges,
+      // };
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -603,23 +658,98 @@ module.exports = {
   },
 };
 
+function createNewID(id1, id2) {
+  const combined = id1 + id2;
+  let newID = btoa(combined);
+  newID = newID.slice(-id1.toString().length);
+  // newID = newID.substring(0, id1.toString().length);
+  return newID;
+}
+
+async function neo4jToNodeEdgeGraph(res) {
+  let nodesObj = {};
+  let nodesArrReplaceID = [];
+  let edgesArr = [];
+  let numberCoreTypeNodes = 0;
+  for (let i = 0; i < res.records.length; i++) {
+    let record = res.records[i];
+
+    for (let j = 0; j < record._fields[0].segments.length; j++) {
+      let segment = record._fields[0].segments[j];
+
+      let start = segment.start;
+      let end = segment.end;
+
+      if (nodesObj[start.properties._id] == undefined) {
+        nodesObj[start.properties._id] = {
+          _id: start.properties._id,
+          name: start.properties.name,
+          type: start.labels[0],
+          show: true,
+          numEdges: 0,
+        };
+
+        if (coreTypeNodes[start.labels[0]] == true) {
+          console.log("change = ", start.properties.name, start.labels[0]);
+          numberCoreTypeNodes += 1;
+        }
+
+        if (replaceTypeNodes[start.labels[0]] == true) {
+          nodesArrReplaceID.push(start.properties._id);
+        }
+      }
+      if (nodesObj[end.properties._id] == undefined) {
+        nodesObj[end.properties._id] = {
+          _id: end.properties._id,
+          name: end.properties.name,
+          type: end.labels[0],
+          show: true,
+          numEdges: 0,
+        };
+
+        if (coreTypeNodes[end.labels[0]] == true) {
+          console.log("change = ", end.properties.name, end.labels[0]);
+          numberCoreTypeNodes += 1;
+        }
+
+        if (replaceTypeNodes[end.labels[0]] == true) {
+          nodesArrReplaceID.push(end.properties._id);
+        }
+      }
+
+      edgesArr.push({
+        source: start.properties._id,
+        target: end.properties._id,
+        type: segment.relationship.type,
+      });
+    }
+  }
+
+  console.log("numberCoreTypeNodes = ", numberCoreTypeNodes);
+
+  return {
+    nodesObj: nodesObj,
+    nodesArrReplaceID: nodesArrReplaceID,
+    edgesArr: edgesArr,
+    numberCoreTypeNodes: numberCoreTypeNodes,
+  };
+}
+
 // create function that will check for the above nodes and replace with expertise the edges
 async function replaceSubNodesPlusCalcDistance(
-  nodesArr,
   nodesObj,
-  nodesArrID,
   edgesArr,
-  nodesArrReplaceID
+  nodesArrReplaceID,
+  numberCoreTypeNodes
 ) {
-  console.log("nodesObj = ", nodesObj);
-  console.log("nodesArrID = ", nodesArrID);
-  console.log("nodesArrReplaceID = ", nodesArrReplaceID);
+  // console.log("nodesObj = ", nodesObj);
+  // console.log("nodesArrID = ", nodesArrID);
+  // console.log("nodesArrReplaceID = ", nodesArrReplaceID);
   let nodesData = await Node.find({ _id: nodesArrReplaceID }).select(
     "_id aboveNodes node"
   );
 
-  console.log("nodesData = ", nodesData);
-  // asdf;
+  // let newID = createNewID(nodesData[0]._id, nodesData[1]._id);
 
   let aboveNodesID = [];
   for (let i = 0; i < nodesData.length; i++) {
@@ -638,13 +768,13 @@ async function replaceSubNodesPlusCalcDistance(
       }
     }
   }
-  console.log("nodesObj = ", nodesObj);
+  // console.log("nodesObj = ", nodesObj);
 
   let aboveNodesData = await Node.find({ _id: aboveNodesID }).select(
     "_id name node"
   );
 
-  console.log("aboveNodesData = ", aboveNodesData);
+  // console.log("aboveNodesData = ", aboveNodesData);
 
   for (let i = 0; i < aboveNodesData.length; i++) {
     if (nodesObj[aboveNodesData[i]._id] != undefined) {
@@ -652,43 +782,143 @@ async function replaceSubNodesPlusCalcDistance(
       nodesObj[aboveNodesData[i]._id].name = aboveNodesData[i].name;
     }
   }
-  // console.log("nodesObj = ", nodesObj);
+  console.log("nodesObj = ", nodesObj);
 
-  console.log("edgesArr = ", edgesArr);
+  // console.log("edgesArr = ", edgesArr);
 
-  console.log("----------------------");
+  // console.log("----------------------");
+
+  // nodesObj = {
+  // '637a9133b8953f12f501e0d6': {
+  //   _id: '637a9133b8953f12f501e0d6',
+  //   name: 'BluePanda',
+  //   type: 'Member',
+  //   show: true
+  // fakeConnection:{
+  //   '908392557258604544':{
+  //     fakeID: "NjM3YTkxMzNiODk1M2YxMmY1"
+  //   }
+  // }
+  // },
+  // }
 
   let edgesArrNew = [];
 
   for (let i = 0; i < edgesArr.length; i++) {
-    let nodeNow = nodesObj[edgesArr[i].source];
     let edgeSource = edgesArr[i].source;
     let edgeTarget = edgesArr[i].target;
 
-    let flatAddEdge = true;
-    if (nodeNow && replaceTypeNodes[nodeNow.type]) {
-      console.log("change = ");
-      flatAddEdge = false;
+    if (nodesObj[edgeSource].numEdges == undefined) {
+      nodesObj[edgeSource].numEdges = 1;
+    } else {
+      nodesObj[edgeSource].numEdges++;
     }
 
-    console.log("dokiii = ", i);
+    if (nodesObj[edgeTarget].numEdges == undefined) {
+      nodesObj[edgeTarget].numEdges = 1;
+    } else {
+      nodesObj[edgeTarget].numEdges++;
+    }
 
-    nodeNow = nodesObj[edgesArr[i].target];
-    if (nodeNow && replaceTypeNodes[nodeNow.type]) {
+    let flatAddEdge = true;
+
+    let nodeNow = nodesObj[edgeSource];
+    let fakeID;
+    if (
+      nodeNow &&
+      replaceTypeNodes[nodeNow.type] &&
+      !replaceTypeNodes[nodesObj[edgeTarget].type]
+    ) {
       flatAddEdge = false;
 
-      console.log("change = ", nodeNow, i);
+      if (
+        nodesObj[nodeNow.aboveNodes].fakeConnection &&
+        nodesObj[nodeNow.aboveNodes].fakeConnection[edgeTarget]
+      ) {
+        // fake node exist
+        fakeID = nodesObj[nodeNow.aboveNodes].fakeConnection[edgeTarget].fakeID;
+      } else {
+        // fake node DONT exist
+        fakeID = createNewID(edgeTarget, nodeNow.aboveNodes);
+
+        nodesObj[nodeNow.aboveNodes].fakeConnection = {
+          ...nodesObj[nodeNow.aboveNodes].fakeConnection,
+          [edgeTarget]: {
+            fakeID: fakeID,
+          },
+        };
+      }
+
+      let distanceNow;
+
+      if (distancesBasedOnNumCoreType[numberCoreTypeNodes]) {
+        distanceNow = distancesBasedOnNumCoreType[numberCoreTypeNodes];
+      } else {
+        distanceNow = distancesBasedOnNumCoreType["else"];
+      }
+
       // and then add two, one from source to above node
       edgesArrNew.push({
-        source: edgeSource,
-        target: nodeNow.aboveNodes,
-        distanceRation: 0.7, // Big Distance between the main node and the category
+        source: fakeID,
+        target: edgeTarget,
+        distanceRation: distanceNow.far, // Big Distance between the main node and the category
       });
       // and the other one from above to target node
       edgesArrNew.push({
-        source: nodeNow.aboveNodes,
+        source: edgeSource,
+        target: fakeID,
+        distanceRation: distanceNow.close, // small distancec between category and subCategory
+      });
+
+      nodesObj[nodeNow.aboveNodes].show = true;
+    }
+
+    // console.log("dokiii = ", i);
+
+    nodeNow = nodesObj[edgeTarget];
+    if (
+      nodeNow &&
+      replaceTypeNodes[nodeNow.type] &&
+      !replaceTypeNodes[nodesObj[edgeSource].type]
+    ) {
+      flatAddEdge = false;
+
+      if (
+        nodesObj[nodeNow.aboveNodes].fakeConnection &&
+        nodesObj[nodeNow.aboveNodes].fakeConnection[edgeSource]
+      ) {
+        // fake node don exist
+        fakeID = nodesObj[nodeNow.aboveNodes].fakeConnection[edgeSource].fakeID;
+      } else {
+        // fake node DONT exist
+        fakeID = createNewID(edgeSource, nodeNow.aboveNodes);
+        nodesObj[nodeNow.aboveNodes].fakeConnection = {
+          [edgeSource]: {
+            fakeID: fakeID,
+          },
+        };
+      }
+
+      let distanceNow;
+
+      if (distancesBasedOnNumCoreType[numberCoreTypeNodes]) {
+        distanceNow = distancesBasedOnNumCoreType[numberCoreTypeNodes];
+      } else {
+        distanceNow = distancesBasedOnNumCoreType["else"];
+      }
+
+      // console.log("change = ", nodeNow, i);
+      // and then add two, one from source to above node
+      edgesArrNew.push({
+        source: edgeSource,
+        target: fakeID,
+        distanceRation: distanceNow.far, // Big Distance between the main node and the category
+      });
+      // and the other one from above to target node
+      edgesArrNew.push({
+        source: fakeID,
         target: edgeTarget,
-        distanceRation: 0.2, // small distancec between category and subCategory
+        distanceRation: distanceNow.close, // small distancec between category and subCategory
       });
 
       nodesObj[nodeNow.aboveNodes].show = true;
@@ -698,19 +928,51 @@ async function replaceSubNodesPlusCalcDistance(
       edgesArrNew.push({
         source: edgeSource,
         target: edgeTarget,
-        distanceRation: 0.6, // the distance here is average for this two nodes
+        distanceRation: 0.5, // the distance here is average for this two nodes
       });
     }
   }
-  console.log("----------------------");
+  // console.log("----------------------");
 
-  console.log("edgesArrNew = ", edgesArrNew);
-  console.log("nodesObj = ", nodesObj);
+  // console.log("edgesArr = ", edgesArr);
+  // console.log("edgesArrNew = ", edgesArrNew);
+  // console.log("nodesObj = ", nodesObj);
+
+  for (let key in nodesObj) {
+    console.log("key = ", key);
+    console.log("nodesObj[key] = ", nodesObj[key]);
+    // if (nodesObj[key].fakeConnection) {
+  }
 
   let nodesArrNew = [];
+
   for (let key in nodesObj) {
+    let extraInfo = {};
+    if (replaceTypeNodes[nodesObj[key].type]) {
+      const dem = nodesObj[key].numEdges ** 0.65;
+      extraInfo = {
+        extraDistanceRation: 1 - 1 / dem,
+      };
+      console.log("change = " + nodesObj[key].type, extraInfo);
+    }
     if (nodesObj[key].show == true) {
-      nodesArrNew.push(nodesObj[key]);
+      if (nodesObj[key].fakeConnection) {
+        for (let key2 in nodesObj[key].fakeConnection) {
+          nodesArrNew.push({
+            ...extraInfo,
+            _id: nodesObj[key].fakeConnection[key2].fakeID,
+            name: nodesObj[key].name,
+            type: nodesObj[key].type,
+            originalNode: key,
+            show: true,
+          });
+        }
+      } else {
+        nodesArrNew.push({
+          ...extraInfo,
+          ...nodesObj[key],
+        });
+      }
     }
   }
 
