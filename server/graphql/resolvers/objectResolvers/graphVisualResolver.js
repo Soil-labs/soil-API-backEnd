@@ -5,7 +5,7 @@ const { ApolloError } = require("apollo-server-express");
 
 module.exports = {
   Graph: {
-    nodes: async (parent, args, context, info) => {
+    nodesVisual: async (parent, args, context, info) => {
       // console.log("parent = " , parent)
 
       try {
