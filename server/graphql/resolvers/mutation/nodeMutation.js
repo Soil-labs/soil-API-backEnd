@@ -192,15 +192,15 @@ module.exports = {
         "You need to specify the relatedNode_name of the node"
       );
 
-    nodeData = await Node.findOne({ name }).select("name _id node");
-
-    relatedNodeData = await Node.findOne({ name: relatedNode_name }).select(
-      "name _id node"
+    nodeData = await Node.findOne({ name }).select(
+      "name _id node relatedNodes"
     );
 
-    console.log("before = ");
+    relatedNodeData = await Node.findOne({ name: relatedNode_name }).select(
+      "name _id node relatedNodes"
+    );
+
     let connection_n = connection.replace(" ", "_");
-    console.log("after = ");
 
     console.log("res nodeData = ", nodeData);
     console.log("res relatedNodeData = ", relatedNodeData);
@@ -220,10 +220,18 @@ module.exports = {
           connection: connection_n,
         });
       }
+      console.log("phase 1= ", nodeData.relatedNodes, relatedNodeData._id);
+      console.log(
+        "phase 1= ",
+        nodeData.relatedNodes,
+        relatedNodeData._id,
+        nodeData.relatedNodes.includes(relatedNodeData._id)
+      );
 
       if (!nodeData.relatedNodes.includes(relatedNodeData._id)) {
         nodeData.relatedNodes.push(relatedNodeData._id);
       }
+      console.log("phase 2= ");
 
       await Node.findOneAndUpdate(
         { _id: nodeData._id },

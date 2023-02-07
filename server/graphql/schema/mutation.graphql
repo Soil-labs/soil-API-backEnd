@@ -91,6 +91,7 @@ module.exports = `
         updateMessage(fields: updateMessageInput): AI
         useAI_OnMessage(fields: useAI_OnMessageInput): useAI_OnMessageOutput
         messageToGPT(fields: messageToGPTInput): messageToGPTOutput
+        inputToGPT(fields: inputToGPTInput): inputToGPTOutput
 
         # ------------- ERROR MUTATIONS ------------
         createError(fields: createErrorInput!): ErrorLog

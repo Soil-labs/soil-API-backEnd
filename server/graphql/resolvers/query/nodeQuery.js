@@ -37,7 +37,7 @@ module.exports = {
     }
   },
   findNodes: async (parent, args, context, info) => {
-    const { _id, node, recalculate_en, show_match_v2, selectedNodes } =
+    const { _id, name, node, recalculate_en, show_match_v2, selectedNodes } =
       args.fields;
     console.log("Query > findNode > args.fields = ", args.fields);
 
@@ -66,6 +66,9 @@ module.exports = {
 
     if (_id) {
       searchQuery_and.push({ _id: _id });
+    }
+    if (name) {
+      searchQuery_and.push({ name: name });
     } else if (node) {
       searchQuery_and.push({ node: node });
     }
