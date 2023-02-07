@@ -121,7 +121,8 @@ module.exports = {
     }
   },
   messageToGPT: async (parent, args, context, info) => {
-    const { message, category, prompt } = args.fields;
+    const { oneLinerProject, descriptionProject, titleRole, expertiseRole } =
+      args.fields;
     console.log("Mutation > messageToGPT > args.fields = ", args.fields);
     if (!message) throw new ApolloError("The message is required");
     let model = "text-davinci-003";
@@ -162,6 +163,17 @@ module.exports = {
           component: "aiMutation > updateMessage",
         }
       );
+    }
+  },
+  inputToGPT: async (parent, args, context, info) => {
+    const { message, category, prompt } = args.fields;
+    console.log("Mutation > inputToGPT > args.fields = ", args.fields);
+
+    try {
+    } catch (err) {
+      throw new ApolloError(err.message, err.extensions?.code || "inputToGPT", {
+        component: "aiMutation > inputToGPT",
+      });
     }
   },
   useAI_OnMessage: async (parent, args, context, info) => {

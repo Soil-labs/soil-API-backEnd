@@ -73,6 +73,22 @@ module.exports = `
 
     }
 
+
+    type inputToGPTOutput{
+        descriptionRole: String
+        expenctationsRole: String
+        benefitsRole: [String]
+
+    }
+
+    input inputToGPTInput {
+        oneLinerProject: String
+        descriptionProject: String
+        titleRole: String
+        expertiseRole: [String]
+
+    }
+
     enum CategoryEnum {
         project
         skill
