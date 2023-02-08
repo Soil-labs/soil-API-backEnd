@@ -32,7 +32,7 @@ module.exports = `
 
         registeredAt: String,
 
-        previusProjects: [previusProjectsType],
+        previousProjects: [previousProjectsType],
 
         links: [linkType],
 
@@ -128,7 +128,7 @@ module.exports = `
         Reformer: Int,
     }
 
-    type previusProjectsType {
+    type previousProjectsType {
         title: String,
         description: String,
         positionName: String,
@@ -331,7 +331,7 @@ module.exports = `
 
         serverID: String,
 
-        previusProjects: [previusProjectsInput],
+        previousProjects: [previousProjectsInput],
 
     }
 
@@ -355,7 +355,7 @@ module.exports = `
 
         hoursPerWeek: Float,
 
-        previusProjects: [previusProjectsInput],
+        previousProjects: [previousProjectsInput],
 
         links: [linkInput],
 
@@ -468,7 +468,7 @@ module.exports = `
         senior
     }
 
-     input previusProjectsInput {
+     input previousProjectsInput {
         title: String,
         description: String,
         positionName: String,

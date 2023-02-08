@@ -173,7 +173,7 @@ module.exports = {
       discriminator,
       bio,
       hoursPerWeek,
-      previusProjects,
+      previousProjects,
       interest,
       timeZone,
       level,
@@ -201,7 +201,7 @@ module.exports = {
     if (discriminator) fields = { ...fields, discriminator };
     if (bio) fields = { ...fields, bio };
     if (hoursPerWeek) fields = { ...fields, hoursPerWeek };
-    if (previusProjects) fields = { ...fields, previusProjects };
+    if (previousProjects) fields = { ...fields, previousProjects };
     if (interest) fields = { ...fields, interest };
     if (timeZone) fields = { ...fields, timeZone };
     if (level) fields = { ...fields, level };
@@ -457,19 +457,22 @@ module.exports = {
     IsAuthenticated,
     async (parent, args, { user }, info) => {
       const memberID = user._id;
-      console.log("Mutation > updateNodesToMemberInRoom > args.fields = ", args.fields);
+      console.log(
+        "Mutation > updateNodesToMemberInRoom > args.fields = ",
+        args.fields
+      );
       let { nodesID, nodesID_level, nodeType, roomID } = args.fields;
-    
+
       if (!(nodesID == undefined || nodesID_level == undefined))
         throw new ApolloError(
           "you need to use nodesID or nodesID_level, you cant use both"
         );
-  
+
       try {
         let nodesID_level_obj = {};
         if (nodesID == undefined) {
           nodesID = nodesID_level.map((item) => item.nodeID);
-  
+
           // change nodesID_level from array of objects to an object
           for (let i = 0; i < nodesID_level.length; i++) {
             let item = nodesID_level[i];
@@ -477,14 +480,14 @@ module.exports = {
           }
         }
         console.log("nodesID_level_obj = ", nodesID_level_obj);
-  
+
         let nodesData = await Node.find({ _id: nodesID }).select(
           "_id name node match_v2_update"
         );
-  
+
         console.log("nodesData = ", nodesData);
         // sdf;
-  
+
         // ---------- All nodes should be equal to nodeType or else throw error -----------
         nodesID_array = [];
         nodesData.forEach((node) => {
@@ -502,31 +505,31 @@ module.exports = {
           }
         });
         // ---------- All nodes should be equal to nodeType or else throw error -----------
-  
+
         let memberData = await Members.findOne({ _id: memberID }).select(
           "_id nodes"
         );
-  
+
         let nodes_member_obj = {};
         for (let i = 0; i < memberData.nodes.length; i++) {
           let item = memberData.nodes[i];
           nodes_member_obj[item._id] = item;
         }
         console.log("nodes_member_obj = ", nodes_member_obj);
-  
+
         // check if the nodes are already in the member (memberData.nodes)
         let nodesID_member = memberData.nodes.map(function (item) {
           return item._id.toString();
         });
-  
+
         // --------- Separate all the Nodes, and the nodeTypes ----------------
         let nodeData_member_all = await Node.find({
           _id: nodesID_member,
         }).select("_id name node");
-  
+
         // console.log("nodeData_member_all = ", nodeData_member_all);
         // // sdf;
-  
+
         nodeData_member_type = [];
         nodeID_member_type = [];
         nodeID_member_all = [];
@@ -537,7 +540,7 @@ module.exports = {
           //   nodes_member_obj[node._id.toString()].level,
           //   nodesID_level_obj[node._id.toString()].level
           // );
-  
+
           if (nodes_member_obj[node._id] && nodesID_level_obj[node._id]) {
             if (
               nodes_member_obj[node._id].level ==
@@ -556,32 +559,32 @@ module.exports = {
               nodeID_member_type.push(node._id.toString());
             }
           }
-  
+
           nodeData_member_all[idx] = {
             ...nodeData_member_all[idx]._doc,
             ...nodes_member_obj[node._id.toString()]._doc,
             ...nodesID_level_obj[node._id.toString()],
           };
         });
-  
+
         // asfd;
-  
+
         console.log("nodesID_array = ", nodesID_array);
         console.log("nodeID_member_type = ", nodeID_member_type);
-  
+
         console.log("nodeData_member_all = ", nodeData_member_all);
         // asdf;
-  
+
         // --------- Separate all the Nodes, and the nodeTypes ----------------
-  
+
         // asdf;
-  
+
         /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
         let differenceNodes = nodesID_array.filter(
           (x) => !nodeID_member_type.includes(x)
         );
         console.log("differenceNodes = ", differenceNodes);
-  
+
         // asf;
         if (differenceNodes.length > 0) {
           let nodesDataNew = [];
@@ -590,16 +593,16 @@ module.exports = {
             let nodeData = nodesData.find(
               (x) => x._id.toString() == nodeID.toString()
             );
-  
+
             if (nodesID_level != undefined) {
               // caluclate the skill level and add it to the nodes for the next phase
               let nodeNow_weight = await calculate_skill_level(
                 nodesID_level_obj[nodeID]
               );
-  
+
               // console.log("nodeNow_weight = ", nodeNow_weight);
               // sadf;
-  
+
               nodesDataNew.push({
                 ...nodeData._doc,
                 weight: nodeNow_weight.weight_total,
@@ -618,11 +621,11 @@ module.exports = {
             // nodesDataNew.push(nodeData);
             // nodeData_member_all.push({ _id: nodeID });
           }
-  
+
           // add only the new ones as relationship on Neo4j
           for (let i = 0; i < nodesDataNew.length; i++) {
             let nodeNow = nodesDataNew[i];
-  
+
             if (nodeNow.weight != undefined) {
               makeConnection_neo4j({
                 node: [nodeNow.node, "Member"],
@@ -637,18 +640,18 @@ module.exports = {
                 connection: "connection",
               });
             }
-  
+
             changeMatchByServer(nodeNow, memberData);
           }
         }
         /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
-  
+
         // -------------- Remove the Nodes that are not in the nodesID_array ----------------
         let nodesExistMemberAndNode = nodeID_member_type.filter((x) =>
           nodesID_array.includes(x)
         );
         console.log("nodesExistMemberAndNode = ", nodesExistMemberAndNode);
-  
+
         let nodeExistOnlyMember = nodeID_member_type.filter(
           (x) => !nodesID_array.includes(x)
         );
@@ -656,18 +659,18 @@ module.exports = {
         console.log("nodeID_member_type = ", nodeID_member_type);
         console.log("nodesID_array = ", nodesID_array);
         // asd;
-  
+
         // console.log("change = " , change)
-  
+
         if (nodeExistOnlyMember.length > 0) {
           nodeData_member_all = nodeData_member_all.filter(
             (element) => !nodeExistOnlyMember.includes(element._id.toString())
           );
-  
+
           console.log("nodeData_member_all = ", nodeData_member_all);
-  
+
           console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
-  
+
           // add only the new ones as relationship on Neo4j
           for (let i = 0; i < nodeExistOnlyMember.length; i++) {
             let nodeNow = { _id: nodeExistOnlyMember[i] };
@@ -675,15 +678,15 @@ module.exports = {
               nodeID_1: memberData._id,
               nodeID_2: nodeNow._id,
             });
-  
+
             changeMatchByServer(nodeNow, memberData);
           }
         }
         // -------------- Remove the Nodes that are not in the nodesID_array ----------------
-  
+
         console.log("nodeData_member_all = ", nodeData_member_all);
         // asdf;
-  
+
         const memberData2 = await Members.findOneAndUpdate(
           { _id: memberID },
           {
@@ -697,7 +700,7 @@ module.exports = {
         pubsub.publish("SKILL_UPDATED_IN_ROOM" + roomID, {
           memberUpdatedInRoom: memberData2,
         });
-  
+
         return memberData2;
       } catch (err) {
         throw new ApolloError(
@@ -706,10 +709,8 @@ module.exports = {
           { component: "roomMutation > updateNodesToMemberInRoom" }
         );
       }
-
-    
-      
-  }),
+    }
+  ),
   roomUpdated: {
     subscribe: (parent, args, context, info) => {
       const { _id } = args.fields;

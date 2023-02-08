@@ -83,7 +83,7 @@ const memberSchema = mongoose.Schema({
   ],
   archiveProjects: [mongoose.Schema.ObjectId],
 
-  previusProjects: [
+  previousProjects: [
     {
       title: String,
       description: String,
