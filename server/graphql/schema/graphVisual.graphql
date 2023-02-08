@@ -1,20 +1,24 @@
 module.exports = `
     
-    type NodeVis {
+    type NodeVisual {
         _id: ID
+        fakeID: [ID]
+        originalNode: ID
         name: String
         type: String
         avatar: String
+        extraDistanceRation: Float
     }
 
     type Edge {
         source: ID
         target: ID
         type: String
+        distanceRation: Float
     }
 
     type Graph {
-        nodes: [NodeVis]
+        nodesVisual: [NodeVisual]
         edges: [Edge]
     }
 

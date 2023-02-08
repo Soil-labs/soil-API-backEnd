@@ -164,6 +164,18 @@ module.exports = {
       );
     }
   },
+  inputToGPT: async (parent, args, context, info) => {
+    const { oneLinerProject, descriptionProject, titleRole, expertiseRole } =
+      args.fields;
+    console.log("Mutation > inputToGPT > args.fields = ", args.fields);
+
+    try {
+    } catch (err) {
+      throw new ApolloError(err.message, err.extensions?.code || "inputToGPT", {
+        component: "aiMutation > inputToGPT",
+      });
+    }
+  },
   useAI_OnMessage: async (parent, args, context, info) => {
     const { message, cash, numberKeywords } = args.fields;
     console.log("Mutation > updateMessage > args.fields = ", args.fields);

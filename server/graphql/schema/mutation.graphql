@@ -79,6 +79,7 @@ module.exports = `
         updateMemberInRoom(fields: updateMemberInRoomInput): Members
         addNodesToMemberInRoom(fields: addNodesToMemberInRoomInput): Members
         deleteNodesFromMemberInRoom(fields: deleteNodesFromMemberInRoomInput): Members
+        updateNodesToMemberInRoom(fields: updateNodesToMemberInRoomInput ): Members
 
         #  ---------- CHAT MUTATIONS -------
         addNewChat(fields: addNewChatInput): Chats
@@ -91,6 +92,7 @@ module.exports = `
         updateMessage(fields: updateMessageInput): AI
         useAI_OnMessage(fields: useAI_OnMessageInput): useAI_OnMessageOutput
         messageToGPT(fields: messageToGPTInput): messageToGPTOutput
+        inputToGPT(fields: inputToGPTInput): inputToGPTOutput
 
         # ------------- ERROR MUTATIONS ------------
         createError(fields: createErrorInput!): ErrorLog

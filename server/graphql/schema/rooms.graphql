@@ -68,6 +68,20 @@ module.exports = `
         RoomID: ID
     }
 
+     input nodesID_levelInput {
+        nodeID: ID
+        orderIndex: Int
+        level: Float 
+        aboveNodes: [ID]
+    }
+
+    input updateNodesToMemberInRoomInput {
+        nodesID: [String]
+        nodeType: String
+        nodesID_level: [nodesID_levelInput]
+        roomID: ID
+    }
+
     type PaginatedRooms {
         roomsData: [Rooms]
         pageInfo: PageInfo

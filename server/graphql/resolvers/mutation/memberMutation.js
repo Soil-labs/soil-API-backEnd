@@ -18,395 +18,418 @@ const {
 
 const { uploadFileToArweave } = require("../../../utils/uploadFileToArweave");
 
+const { combineResolvers } = require("graphql-resolvers");
+const { IsAuthenticated } = require("../../../utils/authorization");
+const { ACCESS_LEVELS } = require("../../../auth/constants");
+
 const { PubSub } = require("graphql-subscriptions");
 const pubsub = new PubSub();
 
 module.exports = {
-  addNewMember: async (parent, args, context, info) => {
-    const {
-      discordName,
-      _id,
-      discordAvatar,
-      discriminator,
-      bio,
-      hoursPerWeek,
-      previusProjects,
-      invitedBy,
-      serverID,
-    } = args.fields;
-    console.log("Mutation > addNewMember > args.fields = ", args.fields);
+  addNewMember: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, context, info) => {
+      const {
+        discordName,
+        _id,
+        discordAvatar,
+        discriminator,
+        bio,
+        hoursPerWeek,
+        previusProjects,
+        invitedBy,
+        serverID,
+      } = args.fields;
 
-    if (!_id)
-      throw new ApolloError("_id is required, the IDs come from Discord");
+      if (
+        !context.user &&
+        context.user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS
+      )
+        throw new ApolloError("Not Authorized");
 
-    let fields = {
-      _id,
-      registeredAt: new Date(),
-    };
+      console.log("Mutation > addNewMember > args.fields = ", args.fields);
 
-    if (discordName) fields.discordName = discordName;
-    if (discordAvatar) fields.discordAvatar = discordAvatar;
-    if (discriminator) fields.discriminator = discriminator;
-    if (bio) fields.bio = bio;
-    if (hoursPerWeek) fields.hoursPerWeek = hoursPerWeek;
-    if (previusProjects) fields.previusProjects = previusProjects;
-    if (invitedBy) fields.invitedBy = invitedBy;
+      if (!_id)
+        throw new ApolloError("_id is required, the IDs come from Discord");
 
-    // console.log("fields = " , fields)
+      let fields = {
+        _id,
+        registeredAt: new Date(),
+      };
 
-    try {
-      let membersData = await Members.findOne({ _id: fields._id });
+      if (discordName) fields.discordName = discordName;
+      if (discordAvatar) fields.discordAvatar = discordAvatar;
+      if (discriminator) fields.discriminator = discriminator;
+      if (bio) fields.bio = bio;
+      if (hoursPerWeek) fields.hoursPerWeek = hoursPerWeek;
+      if (previusProjects) fields.previusProjects = previusProjects;
+      if (invitedBy) fields.invitedBy = invitedBy;
 
-      //console.log("membersData = " , membersData)
+      // console.log("fields = " , fields)
 
-      if (!membersData) {
-        let newAttributes = {
-          Director: 0,
-          Motivator: 0,
-          Inspirer: 0,
-          Helper: 0,
-          Supporter: 0,
-          Coordinator: 0,
-          Observer: 0,
-          Reformer: 0,
-        };
+      try {
+        let membersData = await Members.findOne({ _id: fields._id });
 
-        fields = { ...fields, attributes: newAttributes };
+        //console.log("membersData = " , membersData)
 
-        if (serverID) fields.serverID = serverID;
+        if (!membersData) {
+          let newAttributes = {
+            Director: 0,
+            Motivator: 0,
+            Inspirer: 0,
+            Helper: 0,
+            Supporter: 0,
+            Coordinator: 0,
+            Observer: 0,
+            Reformer: 0,
+          };
 
-        membersData = await new Members(fields);
+          fields = { ...fields, attributes: newAttributes };
 
-        membersData.save();
+          if (serverID) fields.serverID = serverID;
 
-        //add member node to neo4j
-        await createNode_neo4j({
-          node: "Member",
-          id: fields._id,
-          name: fields.discordName,
-          serverID: membersData.serverID,
-        });
+          membersData = await new Members(fields);
 
-        if (invitedBy) {
-          await makeConnection_neo4j({
-            node: ["Member", "Member"],
-            id: [fields._id, invitedBy],
-            connection: "INVITED_BY",
-          });
-        }
-      } else {
-        if (!membersData.serverID) {
-          membersData = await Members.findOneAndUpdate(
-            { _id: membersData._id },
-            { serverID: serverID },
-            { new: true }
-          );
+          membersData.save();
 
-          updateNode_neo4j_serverID({
+          //add member node to neo4j
+          await createNode_neo4j({
             node: "Member",
-            id: membersData._id,
+            id: fields._id,
+            name: fields.discordName,
             serverID: membersData.serverID,
           });
-        } else {
-          let serverID_new = [...membersData.serverID];
-          if (!membersData.serverID.includes(serverID)) {
-            serverID_new.push(serverID);
-          }
-          membersData = await Members.findOneAndUpdate(
-            { _id: membersData._id },
-            { serverID: serverID_new },
-            { new: true }
-          );
 
-          updateNode_neo4j_serverID({
-            node: "Member",
-            id: membersData._id,
-            serverID: serverID_new,
-          });
-        }
-      }
-
-      pubsub.publish(membersData._id, {
-        memberUpdated: membersData,
-      });
-      return membersData;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > addNewMember" }
-      );
-    }
-  },
-  updateMember: async (parent, args, context, info) => {
-    const {
-      discordName,
-      _id,
-      discordAvatar,
-      discriminator,
-      bio,
-      hoursPerWeek,
-      previusProjects,
-      interest,
-      timeZone,
-      level,
-      links,
-      content,
-      serverID,
-      onbording,
-      memberRole,
-    } = args.fields;
-
-    let { skills } = args.fields;
-
-    console.log("Mutation > updateMember > args.fields = ", args.fields);
-
-    if (!_id) throw new ApolloError("_id is required");
-
-    let fields = {
-      _id,
-      registeredAt: new Date(),
-    };
-
-    if (discordAvatar) fields = { ...fields, discordAvatar };
-    if (discordName) fields = { ...fields, discordName };
-    if (discriminator) fields = { ...fields, discriminator };
-    if (bio) fields = { ...fields, bio };
-    if (hoursPerWeek) fields = { ...fields, hoursPerWeek };
-    if (previusProjects) fields = { ...fields, previusProjects };
-    if (interest) fields = { ...fields, interest };
-    if (timeZone) fields = { ...fields, timeZone };
-    if (level) fields = { ...fields, level };
-
-    if (links) fields = { ...fields, links };
-    if (content) fields = { ...fields, content };
-    if (memberRole) fields = { ...fields, memberRole };
-
-    let membersData = await Members.findOne({ _id: fields._id });
-    let membersDataOriginal = membersData;
-
-    // console.log("memberRole = " , memberRole)
-    // console.log("skills = " , skills)
-    // console.log("membersData.skills = " , membersData.skills)
-
-    // -------- Role -> Skill -----------
-    if (memberRole) {
-      let roleTemplateData = await RoleTemplate.findOne({ _id: memberRole });
-      if (roleTemplateData) {
-        if (!skills) {
-          skills = membersData.skills;
-        }
-
-        let skillID = [];
-        skills.forEach((skill) => {
-          skillID.push(skill.id.toString());
-        });
-
-        roleTemplateData.skills.forEach((skill) => {
-          if (!skillID.includes(skill.toString())) {
-            skills.push({
-              id: skill,
-              level: "mid",
+          if (invitedBy) {
+            await makeConnection_neo4j({
+              node: ["Member", "Member"],
+              id: [fields._id, invitedBy],
+              connection: "INVITED_BY",
             });
           }
+        } else {
+          if (!membersData.serverID) {
+            membersData = await Members.findOneAndUpdate(
+              { _id: membersData._id },
+              { serverID: serverID },
+              { new: true }
+            );
+
+            updateNode_neo4j_serverID({
+              node: "Member",
+              id: membersData._id,
+              serverID: membersData.serverID,
+            });
+          } else {
+            let serverID_new = [...membersData.serverID];
+            if (!membersData.serverID.includes(serverID)) {
+              serverID_new.push(serverID);
+            }
+            membersData = await Members.findOneAndUpdate(
+              { _id: membersData._id },
+              { serverID: serverID_new },
+              { new: true }
+            );
+
+            updateNode_neo4j_serverID({
+              node: "Member",
+              id: membersData._id,
+              serverID: serverID_new,
+            });
+          }
+        }
+
+        pubsub.publish(membersData._id, {
+          memberUpdated: membersData,
         });
+        return membersData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > addNewMember" }
+        );
       }
     }
-    // -------- Role -> Skill -----------
-    // console.log("skills = " , skills)
+  ),
+  updateMember: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, { user }, info) => {
+      const {
+        discordName,
+        // _id,
+        discordAvatar,
+        discriminator,
+        bio,
+        hoursPerWeek,
+        previusProjects,
+        interest,
+        timeZone,
+        level,
+        links,
+        content,
+        serverID,
+        onbording,
+        memberRole,
+      } = args.fields;
 
-    if (skills) fields = { ...fields, skills };
+      let { skills } = args.fields;
 
-    try {
-      if (!membersData) {
-        let newAttributes = {
-          Director: 0,
-          Motivator: 0,
-          Inspirer: 0,
-          Helper: 0,
-          Supporter: 0,
-          Coordinator: 0,
-          Observer: 0,
-          Reformer: 0,
-        };
+      console.log("Mutation > updateMember > args.fields = ", args.fields);
 
-        fields = { ...fields, attributes: newAttributes };
+      // if (!_id) throw new ApolloError("_id is required");
+      if (!user) throw new ApolloError("user is required");
 
-        if (onbording) fields = { ...fields, onbording: onbording };
+      let fields = {
+        _id: user._id,
+        registeredAt: new Date(),
+      };
 
-        if (serverID && serverID.length > 0) fields.serverID = serverID;
+      if (discordAvatar) fields = { ...fields, discordAvatar };
+      if (discordName) fields = { ...fields, discordName };
+      if (discriminator) fields = { ...fields, discriminator };
+      if (bio) fields = { ...fields, bio };
+      if (hoursPerWeek) fields = { ...fields, hoursPerWeek };
+      if (previusProjects) fields = { ...fields, previusProjects };
+      if (interest) fields = { ...fields, interest };
+      if (timeZone) fields = { ...fields, timeZone };
+      if (level) fields = { ...fields, level };
 
-        membersData = await new Members(fields);
+      if (links) fields = { ...fields, links };
+      if (content) fields = { ...fields, content };
+      if (memberRole) fields = { ...fields, memberRole };
 
-        membersData.save();
+      let membersData = await Members.findOne({ _id: fields._id });
+      let membersDataOriginal = membersData;
 
-        //add member node to neo4j
-        await createNode_neo4j({
-          node: "Member",
-          id: fields._id,
-          name: fields.discordName,
-          serverID: membersData.serverID,
-        });
-      } else {
-        if (onbording) {
-          if (
-            onbording.signup != undefined &&
-            onbording.percentage != undefined
-          ) {
-            fields = { ...fields, onbording: onbording };
-          } else if (onbording.signup != undefined) {
-            fields = {
-              ...fields,
-              onbording: { ...membersData.onbording, signup: onbording.signup },
-            };
-          } else if (onbording.percentage != undefined) {
-            fields = {
-              ...fields,
-              onbording: {
-                ...membersData.onbording,
-                percentage: onbording.percentage,
-              },
-            };
+      // console.log("memberRole = " , memberRole)
+      // console.log("skills = " , skills)
+      // console.log("membersData.skills = " , membersData.skills)
+
+      // -------- Role -> Skill -----------
+      if (memberRole) {
+        let roleTemplateData = await RoleTemplate.findOne({ _id: memberRole });
+        if (roleTemplateData) {
+          if (!skills) {
+            skills = membersData.skills;
           }
-        }
 
-        if (!membersData.serverID) {
-          if (serverID && serverID.length > 0) fields.serverID = serverID;
-        } else {
-          let serverID_new = [...membersData.serverID];
-          if (serverID && serverID.length > 0) {
-            for (let i = 0; i < serverID.length; i++) {
-              const currentServerID = serverID[i];
-              if (!membersData.serverID.includes(currentServerID)) {
-                serverID_new.push(currentServerID);
-              }
+          let skillID = [];
+          skills.forEach((skill) => {
+            skillID.push(skill.id.toString());
+          });
+
+          roleTemplateData.skills.forEach((skill) => {
+            if (!skillID.includes(skill.toString())) {
+              skills.push({
+                id: skill,
+                level: "mid",
+              });
             }
-            fields.serverID = serverID_new;
-          }
+          });
         }
+      }
+      // -------- Role -> Skill -----------
+      // console.log("skills = " , skills)
 
-        membersData = await Members.findOneAndUpdate(
-          { _id: fields._id },
-          fields,
-          { new: true }
-        );
+      if (skills) fields = { ...fields, skills };
 
-        // console.log("change = -----", membersData.serverID);
-        // console.log("change = -----", membersData.serverID.length);
-        // console.log("change = -----", fields.serverID);
-        // console.log("change = -----", fields.serverID.length);
+      try {
+        if (!membersData) {
+          let newAttributes = {
+            Director: 0,
+            Motivator: 0,
+            Inspirer: 0,
+            Helper: 0,
+            Supporter: 0,
+            Coordinator: 0,
+            Observer: 0,
+            Reformer: 0,
+          };
 
-        // console.log("membersData = " , membersData)
-        if (membersData.serverID && membersData.serverID.length > 0) {
-          console.log("change = ");
-          updateNode_neo4j_serverID({
+          fields = { ...fields, attributes: newAttributes };
+
+          if (onbording) fields = { ...fields, onbording: onbording };
+
+          if (serverID && serverID.length > 0) fields.serverID = serverID;
+
+          membersData = await new Members(fields);
+
+          membersData.save();
+
+          //add member node to neo4j
+          await createNode_neo4j({
             node: "Member",
-            id: membersData._id,
+            id: fields._id,
+            name: fields.discordName,
             serverID: membersData.serverID,
           });
-        }
-      }
-
-      if (skills) {
-        //  ---------------- Delete Connection of Deleted Skills ----------------
-        console.log(
-          "membersDataOriginal.skills = ",
-          membersDataOriginal.skills
-        );
-        console.log("skills = ", skills);
-
-        let membersDataOriginalArray = membersDataOriginal.skills.map(function (
-          item
-        ) {
-          return item.id.toString();
-        });
-
-        let skillsArray = skills.map(function (item) {
-          return item.id.toString();
-        });
-
-        console.log("membersDataOriginalArray = ", membersDataOriginalArray);
-        console.log("skillsArray = ", skillsArray);
-
-        // let difference = skills.filter(x => !membersDataOriginalArray.includes(x.id));
-        let difference = membersDataOriginalArray.filter(
-          (x) => !skillsArray.includes(x)
-        );
-
-        console.log("difference = ", difference);
-
-        for (let i = 0; i < difference.length; i++) {
-          let skillID = difference[i];
-          deleteConnectionBetweenNodes_neo4j({
-            skillID: skillID,
-            memberID: membersData._id,
-          });
-
-          let skillDataN = await Skills.findOne({ _id: skillID });
-
-          await Skills.findOneAndUpdate(
-            { _id: skillID },
-            {
-              $set: {
-                match: {
-                  recalculateProjectRoles: true,
-                  distanceProjectRoles: skillDataN?.match?.distanceProjectRoles,
-
-                  recalculateMembers: true,
-                  distanceMembers: skillDataN?.match?.distanceMembers,
+        } else {
+          if (onbording) {
+            if (
+              onbording.signup != undefined &&
+              onbording.percentage != undefined
+            ) {
+              fields = { ...fields, onbording: onbording };
+            } else if (onbording.signup != undefined) {
+              fields = {
+                ...fields,
+                onbording: {
+                  ...membersData.onbording,
+                  signup: onbording.signup,
                 },
-              },
-            },
+              };
+            } else if (onbording.percentage != undefined) {
+              fields = {
+                ...fields,
+                onbording: {
+                  ...membersData.onbording,
+                  percentage: onbording.percentage,
+                },
+              };
+            }
+          }
+
+          if (!membersData.serverID) {
+            if (serverID && serverID.length > 0) fields.serverID = serverID;
+          } else {
+            let serverID_new = [...membersData.serverID];
+            if (serverID && serverID.length > 0) {
+              for (let i = 0; i < serverID.length; i++) {
+                const currentServerID = serverID[i];
+                if (!membersData.serverID.includes(currentServerID)) {
+                  serverID_new.push(currentServerID);
+                }
+              }
+              fields.serverID = serverID_new;
+            }
+          }
+
+          membersData = await Members.findOneAndUpdate(
+            { _id: fields._id },
+            fields,
             { new: true }
           );
+
+          // console.log("change = -----", membersData.serverID);
+          // console.log("change = -----", membersData.serverID.length);
+          // console.log("change = -----", fields.serverID);
+          // console.log("change = -----", fields.serverID.length);
+
+          // console.log("membersData = " , membersData)
+          if (membersData.serverID && membersData.serverID.length > 0) {
+            console.log("change = ");
+            updateNode_neo4j_serverID({
+              node: "Member",
+              id: membersData._id,
+              serverID: membersData.serverID,
+            });
+          }
         }
 
-        //  ---------------- Delete Connection of Deleted Skills ----------------
+        if (skills) {
+          //  ---------------- Delete Connection of Deleted Skills ----------------
+          console.log(
+            "membersDataOriginal.skills = ",
+            membersDataOriginal.skills
+          );
+          console.log("skills = ", skills);
 
-        for (let i = 0; i < skills.length; i++) {
-          let skill = skills[i];
+          let membersDataOriginalArray = membersDataOriginal.skills.map(
+            function (item) {
+              return item.id.toString();
+            }
+          );
 
-          makeConnection_neo4j({
-            node: ["Member", "Skill"],
-            id: [membersData._id, skill.id],
-            connection: "SKILL",
+          let skillsArray = skills.map(function (item) {
+            return item.id.toString();
           });
 
-          // Recalculate the skill match now that neo4j diagram changed
+          console.log("membersDataOriginalArray = ", membersDataOriginalArray);
+          console.log("skillsArray = ", skillsArray);
 
-          let skillDataN = await Skills.findOne({ _id: skill.id });
+          // let difference = skills.filter(x => !membersDataOriginalArray.includes(x.id));
+          let difference = membersDataOriginalArray.filter(
+            (x) => !skillsArray.includes(x)
+          );
 
-          let res2 = await Skills.findOneAndUpdate(
-            { _id: skill.id },
-            {
-              $set: {
-                match: {
-                  recalculateProjectRoles: true,
-                  distanceProjectRoles: skillDataN?.match?.distanceProjectRoles,
+          console.log("difference = ", difference);
 
-                  recalculateMembers: true,
-                  distanceMembers: skillDataN?.match?.distanceMembers,
+          for (let i = 0; i < difference.length; i++) {
+            let skillID = difference[i];
+            deleteConnectionBetweenNodes_neo4j({
+              skillID: skillID,
+              memberID: membersData._id,
+            });
+
+            let skillDataN = await Skills.findOne({ _id: skillID });
+
+            await Skills.findOneAndUpdate(
+              { _id: skillID },
+              {
+                $set: {
+                  match: {
+                    recalculateProjectRoles: true,
+                    distanceProjectRoles:
+                      skillDataN?.match?.distanceProjectRoles,
+
+                    recalculateMembers: true,
+                    distanceMembers: skillDataN?.match?.distanceMembers,
+                  },
                 },
               },
-            },
-            { new: true }
-          );
-          // console.log("res2 = " , res2)
-        }
-      }
+              { new: true }
+            );
+          }
 
-      pubsub.publish(membersData._id, {
-        memberUpdated: membersData,
-      });
-      return membersData;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
+          //  ---------------- Delete Connection of Deleted Skills ----------------
+
+          for (let i = 0; i < skills.length; i++) {
+            let skill = skills[i];
+
+            makeConnection_neo4j({
+              node: ["Member", "Skill"],
+              id: [membersData._id, skill.id],
+              connection: "SKILL",
+            });
+
+            // Recalculate the skill match now that neo4j diagram changed
+
+            let skillDataN = await Skills.findOne({ _id: skill.id });
+
+            let res2 = await Skills.findOneAndUpdate(
+              { _id: skill.id },
+              {
+                $set: {
+                  match: {
+                    recalculateProjectRoles: true,
+                    distanceProjectRoles:
+                      skillDataN?.match?.distanceProjectRoles,
+
+                    recalculateMembers: true,
+                    distanceMembers: skillDataN?.match?.distanceMembers,
+                  },
+                },
+              },
+              { new: true }
+            );
+            // console.log("res2 = " , res2)
+          }
+        }
+
+        pubsub.publish(membersData._id, {
+          memberUpdated: membersData,
+        });
+        return membersData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
+      }
     }
-  },
+  ),
 
   addNodesToMember: async (parent, args, context, info) => {
     let { memberID, nodesID, nodesID_level } = args.fields;
@@ -1446,7 +1469,7 @@ module.exports = {
         endorser: endorserID, //memberID
         endorsementMessage: endorsementMessage,
         //arweaveTransactionID: transactionId,
-        arweaveTransactionID: "https://www.arweave.org/"
+        arweaveTransactionID: "https://www.arweave.org/",
       };
 
       let previousEndorsements = endorseeMember.endorsements || [];

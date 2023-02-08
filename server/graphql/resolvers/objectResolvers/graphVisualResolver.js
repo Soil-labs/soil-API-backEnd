@@ -5,7 +5,7 @@ const { ApolloError } = require("apollo-server-express");
 
 module.exports = {
   Graph: {
-    nodes: async (parent, args, context, info) => {
+    nodesVisual: async (parent, args, context, info) => {
       // console.log("parent = " , parent)
 
       try {
@@ -15,7 +15,7 @@ module.exports = {
           node_obj_memb = {};
           nodesSearch = [];
           nodes.forEach((node, idx) => {
-            console.log("node = ", node);
+            // console.log("node = ", node);
 
             if (node.type == "Member") {
               node_obj_memb[node._id] = {
@@ -25,25 +25,25 @@ module.exports = {
               nodesSearch.push(node._id);
             }
           });
-          console.log("nodesSearch = ", nodesSearch);
+          // console.log("nodesSearch = ", nodesSearch);
 
           nodeData = await Members.find({ _id: nodesSearch }).select(
             "_id discordAvatar"
           );
 
-          console.log("nodeData = ", nodeData);
+          // console.log("nodeData = ", nodeData);
 
           // nodes.forEach((node) => {
           for (i = 0; i < nodeData.length; i++) {
             const node = nodeData[i];
-            console.log("node = ", node);
-            console.log("node_obj_memb[node._id] = ", node_obj_memb[node._id]);
+            // console.log("node = ", node);
+            // console.log("node_obj_memb[node._id] = ", node_obj_memb[node._id]);
 
             if (node_obj_memb[node._id]) {
               nodes[node_obj_memb[node._id].pos].avatar = node.discordAvatar;
             }
           }
-          console.log("nodes = ", nodes);
+          // console.log("nodes = ", nodes);
 
           return nodes;
         } else {

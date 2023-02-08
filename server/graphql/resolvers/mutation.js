@@ -61,6 +61,7 @@ const {
   deleteNodesFromMemberInRoom,
   roomUpdated,
   memberUpdatedInRoom,
+  updateNodesToMemberInRoom
 } = require("./mutation/roomMutation");
 const {
   addNewChat,
@@ -74,6 +75,7 @@ const {
   updateMessage,
   useAI_OnMessage,
   messageToGPT,
+  inputToGPT,
 } = require("./mutation/aiMutation");
 
 const { createError, deleteError } = require("./mutation/errorsMutation");
@@ -147,6 +149,7 @@ module.exports = {
     updateMemberInRoom,
     addNodesToMemberInRoom,
     deleteNodesFromMemberInRoom,
+    updateNodesToMemberInRoom,
 
     // ------------- CHAT MUTATION -----------------
     addNewChat,
@@ -159,6 +162,7 @@ module.exports = {
     updateMessage,
     useAI_OnMessage,
     messageToGPT,
+    inputToGPT,
 
     // ------------- ERROR MUTATION -----------------
     createError,

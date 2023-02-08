@@ -1,0 +1,1 @@
+" level\n\n1. React: 10\n2. Angular: 10\n3. Vue.js: 10\n4. Front-end engineering: 10\n5. Design: 9\n6. User Interface: 9\n7. Quality Assurance: 8\n8. Project Management: 8\n9. Problem Solving: 8\n10. Troubleshooting: 8"

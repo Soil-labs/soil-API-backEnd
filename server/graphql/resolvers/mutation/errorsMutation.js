@@ -58,7 +58,7 @@ module.exports = {
     IsAuthenticated,
     async (parent, args, context, info) => {
       if (
-        !context.user ||
+        !context.user &&
         context.user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS
       )
         throw new ApolloError("Not Authorized");
