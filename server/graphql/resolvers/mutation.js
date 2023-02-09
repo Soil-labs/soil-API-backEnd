@@ -14,10 +14,10 @@ const {
 } = require("./mutation/memberMutation");
 const {
   updateProject,
-  addNodesToProjectRole,
+  // addNodesToProjectRole,
   updateNodesToProjectRole,
   addProjectRole,
-  deleteNodesToProjectRole,
+  // deleteNodesToProjectRole,
   newTweetProject,
   approveTweet,
   changeTeamMember_Phase_Project,
@@ -46,7 +46,7 @@ const {
   updateGrant,
   addNodesToGrant,
   applyGrant,
-  updateNodesToGrant
+  updateNodesToGrant,
 } = require("./mutation/grantMutation");
 const { updateSkillCategory } = require("./mutation/skillCategoryMutation");
 const {
@@ -62,7 +62,7 @@ const {
   deleteNodesFromMemberInRoom,
   roomUpdated,
   memberUpdatedInRoom,
-  updateNodesToMemberInRoom
+  updateNodesToMemberInRoom,
 } = require("./mutation/roomMutation");
 const {
   addNewChat,
@@ -98,10 +98,10 @@ module.exports = {
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
-    addNodesToProjectRole,
+    // addNodesToProjectRole,
     updateNodesToProjectRole,
     addProjectRole,
-    deleteNodesToProjectRole,
+    // deleteNodesToProjectRole,
     newTweetProject,
     approveTweet,
     changeTeamMember_Phase_Project,
