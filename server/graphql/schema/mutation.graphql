@@ -59,6 +59,7 @@ module.exports = `
         updateGrant(fields:updateGrantInput): GrantTemplate
         addNodesToGrant(fields:addNodesToGrantInput): GrantTemplate
         applyGrant(fields:applyGrantInput): GrantTemplate
+        updateNodesToGrant(fields: updateNodesToGrantInput): GrantTemplate
 
 
         #  ---------- SKILL CATEGORY MUTATIONS -------
