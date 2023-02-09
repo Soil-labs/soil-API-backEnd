@@ -224,7 +224,6 @@ module.exports = {
         .trim();
 
       const expectationRole = JSON.parse(expectationRoleString);
-      console.log("expectationRole++++++++++++++++++++++", expectationRole);
       return expectationRole;
     };
     const benefitRoleHandler = () => {
