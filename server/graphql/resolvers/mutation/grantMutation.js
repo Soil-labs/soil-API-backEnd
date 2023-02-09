@@ -396,7 +396,7 @@ module.exports = {
             });
           }
 
-          changeMatchByServer(nodeNow, grantData);
+          //changeMatchByServer(nodeNow, grantData);
         }
       }
       /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
@@ -431,7 +431,7 @@ module.exports = {
             nodeID_2: nodeNow._id,
           });
 
-          changeMatchByServer(nodeNow, grantData);
+          //changeMatchByServer(nodeNow, grantData);
         }
       }
       // -------------- Remove the Nodes that are not in the nodesID_array ----------------
