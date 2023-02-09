@@ -77,8 +77,8 @@ module.exports = `
         enterRoom(fields: enterRoomInput!): Rooms
         exitRoom(fields: enterRoomInput!): Rooms
         updateMemberInRoom(fields: updateMemberInRoomInput): Members
-        addNodesToMemberInRoom(fields: addNodesToMemberInRoomInput): Members
-        deleteNodesFromMemberInRoom(fields: deleteNodesFromMemberInRoomInput): Members
+        # addNodesToMemberInRoom(fields: addNodesToMemberInRoomInput): Members
+        # deleteNodesFromMemberInRoom(fields: deleteNodesFromMemberInRoomInput): Members
         updateNodesToMemberInRoom(fields: updateNodesToMemberInRoomInput ): Members
 
         #  ---------- CHAT MUTATIONS -------
