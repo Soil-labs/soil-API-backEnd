@@ -84,4 +84,18 @@ module.exports = `
         url: String,
     }
 
+     input nodesID_levelInput {
+        nodeID: ID
+        orderIndex: Int
+        level: Float 
+        aboveNodes: [ID]
+    }
+
+    input updateNodesToGrantInput {
+        grantID: ID
+        nodesID: [String]
+        nodeType: String
+        nodesID_level: [nodesID_levelInput]
+    }
+
 `
