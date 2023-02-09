@@ -171,7 +171,7 @@ module.exports = {
     if (!titleRole) throw new ApolloError("The titleRole is required");
     let model = "text-davinci-003";
     const prompt =
-      'I give you four things: a one-liner for a project + a description of that project  + the title of a role for that project + [categories of specialization for that role within that same project ]\n\nYour job is to take all those 4 things and create a wholistic context from it, focus on "the title of a role for that project" and "[categories of specialization for that role within that same project ]" and to give me the following:\n1. A full description of that role(always label this output with "Role Description:")\n2. Four Expectations for that role (always label this output with "Expectations for Role:")\n3. Four Benefits of this role (always label this output with "Benefits:") + Return this list as a Javascript Array  \n\nHere we go: \n\nEden is a talent matching protocol powered by AI  + "Eden is a talent matching protocol powered by AI. It is designed to assess each candidate\'s skills, experience and preferences for a specific job role, and then use its resources to match them with the most suitable job openings. Eden utilizes AI algorithms to better understand potential candidates\' career goals and history, which allows employers to find the best fit quickly and efficiently. The platform leverages natural language processing, machine learning and data analytics to measure a candidate’s achievements and experience against various job criteria. This helps employers easily identify the most suitable candidates faster and with greater accuracy." + FrontEnd Developer + [Web development, App development, Accessibility, Tracking Analytics, SEO Best Practices]  \n\n\n';
+      'I give you four things: a one-liner for a project + a description of that project  + the title of a role for that project + [categories of specialization for that role within that same project ]\n\nYour job is to take all those 4 things and create a wholistic context from it, focus on "the title of a role for that project" and "[categories of specialization for that role within that same project ]" and to give me the following:\n1. A full description of that role(always label this output with "Role Description:")\n2. Four Expectations for that role (always label this output with "Expectations for Role:") + Return this list  as a Javascript Arra\n3. Four Benefits of this role (always label this output with "Benefits:") + Return this list  as a Javascript Array  \n\nHere we go: \n\n';
 
     const response = await openai.createCompletion({
       model,
@@ -213,15 +213,20 @@ module.exports = {
         .slice(startIndex + "Role Description:".length, endIndex)
         .trim();
 
-      console.log("descriptionRole++++++++++++++++++++++", descriptionRole);
+      // console.log("descriptionRole++++++++++++++++++++++", descriptionRole);
       return descriptionRole;
     };
     const expectationRoleHandler = () => {
       const startIndex = result.indexOf("Expectations for Role:");
       const endIndex = result.indexOf("Benefits:");
-      const expectationRole = result
+      const expectationRoleString = result
         .slice(startIndex + "Expectations for Role:".length, endIndex)
         .trim();
+      // console.log(
+      //   "expectationRoleString@@@@@@@@@@@@@@@@@",
+      //   expectationRoleString
+      // );
+      const expectationRole = JSON.parse(expectationRoleString);
       console.log("expectationRole++++++++++++++++++++++", expectationRole);
       return expectationRole;
     };
@@ -230,9 +235,12 @@ module.exports = {
       const benefitRoleString = result
         .slice(startIndex + "Benefits:".length)
         .trim();
+      console.log(
+        "benefitRoleString ------------------------------",
+        benefitRoleString
+      );
       const benefitRole = JSON.parse(benefitRoleString);
-      JSON.parse(benefitRoleString);
-      console.log("benefitRole++++++++++++++++++++++", benefitRole);
+      // console.log("benefitRole++++++++++++++++++++++", benefitRole);
       return benefitRole;
     };
 

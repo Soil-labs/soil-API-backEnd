@@ -76,7 +76,7 @@ module.exports = `
 
     type inputToGPTOutput{
         descriptionRole: String
-        expectationsRole: String
+        expectationsRole: [String]
         benefitsRole: [String]
 
     }
