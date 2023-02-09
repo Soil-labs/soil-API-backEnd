@@ -1,5 +1,10 @@
 module.exports = `
     
+    type Graph {
+        nodesVisual: [NodeVisual]
+        edges: [Edge]
+    }
+
     type NodeVisual {
         _id: ID
         fakeID: [ID]
@@ -8,6 +13,14 @@ module.exports = `
         type: String
         avatar: String
         extraDistanceRation: Float
+
+        style: StyleNodeOut
+    }
+
+    type StyleNodeOut {
+        size: Int
+        fill: String
+        stroke: String
     }
 
     type Edge {
@@ -15,16 +28,42 @@ module.exports = `
         target: ID
         type: String
         distanceRation: Float
+        
+        style: StyleEdgeOut
     }
 
-    type Graph {
-        nodesVisual: [NodeVisual]
-        edges: [Edge]
+    type StyleEdgeOut {
+        edgeColor: String
+        distance: Float
+        strength: Float
     }
+
+    
 
     input findMemberGraphInput {
         memberID: ID
         showAvatar: Boolean
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
+    }
+
+    input nodeSetting {
+        type: String
+        size: Int
+        style: StyleIn
+    }
+
+    input StyleIn {
+        fill: String
+        stroke: String
+    }
+
+    input edgeSetting {
+        nodeTypeSource: String
+        nodeTypeTarget: String
+        edgeColor: String
+        distance: Float
+        strength: Float
     }
 
     input findProjectGraphInput {
