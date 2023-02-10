@@ -49,9 +49,9 @@ const {
   updateNodesToGrant,
 } = require("./mutation/grantMutation");
 const { updateSkillCategory } = require("./mutation/skillCategoryMutation");
-const {
-  updateSkillSubCategory,
-} = require("./mutation/skillSubCategoryMutation");
+// const {
+//   updateSkillSubCategory,
+// } = require("./mutation/skillSubCategoryMutation");
 const { createProjectUpdate } = require("./mutation/projectUpdateMutation");
 const {
   createRoom,
@@ -139,7 +139,7 @@ module.exports = {
     updateSkillCategory,
 
     // ------------- SKILL SUB CATEGORY MUTATION -----------------
-    updateSkillSubCategory,
+    // updateSkillSubCategory,
 
     // ------------- PROJECT UPDATE MUTATION -----------------
     createProjectUpdate,
