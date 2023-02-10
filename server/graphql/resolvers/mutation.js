@@ -46,7 +46,7 @@ const {
   updateGrant,
   addNodesToGrant,
   applyGrant,
-  updateNodesToGrant
+  updateNodesToGrant,
 } = require("./mutation/grantMutation");
 const { updateSkillCategory } = require("./mutation/skillCategoryMutation");
 const {
