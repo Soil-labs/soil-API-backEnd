@@ -288,173 +288,188 @@ module.exports = {
       );
     }
   },
-  // DEPRECATED
-  // addNodesToMemberInRoom: async (parent, args, context, info) => {
-  //   const { memberID, nodesID, RoomID } = args.fields;
+  // OPERATOR ONLY - for debugging
+  addNodesToMemberInRoom: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, { user }, info) => {
+      if (!user && user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS)
+        throw new ApolloError("Not Authorized");
+      const { memberID, nodesID, RoomID } = args.fields;
 
-  //   console.log("Mutation > addNodesToMember > args.fields = ", args.fields);
+      console.log("Mutation > addNodesToMember > args.fields = ", args.fields);
 
-  //   if (!memberID) throw new ApolloError("memberID is required");
+      if (!memberID) throw new ApolloError("memberID is required");
 
-  //   try {
-  //     let memberData = await Members.findOne({ _id: memberID });
-  //     let nodesData = await Node.find({ _id: nodesID }).select("_id name node");
+      try {
+        let memberData = await Members.findOne({ _id: memberID });
+        let nodesData = await Node.find({ _id: nodesID }).select(
+          "_id name node"
+        );
 
-  //     // check if the nodes are already in the member (memberData.nodes)
-  //     let nodesDataOriginalArray = memberData.nodes.map(function (item) {
-  //       return item._id.toString();
-  //     });
+        // check if the nodes are already in the member (memberData.nodes)
+        let nodesDataOriginalArray = memberData.nodes.map(function (item) {
+          return item._id.toString();
+        });
 
-  //     let nodesIDArray = nodesID.map(function (item) {
-  //       return item.toString();
-  //     });
+        let nodesIDArray = nodesID.map(function (item) {
+          return item.toString();
+        });
 
-  //     let differenceNodes = nodesIDArray.filter(
-  //       (x) => !nodesDataOriginalArray.includes(x)
-  //     );
-  //     console.log("differenceNodes = ", differenceNodes);
+        let differenceNodes = nodesIDArray.filter(
+          (x) => !nodesDataOriginalArray.includes(x)
+        );
+        console.log("differenceNodes = ", differenceNodes);
 
-  //     if (differenceNodes.length > 0) {
-  //       let nodesDataNew = [];
-  //       for (let i = 0; i < differenceNodes.length; i++) {
-  //         let nodeID = differenceNodes[i];
-  //         let nodeData = nodesData.find(
-  //           (x) => x._id.toString() == nodeID.toString()
-  //         );
-  //         nodesDataNew.push(nodeData);
-  //         memberData.nodes.push({ _id: nodeID });
-  //       }
+        if (differenceNodes.length > 0) {
+          let nodesDataNew = [];
+          for (let i = 0; i < differenceNodes.length; i++) {
+            let nodeID = differenceNodes[i];
+            let nodeData = nodesData.find(
+              (x) => x._id.toString() == nodeID.toString()
+            );
+            nodesDataNew.push(nodeData);
+            memberData.nodes.push({ _id: nodeID });
+          }
 
-  //       // add only the new ones as relationship on Neo4j
-  //       for (let i = 0; i < nodesDataNew.length; i++) {
-  //         let nodeNow = nodesDataNew[i];
-  //         makeConnection_neo4j({
-  //           node: ["Member", nodeNow.node],
-  //           id: [memberData._id, nodeNow._id],
-  //           connection: "connection",
-  //         });
+          // add only the new ones as relationship on Neo4j
+          for (let i = 0; i < nodesDataNew.length; i++) {
+            let nodeNow = nodesDataNew[i];
+            makeConnection_neo4j({
+              node: ["Member", nodeNow.node],
+              id: [memberData._id, nodeNow._id],
+              connection: "connection",
+            });
 
-  //         changeMatchByServer(nodeNow, memberData);
-  //       }
-  //     }
+            changeMatchByServer(nodeNow, memberData);
+          }
+        }
 
-  //     memberData2 = await Members.findOneAndUpdate(
-  //       { _id: memberID },
-  //       {
-  //         $set: {
-  //           nodes: memberData.nodes,
-  //         },
-  //       },
-  //       { new: true }
-  //     );
-  //     pubsub.publish("SKILL_UPDATED_IN_ROOM" + RoomID, {
-  //       memberUpdatedInRoom: memberData2,
-  //     });
-  //     console.log("Memmememeber00", memberData2);
-  //     return memberData2;
-  //   } catch (err) {
-  //     throw new ApolloError(
-  //       err.message,
-  //       err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-  //       { component: "tmemberQuery > findMember" }
-  //     );
-  //   }
-  // },
+        memberData2 = await Members.findOneAndUpdate(
+          { _id: memberID },
+          {
+            $set: {
+              nodes: memberData.nodes,
+            },
+          },
+          { new: true }
+        );
+        pubsub.publish("SKILL_UPDATED_IN_ROOM" + RoomID, {
+          memberUpdatedInRoom: memberData2,
+        });
+        console.log("Memmememeber00", memberData2);
+        return memberData2;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
+      }
+    }
+  ),
 
-  // DEPRECATED
-  // deleteNodesFromMemberInRoom: async (parent, args, context, info) => {
-  //   const { memberID, nodesID, RoomID } = args.fields;
+  // OPERATOR ONLY - for debugging
+  deleteNodesFromMemberInRoom: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, { user }, info) => {
+      if (!user && user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS)
+        throw new ApolloError("Not Authorized");
 
-  //   console.log(
-  //     "Mutation > deleteNodesFromMember > args.fields = ",
-  //     args.fields
-  //   );
+      const { memberID, nodesID, RoomID } = args.fields;
 
-  //   if (!memberID) throw new ApolloError("memberID is required");
+      console.log(
+        "Mutation > deleteNodesFromMember > args.fields = ",
+        args.fields
+      );
 
-  //   try {
-  //     let memberData = await Members.findOne({ _id: memberID });
-  //     let nodesData = await Node.find({ _id: nodesID }).select("_id name node");
+      if (!memberID) throw new ApolloError("memberID is required");
 
-  //     // check what nodes exist on memberData.nodes
-  //     let nodesDataOriginalArray = memberData.nodes.map(function (item) {
-  //       return item._id.toString();
-  //     });
+      try {
+        let memberData = await Members.findOne({ _id: memberID });
+        let nodesData = await Node.find({ _id: nodesID }).select(
+          "_id name node"
+        );
 
-  //     let nodesIDArray = nodesID.map(function (item) {
-  //       return item.toString();
-  //     });
+        // check what nodes exist on memberData.nodes
+        let nodesDataOriginalArray = memberData.nodes.map(function (item) {
+          return item._id.toString();
+        });
 
-  //     let nodesExistMemberAndNode = nodesDataOriginalArray.filter((x) =>
-  //       nodesIDArray.includes(x)
-  //     );
-  //     console.log("nodesExistMemberAndNode = ", nodesExistMemberAndNode);
+        let nodesIDArray = nodesID.map(function (item) {
+          return item.toString();
+        });
 
-  //     let nodeExistOnlyMember = nodesDataOriginalArray.filter(
-  //       (x) => !nodesIDArray.includes(x)
-  //     );
-  //     console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
+        let nodesExistMemberAndNode = nodesDataOriginalArray.filter((x) =>
+          nodesIDArray.includes(x)
+        );
+        console.log("nodesExistMemberAndNode = ", nodesExistMemberAndNode);
 
-  //     // console.log("change = " , change)
+        let nodeExistOnlyMember = nodesDataOriginalArray.filter(
+          (x) => !nodesIDArray.includes(x)
+        );
+        console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
 
-  //     if (nodesExistMemberAndNode.length > 0) {
-  //       let nodesDataNew = [];
-  //       for (let i = 0; i < nodesExistMemberAndNode.length; i++) {
-  //         let nodeID = nodesExistMemberAndNode[i];
-  //         let nodeData = nodesData.find(
-  //           (x) => x._id.toString() == nodeID.toString()
-  //         );
-  //         nodesDataNew.push(nodeData);
-  //       }
+        // console.log("change = " , change)
 
-  //       let nodeExistOnlyMember_id = [];
-  //       for (let i = 0; i < nodeExistOnlyMember.length; i++) {
-  //         let nodeID = nodeExistOnlyMember[i];
-  //         nodeExistOnlyMember_id.push({ _id: nodeID });
-  //       }
+        if (nodesExistMemberAndNode.length > 0) {
+          let nodesDataNew = [];
+          for (let i = 0; i < nodesExistMemberAndNode.length; i++) {
+            let nodeID = nodesExistMemberAndNode[i];
+            let nodeData = nodesData.find(
+              (x) => x._id.toString() == nodeID.toString()
+            );
+            nodesDataNew.push(nodeData);
+          }
 
-  //       memberData.nodes = nodeExistOnlyMember_id;
+          let nodeExistOnlyMember_id = [];
+          for (let i = 0; i < nodeExistOnlyMember.length; i++) {
+            let nodeID = nodeExistOnlyMember[i];
+            nodeExistOnlyMember_id.push({ _id: nodeID });
+          }
 
-  //       // console.log("nodesDataNew = " , nodesDataNew)
+          memberData.nodes = nodeExistOnlyMember_id;
 
-  //       // console.log("memberData = " , memberData)
+          // console.log("nodesDataNew = " , nodesDataNew)
 
-  //       // console.log("change = " , change)
+          // console.log("memberData = " , memberData)
 
-  //       // add only the new ones as relationship on Neo4j
-  //       for (let i = 0; i < nodesDataNew.length; i++) {
-  //         let nodeNow = nodesDataNew[i];
-  //         deleteConnectionANYBetweenNodes_neo4j({
-  //           nodeID_1: memberData._id,
-  //           nodeID_2: nodeNow._id,
-  //         });
+          // console.log("change = " , change)
 
-  //         changeMatchByServer(nodeNow, memberData);
-  //       }
-  //     }
+          // add only the new ones as relationship on Neo4j
+          for (let i = 0; i < nodesDataNew.length; i++) {
+            let nodeNow = nodesDataNew[i];
+            deleteConnectionANYBetweenNodes_neo4j({
+              nodeID_1: memberData._id,
+              nodeID_2: nodeNow._id,
+            });
 
-  //     memberData2 = await Members.findOneAndUpdate(
-  //       { _id: memberID },
-  //       {
-  //         $set: {
-  //           nodes: memberData.nodes,
-  //         },
-  //       },
-  //       { new: true }
-  //     );
-  //     pubsub.publish("SKILL_UPDATED_IN_ROOM" + RoomID, {
-  //       memberUpdatedInRoom: memberData2,
-  //     });
+            changeMatchByServer(nodeNow, memberData);
+          }
+        }
 
-  //     return memberData2;
-  //   } catch (err) {
-  //     throw new ApolloError(
-  //       err.message,
-  //       err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-  //       { component: "tmemberQuery > findMember" }
-  //     );
-  //   }
-  // },
+        memberData2 = await Members.findOneAndUpdate(
+          { _id: memberID },
+          {
+            $set: {
+              nodes: memberData.nodes,
+            },
+          },
+          { new: true }
+        );
+        pubsub.publish("SKILL_UPDATED_IN_ROOM" + RoomID, {
+          memberUpdatedInRoom: memberData2,
+        });
+
+        return memberData2;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
+      }
+    }
+  ),
   updateNodesToMemberInRoom: combineResolvers(
     IsAuthenticated,
     async (parent, args, { user }, info) => {

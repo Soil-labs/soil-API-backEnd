@@ -57,8 +57,8 @@ const {
   enterRoom,
   exitRoom,
   updateMemberInRoom,
-  // addNodesToMemberInRoom,
-  // deleteNodesFromMemberInRoom,
+  addNodesToMemberInRoom,
+  deleteNodesFromMemberInRoom,
   roomUpdated,
   memberUpdatedInRoom,
   updateNodesToMemberInRoom,
@@ -147,8 +147,8 @@ module.exports = {
     enterRoom,
     exitRoom,
     updateMemberInRoom,
-    // addNodesToMemberInRoom,
-    // deleteNodesFromMemberInRoom,
+    addNodesToMemberInRoom,
+    deleteNodesFromMemberInRoom,
     updateNodesToMemberInRoom,
 
     // ------------- CHAT MUTATION -----------------
