@@ -1193,237 +1193,239 @@ module.exports = {
       );
     }
   },
-  addSkillToMember: async (parent, args, context, info) => {
-    const { skillID, memberID, authorID, serverID } = args.fields;
-    console.log("Mutation > addSkillToMember > args.fields = ", args.fields);
 
-    if (!skillID) throw new ApolloError("skillID is required");
-    if (!memberID) throw new ApolloError("memberID is required");
-    if (!authorID) throw new ApolloError("authorID is required");
+  // DEPRECATED
+  // addSkillToMember: async (parent, args, context, info) => {
+  //   const { skillID, memberID, authorID, serverID } = args.fields;
+  //   console.log("Mutation > addSkillToMember > args.fields = ", args.fields);
 
-    let queryServerID = [];
-    if (serverID) {
-      serverID.forEach((id) => {
-        queryServerID.push({ serverID: id });
-      });
-    }
+  //   if (!skillID) throw new ApolloError("skillID is required");
+  //   if (!memberID) throw new ApolloError("memberID is required");
+  //   if (!authorID) throw new ApolloError("authorID is required");
 
-    try {
-      let fieldUpdate = {};
+  //   let queryServerID = [];
+  //   if (serverID) {
+  //     serverID.forEach((id) => {
+  //       queryServerID.push({ serverID: id });
+  //     });
+  //   }
 
-      let member; //= await Members.findOne({ _id: memberID })
-      if (queryServerID.length > 0) {
-        member = await Members.findOne({
-          $and: [{ _id: memberID }, { $or: queryServerID }],
-        });
-      } else {
-        member = await Members.findOne({ _id: memberID });
-      }
+  //   try {
+  //     let fieldUpdate = {};
 
-      let authorInfo; //= await Members.findOne({ _id: authorID })
-      if (queryServerID.length > 0) {
-        authorInfo = await Members.findOne({
-          $and: [{ _id: authorID }, { $or: queryServerID }],
-        });
-      } else {
-        authorInfo = await Members.findOne({ _id: authorID });
-      }
+  //     let member; //= await Members.findOne({ _id: memberID })
+  //     if (queryServerID.length > 0) {
+  //       member = await Members.findOne({
+  //         $and: [{ _id: memberID }, { $or: queryServerID }],
+  //       });
+  //     } else {
+  //       member = await Members.findOne({ _id: memberID });
+  //     }
 
-      let skill = await Skills.findOne({ _id: skillID });
+  //     let authorInfo; //= await Members.findOne({ _id: authorID })
+  //     if (queryServerID.length > 0) {
+  //       authorInfo = await Members.findOne({
+  //         $and: [{ _id: authorID }, { $or: queryServerID }],
+  //       });
+  //     } else {
+  //       authorInfo = await Members.findOne({ _id: authorID });
+  //     }
 
-      if (!member)
-        throw new ApolloError(
-          "member dont exist, or the author and member are not in the same server"
-        );
-      if (!authorInfo)
-        throw new ApolloError(
-          "author dont exist, or the author and member are not in the same server"
-        );
-      if (!skill)
-        throw new ApolloError(
-          "skill dont exist, you need to first creaet the skill "
-        );
+  //     let skill = await Skills.findOne({ _id: skillID });
 
-      // console.log("change = " , skill,authorInfo,member)
+  //     if (!member)
+  //       throw new ApolloError(
+  //         "member dont exist, or the author and member are not in the same server"
+  //       );
+  //     if (!authorInfo)
+  //       throw new ApolloError(
+  //         "author dont exist, or the author and member are not in the same server"
+  //       );
+  //     if (!skill)
+  //       throw new ApolloError(
+  //         "skill dont exist, you need to first creaet the skill "
+  //       );
 
-      let newSkills;
+  //     // console.log("change = " , skill,authorInfo,member)
 
-      let skillExist = true;
-      let makeAnUpdate = false;
+  //     let newSkills;
 
-      // add skill edge from author to member & add skill edge from member to skill node
-      if (member._id !== authorInfo._id) {
-        await makeConnection_neo4j({
-          node: ["Member", "Skill"],
-          id: [member._id, skill._id],
-          connection: "SKILL",
-        });
-        await makeConnection_neo4j({
-          node: ["Member", "Member"],
-          id: [authorInfo._id, member._id],
-          connection: "ENDORSE",
-        });
-      } else {
-        //when author endorses themselves only add skill edge from member to skill node
-        await makeConnection_neo4j({
-          node: ["Member", "Skill"],
-          id: [member._id, skill._id],
-          connection: "SKILL",
-        });
-      }
+  //     let skillExist = true;
+  //     let makeAnUpdate = false;
 
-      // Recalculate the skill match now that neo4j diagram changed
-      await Skills.findOneAndUpdate(
-        { _id: skill._id },
-        {
-          $set: {
-            match: {
-              recalculateProjectRoles: true,
-              distanceProjectRoles: skill.distanceProjectRoles,
+  //     // add skill edge from author to member & add skill edge from member to skill node
+  //     if (member._id !== authorInfo._id) {
+  //       await makeConnection_neo4j({
+  //         node: ["Member", "Skill"],
+  //         id: [member._id, skill._id],
+  //         connection: "SKILL",
+  //       });
+  //       await makeConnection_neo4j({
+  //         node: ["Member", "Member"],
+  //         id: [authorInfo._id, member._id],
+  //         connection: "ENDORSE",
+  //       });
+  //     } else {
+  //       //when author endorses themselves only add skill edge from member to skill node
+  //       await makeConnection_neo4j({
+  //         node: ["Member", "Skill"],
+  //         id: [member._id, skill._id],
+  //         connection: "SKILL",
+  //       });
+  //     }
 
-              recalculateMembers: true,
-              distanceMembers: skill.distanceMembers,
-            },
-          },
-        },
-        { new: true }
-      );
+  //     // Recalculate the skill match now that neo4j diagram changed
+  //     await Skills.findOneAndUpdate(
+  //       { _id: skill._id },
+  //       {
+  //         $set: {
+  //           match: {
+  //             recalculateProjectRoles: true,
+  //             distanceProjectRoles: skill.distanceProjectRoles,
 
-      // check all the skills, if the skill is already in the member, then update the author
-      const updatedSkills = member.skills.map((skillMem) => {
-        if (skillMem.id.equals(skill._id) === true) {
-          skillExist = false;
+  //             recalculateMembers: true,
+  //             distanceMembers: skill.distanceMembers,
+  //           },
+  //         },
+  //       },
+  //       { new: true }
+  //     );
 
-          if (!skillMem.authors.includes(authorID)) {
-            // If the skill already exist but the author is not in the list, add it
-            makeAnUpdate = true;
+  //     // check all the skills, if the skill is already in the member, then update the author
+  //     const updatedSkills = member.skills.map((skillMem) => {
+  //       if (skillMem.id.equals(skill._id) === true) {
+  //         skillExist = false;
 
-            skillMem.authors.push(authorID);
+  //         if (!skillMem.authors.includes(authorID)) {
+  //           // If the skill already exist but the author is not in the list, add it
+  //           makeAnUpdate = true;
 
-            return skillMem;
-          } else {
-            return skillMem;
-          }
-        } else {
-          return skillMem;
-        }
-      });
+  //           skillMem.authors.push(authorID);
 
-      //console.log("change = 1" )
+  //           return skillMem;
+  //         } else {
+  //           return skillMem;
+  //         }
+  //       } else {
+  //         return skillMem;
+  //       }
+  //     });
 
-      // ---------- Network Member-----------
-      let networkMember;
-      let flagMemberExist = false;
-      member.network.forEach((net) => {
-        // console.log("net = " , net,net.memberID == authorID,net.memberID , authorID)
-        // if (net.memberID.equals(authorID)===true){
-        if (net.memberID == authorID) {
-          flagMemberExist = true;
-        }
-      });
-      //console.log("change = 2" )
+  //     //console.log("change = 1" )
 
-      if (flagMemberExist === false) {
-        networkMember = member.network.concat({ memberID: authorID });
-      } else {
-        networkMember = member.network;
-      }
-      // ---------- Network Member-----------
+  //     // ---------- Network Member-----------
+  //     let networkMember;
+  //     let flagMemberExist = false;
+  //     member.network.forEach((net) => {
+  //       // console.log("net = " , net,net.memberID == authorID,net.memberID , authorID)
+  //       // if (net.memberID.equals(authorID)===true){
+  //       if (net.memberID == authorID) {
+  //         flagMemberExist = true;
+  //       }
+  //     });
+  //     //console.log("change = 2" )
 
-      //console.log("change = 2.5",authorInfo.network )
-      // ---------- Network Author-----------
-      let networkAuthor;
-      flagMemberExist = false;
-      authorInfo.network.forEach((net) => {
-        if (net.memberID == authorID) {
-          flagMemberExist = true;
-        }
-      });
-      //console.log("change = 2.7" )
+  //     if (flagMemberExist === false) {
+  //       networkMember = member.network.concat({ memberID: authorID });
+  //     } else {
+  //       networkMember = member.network;
+  //     }
+  //     // ---------- Network Member-----------
 
-      if (flagMemberExist === false) {
-        networkAuthor = authorInfo.network.concat({ memberID: member._id });
-      } else {
-        networkAuthor = authorInfo.network;
-      }
-      // ---------- Network Author-----------
+  //     //console.log("change = 2.5",authorInfo.network )
+  //     // ---------- Network Author-----------
+  //     let networkAuthor;
+  //     flagMemberExist = false;
+  //     authorInfo.network.forEach((net) => {
+  //       if (net.memberID == authorID) {
+  //         flagMemberExist = true;
+  //       }
+  //     });
+  //     //console.log("change = 2.7" )
 
-      //console.log("change = 3" )
+  //     if (flagMemberExist === false) {
+  //       networkAuthor = authorInfo.network.concat({ memberID: member._id });
+  //     } else {
+  //       networkAuthor = authorInfo.network;
+  //     }
+  //     // ---------- Network Author-----------
 
-      let updateMembers = skill.members;
-      // if the skill is not in the member, then add it
-      if (skillExist === true) {
-        makeAnUpdate = true;
-        updatedSkills.push({
-          id: skill._id,
-          authors: [authorID],
-        });
-        updateMembers.push(member._id);
-      }
+  //     //console.log("change = 3" )
 
-      //console.log("change = 4" ,updatedSkills)
-      //console.log("change = 4" ,networkMember)
+  //     let updateMembers = skill.members;
+  //     // if the skill is not in the member, then add it
+  //     if (skillExist === true) {
+  //       makeAnUpdate = true;
+  //       updatedSkills.push({
+  //         id: skill._id,
+  //         authors: [authorID],
+  //       });
+  //       updateMembers.push(member._id);
+  //     }
 
-      let newMember, newSkill;
-      if (makeAnUpdate) {
-        member = await Members.findOneAndUpdate(
-          { _id: member._id },
-          {
-            $set: {
-              skills: updatedSkills,
-              network: networkMember,
-            },
-          },
-          { new: true }
-        );
+  //     //console.log("change = 4" ,updatedSkills)
+  //     //console.log("change = 4" ,networkMember)
 
-        //console.log("change = 5" )
+  //     let newMember, newSkill;
+  //     if (makeAnUpdate) {
+  //       member = await Members.findOneAndUpdate(
+  //         { _id: member._id },
+  //         {
+  //           $set: {
+  //             skills: updatedSkills,
+  //             network: networkMember,
+  //           },
+  //         },
+  //         { new: true }
+  //       );
 
-        authorInfo = await Members.findOneAndUpdate(
-          { _id: authorInfo._id },
-          {
-            $set: {
-              network: networkAuthor,
-            },
-          },
-          { new: true }
-        );
+  //       //console.log("change = 5" )
 
-        //console.log("change = 6" )
+  //       authorInfo = await Members.findOneAndUpdate(
+  //         { _id: authorInfo._id },
+  //         {
+  //           $set: {
+  //             network: networkAuthor,
+  //           },
+  //         },
+  //         { new: true }
+  //       );
 
-        skill = await Skills.findOneAndUpdate(
-          { _id: skill._id },
-          {
-            $set: {
-              members: updateMembers,
-            },
-          },
-          { new: true }
-        );
-      }
+  //       //console.log("change = 6" )
 
-      //console.log("member = " , member)
+  //       skill = await Skills.findOneAndUpdate(
+  //         { _id: skill._id },
+  //         {
+  //           $set: {
+  //             members: updateMembers,
+  //           },
+  //         },
+  //         { new: true }
+  //       );
+  //     }
 
-      //console.log("networkAuthor 22 - = " , networkAuthor)
-      //console.log("authorInfo 22 - = " , authorInfo)
+  //     //console.log("member = " , member)
 
-      member = {
-        ...member._doc,
-        // skills: []
-      };
-      //console.log("Context", context)
-      pubsub.publish(member._id, {
-        memberUpdated: member,
-      });
-      return member;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
-    }
-  },
+  //     //console.log("networkAuthor 22 - = " , networkAuthor)
+  //     //console.log("authorInfo 22 - = " , authorInfo)
+
+  //     member = {
+  //       ...member._doc,
+  //       // skills: []
+  //     };
+  //     //console.log("Context", context)
+  //     pubsub.publish(member._id, {
+  //       memberUpdated: member,
+  //     });
+  //     return member;
+  //   } catch (err) {
+  //     throw new ApolloError(
+  //       err.message,
+  //       err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+  //       { component: "tmemberQuery > findMember" }
+  //     );
+  //   }
+  // },
   memberUpdated: {
     subscribe: (parent, args, context, info) => {
       //console.log("Context", parent)

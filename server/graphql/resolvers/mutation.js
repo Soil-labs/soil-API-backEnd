@@ -7,7 +7,7 @@ const {
   deleteMember,
   addFavoriteProject,
   addPreferencesToMember,
-  addSkillToMember,
+  // addSkillToMember,
   endorseAttribute,
   memberUpdated,
   addEndorsement,
@@ -93,7 +93,7 @@ module.exports = {
     endorseAttribute,
     addFavoriteProject,
     addPreferencesToMember,
-    addSkillToMember,
+    // addSkillToMember,
     addEndorsement,
 
     // ------------- PROJECT MUTATION -----------------
