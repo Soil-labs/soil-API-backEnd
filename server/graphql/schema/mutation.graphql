@@ -63,7 +63,7 @@ module.exports = `
 
 
         #  ---------- SKILL CATEGORY MUTATIONS -------
-        updateSkillCategory(fields:updateSkillCategoryInput): SkillCategory
+        # updateSkillCategory(fields:updateSkillCategoryInput): SkillCategory
 
         #  ---------- SKILL SUB CATEGORY MUTATIONS -------
         # updateSkillSubCategory(fields:updateSkillSubCategoryInput): SkillSubCategory

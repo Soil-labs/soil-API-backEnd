@@ -48,7 +48,7 @@ const {
   applyGrant,
   updateNodesToGrant,
 } = require("./mutation/grantMutation");
-const { updateSkillCategory } = require("./mutation/skillCategoryMutation");
+// const { updateSkillCategory } = require("./mutation/skillCategoryMutation");
 // const {
 //   updateSkillSubCategory,
 // } = require("./mutation/skillSubCategoryMutation");
@@ -136,7 +136,7 @@ module.exports = {
     updateNodesToGrant,
 
     // ------------- SKILL CATEGORY MUTATION -----------------
-    updateSkillCategory,
+    // updateSkillCategory,
 
     // ------------- SKILL SUB CATEGORY MUTATION -----------------
     // updateSkillSubCategory,
