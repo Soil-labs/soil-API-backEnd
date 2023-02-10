@@ -376,168 +376,169 @@ module.exports = {
       );
     }
   },
-  approveOrRejectSkill: async (parent, args, context, info) => {
-    const { _id, state, categorySkills, subCategorySkill } = args.fields;
-    console.log(
-      "Mutation > approveOrRejectSkill > args.fields = ",
-      args.fields
-    );
+  // DEPRECATED
+  // approveOrRejectSkill: async (parent, args, context, info) => {
+  //   const { _id, state, categorySkills, subCategorySkill } = args.fields;
+  //   console.log(
+  //     "Mutation > approveOrRejectSkill > args.fields = ",
+  //     args.fields
+  //   );
 
-    if (!_id) throw new ApolloError("You need to specify the ID of the skill");
-    if (!state)
-      throw new ApolloError(
-        "You need to specify if you approve or reject the skill"
-      );
+  //   if (!_id) throw new ApolloError("You need to specify the ID of the skill");
+  //   if (!state)
+  //     throw new ApolloError(
+  //       "You need to specify if you approve or reject the skill"
+  //     );
 
-    if (state !== "approved" && state !== "rejected")
-      throw new ApolloError(
-        "You need to specify if you approve or reject the skill"
-      );
+  //   if (state !== "approved" && state !== "rejected")
+  //     throw new ApolloError(
+  //       "You need to specify if you approve or reject the skill"
+  //     );
 
-    try {
-      let skillData;
+  //   try {
+  //     let skillData;
 
-      skillData = await Skills.findOne({ _id: _id });
+  //     skillData = await Skills.findOne({ _id: _id });
 
-      if (skillData) {
-        // let updateQuery = []
+  //     if (skillData) {
+  //       // let updateQuery = []
 
-        // ----------------- connect skills with category -----------------
-        if (categorySkills && categorySkills.length > 0) {
-          let skillCategoryData = await SkillCategory.find({
-            _id: categorySkills,
-          });
-          for (let i = 0; i < skillCategoryData.length; i++) {
-            // TODO: SOS 🆘 -> add the skill on teh category mongo
+  //       // ----------------- connect skills with category -----------------
+  //       if (categorySkills && categorySkills.length > 0) {
+  //         let skillCategoryData = await SkillCategory.find({
+  //           _id: categorySkills,
+  //         });
+  //         for (let i = 0; i < skillCategoryData.length; i++) {
+  //           // TODO: SOS 🆘 -> add the skill on teh category mongo
 
-            console.log("-----------i = ", i);
-            // makeConnection_neo4j({
-            //   node:["Skill","Skill_Category"],
-            //   id:[skillData._id,skillCategoryData[i]._id],
-            //   connection:"CATEGORY",
-            // })
+  //           console.log("-----------i = ", i);
+  //           // makeConnection_neo4j({
+  //           //   node:["Skill","Skill_Category"],
+  //           //   id:[skillData._id,skillCategoryData[i]._id],
+  //           //   connection:"CATEGORY",
+  //           // })
 
-            // ----------------- add subcategories if dont exist -----------------
-            for (let j = 0; j < subCategorySkill.length; j++) {
-              if (
-                !skillCategoryData[i].subCategorySkill.includes(
-                  subCategorySkill[j]
-                )
-              ) {
-                skillCategoryData[i].subCategorySkill.push(subCategorySkill[j]);
-              }
-            }
-            // ----------------- add subcategories if dont exist -----------------
+  //           // ----------------- add subcategories if dont exist -----------------
+  //           for (let j = 0; j < subCategorySkill.length; j++) {
+  //             if (
+  //               !skillCategoryData[i].subCategorySkill.includes(
+  //                 subCategorySkill[j]
+  //               )
+  //             ) {
+  //               skillCategoryData[i].subCategorySkill.push(subCategorySkill[j]);
+  //             }
+  //           }
+  //           // ----------------- add subcategories if dont exist -----------------
 
-            await SkillCategory.findOneAndUpdate(
-              { _id: skillCategoryData[i]._id },
-              {
-                $set: {
-                  skills: [...skillCategoryData[i].skills, skillData._id],
-                  subCategorySkill: skillCategoryData[i].subCategorySkill,
-                },
-              },
-              { new: true }
-            );
-          }
-        }
-        // ----------------- connect skills with category -----------------
+  //           await SkillCategory.findOneAndUpdate(
+  //             { _id: skillCategoryData[i]._id },
+  //             {
+  //               $set: {
+  //                 skills: [...skillCategoryData[i].skills, skillData._id],
+  //                 subCategorySkill: skillCategoryData[i].subCategorySkill,
+  //               },
+  //             },
+  //             { new: true }
+  //           );
+  //         }
+  //       }
+  //       // ----------------- connect skills with category -----------------
 
-        // ----------------- connect skills with sub category -----------------
-        if (subCategorySkill && subCategorySkill.length > 0) {
-          let skillSubCategoryData = await SkillSubCategory.find({
-            _id: subCategorySkill,
-          });
-          for (let i = 0; i < skillSubCategoryData.length; i++) {
-            // TODO: SOS 🆘 -> add the skill on teh category mongo
+  //       // ----------------- connect skills with sub category -----------------
+  //       if (subCategorySkill && subCategorySkill.length > 0) {
+  //         let skillSubCategoryData = await SkillSubCategory.find({
+  //           _id: subCategorySkill,
+  //         });
+  //         for (let i = 0; i < skillSubCategoryData.length; i++) {
+  //           // TODO: SOS 🆘 -> add the skill on teh category mongo
 
-            makeConnection_neo4j({
-              node: ["Skill", "Skill_Sub_Category"],
-              id: [skillData._id, skillSubCategoryData[i]._id],
-              connection: "SUB_CATEGORY",
-            });
+  //           makeConnection_neo4j({
+  //             node: ["Skill", "Skill_Sub_Category"],
+  //             id: [skillData._id, skillSubCategoryData[i]._id],
+  //             connection: "SUB_CATEGORY",
+  //           });
 
-            console.log("[...skillCategoryData[i].skills, skillData._id] = ", [
-              ...skillSubCategoryData[i].skills,
-              skillData._id,
-            ]);
+  //           console.log("[...skillCategoryData[i].skills, skillData._id] = ", [
+  //             ...skillSubCategoryData[i].skills,
+  //             skillData._id,
+  //           ]);
 
-            // ----------------- add categories if dont exist -----------------
-            for (let j = 0; j < categorySkills.length; j++) {
-              if (
-                !skillSubCategoryData[i].categorySkills.includes(
-                  categorySkills[j]
-                )
-              ) {
-                skillSubCategoryData[i].categorySkills.push(categorySkills[j]);
-              }
-            }
-            // ----------------- add categories if dont exist -----------------
+  //           // ----------------- add categories if dont exist -----------------
+  //           for (let j = 0; j < categorySkills.length; j++) {
+  //             if (
+  //               !skillSubCategoryData[i].categorySkills.includes(
+  //                 categorySkills[j]
+  //               )
+  //             ) {
+  //               skillSubCategoryData[i].categorySkills.push(categorySkills[j]);
+  //             }
+  //           }
+  //           // ----------------- add categories if dont exist -----------------
 
-            await SkillSubCategory.findOneAndUpdate(
-              { _id: skillSubCategoryData[i]._id },
-              {
-                $set: {
-                  skills: [...skillSubCategoryData[i].skills, skillData._id],
-                  categorySkills: skillSubCategoryData[i].categorySkills,
-                },
-              },
-              { new: true }
-            );
-          }
-        }
-        // ----------------- connect skills with sub category -----------------
+  //           await SkillSubCategory.findOneAndUpdate(
+  //             { _id: skillSubCategoryData[i]._id },
+  //             {
+  //               $set: {
+  //                 skills: [...skillSubCategoryData[i].skills, skillData._id],
+  //                 categorySkills: skillSubCategoryData[i].categorySkills,
+  //               },
+  //             },
+  //             { new: true }
+  //           );
+  //         }
+  //       }
+  //       // ----------------- connect skills with sub category -----------------
 
-        // ----------------- connect Categories and subCategories -----------------
+  //       // ----------------- connect Categories and subCategories -----------------
 
-        if (
-          categorySkills &&
-          subCategorySkill &&
-          categorySkills.length > 0 &&
-          subCategorySkill.length > 0
-        ) {
-          for (let i = 0; i < categorySkills.length; i++) {
-            for (let j = 0; j < subCategorySkill.length; j++) {
-              makeConnection_neo4j({
-                node: ["Skill_Sub_Category", "Skill_Category"],
-                id: [subCategorySkill[j], categorySkills[i]],
-                connection: "CATEGORY",
-              });
-            }
-          }
-        }
-        // ----------------- connect Categories and subCategories -----------------
+  //       if (
+  //         categorySkills &&
+  //         subCategorySkill &&
+  //         categorySkills.length > 0 &&
+  //         subCategorySkill.length > 0
+  //       ) {
+  //         for (let i = 0; i < categorySkills.length; i++) {
+  //           for (let j = 0; j < subCategorySkill.length; j++) {
+  //             makeConnection_neo4j({
+  //               node: ["Skill_Sub_Category", "Skill_Category"],
+  //               id: [subCategorySkill[j], categorySkills[i]],
+  //               connection: "CATEGORY",
+  //             });
+  //           }
+  //         }
+  //       }
+  //       // ----------------- connect Categories and subCategories -----------------
 
-        // ----------------- 🌱 Update 🌱 mongo skill -----------------
-        skillData = await Skills.findOneAndUpdate(
-          { _id: _id },
-          {
-            $set: {
-              state: state,
-              subCategorySkill: subCategorySkill,
-              categorySkills: categorySkills,
-            },
-          },
-          { new: true }
-        );
+  //       // ----------------- 🌱 Update 🌱 mongo skill -----------------
+  //       skillData = await Skills.findOneAndUpdate(
+  //         { _id: _id },
+  //         {
+  //           $set: {
+  //             state: state,
+  //             subCategorySkill: subCategorySkill,
+  //             categorySkills: categorySkills,
+  //           },
+  //         },
+  //         { new: true }
+  //       );
 
-        updateNode_neo4j_serverID_f({
-          node: "Skill",
-          id_name: "_id",
-          id_value: skillData._id,
-          update_name: "state",
-          update_value: skillData.state,
-        });
-        // ----------------- 🌱 Update 🌱 mongo skill -----------------
-      }
+  //       updateNode_neo4j_serverID_f({
+  //         node: "Skill",
+  //         id_name: "_id",
+  //         id_value: skillData._id,
+  //         update_name: "state",
+  //         update_value: skillData.state,
+  //       });
+  //       // ----------------- 🌱 Update 🌱 mongo skill -----------------
+  //     }
 
-      return skillData;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > addNewMember" }
-      );
-    }
-  },
+  //     return skillData;
+  //   } catch (err) {
+  //     throw new ApolloError(
+  //       err.message,
+  //       err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+  //       { component: "tmemberQuery > addNewMember" }
+  //     );
+  //   }
+  // },
 };
