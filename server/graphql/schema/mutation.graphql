@@ -37,7 +37,7 @@ module.exports = `
         #  ---------- SKILL MUTATIONS -------
         createSkill(fields:createSkillInput): Skills
         createSkills(fields:createSkillsInput): [Skills]
-        createApprovedSkill(fields:createApprovedSkillInput): Skills
+        # createApprovedSkill(fields:createApprovedSkillInput): Skills
         approveOrRejectSkill(fields:approveOrRejectSkillInput): Skills
 
         relatedSkills(fields:relatedSkillsInput): Skills
