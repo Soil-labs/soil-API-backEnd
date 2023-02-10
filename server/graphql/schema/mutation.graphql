@@ -12,7 +12,7 @@ module.exports = `
         updateNodesToMember(fields:updateNodesToMemberInput!): Members
         deleteNodesFromMember(fields:deleteNodesFromMemberInput!): Members
         deleteMember(fields:deleteMemberInput!): Members
-        addSkillToMember(fields:addSkillToMember_Input!):Members
+        # addSkillToMember(fields:addSkillToMember_Input!):Members
         addEndorsement(fields: addEndorsementInput ): Members
         endorseAttribute(fields:endorseAttributeInput!): Members
 

@@ -7,7 +7,7 @@ const {
   deleteMember,
   addFavoriteProject,
   addPreferencesToMember,
-  addSkillToMember,
+  // addSkillToMember,
   endorseAttribute,
   memberUpdated,
   addEndorsement,
@@ -46,7 +46,7 @@ const {
   updateGrant,
   addNodesToGrant,
   applyGrant,
-  updateNodesToGrant
+  updateNodesToGrant,
 } = require("./mutation/grantMutation");
 const { updateSkillCategory } = require("./mutation/skillCategoryMutation");
 const {
@@ -62,7 +62,7 @@ const {
   deleteNodesFromMemberInRoom,
   roomUpdated,
   memberUpdatedInRoom,
-  updateNodesToMemberInRoom
+  updateNodesToMemberInRoom,
 } = require("./mutation/roomMutation");
 const {
   addNewChat,
@@ -93,7 +93,7 @@ module.exports = {
     endorseAttribute,
     addFavoriteProject,
     addPreferencesToMember,
-    addSkillToMember,
+    // addSkillToMember,
     addEndorsement,
 
     // ------------- PROJECT MUTATION -----------------
