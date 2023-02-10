@@ -14,10 +14,10 @@ const {
 } = require("./mutation/memberMutation");
 const {
   updateProject,
-  // addNodesToProjectRole,
+  addNodesToProjectRole,
   updateNodesToProjectRole,
   addProjectRole,
-  // deleteNodesToProjectRole,
+  deleteNodesToProjectRole,
   newTweetProject,
   approveTweet,
   changeTeamMember_Phase_Project,
@@ -98,10 +98,10 @@ module.exports = {
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
-    // addNodesToProjectRole,
+    addNodesToProjectRole,
     updateNodesToProjectRole,
     addProjectRole,
-    // deleteNodesToProjectRole,
+    deleteNodesToProjectRole,
     newTweetProject,
     approveTweet,
     changeTeamMember_Phase_Project,
