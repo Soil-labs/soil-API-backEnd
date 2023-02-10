@@ -62,7 +62,7 @@ const {
   deleteNodesFromMemberInRoom,
   roomUpdated,
   memberUpdatedInRoom,
-  updateNodesToMemberInRoom
+  updateNodesToMemberInRoom,
 } = require("./mutation/roomMutation");
 const {
   addNewChat,
