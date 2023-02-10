@@ -32,7 +32,7 @@ const {
   // createSkill,
   // createSkills,
   relatedSkills,
-  createApprovedSkill,
+  // createApprovedSkill,
   // approveOrRejectSkill,
 } = require("./mutation/skillMutation");
 const {
@@ -115,7 +115,7 @@ module.exports = {
     // createSkill,
     // createSkills,
     relatedSkills,
-    createApprovedSkill,
+    // createApprovedSkill,
     // approveOrRejectSkill,
 
     // ------------- NODE MUTATION -----------------

@@ -324,58 +324,59 @@ module.exports = {
   //       );
   //     }
   //   },
-  createApprovedSkill: async (parent, args, context, info) => {
-    // Be careful only Admins can created preapproved skills
+  // DEPRECATED
+  // createApprovedSkill: async (parent, args, context, info) => {
+  //   // Be careful only Admins can created preapproved skills
 
-    const { name } = args.fields;
-    console.log("Mutation > createApprovedSkill > args.fields = ", args.fields);
+  //   const { name } = args.fields;
+  //   console.log("Mutation > createApprovedSkill > args.fields = ", args.fields);
 
-    if (!name)
-      throw new ApolloError("You need to specify the name of the skill");
+  //   if (!name)
+  //     throw new ApolloError("You need to specify the name of the skill");
 
-    let fields = {
-      name,
-      state: "approved",
-      registeredAt: new Date(),
-    };
+  //   let fields = {
+  //     name,
+  //     state: "approved",
+  //     registeredAt: new Date(),
+  //   };
 
-    try {
-      let skillData;
+  //   try {
+  //     let skillData;
 
-      skillData = await Skills.findOne({ name: fields.name });
+  //     skillData = await Skills.findOne({ name: fields.name });
 
-      if (!skillData) {
-        skillData = await new Skills(fields);
+  //     if (!skillData) {
+  //       skillData = await new Skills(fields);
 
-        skillData.save();
+  //       skillData.save();
 
-        let serverData = await ServerTemplate.find({});
+  //       let serverData = await ServerTemplate.find({});
 
-        let serverID = [];
-        serverData.map((server) => {
-          serverID.push(server._id);
-        });
+  //       let serverID = [];
+  //       serverData.map((server) => {
+  //         serverID.push(server._id);
+  //       });
 
-        createNode_neo4j_field({
-          fields: {
-            node: "Skill",
-            _id: skillData._id,
-            name: fields.name,
-            serverID: serverID,
-            state: "approved",
-          },
-        });
-      }
+  //       createNode_neo4j_field({
+  //         fields: {
+  //           node: "Skill",
+  //           _id: skillData._id,
+  //           name: fields.name,
+  //           serverID: serverID,
+  //           state: "approved",
+  //         },
+  //       });
+  //     }
 
-      return skillData;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > addNewMember" }
-      );
-    }
-  },
+  //     return skillData;
+  //   } catch (err) {
+  //     throw new ApolloError(
+  //       err.message,
+  //       err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+  //       { component: "tmemberQuery > addNewMember" }
+  //     );
+  //   }
+  // },
   // DEPRECATED
   // approveOrRejectSkill: async (parent, args, context, info) => {
   //   const { _id, state, categorySkills, subCategorySkill } = args.fields;
