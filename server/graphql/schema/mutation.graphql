@@ -12,7 +12,7 @@ module.exports = `
         updateNodesToMember(fields:updateNodesToMemberInput!): Members
         deleteNodesFromMember(fields:deleteNodesFromMemberInput!): Members
         deleteMember(fields:deleteMemberInput!): Members
-        addSkillToMember(fields:addSkillToMember_Input!):Members
+        # addSkillToMember(fields:addSkillToMember_Input!):Members
         addEndorsement(fields: addEndorsementInput ): Members
         endorseAttribute(fields:endorseAttributeInput!): Members
 
@@ -35,10 +35,10 @@ module.exports = `
         
 
         #  ---------- SKILL MUTATIONS -------
-        createSkill(fields:createSkillInput): Skills
-        createSkills(fields:createSkillsInput): [Skills]
-        createApprovedSkill(fields:createApprovedSkillInput): Skills
-        approveOrRejectSkill(fields:approveOrRejectSkillInput): Skills
+        # createSkill(fields:createSkillInput): Skills
+        # createSkills(fields:createSkillsInput): [Skills]
+        # createApprovedSkill(fields:createApprovedSkillInput): Skills
+        # approveOrRejectSkill(fields:approveOrRejectSkillInput): Skills
 
         relatedSkills(fields:relatedSkillsInput): Skills
 
@@ -59,13 +59,14 @@ module.exports = `
         updateGrant(fields:updateGrantInput): GrantTemplate
         addNodesToGrant(fields:addNodesToGrantInput): GrantTemplate
         applyGrant(fields:applyGrantInput): GrantTemplate
+        updateNodesToGrant(fields: updateNodesToGrantInput): GrantTemplate
 
 
         #  ---------- SKILL CATEGORY MUTATIONS -------
-        updateSkillCategory(fields:updateSkillCategoryInput): SkillCategory
+        # updateSkillCategory(fields:updateSkillCategoryInput): SkillCategory
 
         #  ---------- SKILL SUB CATEGORY MUTATIONS -------
-        updateSkillSubCategory(fields:updateSkillSubCategoryInput): SkillSubCategory
+        # updateSkillSubCategory(fields:updateSkillSubCategoryInput): SkillSubCategory
 
 
         #  ---------- SKILL CATEGORY MUTATIONS -------

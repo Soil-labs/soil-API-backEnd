@@ -39,8 +39,10 @@ const distancesBasedOnNumCoreType = {
 module.exports = {
   findMemberGraph: async (parent, args, context, info) => {
     // find the graph of the member
-    const { memberID, showAvatar } = args.fields;
+    const { memberID, showAvatar, nodeSettings, edgeSettings } = args.fields;
     console.log("Query > findMemberGraph > args.fields = ", args.fields);
+
+    // sadf;
 
     if (!memberID) throw new ApolloError("The memberID is required");
 
@@ -71,12 +73,21 @@ module.exports = {
       let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
         await neo4jToNodeEdgeGraph(res);
 
-      let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
+      let { nodesArrNew, edgesArrNew } = await addSettingsNodesSubNodes(
         nodesObj,
         edgesArr,
         nodesArrReplaceID,
-        numberCoreTypeNodes
+        numberCoreTypeNodes,
+        nodeSettings,
+        edgeSettings
       );
+
+      // let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
+      //   nodesObj,
+      //   edgesArr,
+      //   nodesArrReplaceID,
+      //   numberCoreTypeNodes
+      // );
 
       return {
         nodes: nodesArrNew,
@@ -735,6 +746,117 @@ async function neo4jToNodeEdgeGraph(res) {
   };
 }
 
+async function arrayToObject(arrayN, keyName) {
+  let objectN = {};
+
+  for (let i = 0; i < arrayN.length; i++) {
+    let key = arrayN[i][keyName];
+    objectN[key] = arrayN[i];
+  }
+
+  return objectN;
+}
+
+async function arrayToObjectDoubleKey(arrayN, keyName1, keyName2) {
+  let objectN = {};
+
+  for (let i = 0; i < arrayN.length; i++) {
+    let key1 = arrayN[i][keyName1];
+    let key2 = arrayN[i][keyName2];
+
+    let ids = [key1, key2].sort();
+    let key = ids.join("_");
+
+    objectN[key] = arrayN[i];
+  }
+
+  return objectN;
+}
+
+function returnObjectValueDoubleKey(objectN, keyName1, keyName2) {
+  let key1 = keyName1;
+  let key2 = keyName2;
+
+  let ids = [key1, key2].sort();
+  let key = ids.join("_");
+
+  return objectN[key];
+}
+
+async function addSettingsNodesSubNodes(
+  nodesObj,
+  edgesArr,
+  nodesArrReplaceID,
+  numberCoreTypeNodes,
+  nodeSettings,
+  edgeSettings
+) {
+  nodeSettingsObj = await arrayToObject(nodeSettings, "type");
+
+  edgeSettingsObj = await arrayToObjectDoubleKey(
+    edgeSettings,
+    "nodeTypeSource",
+    "nodeTypeTarget"
+  );
+
+  let nodesArrNew = [];
+  let nodesArrNewObj = {};
+  // loop throw the node object
+  for (let key in nodesObj) {
+    node = nodesObj[key];
+
+    if (nodeSettingsObj[node.type]) {
+      // if the type exist on the settings it will be desplayed at the end of the graph
+      const settingsN = nodeSettingsObj[node.type];
+
+      nodesArrNew.push({
+        ...node,
+        ...settingsN,
+      });
+      nodesArrNewObj[node._id] = node;
+    }
+    // else {
+    //   // SOS 🆘 TODO -> DELETE only for testing
+    //   nodesArrNew.push({
+    //     ...node,
+    //   });
+    // }
+
+    // if (nodesObj[key])
+  }
+
+  // console.log("edgeSettingsObj = ", edgeSettingsObj);
+  // asf3;
+
+  let edgesArrNew = [];
+  for (let i = 0; i < edgesArr.length; i++) {
+    edge = edgesArr[i];
+
+    let edgeSettings = returnObjectValueDoubleKey(
+      edgeSettingsObj,
+      nodesArrNewObj[edge.source]?.type,
+      nodesArrNewObj[edge.target]?.type
+    );
+
+    console.log("edgeSettings = ", edgeSettings);
+    // asdf43;
+    if (edgeSettings) {
+      edgesArrNew.push({
+        ...edge,
+        style: {
+          ...edgeSettings,
+        },
+      });
+    }
+  }
+
+  return {
+    nodesArrNew: nodesArrNew,
+    // edgesArrNew: edgesArr,
+    edgesArrNew: edgesArrNew,
+  };
+}
+
 // create function that will check for the above nodes and replace with expertise the edges
 async function replaceSubNodesPlusCalcDistance(
   nodesObj,
@@ -742,14 +864,9 @@ async function replaceSubNodesPlusCalcDistance(
   nodesArrReplaceID,
   numberCoreTypeNodes
 ) {
-  // console.log("nodesObj = ", nodesObj);
-  // console.log("nodesArrID = ", nodesArrID);
-  // console.log("nodesArrReplaceID = ", nodesArrReplaceID);
   let nodesData = await Node.find({ _id: nodesArrReplaceID }).select(
     "_id aboveNodes node"
   );
-
-  // let newID = createNewID(nodesData[0]._id, nodesData[1]._id);
 
   let aboveNodesID = [];
   for (let i = 0; i < nodesData.length; i++) {

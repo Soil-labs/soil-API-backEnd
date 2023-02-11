@@ -216,6 +216,250 @@ module.exports = {
       );
     }
   },
+  updateNodesToGrant:  async (parent, args, { user }, info) => {
+    console.log("Mutation > updateNodesToGrant > args.fields = ", args.fields);
+    let { grantID, nodesID, nodesID_level, nodeType } = args.fields;
+
+    if (!grantID) throw new ApolloError("The grant ID is required");
+
+    let grantData = await GrantTemplate.findOne({ _id: grantID }).select(
+      "_id nodes"
+    );
+
+    if (!grantData) throw new ApolloError("The grant does not exist");
+  
+    if (!(nodesID == undefined || nodesID_level == undefined))
+      throw new ApolloError(
+        "you need to use nodesID or nodesID_level, you cant use both"
+      );
+
+    try {
+      let nodesID_level_obj = {};
+      if (nodesID == undefined) {
+        nodesID = nodesID_level.map((item) => item.nodeID);
+
+        // change nodesID_level from array of objects to an object
+        for (let i = 0; i < nodesID_level.length; i++) {
+          let item = nodesID_level[i];
+          nodesID_level_obj[item.nodeID] = item;
+        }
+      }
+      console.log("nodesID_level_obj = ", nodesID_level_obj);
+
+      let nodesData = await Node.find({ _id: nodesID }).select(
+        "_id name node match_v2_update"
+      );
+
+      console.log("nodesData = ", nodesData);
+      // sdf;
+
+      // ---------- All nodes should be equal to nodeType or else throw error -----------
+      let nodesID_array = [];
+      nodesData.forEach((node) => {
+        nodesID_array.push(node._id.toString());
+        if (node.node != nodeType) {
+          throw new ApolloError(
+            "All nodes should be equal to nodeType, problem on nodeID = " +
+              node._id +
+              " with name = " +
+              node.name +
+              " and node = " +
+              node.node +
+              ""
+          );
+        }
+      });
+      // ---------- All nodes should be equal to nodeType or else throw error -----------
+
+      
+
+      let nodes_grant_obj = {};
+      for (let i = 0; i < grantData.nodes.length; i++) {
+        let item = grantData.nodes[i];
+        nodes_grant_obj[item._id] = item;
+      }
+      console.log("nodes_grant_obj = ", nodes_grant_obj);
+
+      // check if the nodes are already in the grant (grantData.nodes)
+      let nodesID_grant = grantData.nodes.map(function (item) {
+        return item._id.toString();
+      });
+
+      // --------- Separate all the Nodes, and the nodeTypes ----------------
+      let nodeData_grant_all = await Node.find({
+        _id: nodesID_grant,
+      }).select("_id name node");
+
+      // console.log("nodeData_member_all = ", nodeData_member_all);
+      // // sdf;
+
+      let nodeData_grant_type = [];
+      let nodeID_grant_type = [];
+      let nodeID_grant_all = [];
+      nodeData_grant_all.forEach((node, idx) => {
+        nodeID_grant_all.push(node._id.toString());
+
+        if (nodes_grant_obj[node._id] && nodesID_level_obj[node._id]) {
+          if (
+            nodes_grant_obj[node._id].level ==
+              nodesID_level_obj[node._id].level &&
+            nodes_grant_obj[node._id].orderIndex ==
+              nodesID_level_obj[node._id].orderIndex
+          ) {
+            if (node.node == nodeType) {
+              nodeData_grant_type.push(node);
+              nodeID_grant_type.push(node._id.toString());
+            }
+          }
+        } else {
+          if (node.node == nodeType) {
+            nodeData_grant_type.push(node);
+            nodeID_grant_type.push(node._id.toString());
+          }
+        }
+
+        nodeData_grant_all[idx] = {
+          ...nodeData_grant_all[idx]._doc,
+          ...nodes_grant_obj[node._id.toString()]._doc,
+          ...nodesID_level_obj[node._id.toString()],
+        };
+      });
+
+      // asfd;
+
+      console.log("nodesID_array = ", nodesID_array);
+      console.log("nodeID_grant_type = ", nodeID_grant_type);
+
+      console.log("nodeData_grant_all = ", nodeData_grant_all);
+      // asdf;
+
+      // --------- Separate all the Nodes, and the nodeTypes ----------------
+
+      // asdf;
+
+      /// --------------- Add Nodes that Don't exist already on the grant for this specific type of node ----------------
+      let differenceNodes = nodesID_array.filter(
+        (x) => !nodeID_grant_type.includes(x)
+      );
+      console.log("differenceNodes = ", differenceNodes);
+
+      // asf;
+      if (differenceNodes.length > 0) {
+        let nodesDataNew = [];
+        for (let i = 0; i < differenceNodes.length; i++) {
+          let nodeID = differenceNodes[i];
+          let nodeData = nodesData.find(
+            (x) => x._id.toString() == nodeID.toString()
+          );
+
+          if (nodesID_level != undefined) {
+            // caluclate the skill level and add it to the nodes for the next phase
+            let nodeNow_weight = await calculate_skill_level(
+              nodesID_level_obj[nodeID]
+            );
+
+      
+
+            nodesDataNew.push({
+              ...nodeData._doc,
+              weight: nodeNow_weight.weight_total,
+            });
+            nodeData_grant_all.push({
+              _id: nodeID,
+              orderIndex: nodeNow_weight.orderIndex,
+              level: nodeNow_weight.level,
+              weight: nodeNow_weight.weight_total,
+              aboveNodes: nodesID_level_obj[nodeID].aboveNodes,
+            });
+          } else {
+            nodesDataNew.push(nodeData);
+            nodeData_grant_all.push({ _id: nodeID });
+          }
+        }
+
+        // add only the new ones as relationship on Neo4j
+        for (let i = 0; i < nodesDataNew.length; i++) {
+          let nodeNow = nodesDataNew[i];
+
+          if (nodeNow.weight != undefined) {
+            makeConnection_neo4j({
+              node: [nodeNow.node, "Grant"],
+              id: [nodeNow._id, grantData._id],
+              connection: "connection",
+              weight: nodeNow.weight.toFixed(3),
+            });
+          } else {
+            makeConnection_neo4j({
+              node: [nodeNow.node, "Grant"],
+              id: [nodeNow._id, grantData._id],
+              connection: "connection",
+            });
+          }
+
+          //changeMatchByServer(nodeNow, grantData);
+        }
+      }
+      /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
+
+      // -------------- Remove the Nodes that are not in the nodesID_array ----------------
+      let nodesExistGrantAndNode = nodeID_grant_type.filter((x) =>
+        nodesID_array.includes(x)
+      );
+      console.log("nodesExistGrantAndNode = ", nodesExistGrantAndNode);
+
+      let nodeExistOnlyGrant = nodeID_grant_type.filter(
+        (x) => !nodesID_array.includes(x)
+      );
+      console.log("nodeExistOnlyGrant = ", nodeExistOnlyGrant);
+      console.log("nodeID_grant_type = ", nodeID_grant_type);
+      console.log("nodesID_array = ", nodesID_array);
+
+      if (nodeExistOnlyGrant.length > 0) {
+        nodeData_grant_all = nodeData_grant_all.filter(
+          (element) => !nodeExistOnlyGrant.includes(element._id.toString())
+        );
+
+        console.log("nodeData_grant_all = ", nodeData_grant_all);
+
+        console.log("nodeExistOnlyGrant = ", nodeExistOnlyGrant);
+
+        // add only the new ones as relationship on Neo4j
+        for (let i = 0; i < nodeExistOnlyGrant.length; i++) {
+          let nodeNow = { _id: nodeExistOnlyGrant[i] };
+          deleteConnectionANYBetweenNodes_neo4j({
+            nodeID_1: grantData._id,
+            nodeID_2: nodeNow._id,
+          });
+
+          //changeMatchByServer(nodeNow, grantData);
+        }
+      }
+      // -------------- Remove the Nodes that are not in the nodesID_array ----------------
+
+      console.log("nodeData_grant_all = ", nodeData_grant_all);
+      // asdf;
+
+      const grantData2 = await GrantTemplate.findOneAndUpdate(
+        { _id: grantID },
+        {
+          $set: {
+            nodes: nodeData_grant_all,
+          },
+        },
+        { new: true }
+      );
+      return grantData2;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "grantMutation",
+        { component: "grantMutation > updateNodesToGrant" }
+      );
+    }
+
+  
+    
+}
 };
 
 // create async function that will change matchByServer

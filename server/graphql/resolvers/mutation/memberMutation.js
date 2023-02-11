@@ -19,7 +19,10 @@ const {
 const { uploadFileToArweave } = require("../../../utils/uploadFileToArweave");
 
 const { combineResolvers } = require("graphql-resolvers");
-const { IsAuthenticated } = require("../../../utils/authorization");
+const {
+  IsAuthenticated,
+  IsOnlyOperator,
+} = require("../../../utils/authorization");
 const { ACCESS_LEVELS } = require("../../../auth/constants");
 
 const { PubSub } = require("graphql-subscriptions");
@@ -431,237 +434,21 @@ module.exports = {
     }
   ),
 
-  addNodesToMember: async (parent, args, context, info) => {
-    let { memberID, nodesID, nodesID_level } = args.fields;
+  addNodesToMember: combineResolvers(
+    IsAuthenticated,
+    IsOnlyOperator,
+    async (parent, args, context, info) => {
+      let { memberID, nodesID, nodesID_level } = args.fields;
 
-    console.log("Mutation > addNodesToMember > args.fields = ", args.fields);
+      console.log("Mutation > addNodesToMember > args.fields = ", args.fields);
 
-    if (!memberID) throw new ApolloError("memberID is required");
+      if (!memberID) throw new ApolloError("memberID is required");
 
-    if (!(nodesID == undefined || nodesID_level == undefined))
-      throw new ApolloError(
-        "you need to use nodesID or nodesID_level, you cant use both"
-      );
+      if (!(nodesID == undefined || nodesID_level == undefined))
+        throw new ApolloError(
+          "you need to use nodesID or nodesID_level, you cant use both"
+        );
 
-    let nodesID_level_obj = {};
-    if (nodesID == undefined) {
-      nodesID = nodesID_level.map((item) => item.nodeID);
-
-      // change nodesID_level from array of objects to an object
-      for (let i = 0; i < nodesID_level.length; i++) {
-        let item = nodesID_level[i];
-        nodesID_level_obj[item.nodeID] = item;
-      }
-    }
-    console.log("nodesID_level_obj = ", nodesID_level_obj);
-
-    try {
-      let memberData = await Members.findOne({ _id: memberID });
-
-      let nodesData = await Node.find({ _id: nodesID }).select(
-        "_id node match_v2_update"
-      );
-
-      // check if the nodes are already in the member (memberData.nodes)
-      let nodesDataOriginalArray = memberData.nodes.map(function (item) {
-        return item._id.toString();
-      });
-
-      let nodesIDArray = nodesID.map(function (item) {
-        return item.toString();
-      });
-
-      let differenceNodes = nodesIDArray.filter(
-        (x) => !nodesDataOriginalArray.includes(x)
-      );
-      console.log("differenceNodes = ", differenceNodes);
-
-      if (differenceNodes.length > 0) {
-        let nodesDataNew = [];
-        for (let i = 0; i < differenceNodes.length; i++) {
-          let nodeID = differenceNodes[i];
-          let nodeData = nodesData.find(
-            (x) => x._id.toString() == nodeID.toString()
-          );
-
-          if (nodesID_level != undefined) {
-            // caluclate the skill level and add it to the nodes for the next phase
-            let nodeNow_weight = await calculate_skill_level(
-              nodesID_level_obj[nodeID]
-            );
-
-            nodesDataNew.push({
-              ...nodeData._doc,
-              weight: nodeNow_weight.weight_total,
-            });
-            memberData.nodes.push({
-              _id: nodeID,
-              orderIndex: nodeNow_weight.orderIndex,
-              level: nodeNow_weight.level,
-              weight: nodeNow_weight.weight_total,
-              aboveNodes: nodesID_level_obj[nodeID].aboveNodes,
-            });
-          } else {
-            nodesDataNew.push(nodeData);
-            memberData.nodes.push({ _id: nodeID });
-          }
-        }
-
-        // add only the new ones as relationship on Neo4j
-        for (let i = 0; i < nodesDataNew.length; i++) {
-          let nodeNow = nodesDataNew[i];
-
-          if (nodeNow.weight != undefined) {
-            makeConnection_neo4j({
-              node: [nodeNow.node, "Member"],
-              id: [nodeNow._id, memberData._id],
-              connection: "connection",
-              // weight: "0.1",
-              weight: nodeNow.weight.toFixed(3),
-            });
-          } else {
-            makeConnection_neo4j({
-              node: [nodeNow.node, "Member"],
-              id: [nodeNow._id, memberData._id],
-              connection: "connection",
-            });
-          }
-        }
-      }
-
-      console.log("memberData.nodes = ", memberData.nodes);
-      // safd2;
-
-      memberData2 = await Members.findOneAndUpdate(
-        { _id: memberID },
-        {
-          $set: {
-            nodes: memberData.nodes,
-          },
-        },
-        { new: true }
-      );
-
-      pubsub.publish(memberData2._id, {
-        memberUpdated: memberData2,
-      });
-
-      return memberData2;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
-    }
-  },
-  deleteNodesFromMember: async (parent, args, context, info) => {
-    const { memberID, nodesID } = args.fields;
-
-    console.log(
-      "Mutation > deleteNodesFromMember > args.fields = ",
-      args.fields
-    );
-
-    if (!memberID) throw new ApolloError("memberID is required");
-
-    try {
-      let memberData = await Members.findOne({ _id: memberID });
-      let nodesData = await Node.find({ _id: nodesID }).select("_id name node");
-
-      // check what nodes exist on memberData.nodes
-      let nodesDataOriginalArray = memberData.nodes.map(function (item) {
-        return item._id.toString();
-      });
-
-      let nodesIDArray = nodesID.map(function (item) {
-        return item.toString();
-      });
-
-      let nodesExistMemberAndNode = nodesDataOriginalArray.filter((x) =>
-        nodesIDArray.includes(x)
-      );
-      console.log("nodesExistMemberAndNode = ", nodesExistMemberAndNode);
-
-      let nodeExistOnlyMember = nodesDataOriginalArray.filter(
-        (x) => !nodesIDArray.includes(x)
-      );
-      console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
-
-      // console.log("change = " , change)
-
-      if (nodesExistMemberAndNode.length > 0) {
-        let nodesDataNew = [];
-        for (let i = 0; i < nodesExistMemberAndNode.length; i++) {
-          let nodeID = nodesExistMemberAndNode[i];
-          let nodeData = nodesData.find(
-            (x) => x._id.toString() == nodeID.toString()
-          );
-          nodesDataNew.push(nodeData);
-        }
-
-        let nodeExistOnlyMember_id = [];
-        for (let i = 0; i < nodeExistOnlyMember.length; i++) {
-          let nodeID = nodeExistOnlyMember[i];
-          nodeExistOnlyMember_id.push({ _id: nodeID });
-        }
-
-        memberData.nodes = nodeExistOnlyMember_id;
-
-        // console.log("nodesDataNew = " , nodesDataNew)
-
-        // console.log("memberData = " , memberData)
-
-        // console.log("change = " , change)
-
-        // add only the new ones as relationship on Neo4j
-        for (let i = 0; i < nodesDataNew.length; i++) {
-          let nodeNow = nodesDataNew[i];
-          deleteConnectionANYBetweenNodes_neo4j({
-            nodeID_1: memberData._id,
-            nodeID_2: nodeNow._id,
-          });
-
-          changeMatchByServer(nodeNow, memberData);
-        }
-      }
-
-      memberData2 = await Members.findOneAndUpdate(
-        { _id: memberID },
-        {
-          $set: {
-            nodes: memberData.nodes,
-          },
-        },
-        { new: true }
-      );
-
-      pubsub.publish(memberData2._id, {
-        memberUpdated: memberData2,
-      });
-      return memberData2;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
-    }
-  },
-
-  updateNodesToMember: async (parent, args, context, info) => {
-    let { memberID, nodesID, nodesID_level, nodeType } = args.fields;
-
-    console.log("Mutation > updateNodesToMember > args.fields = ", args.fields);
-
-    if (!memberID) throw new ApolloError("memberID is required");
-
-    if (!(nodesID == undefined || nodesID_level == undefined))
-      throw new ApolloError(
-        "you need to use nodesID or nodesID_level, you cant use both"
-      );
-
-    try {
       let nodesID_level_obj = {};
       if (nodesID == undefined) {
         nodesID = nodesID_level.map((item) => item.nodeID);
@@ -674,203 +461,503 @@ module.exports = {
       }
       console.log("nodesID_level_obj = ", nodesID_level_obj);
 
-      let nodesData = await Node.find({ _id: nodesID }).select(
-        "_id name node match_v2_update"
-      );
+      try {
+        let memberData = await Members.findOne({ _id: memberID });
 
-      console.log("nodesData = ", nodesData);
-      // sdf;
+        let nodesData = await Node.find({ _id: nodesID }).select(
+          "_id node match_v2_update"
+        );
 
-      // ---------- All nodes should be equal to nodeType or else throw error -----------
-      nodesID_array = [];
-      nodesData.forEach((node) => {
-        nodesID_array.push(node._id.toString());
-        if (node.node != nodeType) {
-          throw new ApolloError(
-            "All nodes should be equal to nodeType, problem on nodeID = " +
-              node._id +
-              " with name = " +
-              node.name +
-              " and node = " +
-              node.node +
-              ""
-          );
+        // check if the nodes are already in the member (memberData.nodes)
+        let nodesDataOriginalArray = memberData.nodes.map(function (item) {
+          return item._id.toString();
+        });
+
+        let nodesIDArray = nodesID.map(function (item) {
+          return item.toString();
+        });
+
+        let differenceNodes = nodesIDArray.filter(
+          (x) => !nodesDataOriginalArray.includes(x)
+        );
+        console.log("differenceNodes = ", differenceNodes);
+
+        if (differenceNodes.length > 0) {
+          let nodesDataNew = [];
+          for (let i = 0; i < differenceNodes.length; i++) {
+            let nodeID = differenceNodes[i];
+            let nodeData = nodesData.find(
+              (x) => x._id.toString() == nodeID.toString()
+            );
+
+            if (nodesID_level != undefined) {
+              // caluclate the skill level and add it to the nodes for the next phase
+              let nodeNow_weight = await calculate_skill_level(
+                nodesID_level_obj[nodeID]
+              );
+
+              nodesDataNew.push({
+                ...nodeData._doc,
+                weight: nodeNow_weight.weight_total,
+              });
+              memberData.nodes.push({
+                _id: nodeID,
+                orderIndex: nodeNow_weight.orderIndex,
+                level: nodeNow_weight.level,
+                weight: nodeNow_weight.weight_total,
+                aboveNodes: nodesID_level_obj[nodeID].aboveNodes,
+              });
+            } else {
+              nodesDataNew.push(nodeData);
+              memberData.nodes.push({ _id: nodeID });
+            }
+          }
+
+          // add only the new ones as relationship on Neo4j
+          for (let i = 0; i < nodesDataNew.length; i++) {
+            let nodeNow = nodesDataNew[i];
+
+            if (nodeNow.weight != undefined) {
+              makeConnection_neo4j({
+                node: [nodeNow.node, "Member"],
+                id: [nodeNow._id, memberData._id],
+                connection: "connection",
+                // weight: "0.1",
+                weight: nodeNow.weight.toFixed(3),
+              });
+            } else {
+              makeConnection_neo4j({
+                node: [nodeNow.node, "Member"],
+                id: [nodeNow._id, memberData._id],
+                connection: "connection",
+              });
+            }
+          }
         }
-      });
-      // ---------- All nodes should be equal to nodeType or else throw error -----------
 
-      let memberData = await Members.findOne({ _id: memberID }).select(
-        "_id nodes"
+        console.log("memberData.nodes = ", memberData.nodes);
+        // safd2;
+
+        memberData2 = await Members.findOneAndUpdate(
+          { _id: memberID },
+          {
+            $set: {
+              nodes: memberData.nodes,
+            },
+          },
+          { new: true }
+        );
+
+        pubsub.publish(memberData2._id, {
+          memberUpdated: memberData2,
+        });
+
+        return memberData2;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
+      }
+    }
+  ),
+  deleteNodesFromMember: combineResolvers(
+    IsAuthenticated,
+    IsOnlyOperator,
+    async (parent, args, context, info) => {
+      const { memberID, nodesID } = args.fields;
+
+      console.log(
+        "Mutation > deleteNodesFromMember > args.fields = ",
+        args.fields
       );
 
-      let nodes_member_obj = {};
-      for (let i = 0; i < memberData.nodes.length; i++) {
-        let item = memberData.nodes[i];
-        nodes_member_obj[item._id] = item;
+      if (!memberID) throw new ApolloError("memberID is required");
+
+      try {
+        let memberData = await Members.findOne({ _id: memberID });
+        let nodesData = await Node.find({ _id: nodesID }).select(
+          "_id name node"
+        );
+
+        // check what nodes exist on memberData.nodes
+        let nodesDataOriginalArray = memberData.nodes.map(function (item) {
+          return item._id.toString();
+        });
+
+        let nodesIDArray = nodesID.map(function (item) {
+          return item.toString();
+        });
+
+        let nodesExistMemberAndNode = nodesDataOriginalArray.filter((x) =>
+          nodesIDArray.includes(x)
+        );
+        console.log("nodesExistMemberAndNode = ", nodesExistMemberAndNode);
+
+        let nodeExistOnlyMember = nodesDataOriginalArray.filter(
+          (x) => !nodesIDArray.includes(x)
+        );
+        console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
+
+        // console.log("change = " , change)
+
+        if (nodesExistMemberAndNode.length > 0) {
+          let nodesDataNew = [];
+          for (let i = 0; i < nodesExistMemberAndNode.length; i++) {
+            let nodeID = nodesExistMemberAndNode[i];
+            let nodeData = nodesData.find(
+              (x) => x._id.toString() == nodeID.toString()
+            );
+            nodesDataNew.push(nodeData);
+          }
+
+          let nodeExistOnlyMember_id = [];
+          for (let i = 0; i < nodeExistOnlyMember.length; i++) {
+            let nodeID = nodeExistOnlyMember[i];
+            nodeExistOnlyMember_id.push({ _id: nodeID });
+          }
+
+          memberData.nodes = nodeExistOnlyMember_id;
+
+          // console.log("nodesDataNew = " , nodesDataNew)
+
+          // console.log("memberData = " , memberData)
+
+          // console.log("change = " , change)
+
+          // add only the new ones as relationship on Neo4j
+          for (let i = 0; i < nodesDataNew.length; i++) {
+            let nodeNow = nodesDataNew[i];
+            deleteConnectionANYBetweenNodes_neo4j({
+              nodeID_1: memberData._id,
+              nodeID_2: nodeNow._id,
+            });
+
+            changeMatchByServer(nodeNow, memberData);
+          }
+        }
+
+        let memberData2 = await Members.findOneAndUpdate(
+          { _id: memberID },
+          {
+            $set: {
+              nodes: memberData.nodes,
+            },
+          },
+          { new: true }
+        );
+
+        pubsub.publish(memberData2._id, {
+          memberUpdated: memberData2,
+        });
+        return memberData2;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
       }
-      console.log("nodes_member_obj = ", nodes_member_obj);
+    }
+  ),
 
-      // check if the nodes are already in the member (memberData.nodes)
-      let nodesID_member = memberData.nodes.map(function (item) {
-        return item._id.toString();
-      });
+  updateNodesToMember: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, { user }, info) => {
+      let { nodesID, nodesID_level, nodeType } = args.fields;
 
-      // --------- Separate all the Nodes, and the nodeTypes ----------------
-      let nodeData_member_all = await Node.find({
-        _id: nodesID_member,
-      }).select("_id name node");
+      console.log(
+        "Mutation > updateNodesToMember > args.fields = ",
+        args.fields
+      );
 
-      // console.log("nodeData_member_all = ", nodeData_member_all);
-      // // sdf;
+      if (!(nodesID == undefined || nodesID_level == undefined))
+        throw new ApolloError(
+          "you need to use nodesID or nodesID_level, you cant use both"
+        );
 
-      nodeData_member_type = [];
-      nodeID_member_type = [];
-      nodeID_member_all = [];
-      nodeData_member_all.forEach((node, idx) => {
-        nodeID_member_all.push(node._id.toString());
-        // console.log(
-        //   "change = ",
-        //   nodes_member_obj[node._id.toString()].level,
-        //   nodesID_level_obj[node._id.toString()].level
-        // );
+      try {
+        let nodesID_level_obj = {};
+        if (nodesID == undefined) {
+          nodesID = nodesID_level.map((item) => item.nodeID);
 
-        if (nodes_member_obj[node._id] && nodesID_level_obj[node._id]) {
-          if (
-            nodes_member_obj[node._id].level ==
-              nodesID_level_obj[node._id].level &&
-            nodes_member_obj[node._id].orderIndex ==
-              nodesID_level_obj[node._id].orderIndex
-          ) {
+          // change nodesID_level from array of objects to an object
+          for (let i = 0; i < nodesID_level.length; i++) {
+            let item = nodesID_level[i];
+            nodesID_level_obj[item.nodeID] = item;
+          }
+        }
+        console.log("nodesID_level_obj = ", nodesID_level_obj);
+
+        let nodesData = await Node.find({ _id: nodesID }).select(
+          "_id name node match_v2_update"
+        );
+
+        console.log("nodesData = ", nodesData);
+        // sdf;
+
+        // ---------- All nodes should be equal to nodeType or else throw error -----------
+        nodesID_array = [];
+        nodesData.forEach((node) => {
+          nodesID_array.push(node._id.toString());
+          if (node.node != nodeType) {
+            throw new ApolloError(
+              "All nodes should be equal to nodeType, problem on nodeID = " +
+                node._id +
+                " with name = " +
+                node.name +
+                " and node = " +
+                node.node +
+                ""
+            );
+          }
+        });
+        // ---------- All nodes should be equal to nodeType or else throw error -----------
+
+        let memberData = await Members.findOne({ _id: user._id }).select(
+          "_id nodes"
+        );
+
+        let nodes_member_obj = {};
+        for (let i = 0; i < memberData.nodes.length; i++) {
+          let item = memberData.nodes[i];
+          nodes_member_obj[item._id] = item;
+        }
+        console.log("nodes_member_obj = ", nodes_member_obj);
+
+        // check if the nodes are already in the member (memberData.nodes)
+        let nodesID_member = memberData.nodes.map(function (item) {
+          return item._id.toString();
+        });
+
+        // --------- Separate all the Nodes, and the nodeTypes ----------------
+        let nodeData_member_all = await Node.find({
+          _id: nodesID_member,
+        }).select("_id name node");
+
+        // console.log("nodeData_member_all = ", nodeData_member_all);
+        // // sdf;
+
+        nodeData_member_type = [];
+        nodeID_member_type = [];
+        nodeID_member_all = [];
+        nodeData_member_all.forEach((node, idx) => {
+          nodeID_member_all.push(node._id.toString());
+          // console.log(
+          //   "change = ",
+          //   nodes_member_obj[node._id.toString()].level,
+          //   nodesID_level_obj[node._id.toString()].level
+          // );
+
+          if (nodes_member_obj[node._id] && nodesID_level_obj[node._id]) {
+            if (
+              nodes_member_obj[node._id].level ==
+                nodesID_level_obj[node._id].level &&
+              nodes_member_obj[node._id].orderIndex ==
+                nodesID_level_obj[node._id].orderIndex
+            ) {
+              if (node.node == nodeType) {
+                nodeData_member_type.push(node);
+                nodeID_member_type.push(node._id.toString());
+              }
+            }
+          } else {
             if (node.node == nodeType) {
               nodeData_member_type.push(node);
               nodeID_member_type.push(node._id.toString());
             }
           }
-        } else {
-          if (node.node == nodeType) {
-            nodeData_member_type.push(node);
-            nodeID_member_type.push(node._id.toString());
-          }
-        }
 
-        nodeData_member_all[idx] = {
-          ...nodeData_member_all[idx]._doc,
-          ...nodes_member_obj[node._id.toString()]._doc,
-          ...nodesID_level_obj[node._id.toString()],
-        };
-      });
+          nodeData_member_all[idx] = {
+            ...nodeData_member_all[idx]._doc,
+            ...nodes_member_obj[node._id.toString()]._doc,
+            ...nodesID_level_obj[node._id.toString()],
+          };
+        });
 
-      // asfd;
+        // asfd;
 
-      console.log("nodesID_array = ", nodesID_array);
-      console.log("nodeID_member_type = ", nodeID_member_type);
+        console.log("nodesID_array = ", nodesID_array);
+        console.log("nodeID_member_type = ", nodeID_member_type);
 
-      console.log("nodeData_member_all = ", nodeData_member_all);
-      // asdf;
+        console.log("nodeData_member_all = ", nodeData_member_all);
+        // asdf;
 
-      // --------- Separate all the Nodes, and the nodeTypes ----------------
-
-      // asdf;
-
-      /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
-      let differenceNodes = nodesID_array.filter(
-        (x) => !nodeID_member_type.includes(x)
-      );
-      console.log("differenceNodes = ", differenceNodes);
-
-      // asf;
-      if (differenceNodes.length > 0) {
-        let nodesDataNew = [];
-        for (let i = 0; i < differenceNodes.length; i++) {
-          let nodeID = differenceNodes[i];
-          let nodeData = nodesData.find(
-            (x) => x._id.toString() == nodeID.toString()
-          );
-
-          if (nodesID_level != undefined) {
-            // caluclate the skill level and add it to the nodes for the next phase
-            let nodeNow_weight = await calculate_skill_level(
-              nodesID_level_obj[nodeID]
-            );
-
-            // console.log("nodeNow_weight = ", nodeNow_weight);
-            // sadf;
-
-            nodesDataNew.push({
-              ...nodeData._doc,
-              weight: nodeNow_weight.weight_total,
-            });
-            nodeData_member_all.push({
-              _id: nodeID,
-              orderIndex: nodeNow_weight.orderIndex,
-              level: nodeNow_weight.level,
-              weight: nodeNow_weight.weight_total,
-              aboveNodes: nodesID_level_obj[nodeID].aboveNodes,
-            });
-          } else {
-            nodesDataNew.push(nodeData);
-            nodeData_member_all.push({ _id: nodeID });
-          }
-          // nodesDataNew.push(nodeData);
-          // nodeData_member_all.push({ _id: nodeID });
-        }
-
-        // console.log("nodesDataNew = ", nodesDataNew);
+        // --------- Separate all the Nodes, and the nodeTypes ----------------
 
         // asdf;
 
-        // add only the new ones as relationship on Neo4j
-        for (let i = 0; i < nodesDataNew.length; i++) {
-          let nodeNow = nodesDataNew[i];
+        /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
+        let differenceNodes = nodesID_array.filter(
+          (x) => !nodeID_member_type.includes(x)
+        );
+        console.log("differenceNodes = ", differenceNodes);
 
-          if (nodeNow.weight != undefined) {
-            makeConnection_neo4j({
-              node: [nodeNow.node, "Member"],
-              id: [nodeNow._id, memberData._id],
-              connection: "connection",
-              weight: nodeNow.weight.toFixed(3),
-            });
-          } else {
-            makeConnection_neo4j({
-              node: [nodeNow.node, "Member"],
-              id: [nodeNow._id, memberData._id],
-              connection: "connection",
-            });
+        // asf;
+        if (differenceNodes.length > 0) {
+          let nodesDataNew = [];
+          for (let i = 0; i < differenceNodes.length; i++) {
+            let nodeID = differenceNodes[i];
+            let nodeData = nodesData.find(
+              (x) => x._id.toString() == nodeID.toString()
+            );
+
+            if (nodesID_level != undefined) {
+              // caluclate the skill level and add it to the nodes for the next phase
+              let nodeNow_weight = await calculate_skill_level(
+                nodesID_level_obj[nodeID]
+              );
+
+              // console.log("nodeNow_weight = ", nodeNow_weight);
+              // sadf;
+
+              nodesDataNew.push({
+                ...nodeData._doc,
+                weight: nodeNow_weight.weight_total,
+              });
+              nodeData_member_all.push({
+                _id: nodeID,
+                orderIndex: nodeNow_weight.orderIndex,
+                level: nodeNow_weight.level,
+                weight: nodeNow_weight.weight_total,
+                aboveNodes: nodesID_level_obj[nodeID].aboveNodes,
+              });
+            } else {
+              nodesDataNew.push(nodeData);
+              nodeData_member_all.push({ _id: nodeID });
+            }
+            // nodesDataNew.push(nodeData);
+            // nodeData_member_all.push({ _id: nodeID });
           }
 
-          changeMatchByServer(nodeNow, memberData);
+          // console.log("nodesDataNew = ", nodesDataNew);
+
+          // asdf;
+
+          // add only the new ones as relationship on Neo4j
+          for (let i = 0; i < nodesDataNew.length; i++) {
+            let nodeNow = nodesDataNew[i];
+
+            if (nodeNow.weight != undefined) {
+              makeConnection_neo4j({
+                node: [nodeNow.node, "Member"],
+                id: [nodeNow._id, memberData._id],
+                connection: "connection",
+                weight: nodeNow.weight.toFixed(3),
+              });
+            } else {
+              makeConnection_neo4j({
+                node: [nodeNow.node, "Member"],
+                id: [nodeNow._id, memberData._id],
+                connection: "connection",
+              });
+            }
+
+            changeMatchByServer(nodeNow, memberData);
+          }
         }
-      }
-      /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
+        /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
 
-      // -------------- Remove the Nodes that are not in the nodesID_array ----------------
-      let nodesExistMemberAndNode = nodeID_member_type.filter((x) =>
-        nodesID_array.includes(x)
-      );
-      console.log("nodesExistMemberAndNode = ", nodesExistMemberAndNode);
-
-      let nodeExistOnlyMember = nodeID_member_type.filter(
-        (x) => !nodesID_array.includes(x)
-      );
-      console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
-      console.log("nodeID_member_type = ", nodeID_member_type);
-      console.log("nodesID_array = ", nodesID_array);
-      // asd;
-
-      // console.log("change = " , change)
-
-      if (nodeExistOnlyMember.length > 0) {
-        nodeData_member_all = nodeData_member_all.filter(
-          (element) => !nodeExistOnlyMember.includes(element._id.toString())
+        // -------------- Remove the Nodes that are not in the nodesID_array ----------------
+        let nodesExistMemberAndNode = nodeID_member_type.filter((x) =>
+          nodesID_array.includes(x)
         );
+        console.log("nodesExistMemberAndNode = ", nodesExistMemberAndNode);
+
+        let nodeExistOnlyMember = nodeID_member_type.filter(
+          (x) => !nodesID_array.includes(x)
+        );
+        console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
+        console.log("nodeID_member_type = ", nodeID_member_type);
+        console.log("nodesID_array = ", nodesID_array);
+        // asd;
+
+        // console.log("change = " , change)
+
+        if (nodeExistOnlyMember.length > 0) {
+          nodeData_member_all = nodeData_member_all.filter(
+            (element) => !nodeExistOnlyMember.includes(element._id.toString())
+          );
+
+          console.log("nodeData_member_all = ", nodeData_member_all);
+
+          console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
+
+          // add only the new ones as relationship on Neo4j
+          for (let i = 0; i < nodeExistOnlyMember.length; i++) {
+            let nodeNow = { _id: nodeExistOnlyMember[i] };
+            deleteConnectionANYBetweenNodes_neo4j({
+              nodeID_1: memberData._id,
+              nodeID_2: nodeNow._id,
+            });
+
+            changeMatchByServer(nodeNow, memberData);
+          }
+        }
+        // -------------- Remove the Nodes that are not in the nodesID_array ----------------
 
         console.log("nodeData_member_all = ", nodeData_member_all);
+        // asdf;
 
-        console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
+        memberData2 = await Members.findOneAndUpdate(
+          { _id: user._id },
+          {
+            $set: {
+              nodes: nodeData_member_all,
+            },
+          },
+          { new: true }
+        );
+        pubsub.publish(memberData2._id, {
+          memberUpdated: memberData2,
+        });
+
+        return memberData2;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
+      }
+    }
+  ),
+  deleteMember: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, { user }, info) => {
+      const { memberID } = args.fields;
+
+      if (!user && user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS)
+        throw new ApolloError("Not Authorized");
+
+      console.log("Mutation > deleteMember > args.fields = ", args.fields);
+
+      if (!memberID) throw new ApolloError("memberID is required");
+
+      try {
+        let memberData = await Members.findOne({ _id: memberID });
+
+        if (!memberData) throw new ApolloError("memberID not found");
+
+        // console.log("memberData = " , memberData)
+
+        // get all nodes from memberData.nodes
+        let nodesData = await Node.find({
+          _id: memberData.nodes.map(function (item) {
+            return item._id.toString();
+          }),
+        });
+
+        // console.log("nodesData = " , nodesData)
+
+        // console.log("change = " , change)
+
+        // console.log("change = " , change)
 
         // add only the new ones as relationship on Neo4j
-        for (let i = 0; i < nodeExistOnlyMember.length; i++) {
-          let nodeNow = { _id: nodeExistOnlyMember[i] };
+        for (let i = 0; i < nodesData.length; i++) {
+          let nodeNow = nodesData[i];
           deleteConnectionANYBetweenNodes_neo4j({
             nodeID_1: memberData._id,
             nodeID_2: nodeNow._id,
@@ -878,186 +965,133 @@ module.exports = {
 
           changeMatchByServer(nodeNow, memberData);
         }
-      }
-      // -------------- Remove the Nodes that are not in the nodesID_array ----------------
 
-      console.log("nodeData_member_all = ", nodeData_member_all);
-      // asdf;
-
-      memberData2 = await Members.findOneAndUpdate(
-        { _id: memberID },
-        {
-          $set: {
-            nodes: nodeData_member_all,
-          },
-        },
-        { new: true }
-      );
-      pubsub.publish(memberData2._id, {
-        memberUpdated: memberData2,
-      });
-
-      return memberData2;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
-    }
-  },
-  deleteMember: async (parent, args, context, info) => {
-    const { memberID } = args.fields;
-
-    console.log("Mutation > deleteMember > args.fields = ", args.fields);
-
-    if (!memberID) throw new ApolloError("memberID is required");
-
-    try {
-      let memberData = await Members.findOne({ _id: memberID });
-
-      if (!memberData) throw new ApolloError("memberID not found");
-
-      // console.log("memberData = " , memberData)
-
-      // get all nodes from memberData.nodes
-      let nodesData = await Node.find({
-        _id: memberData.nodes.map(function (item) {
-          return item._id.toString();
-        }),
-      });
-
-      // console.log("nodesData = " , nodesData)
-
-      // console.log("change = " , change)
-
-      // console.log("change = " , change)
-
-      // add only the new ones as relationship on Neo4j
-      for (let i = 0; i < nodesData.length; i++) {
-        let nodeNow = nodesData[i];
-        deleteConnectionANYBetweenNodes_neo4j({
-          nodeID_1: memberData._id,
-          nodeID_2: nodeNow._id,
+        deleteNode_neo4j({
+          nodeID: memberData._id,
         });
 
-        changeMatchByServer(nodeNow, memberData);
+        // delete memberData from mongoDB database
+        memberData2 = await Members.findOneAndDelete({ _id: memberID });
+
+        return memberData2;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
       }
-
-      deleteNode_neo4j({
-        nodeID: memberData._id,
-      });
-
-      // delete memberData from mongoDB database
-      memberData2 = await Members.findOneAndDelete({ _id: memberID });
-
-      return memberData2;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
     }
-  },
-  addPreferencesToMember: async (parent, args, context, info) => {
-    const { memberID } = args.fields;
-    let { preferences } = args.fields;
-    console.log(
-      "Mutation > addPreferencesToMember > args.fields = ",
-      args.fields
-    );
+  ),
 
-    if (!memberID) throw new ApolloError("memberID is required");
-
-    if (!preferences) preferences = [];
-
-    try {
-      let memberData = await Members.findOne({ _id: memberID }).select(
-        "_id name preferences"
+  addPreferencesToMember: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, { user }, info) => {
+      const { memberID } = args.fields;
+      let { preferences } = args.fields;
+      console.log(
+        "Mutation > addPreferencesToMember > args.fields = ",
+        args.fields
       );
-      if (!memberData) throw new ApolloError("Member not found");
 
-      let current_preferences = memberData.preferences;
+      if (!memberID) throw new ApolloError("memberID is required");
 
-      console.log("current_preferences = ", current_preferences);
+      if (
+        memberID !== user._id ||
+        user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS
+      )
+        throw new ApolloError("Not Authorized");
 
-      for (let i = 0; i < preferences.length; i++) {
-        let preferenceNow = preferences[i];
+      if (!preferences) preferences = [];
 
-        // preferenceNow.preference -> the enum that determine what to change
-        if (preferenceNow.notify !== undefined)
-          current_preferences[preferenceNow.preference].notify =
-            preferenceNow.notify;
-        if (preferenceNow.percentage !== undefined)
-          current_preferences[preferenceNow.preference].percentage =
-            preferenceNow.percentage;
-        if (preferenceNow.interestedMatch !== undefined)
-          current_preferences[preferenceNow.preference].interestedMatch =
-            preferenceNow.interestedMatch;
+      try {
+        let memberData = await Members.findOne({ _id: memberID }).select(
+          "_id name preferences"
+        );
+        if (!memberData) throw new ApolloError("Member not found");
 
-        // preferenceNow.pastSearch.map((x) => x);
+        let current_preferences = memberData.preferences;
 
-        // console.log(
-        //   "change = ",
-        //   preferenceNow.pastSearch.map((x) => x)
-        // );
+        console.log("current_preferences = ", current_preferences);
 
-        if (preferenceNow.pastSearch && preferenceNow.pastSearch.length > 0) {
-          preferenceNow.pastSearch.forEach((x) => {
-            current_preferences[preferenceNow.preference].pastSearch.push(x);
-          });
+        for (let i = 0; i < preferences.length; i++) {
+          let preferenceNow = preferences[i];
 
-          // current_preferences[preferenceNow.preference].pastSearch.push(
+          // preferenceNow.preference -> the enum that determine what to change
+          if (preferenceNow.notify !== undefined)
+            current_preferences[preferenceNow.preference].notify =
+              preferenceNow.notify;
+          if (preferenceNow.percentage !== undefined)
+            current_preferences[preferenceNow.preference].percentage =
+              preferenceNow.percentage;
+          if (preferenceNow.interestedMatch !== undefined)
+            current_preferences[preferenceNow.preference].interestedMatch =
+              preferenceNow.interestedMatch;
+
+          // preferenceNow.pastSearch.map((x) => x);
+
+          // console.log(
+          //   "change = ",
           //   preferenceNow.pastSearch.map((x) => x)
           // );
-          // current_preferences[preferenceNow.preference].pastSearch =
-          //   preferenceNow.pastSearch.map((x) => x);
+
+          if (preferenceNow.pastSearch && preferenceNow.pastSearch.length > 0) {
+            preferenceNow.pastSearch.forEach((x) => {
+              current_preferences[preferenceNow.preference].pastSearch.push(x);
+            });
+
+            // current_preferences[preferenceNow.preference].pastSearch.push(
+            //   preferenceNow.pastSearch.map((x) => x)
+            // );
+            // current_preferences[preferenceNow.preference].pastSearch =
+            //   preferenceNow.pastSearch.map((x) => x);
+          }
         }
+
+        const optionsPref = [
+          "findUser",
+          "findCoFounder",
+          "findMentor",
+          "findMentee",
+          "findProject",
+        ];
+
+        notify_global = false;
+        interestedMatch_global = false;
+        for (let i = 0; i < optionsPref.length; i++) {
+          let optionNow = optionsPref[i];
+          if (current_preferences[optionNow].notify == true)
+            notify_global = true;
+          if (current_preferences[optionNow].interestedMatch == true)
+            interestedMatch_global = true;
+        }
+        console.log("notify_global = ", notify_global);
+        console.log("interestedMatch_global = ", interestedMatch_global);
+
+        current_preferences.notify = notify_global;
+        current_preferences.interestedMatch = interestedMatch_global;
+
+        memberData = await Members.findOneAndUpdate(
+          { _id: memberID },
+          { preferences: current_preferences },
+          { new: true }
+        );
+
+        // console.log("memberData.projects = ", memberData.projects);
+
+        pubsub.publish(memberData._id, {
+          memberUpdated: memberData,
+        });
+        return memberData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
       }
-
-      const optionsPref = [
-        "findUser",
-        "findCoFounder",
-        "findMentor",
-        "findMentee",
-        "findProject",
-      ];
-
-      notify_global = false;
-      interestedMatch_global = false;
-      for (let i = 0; i < optionsPref.length; i++) {
-        let optionNow = optionsPref[i];
-        if (current_preferences[optionNow].notify == true) notify_global = true;
-        if (current_preferences[optionNow].interestedMatch == true)
-          interestedMatch_global = true;
-      }
-      console.log("notify_global = ", notify_global);
-      console.log("interestedMatch_global = ", interestedMatch_global);
-
-      current_preferences.notify = notify_global;
-      current_preferences.interestedMatch = interestedMatch_global;
-
-      memberData = await Members.findOneAndUpdate(
-        { _id: memberID },
-        { preferences: current_preferences },
-        { new: true }
-      );
-
-      // console.log("memberData.projects = ", memberData.projects);
-
-      pubsub.publish(memberData._id, {
-        memberUpdated: memberData,
-      });
-      return memberData;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
     }
-  },
+  ),
   addFavoriteProject: async (parent, args, context, info) => {
     const { memberID, projectID, favorite } = args.fields;
     console.log("Mutation > addFavoriteProject > args.fields = ", args.fields);
@@ -1193,237 +1227,239 @@ module.exports = {
       );
     }
   },
-  addSkillToMember: async (parent, args, context, info) => {
-    const { skillID, memberID, authorID, serverID } = args.fields;
-    console.log("Mutation > addSkillToMember > args.fields = ", args.fields);
 
-    if (!skillID) throw new ApolloError("skillID is required");
-    if (!memberID) throw new ApolloError("memberID is required");
-    if (!authorID) throw new ApolloError("authorID is required");
+  // DEPRECATED
+  // addSkillToMember: async (parent, args, context, info) => {
+  //   const { skillID, memberID, authorID, serverID } = args.fields;
+  //   console.log("Mutation > addSkillToMember > args.fields = ", args.fields);
 
-    let queryServerID = [];
-    if (serverID) {
-      serverID.forEach((id) => {
-        queryServerID.push({ serverID: id });
-      });
-    }
+  //   if (!skillID) throw new ApolloError("skillID is required");
+  //   if (!memberID) throw new ApolloError("memberID is required");
+  //   if (!authorID) throw new ApolloError("authorID is required");
 
-    try {
-      let fieldUpdate = {};
+  //   let queryServerID = [];
+  //   if (serverID) {
+  //     serverID.forEach((id) => {
+  //       queryServerID.push({ serverID: id });
+  //     });
+  //   }
 
-      let member; //= await Members.findOne({ _id: memberID })
-      if (queryServerID.length > 0) {
-        member = await Members.findOne({
-          $and: [{ _id: memberID }, { $or: queryServerID }],
-        });
-      } else {
-        member = await Members.findOne({ _id: memberID });
-      }
+  //   try {
+  //     let fieldUpdate = {};
 
-      let authorInfo; //= await Members.findOne({ _id: authorID })
-      if (queryServerID.length > 0) {
-        authorInfo = await Members.findOne({
-          $and: [{ _id: authorID }, { $or: queryServerID }],
-        });
-      } else {
-        authorInfo = await Members.findOne({ _id: authorID });
-      }
+  //     let member; //= await Members.findOne({ _id: memberID })
+  //     if (queryServerID.length > 0) {
+  //       member = await Members.findOne({
+  //         $and: [{ _id: memberID }, { $or: queryServerID }],
+  //       });
+  //     } else {
+  //       member = await Members.findOne({ _id: memberID });
+  //     }
 
-      let skill = await Skills.findOne({ _id: skillID });
+  //     let authorInfo; //= await Members.findOne({ _id: authorID })
+  //     if (queryServerID.length > 0) {
+  //       authorInfo = await Members.findOne({
+  //         $and: [{ _id: authorID }, { $or: queryServerID }],
+  //       });
+  //     } else {
+  //       authorInfo = await Members.findOne({ _id: authorID });
+  //     }
 
-      if (!member)
-        throw new ApolloError(
-          "member dont exist, or the author and member are not in the same server"
-        );
-      if (!authorInfo)
-        throw new ApolloError(
-          "author dont exist, or the author and member are not in the same server"
-        );
-      if (!skill)
-        throw new ApolloError(
-          "skill dont exist, you need to first creaet the skill "
-        );
+  //     let skill = await Skills.findOne({ _id: skillID });
 
-      // console.log("change = " , skill,authorInfo,member)
+  //     if (!member)
+  //       throw new ApolloError(
+  //         "member dont exist, or the author and member are not in the same server"
+  //       );
+  //     if (!authorInfo)
+  //       throw new ApolloError(
+  //         "author dont exist, or the author and member are not in the same server"
+  //       );
+  //     if (!skill)
+  //       throw new ApolloError(
+  //         "skill dont exist, you need to first creaet the skill "
+  //       );
 
-      let newSkills;
+  //     // console.log("change = " , skill,authorInfo,member)
 
-      let skillExist = true;
-      let makeAnUpdate = false;
+  //     let newSkills;
 
-      // add skill edge from author to member & add skill edge from member to skill node
-      if (member._id !== authorInfo._id) {
-        await makeConnection_neo4j({
-          node: ["Member", "Skill"],
-          id: [member._id, skill._id],
-          connection: "SKILL",
-        });
-        await makeConnection_neo4j({
-          node: ["Member", "Member"],
-          id: [authorInfo._id, member._id],
-          connection: "ENDORSE",
-        });
-      } else {
-        //when author endorses themselves only add skill edge from member to skill node
-        await makeConnection_neo4j({
-          node: ["Member", "Skill"],
-          id: [member._id, skill._id],
-          connection: "SKILL",
-        });
-      }
+  //     let skillExist = true;
+  //     let makeAnUpdate = false;
 
-      // Recalculate the skill match now that neo4j diagram changed
-      await Skills.findOneAndUpdate(
-        { _id: skill._id },
-        {
-          $set: {
-            match: {
-              recalculateProjectRoles: true,
-              distanceProjectRoles: skill.distanceProjectRoles,
+  //     // add skill edge from author to member & add skill edge from member to skill node
+  //     if (member._id !== authorInfo._id) {
+  //       await makeConnection_neo4j({
+  //         node: ["Member", "Skill"],
+  //         id: [member._id, skill._id],
+  //         connection: "SKILL",
+  //       });
+  //       await makeConnection_neo4j({
+  //         node: ["Member", "Member"],
+  //         id: [authorInfo._id, member._id],
+  //         connection: "ENDORSE",
+  //       });
+  //     } else {
+  //       //when author endorses themselves only add skill edge from member to skill node
+  //       await makeConnection_neo4j({
+  //         node: ["Member", "Skill"],
+  //         id: [member._id, skill._id],
+  //         connection: "SKILL",
+  //       });
+  //     }
 
-              recalculateMembers: true,
-              distanceMembers: skill.distanceMembers,
-            },
-          },
-        },
-        { new: true }
-      );
+  //     // Recalculate the skill match now that neo4j diagram changed
+  //     await Skills.findOneAndUpdate(
+  //       { _id: skill._id },
+  //       {
+  //         $set: {
+  //           match: {
+  //             recalculateProjectRoles: true,
+  //             distanceProjectRoles: skill.distanceProjectRoles,
 
-      // check all the skills, if the skill is already in the member, then update the author
-      const updatedSkills = member.skills.map((skillMem) => {
-        if (skillMem.id.equals(skill._id) === true) {
-          skillExist = false;
+  //             recalculateMembers: true,
+  //             distanceMembers: skill.distanceMembers,
+  //           },
+  //         },
+  //       },
+  //       { new: true }
+  //     );
 
-          if (!skillMem.authors.includes(authorID)) {
-            // If the skill already exist but the author is not in the list, add it
-            makeAnUpdate = true;
+  //     // check all the skills, if the skill is already in the member, then update the author
+  //     const updatedSkills = member.skills.map((skillMem) => {
+  //       if (skillMem.id.equals(skill._id) === true) {
+  //         skillExist = false;
 
-            skillMem.authors.push(authorID);
+  //         if (!skillMem.authors.includes(authorID)) {
+  //           // If the skill already exist but the author is not in the list, add it
+  //           makeAnUpdate = true;
 
-            return skillMem;
-          } else {
-            return skillMem;
-          }
-        } else {
-          return skillMem;
-        }
-      });
+  //           skillMem.authors.push(authorID);
 
-      //console.log("change = 1" )
+  //           return skillMem;
+  //         } else {
+  //           return skillMem;
+  //         }
+  //       } else {
+  //         return skillMem;
+  //       }
+  //     });
 
-      // ---------- Network Member-----------
-      let networkMember;
-      let flagMemberExist = false;
-      member.network.forEach((net) => {
-        // console.log("net = " , net,net.memberID == authorID,net.memberID , authorID)
-        // if (net.memberID.equals(authorID)===true){
-        if (net.memberID == authorID) {
-          flagMemberExist = true;
-        }
-      });
-      //console.log("change = 2" )
+  //     //console.log("change = 1" )
 
-      if (flagMemberExist === false) {
-        networkMember = member.network.concat({ memberID: authorID });
-      } else {
-        networkMember = member.network;
-      }
-      // ---------- Network Member-----------
+  //     // ---------- Network Member-----------
+  //     let networkMember;
+  //     let flagMemberExist = false;
+  //     member.network.forEach((net) => {
+  //       // console.log("net = " , net,net.memberID == authorID,net.memberID , authorID)
+  //       // if (net.memberID.equals(authorID)===true){
+  //       if (net.memberID == authorID) {
+  //         flagMemberExist = true;
+  //       }
+  //     });
+  //     //console.log("change = 2" )
 
-      //console.log("change = 2.5",authorInfo.network )
-      // ---------- Network Author-----------
-      let networkAuthor;
-      flagMemberExist = false;
-      authorInfo.network.forEach((net) => {
-        if (net.memberID == authorID) {
-          flagMemberExist = true;
-        }
-      });
-      //console.log("change = 2.7" )
+  //     if (flagMemberExist === false) {
+  //       networkMember = member.network.concat({ memberID: authorID });
+  //     } else {
+  //       networkMember = member.network;
+  //     }
+  //     // ---------- Network Member-----------
 
-      if (flagMemberExist === false) {
-        networkAuthor = authorInfo.network.concat({ memberID: member._id });
-      } else {
-        networkAuthor = authorInfo.network;
-      }
-      // ---------- Network Author-----------
+  //     //console.log("change = 2.5",authorInfo.network )
+  //     // ---------- Network Author-----------
+  //     let networkAuthor;
+  //     flagMemberExist = false;
+  //     authorInfo.network.forEach((net) => {
+  //       if (net.memberID == authorID) {
+  //         flagMemberExist = true;
+  //       }
+  //     });
+  //     //console.log("change = 2.7" )
 
-      //console.log("change = 3" )
+  //     if (flagMemberExist === false) {
+  //       networkAuthor = authorInfo.network.concat({ memberID: member._id });
+  //     } else {
+  //       networkAuthor = authorInfo.network;
+  //     }
+  //     // ---------- Network Author-----------
 
-      let updateMembers = skill.members;
-      // if the skill is not in the member, then add it
-      if (skillExist === true) {
-        makeAnUpdate = true;
-        updatedSkills.push({
-          id: skill._id,
-          authors: [authorID],
-        });
-        updateMembers.push(member._id);
-      }
+  //     //console.log("change = 3" )
 
-      //console.log("change = 4" ,updatedSkills)
-      //console.log("change = 4" ,networkMember)
+  //     let updateMembers = skill.members;
+  //     // if the skill is not in the member, then add it
+  //     if (skillExist === true) {
+  //       makeAnUpdate = true;
+  //       updatedSkills.push({
+  //         id: skill._id,
+  //         authors: [authorID],
+  //       });
+  //       updateMembers.push(member._id);
+  //     }
 
-      let newMember, newSkill;
-      if (makeAnUpdate) {
-        member = await Members.findOneAndUpdate(
-          { _id: member._id },
-          {
-            $set: {
-              skills: updatedSkills,
-              network: networkMember,
-            },
-          },
-          { new: true }
-        );
+  //     //console.log("change = 4" ,updatedSkills)
+  //     //console.log("change = 4" ,networkMember)
 
-        //console.log("change = 5" )
+  //     let newMember, newSkill;
+  //     if (makeAnUpdate) {
+  //       member = await Members.findOneAndUpdate(
+  //         { _id: member._id },
+  //         {
+  //           $set: {
+  //             skills: updatedSkills,
+  //             network: networkMember,
+  //           },
+  //         },
+  //         { new: true }
+  //       );
 
-        authorInfo = await Members.findOneAndUpdate(
-          { _id: authorInfo._id },
-          {
-            $set: {
-              network: networkAuthor,
-            },
-          },
-          { new: true }
-        );
+  //       //console.log("change = 5" )
 
-        //console.log("change = 6" )
+  //       authorInfo = await Members.findOneAndUpdate(
+  //         { _id: authorInfo._id },
+  //         {
+  //           $set: {
+  //             network: networkAuthor,
+  //           },
+  //         },
+  //         { new: true }
+  //       );
 
-        skill = await Skills.findOneAndUpdate(
-          { _id: skill._id },
-          {
-            $set: {
-              members: updateMembers,
-            },
-          },
-          { new: true }
-        );
-      }
+  //       //console.log("change = 6" )
 
-      //console.log("member = " , member)
+  //       skill = await Skills.findOneAndUpdate(
+  //         { _id: skill._id },
+  //         {
+  //           $set: {
+  //             members: updateMembers,
+  //           },
+  //         },
+  //         { new: true }
+  //       );
+  //     }
 
-      //console.log("networkAuthor 22 - = " , networkAuthor)
-      //console.log("authorInfo 22 - = " , authorInfo)
+  //     //console.log("member = " , member)
 
-      member = {
-        ...member._doc,
-        // skills: []
-      };
-      //console.log("Context", context)
-      pubsub.publish(member._id, {
-        memberUpdated: member,
-      });
-      return member;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
-    }
-  },
+  //     //console.log("networkAuthor 22 - = " , networkAuthor)
+  //     //console.log("authorInfo 22 - = " , authorInfo)
+
+  //     member = {
+  //       ...member._doc,
+  //       // skills: []
+  //     };
+  //     //console.log("Context", context)
+  //     pubsub.publish(member._id, {
+  //       memberUpdated: member,
+  //     });
+  //     return member;
+  //   } catch (err) {
+  //     throw new ApolloError(
+  //       err.message,
+  //       err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+  //       { component: "tmemberQuery > findMember" }
+  //     );
+  //   }
+  // },
   memberUpdated: {
     subscribe: (parent, args, context, info) => {
       //console.log("Context", parent)

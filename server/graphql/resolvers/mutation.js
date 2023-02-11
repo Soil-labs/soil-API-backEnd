@@ -7,7 +7,7 @@ const {
   deleteMember,
   addFavoriteProject,
   addPreferencesToMember,
-  addSkillToMember,
+  // addSkillToMember,
   endorseAttribute,
   memberUpdated,
   addEndorsement,
@@ -29,11 +29,11 @@ const {
 } = require("./mutation/projectsMutation");
 
 const {
-  createSkill,
-  createSkills,
+  // createSkill,
+  // createSkills,
   relatedSkills,
-  createApprovedSkill,
-  approveOrRejectSkill,
+  // createApprovedSkill,
+  // approveOrRejectSkill,
 } = require("./mutation/skillMutation");
 const {
   createNode,
@@ -46,11 +46,12 @@ const {
   updateGrant,
   addNodesToGrant,
   applyGrant,
+  updateNodesToGrant,
 } = require("./mutation/grantMutation");
-const { updateSkillCategory } = require("./mutation/skillCategoryMutation");
-const {
-  updateSkillSubCategory,
-} = require("./mutation/skillSubCategoryMutation");
+// const { updateSkillCategory } = require("./mutation/skillCategoryMutation");
+// const {
+//   updateSkillSubCategory,
+// } = require("./mutation/skillSubCategoryMutation");
 const { createProjectUpdate } = require("./mutation/projectUpdateMutation");
 const {
   createRoom,
@@ -61,7 +62,7 @@ const {
   deleteNodesFromMemberInRoom,
   roomUpdated,
   memberUpdatedInRoom,
-  updateNodesToMemberInRoom
+  updateNodesToMemberInRoom,
 } = require("./mutation/roomMutation");
 const {
   addNewChat,
@@ -92,7 +93,7 @@ module.exports = {
     endorseAttribute,
     addFavoriteProject,
     addPreferencesToMember,
-    addSkillToMember,
+    // addSkillToMember,
     addEndorsement,
 
     // ------------- PROJECT MUTATION -----------------
@@ -111,11 +112,11 @@ module.exports = {
     createProject,
 
     // ------------- SKILL MUTATION -----------------
-    createSkill,
-    createSkills,
+    // createSkill,
+    // createSkills,
     relatedSkills,
-    createApprovedSkill,
-    approveOrRejectSkill,
+    // createApprovedSkill,
+    // approveOrRejectSkill,
 
     // ------------- NODE MUTATION -----------------
     createNode,
@@ -132,12 +133,13 @@ module.exports = {
     updateGrant,
     addNodesToGrant,
     applyGrant,
+    updateNodesToGrant,
 
     // ------------- SKILL CATEGORY MUTATION -----------------
-    updateSkillCategory,
+    // updateSkillCategory,
 
     // ------------- SKILL SUB CATEGORY MUTATION -----------------
-    updateSkillSubCategory,
+    // updateSkillSubCategory,
 
     // ------------- PROJECT UPDATE MUTATION -----------------
     createProjectUpdate,

@@ -168,8 +168,79 @@ module.exports = {
     const { oneLinerProject, descriptionProject, titleRole, expertiseRole } =
       args.fields;
     console.log("Mutation > inputToGPT > args.fields = ", args.fields);
+    if (!titleRole) throw new ApolloError("The titleRole is required");
+    let model = "text-davinci-003";
+    const prompt =
+      'I give you four things: a one-liner for a project + a description of that project  + the title of a role for that project + [categories of specialization for that role within that same project ]\n\nYour job is to take all those 4 things and create a wholistic context from it, focus on "the title of a role for that project" and "[categories of specialization for that role within that same project ]" and to give me the following:\n1. A full description of that role(always label this output with "Role Description:")\n2. Four Expectations for that role (always label this output with "Expectations for Role:") + Return this list  as a Javascript Arra\n3. Four Benefits of this role (always label this output with "Benefits:") + Return this list  as a Javascript Array  \n\nHere we go: \n\n';
+    const input =
+      prompt +
+      " " +
+      oneLinerProject +
+      " + " +
+      descriptionProject +
+      " + " +
+      titleRole +
+      " + " +
+      expertiseRole;
+    const response = await openai.createCompletion({
+      model,
+      prompt: input,
+
+      max_tokens: 400,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+    });
+
+    // console.log(
+    //   "prompt + oneLinerProject + descriptionProject + titleRole + expertiseRole",
+    //   prompt +
+    //     " " +
+    //     oneLinerProject +
+    //     " + " +
+    //     descriptionProject +
+    //     " + " +
+    //     titleRole +
+    //     " + " +
+    //     expertiseRole
+    // );
+
+    let generatedText = response.data.choices[0].text;
+    let result = generatedText.replace(/\n\n/g, "");
+    const descriptionRoleHandler = () => {
+      const startIndex = result.indexOf("Role Description:");
+      const endIndex = result.indexOf("Expectations for Role:");
+      const descriptionRole = result
+        .slice(startIndex + "Role Description:".length, endIndex)
+        .trim();
+
+      return descriptionRole;
+    };
+    const expectationRoleHandler = () => {
+      const startIndex = result.indexOf("Expectations for Role:");
+      const endIndex = result.indexOf("Benefits:");
+      const expectationRoleString = result
+        .slice(startIndex + "Expectations for Role:".length, endIndex)
+        .trim();
+
+      const expectationRole = JSON.parse(expectationRoleString);
+      return expectationRole;
+    };
+    const benefitRoleHandler = () => {
+      const startIndex = result.indexOf("Benefits:");
+      const benefitRoleString = result
+        .slice(startIndex + "Benefits:".length)
+        .trim();
+      const benefitRole = JSON.parse(benefitRoleString);
+      return benefitRole;
+    };
 
     try {
+      return {
+        descriptionRole: descriptionRoleHandler,
+        expectationsRole: expectationRoleHandler,
+        benefitsRole: benefitRoleHandler,
+      };
     } catch (err) {
       throw new ApolloError(err.message, err.extensions?.code || "inputToGPT", {
         component: "aiMutation > inputToGPT",
