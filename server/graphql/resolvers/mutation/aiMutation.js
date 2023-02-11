@@ -6,6 +6,9 @@ const math = require("mathjs");
 const numeric = require("numeric");
 const fs = require("fs");
 
+const { combineResolvers } = require("graphql-resolvers");
+const { IsAuthenticated } = require("../../../utils/authorization");
+
 const configuration = new Configuration({
   apiKey: chooseAPIkey(),
 });
@@ -120,50 +123,53 @@ module.exports = {
       );
     }
   },
-  messageToGPT: async (parent, args, context, info) => {
-    const { message, category, prompt } = args.fields;
-    console.log("Mutation > messageToGPT > args.fields = ", args.fields);
-    if (!message) throw new ApolloError("The message is required");
-    let model = "text-davinci-003";
-    const reason = {
-      project:
-        "You are a successful ceo of a company wih 10 years of experience. You talk elegant and descriptive language. Give a description of a project based on this information:  ",
-      skill: "Give a description of a skill named: ",
-      role: "Give a description of role with a name of: ",
-    };
-    const promptDescription = (descriptionOf) => {
-      if (descriptionOf === "project") {
-        return reason.project + message;
-      } else if (descriptionOf === "skill") {
-        return reason.skill + message;
-      } else if (descriptionOf === "role") {
-        return reason.role + message;
-      } else {
-        return descriptionOf + message;
-      }
-    };
-    const response = await openai.createCompletion({
-      model,
-      prompt: promptDescription(prompt ? prompt : category),
-      max_tokens: 200,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-    });
-    let generatedText = response.data.choices[0].text;
-    let result = generatedText.replace(/\n\n/g, "");
-    try {
-      return { message: result };
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "updateMessage",
-        {
-          component: "aiMutation > updateMessage",
+  messageToGPT: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, context, info) => {
+      const { message, category, prompt } = args.fields;
+      console.log("Mutation > messageToGPT > args.fields = ", args.fields);
+      if (!message) throw new ApolloError("The message is required");
+      let model = "text-davinci-003";
+      const reason = {
+        project:
+          "You are a successful ceo of a company wih 10 years of experience. You talk elegant and descriptive language. Give a description of a project based on this information:  ",
+        skill: "Give a description of a skill named: ",
+        role: "Give a description of role with a name of: ",
+      };
+      const promptDescription = (descriptionOf) => {
+        if (descriptionOf === "project") {
+          return reason.project + message;
+        } else if (descriptionOf === "skill") {
+          return reason.skill + message;
+        } else if (descriptionOf === "role") {
+          return reason.role + message;
+        } else {
+          return descriptionOf + message;
         }
-      );
+      };
+      const response = await openai.createCompletion({
+        model,
+        prompt: promptDescription(prompt ? prompt : category),
+        max_tokens: 200,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      });
+      let generatedText = response.data.choices[0].text;
+      let result = generatedText.replace(/\n\n/g, "");
+      try {
+        return { message: result };
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "updateMessage",
+          {
+            component: "aiMutation > updateMessage",
+          }
+        );
+      }
     }
-  },
+  ),
   inputToGPT: async (parent, args, context, info) => {
     const { oneLinerProject, descriptionProject, titleRole, expertiseRole } =
       args.fields;

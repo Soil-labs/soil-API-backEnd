@@ -383,7 +383,7 @@ module.exports = `
     }
 
     input addFavoriteProjectInput {
-        memberID: ID
+        #memberID: ID
         projectID: ID
         favorite: Boolean
     }
