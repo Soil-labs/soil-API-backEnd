@@ -1091,50 +1091,56 @@ module.exports = {
         );
       }
     }
-  ),
-  addFavoriteProject: async (parent, args, context, info) => {
-    const { memberID, projectID, favorite } = args.fields;
-    console.log("Mutation > addFavoriteProject > args.fields = ", args.fields);
-
-    if (!memberID) throw new ApolloError("memberID is required");
-    if (!projectID) throw new ApolloError("projectID is required");
-    if (favorite == null) throw new ApolloError("favorite is required");
-
-    try {
-      let memberData = await Members.findOne({ _id: memberID });
-      if (!memberData) throw new ApolloError("Member not found");
-
-      let projectData = await Projects.findOne({ _id: projectID });
-      if (!projectData) throw new ApolloError("Project not found");
-
-      let currentProjects = [...memberData.projects];
-
-      currentProjects.push({
-        projectID: projectID,
-        champion: false,
-        favorite: favorite,
-      });
-
-      memberData = await Members.findOneAndUpdate(
-        { _id: memberID },
-        { projects: currentProjects },
-        { new: true }
-      );
-
-      console.log("memberData.projects = ", memberData.projects);
-
-      pubsub.publish(memberData._id, {
-        memberUpdated: memberData,
-      });
-      return memberData;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
-    }
   },
+  addFavoriteProject: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, { user }, info) => {
+      const memberID = user._id;
+      const { projectID, favorite } = args.fields;
+      console.log(
+        "Mutation > addFavoriteProject > args.fields = ",
+        args.fields
+      );
+      if (!memberID) throw new ApolloError("memberID is required");
+      if (!projectID) throw new ApolloError("projectID is required");
+      if (favorite == null) throw new ApolloError("favorite is required");
+
+      try {
+        let memberData = await Members.findOne({ _id: memberID });
+        if (!memberData) throw new ApolloError("Member not found");
+
+        let projectData = await Projects.findOne({ _id: projectID });
+        if (!projectData) throw new ApolloError("Project not found");
+
+        let currentProjects = [...memberData.projects];
+
+        currentProjects.push({
+          projectID: projectID,
+          champion: false,
+          favorite: favorite,
+        });
+
+        memberData = await Members.findOneAndUpdate(
+          { _id: memberID },
+          { projects: currentProjects },
+          { new: true }
+        );
+
+        console.log("memberData.projects = ", memberData.projects);
+
+        pubsub.publish(memberData._id, {
+          memberUpdated: memberData,
+        });
+        return memberData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
+      }
+    }
+  ),
   endorseAttribute: async (parent, args, context, info) => {
     const { _id, attribute } = args.fields;
     console.log("Mutation > endorseAttribute > args.fields = ", args.fields);
