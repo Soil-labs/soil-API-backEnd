@@ -1,0 +1,12 @@
+module.exports = `
+scalar Date
+  input newMemberStatsInput {
+     startPeriod: String
+     endPeriod: String
+  }
+
+  input activeMembersStatsInput {
+    startPeriod: String
+     endPeriod: String
+  }
+`
