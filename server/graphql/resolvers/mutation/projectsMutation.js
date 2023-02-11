@@ -1057,51 +1057,55 @@ module.exports = {
     }
   },
 
-  approveTweet: async (parent, args, context, info) => {
-    const { projectID, tweetID, approved } = JSON.parse(
-      JSON.stringify(args.fields)
-    );
-    console.log("Mutation > approveTweet > args.fields = ", args.fields);
-
-    if (!projectID) throw new ApolloError("you need to specify a project ID");
-    if (!tweetID) throw new ApolloError("you need to specify a tweet ID");
-    if (approved == null)
-      throw new ApolloError(
-        "you need to specify if the tweet is approved or not"
+  approveTweet: combineResolvers(
+    IsAuthenticated,
+    IsOnlyOperator,
+    async (parent, args, context, info) => {
+      const { projectID, tweetID, approved } = JSON.parse(
+        JSON.stringify(args.fields)
       );
+      console.log("Mutation > approveTweet > args.fields = ", args.fields);
 
-    try {
-      let projectData = await Projects.findOne({ _id: projectID });
-
-      if (!projectData)
+      if (!projectID) throw new ApolloError("you need to specify a project ID");
+      if (!tweetID) throw new ApolloError("you need to specify a tweet ID");
+      if (approved == null)
         throw new ApolloError(
-          "This project dont exist you need to choose antoher project"
+          "you need to specify if the tweet is approved or not"
         );
 
-      projectData.tweets.forEach((tweet) => {
-        //console.log("tweet = " , tweet)
-        if (tweet._id == tweetID) {
-          tweet.approved = approved;
-        }
-      });
+      try {
+        let projectData = await Projects.findOne({ _id: projectID });
 
-      projectDataUpdate = await Projects.findOneAndUpdate(
-        { _id: projectID },
-        {
-          $set: { tweets: projectData.tweets },
-        },
-        { new: true }
-      );
+        if (!projectData)
+          throw new ApolloError(
+            "This project dont exist you need to choose antoher project"
+          );
 
-      return projectDataUpdate;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
+        projectData.tweets.forEach((tweet) => {
+          //console.log("tweet = " , tweet)
+          if (tweet._id == tweetID) {
+            tweet.approved = approved;
+          }
+        });
+
+        projectDataUpdate = await Projects.findOneAndUpdate(
+          { _id: projectID },
+          {
+            $set: { tweets: projectData.tweets },
+          },
+          { new: true }
+        );
+
+        return projectDataUpdate;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
+      }
     }
-  },
+  ),
 
   changeTeamMember_Phase_Project: combineResolvers(
     IsAuthenticated,
