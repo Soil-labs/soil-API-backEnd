@@ -33,7 +33,7 @@ module.exports = `
 
     input addNewChatInput {
         message: String!
-        senderID: ID!
+        #senderID: ID!
         receiverID: ID!
         projectID: ID!
         projectRoleID: ID

@@ -40,7 +40,7 @@ module.exports = `
         # createApprovedSkill(fields:createApprovedSkillInput): Skills
         # approveOrRejectSkill(fields:approveOrRejectSkillInput): Skills
 
-        relatedSkills(fields:relatedSkillsInput): Skills
+        #relatedSkills(fields:relatedSkillsInput): Skills
 
         #  ---------- NODE MUTATIONS -------
         createNode(fields:createNodeInput): Node

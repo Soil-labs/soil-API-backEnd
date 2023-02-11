@@ -1,82 +1,94 @@
 const { Members } = require("../../../models/membersModel");
 const { Chats } = require("../../../models/chatsModel");
 const { ApolloError } = require("apollo-server-express");
+const { combineResolvers } = require("graphql-resolvers");
+const { IsAuthenticated } = require("../../../utils/authorization");
 
 module.exports = {
-  addNewChat: async (parent, args, context, info) => {
-    const {
-      message,
-      senderID,
-      receiverID,
-      projectID,
-      projectRoleID,
-      threadID,
-      serverID,
-    } = args.fields;
-    console.log("Mutation > addNewChat > args.fields = ", args.fields);
+  addNewChat: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, { user }, info) => {
+      const senderID = user._id;
+      const {
+        message,
+        //senderID,
+        receiverID,
+        projectID,
+        projectRoleID,
+        threadID,
+        serverID,
+      } = args.fields;
+      console.log("Mutation > addNewChat > args.fields = ", args.fields);
 
-    if (!message)
-      throw new ApolloError("The message is required to create a chat message");
-    if (!serverID)
-      throw new ApolloError("The serverID is required to create a chat");
-    if (!projectID)
-      throw new ApolloError("The projectID is required to create a chat");
-    if (!threadID)
-      throw new ApolloError("The threadID is required to create a chat");
+      if (!message)
+        throw new ApolloError(
+          "The message is required to create a chat message"
+        );
+      if (!serverID)
+        throw new ApolloError("The serverID is required to create a chat");
+      if (!projectID)
+        throw new ApolloError("The projectID is required to create a chat");
+      if (!threadID)
+        throw new ApolloError("The threadID is required to create a chat");
 
-    if (!senderID || !receiverID)
-      throw new ApolloError(
-        "The senderID and the receiverID is a required field"
-      );
+      if (!senderID || !receiverID)
+        throw new ApolloError(
+          "The senderID and the receiverID is a required field"
+        );
 
-    if (senderID === receiverID)
-      throw new ApolloError("Sender can not also be the receiver");
+      if (senderID === receiverID)
+        throw new ApolloError("Sender can not also be the receiver");
 
-    let fields = {
-      createdAt: new Date(),
-      reply: { sender: false, receiver: false },
-    };
+      let fields = {
+        createdAt: new Date(),
+        reply: { sender: false, receiver: false },
+      };
 
-    fields.message = message;
-    fields.senderID = senderID;
-    fields.receiverID = receiverID;
-    if (projectID) fields.projectID = projectID;
-    if (projectRoleID) fields.projectRoleID = projectRoleID;
-    if (threadID) fields.threadID = threadID;
-    if (serverID) fields.serverID = serverID;
+      fields.message = message;
+      fields.senderID = senderID;
+      fields.receiverID = receiverID;
+      if (projectID) fields.projectID = projectID;
+      if (projectRoleID) fields.projectRoleID = projectRoleID;
+      if (threadID) fields.threadID = threadID;
+      if (serverID) fields.serverID = serverID;
 
-    try {
-      const newChat = await new Chats(fields);
-      newChat.save();
-      console.log("new chat", newChat);
-      //update the sender chat counter
-      const chatSender = await Members.findOne({ _id: senderID });
-      if (chatSender) {
-        let previousChatCount;
-        if (isEmptyObject(chatSender.chat)) {
-          previousChatCount = { numChat: 0, numReply: 0 };
-        } else {
-          previousChatCount = chatSender.chat;
+      try {
+        const newChat = await new Chats(fields);
+        newChat.save();
+        console.log("new chat", newChat);
+        //update the sender chat counter
+        const chatSender = await Members.findOne({ _id: senderID });
+        if (chatSender) {
+          let previousChatCount;
+          if (isEmptyObject(chatSender.chat)) {
+            previousChatCount = { numChat: 0, numReply: 0 };
+          } else {
+            previousChatCount = chatSender.chat;
+          }
+
+          previousChatCount = {
+            ...previousChatCount,
+            numChat: previousChatCount.numChat + 1,
+          };
+
+          await Members.findOneAndUpdate(
+            { _id: senderID },
+            { $set: { chat: previousChatCount } },
+            { new: true }
+          );
         }
-
-        previousChatCount = {
-          ...previousChatCount,
-          numChat: previousChatCount.numChat + 1,
-        };
-
-        await Members.findOneAndUpdate(
-          { _id: senderID },
-          { $set: { chat: previousChatCount } },
-          { new: true }
+        return newChat;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "addNewChat",
+          {
+            component: "chatMutation > addNewChat",
+          }
         );
       }
-      return newChat;
-    } catch (err) {
-      throw new ApolloError(err.message, err.extensions?.code || "addNewChat", {
-        component: "chatMutation > addNewChat",
-      });
     }
-  },
+  ),
   updateChatReply: async (parent, args, context, info) => {
     const { _id, receiverReply, threadID, replyUserID } = args.fields;
     console.log("Mutation > updateChatReply > args.fields = ", args.fields);
@@ -169,7 +181,6 @@ module.exports = {
       //chat
 
       if (replier == "sender") {
-        
         reply = {
           ...reply,
           sender: receiverReply,
