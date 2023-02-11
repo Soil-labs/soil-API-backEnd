@@ -7,265 +7,283 @@ const {
   updateNode_neo4j_serverID_f,
   makeConnection_neo4j,
 } = require("../../../neo4j/func_neo4j");
+const { combineResolvers } = require("graphql-resolvers");
+const {
+  IsAuthenticated,
+  IsOnlyOperator,
+} = require("../../../utils/authorization");
 
 module.exports = {
-  createNode: async (parent, args, context, info) => {
-    const { node, name, subNodes, aboveNodes, state } = args.fields;
-    console.log("Mutation > createNode > args.fields = ", args.fields);
+  createNode: combineResolvers(
+    IsAuthenticated,
+    IsOnlyOperator,
+    async (parent, args, context, info) => {
+      const { node, name, subNodes, aboveNodes, state } = args.fields;
+      console.log("Mutation > createNode > args.fields = ", args.fields);
 
-    if (!name)
-      throw new ApolloError("You need to specify the name of the node");
-    // if (!node) throw new ApolloError( "You need to specify the type of the node");
+      if (!name)
+        throw new ApolloError("You need to specify the name of the node");
+      // if (!node) throw new ApolloError( "You need to specify the type of the node");
 
-    let fields = {
-      name,
-      registeredAt: new Date(),
-    };
-
-    if (subNodes) fields.subNodes = subNodes;
-    if (aboveNodes) fields.aboveNodes = aboveNodes;
-    if (node) fields.node = node;
-
-    if (state) {
-      fields = {
-        ...fields,
-        state,
+      let fields = {
+        name,
+        registeredAt: new Date(),
       };
-    } else {
-      fields = {
-        ...fields,
-        state: "approved",
-      };
-    }
 
-    fields = {
-      ...fields,
-      matchByServer_update: true,
-    };
+      if (subNodes) fields.subNodes = subNodes;
+      if (aboveNodes) fields.aboveNodes = aboveNodes;
+      if (node) fields.node = node;
 
-    console.log("fields = ", fields);
-
-    try {
-      let nodeData;
-
-      nodeData = await Node.findOne({ name: fields.name });
-
-      if (!nodeData) {
-        nodeData = await new Node(fields);
-
-        nodeData.save();
-
-        // ----------------- Save the Server on the Skills -----------------
-        let serverData = await ServerTemplate.find({});
-
-        let serverID = [];
-        serverData.map((server) => {
-          serverID.push(server._id);
-        });
-        // ----------------- Save the Server on the Skills -----------------
-
-        await createNode_neo4j_field({
-          fields: {
-            node: nodeData.node,
-            _id: nodeData._id,
-            serverID_code: "828",
-            name: nodeData.name,
-            serverID: serverID,
-          },
-        });
+      if (state) {
+        fields = {
+          ...fields,
+          state,
+        };
       } else {
-        // if nodeData.subNodes don't include the new subNodes then add them
-        if (!nodeData.subNodes.includes(fields.subNodes)) {
-          nodeData.subNodes.push(fields.subNodes);
-        }
-
-        if (subNodes) {
-          await Node.findOneAndUpdate(
-            { _id: nodeData._id },
-            {
-              $set: {
-                subNodes: nodeData.subNodes,
-              },
-            },
-            { new: true }
-          );
-        }
-
-        if (!nodeData.aboveNodes.includes(fields.aboveNodes)) {
-          nodeData.aboveNodes.push(fields.aboveNodes);
-        }
-
-        if (aboveNodes) {
-          await Node.findOneAndUpdate(
-            { _id: nodeData._id },
-            {
-              $set: {
-                aboveNodes: nodeData.aboveNodes,
-              },
-            },
-            { new: true }
-          );
-        }
+        fields = {
+          ...fields,
+          state: "approved",
+        };
       }
 
-      connect_node_to_subNode(nodeData, subNodes, 1);
+      fields = {
+        ...fields,
+        matchByServer_update: true,
+      };
 
-      connect_node_to_aboveNode(nodeData, aboveNodes, 1);
+      console.log("fields = ", fields);
+
+      try {
+        let nodeData;
+
+        nodeData = await Node.findOne({ name: fields.name });
+
+        if (!nodeData) {
+          nodeData = await new Node(fields);
+
+          nodeData.save();
+
+          // ----------------- Save the Server on the Skills -----------------
+          let serverData = await ServerTemplate.find({});
+
+          let serverID = [];
+          serverData.map((server) => {
+            serverID.push(server._id);
+          });
+          // ----------------- Save the Server on the Skills -----------------
+
+          await createNode_neo4j_field({
+            fields: {
+              node: nodeData.node,
+              _id: nodeData._id,
+              serverID_code: "828",
+              name: nodeData.name,
+              serverID: serverID,
+            },
+          });
+        } else {
+          // if nodeData.subNodes don't include the new subNodes then add them
+          if (!nodeData.subNodes.includes(fields.subNodes)) {
+            nodeData.subNodes.push(fields.subNodes);
+          }
+
+          if (subNodes) {
+            await Node.findOneAndUpdate(
+              { _id: nodeData._id },
+              {
+                $set: {
+                  subNodes: nodeData.subNodes,
+                },
+              },
+              { new: true }
+            );
+          }
+
+          if (!nodeData.aboveNodes.includes(fields.aboveNodes)) {
+            nodeData.aboveNodes.push(fields.aboveNodes);
+          }
+
+          if (aboveNodes) {
+            await Node.findOneAndUpdate(
+              { _id: nodeData._id },
+              {
+                $set: {
+                  aboveNodes: nodeData.aboveNodes,
+                },
+              },
+              { new: true }
+            );
+          }
+        }
+
+        connect_node_to_subNode(nodeData, subNodes, 1);
+
+        connect_node_to_aboveNode(nodeData, aboveNodes, 1);
+
+        return nodeData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > addNewMember" }
+        );
+      }
+    }
+  ),
+
+  relatedNode: combineResolvers(
+    IsAuthenticated,
+    IsOnlyOperator,
+    async (parent, args, context, info) => {
+      const { _id, relatedNode_id } = args.fields;
+      console.log("Mutation > relatedNode > args.fields = ", args.fields);
+
+      if (!_id)
+        throw new ApolloError("You need to specify the _id of the node");
+      if (!relatedNode_id)
+        throw new ApolloError(
+          "You need to specify the relatedNode_id of the node"
+        );
+
+      let nodeData = await Node.findOne({ _id });
+
+      let relatedNodeData = await Node.findOne({ _id: relatedNode_id });
+
+      try {
+        await makeConnection_neo4j({
+          node: [nodeData.node, relatedNodeData.node],
+          id: [nodeData._id, relatedNodeData._id],
+          connection: "related",
+        });
+
+        if (!nodeData.relatedNodes.includes(relatedNode_id)) {
+          nodeData.relatedNodes.push(relatedNode_id);
+        }
+
+        await Node.findOneAndUpdate(
+          { _id: nodeData._id },
+          {
+            $set: {
+              relatedNodes: nodeData.relatedNodes,
+            },
+          },
+          { new: true }
+        );
+
+        if (!relatedNodeData.relatedNodes.includes(_id)) {
+          relatedNodeData.relatedNodes.push(_id);
+        }
+
+        await Node.findOneAndUpdate(
+          { _id: relatedNodeData._id },
+          {
+            $set: {
+              relatedNodes: relatedNodeData.relatedNodes,
+            },
+          },
+          { new: true }
+        );
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > addNewMember" }
+        );
+      }
 
       return nodeData;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > addNewMember" }
-      );
     }
-  },
+  ),
 
-  relatedNode: async (parent, args, context, info) => {
-    const { _id, relatedNode_id } = args.fields;
-    console.log("Mutation > relatedNode > args.fields = ", args.fields);
+  relatedNode_name: combineResolvers(
+    IsAuthenticated,
+    IsOnlyOperator,
+    async (parent, args, context, info) => {
+      const { name, relatedNode_name, weight, connection } = args.fields;
+      console.log("Mutation > relatedNode_name > args.fields = ", args.fields);
 
-    if (!_id) throw new ApolloError("You need to specify the _id of the node");
-    if (!relatedNode_id)
-      throw new ApolloError(
-        "You need to specify the relatedNode_id of the node"
+      if (!name)
+        throw new ApolloError("You need to specify the name of the node");
+      if (!relatedNode_name)
+        throw new ApolloError(
+          "You need to specify the relatedNode_name of the node"
+        );
+
+      let nodeData = await Node.findOne({ name }).select(
+        "name _id node relatedNodes"
       );
 
-    nodeData = await Node.findOne({ _id });
+      let relatedNodeData = await Node.findOne({ name: relatedNode_name }).select(
+        "name _id node relatedNodes"
+      );
 
-    relatedNodeData = await Node.findOne({ _id: relatedNode_id });
+      let connection_n = connection.replace(" ", "_");
 
-    try {
-      await makeConnection_neo4j({
-        node: [nodeData.node, relatedNodeData.node],
-        id: [nodeData._id, relatedNodeData._id],
-        connection: "related",
-      });
+      console.log("res nodeData = ", nodeData);
+      console.log("res relatedNodeData = ", relatedNodeData);
+      console.log("connection_n = ", connection_n);
+      try {
+        if (weight) {
+          await makeConnection_neo4j({
+            node: [nodeData.node, relatedNodeData.node],
+            id: [nodeData._id, relatedNodeData._id],
+            connection: connection_n,
+            weight: weight,
+          });
+        } else {
+          await makeConnection_neo4j({
+            node: [nodeData.node, relatedNodeData.node],
+            id: [nodeData._id, relatedNodeData._id],
+            connection: connection_n,
+          });
+        }
+        console.log("phase 1= ", nodeData.relatedNodes, relatedNodeData._id);
+        console.log(
+          "phase 1= ",
+          nodeData.relatedNodes,
+          relatedNodeData._id,
+          nodeData.relatedNodes.includes(relatedNodeData._id)
+        );
 
-      if (!nodeData.relatedNodes.includes(relatedNode_id)) {
-        nodeData.relatedNodes.push(relatedNode_id);
+        if (!nodeData.relatedNodes.includes(relatedNodeData._id)) {
+          nodeData.relatedNodes.push(relatedNodeData._id);
+        }
+        console.log("phase 2= ");
+
+        await Node.findOneAndUpdate(
+          { _id: nodeData._id },
+          {
+            $set: {
+              relatedNodes: nodeData.relatedNodes,
+            },
+          },
+          { new: true }
+        );
+
+        if (!relatedNodeData.relatedNodes.includes(nodeData._id)) {
+          relatedNodeData.relatedNodes.push(nodeData._id);
+        }
+
+        await Node.findOneAndUpdate(
+          { _id: relatedNodeData._id },
+          {
+            $set: {
+              relatedNodes: relatedNodeData.relatedNodes,
+            },
+          },
+          { new: true }
+        );
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > addNewMember" }
+        );
       }
 
-      await Node.findOneAndUpdate(
-        { _id: nodeData._id },
-        {
-          $set: {
-            relatedNodes: nodeData.relatedNodes,
-          },
-        },
-        { new: true }
-      );
-
-      if (!relatedNodeData.relatedNodes.includes(_id)) {
-        relatedNodeData.relatedNodes.push(_id);
-      }
-
-      await Node.findOneAndUpdate(
-        { _id: relatedNodeData._id },
-        {
-          $set: {
-            relatedNodes: relatedNodeData.relatedNodes,
-          },
-        },
-        { new: true }
-      );
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > addNewMember" }
-      );
+      return nodeData;
     }
-
-    return nodeData;
-  },
-
-  relatedNode_name: async (parent, args, context, info) => {
-    const { name, relatedNode_name, weight, connection } = args.fields;
-    console.log("Mutation > relatedNode_name > args.fields = ", args.fields);
-
-    if (!name)
-      throw new ApolloError("You need to specify the name of the node");
-    if (!relatedNode_name)
-      throw new ApolloError(
-        "You need to specify the relatedNode_name of the node"
-      );
-
-    nodeData = await Node.findOne({ name }).select(
-      "name _id node relatedNodes"
-    );
-
-    relatedNodeData = await Node.findOne({ name: relatedNode_name }).select(
-      "name _id node relatedNodes"
-    );
-
-    let connection_n = connection.replace(" ", "_");
-
-    console.log("res nodeData = ", nodeData);
-    console.log("res relatedNodeData = ", relatedNodeData);
-    console.log("connection_n = ", connection_n);
-    try {
-      if (weight) {
-        await makeConnection_neo4j({
-          node: [nodeData.node, relatedNodeData.node],
-          id: [nodeData._id, relatedNodeData._id],
-          connection: connection_n,
-          weight: weight,
-        });
-      } else {
-        await makeConnection_neo4j({
-          node: [nodeData.node, relatedNodeData.node],
-          id: [nodeData._id, relatedNodeData._id],
-          connection: connection_n,
-        });
-      }
-      console.log("phase 1= ", nodeData.relatedNodes, relatedNodeData._id);
-      console.log(
-        "phase 1= ",
-        nodeData.relatedNodes,
-        relatedNodeData._id,
-        nodeData.relatedNodes.includes(relatedNodeData._id)
-      );
-
-      if (!nodeData.relatedNodes.includes(relatedNodeData._id)) {
-        nodeData.relatedNodes.push(relatedNodeData._id);
-      }
-      console.log("phase 2= ");
-
-      await Node.findOneAndUpdate(
-        { _id: nodeData._id },
-        {
-          $set: {
-            relatedNodes: nodeData.relatedNodes,
-          },
-        },
-        { new: true }
-      );
-
-      if (!relatedNodeData.relatedNodes.includes(nodeData._id)) {
-        relatedNodeData.relatedNodes.push(nodeData._id);
-      }
-
-      await Node.findOneAndUpdate(
-        { _id: relatedNodeData._id },
-        {
-          $set: {
-            relatedNodes: relatedNodeData.relatedNodes,
-          },
-        },
-        { new: true }
-      );
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > addNewMember" }
-      );
-    }
-
-    return nodeData;
-  },
+  ),
 };
 
 async function connect_node_to_subNode(nodeData, subNodes, weight = undefined) {
