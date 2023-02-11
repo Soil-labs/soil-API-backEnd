@@ -922,13 +922,11 @@ module.exports = {
         );
       }
     }
-
-  }),
+  ),
   deleteMember: combineResolvers(
     IsAuthenticated,
     async (parent, args, { user }, info) => {
       const { memberID } = args.fields;
-
 
       if (!user && user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS)
         throw new ApolloError("Not Authorized");
@@ -983,7 +981,8 @@ module.exports = {
           { component: "tmemberQuery > findMember" }
         );
       }
-    }),
+    }
+  ),
 
   addPreferencesToMember: combineResolvers(
     IsAuthenticated,
