@@ -178,66 +178,68 @@ module.exports = {
   //     );
   //   }
   // },
-  relatedSkills: async (parent, args, context, info) => {
-    const { _id, relatedSkills_id } = args.fields;
-    console.log("Mutation > relatedSkills > args.fields = ", args.fields);
+  
+   // DEPRECATED
+  // relatedSkills: async (parent, args, context, info) => {
+  //   const { _id, relatedSkills_id } = args.fields;
+  //   console.log("Mutation > relatedSkills > args.fields = ", args.fields);
 
-    if (!_id) throw new ApolloError("You need to specify the id of the skill");
+  //   if (!_id) throw new ApolloError("You need to specify the id of the skill");
 
-    skillData = await Skills.findOne({ _id: _id });
+  //   skillData = await Skills.findOne({ _id: _id });
 
-    relatedSkillsData = await Skills.find({ _id: relatedSkills_id });
+  //   relatedSkillsData = await Skills.find({ _id: relatedSkills_id });
 
-    try {
-      for (let i = 0; i < relatedSkillsData.length; i++) {
-        makeConnection_neo4j({
-          node: ["Skill", "Skill"],
-          id: [skillData._id, relatedSkillsData[i]._id],
-          connection: "RELATED",
-        });
+  //   try {
+  //     for (let i = 0; i < relatedSkillsData.length; i++) {
+  //       makeConnection_neo4j({
+  //         node: ["Skill", "Skill"],
+  //         id: [skillData._id, relatedSkillsData[i]._id],
+  //         connection: "RELATED",
+  //       });
 
-        // ----------------- add related skills if dont exist -----------------
-        if (!skillData.relatedSkills.includes(relatedSkillsData[i]._id)) {
-          skillData.relatedSkills.push(relatedSkillsData[i]._id);
-        }
+  //       // ----------------- add related skills if dont exist -----------------
+  //       if (!skillData.relatedSkills.includes(relatedSkillsData[i]._id)) {
+  //         skillData.relatedSkills.push(relatedSkillsData[i]._id);
+  //       }
 
-        await Skills.findOneAndUpdate(
-          { _id: skillData._id },
-          {
-            $set: {
-              relatedSkills: skillData.relatedSkills,
-            },
-          },
-          { new: true }
-        );
-        // ----------------- add related skills if dont exist -----------------
+  //       await Skills.findOneAndUpdate(
+  //         { _id: skillData._id },
+  //         {
+  //           $set: {
+  //             relatedSkills: skillData.relatedSkills,
+  //           },
+  //         },
+  //         { new: true }
+  //       );
+  //       // ----------------- add related skills if dont exist -----------------
 
-        // ----------------- add skill - on relatedSkill -----------------
-        if (!relatedSkillsData[i].relatedSkills.includes(skillData._id)) {
-          relatedSkillsData[i].relatedSkills.push(skillData._id);
-        }
+  //       // ----------------- add skill - on relatedSkill -----------------
+  //       if (!relatedSkillsData[i].relatedSkills.includes(skillData._id)) {
+  //         relatedSkillsData[i].relatedSkills.push(skillData._id);
+  //       }
 
-        await Skills.findOneAndUpdate(
-          { _id: relatedSkillsData[i]._id },
-          {
-            $set: {
-              relatedSkills: relatedSkillsData[i].relatedSkills,
-            },
-          },
-          { new: true }
-        );
-        // ----------------- add skill - on relatedSkill -----------------
-      }
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > addNewMember" }
-      );
-    }
+  //       await Skills.findOneAndUpdate(
+  //         { _id: relatedSkillsData[i]._id },
+  //         {
+  //           $set: {
+  //             relatedSkills: relatedSkillsData[i].relatedSkills,
+  //           },
+  //         },
+  //         { new: true }
+  //       );
+  //       // ----------------- add skill - on relatedSkill -----------------
+  //     }
+  //   } catch (err) {
+  //     throw new ApolloError(
+  //       err.message,
+  //       err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+  //       { component: "tmemberQuery > addNewMember" }
+  //     );
+  //   }
 
-    return skillData;
-  },
+  //   return skillData;
+  // },
   // DEPRECATED
   // createSkills: async (parent, args, context, info) => {
 
