@@ -906,60 +906,66 @@ module.exports = {
       );
     }
   },
-  deleteMember: async (parent, args, context, info) => {
-    const { memberID } = args.fields;
+  deleteMember: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, { user }, info) => {
+      const { memberID } = args.fields;
 
-    console.log("Mutation > deleteMember > args.fields = ", args.fields);
+      if (!user && user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS)
+        throw new ApolloError("Not Authorized");
 
-    if (!memberID) throw new ApolloError("memberID is required");
+      console.log("Mutation > deleteMember > args.fields = ", args.fields);
 
-    try {
-      let memberData = await Members.findOne({ _id: memberID });
+      if (!memberID) throw new ApolloError("memberID is required");
 
-      if (!memberData) throw new ApolloError("memberID not found");
+      try {
+        let memberData = await Members.findOne({ _id: memberID });
 
-      // console.log("memberData = " , memberData)
+        if (!memberData) throw new ApolloError("memberID not found");
 
-      // get all nodes from memberData.nodes
-      let nodesData = await Node.find({
-        _id: memberData.nodes.map(function (item) {
-          return item._id.toString();
-        }),
-      });
+        // console.log("memberData = " , memberData)
 
-      // console.log("nodesData = " , nodesData)
-
-      // console.log("change = " , change)
-
-      // console.log("change = " , change)
-
-      // add only the new ones as relationship on Neo4j
-      for (let i = 0; i < nodesData.length; i++) {
-        let nodeNow = nodesData[i];
-        deleteConnectionANYBetweenNodes_neo4j({
-          nodeID_1: memberData._id,
-          nodeID_2: nodeNow._id,
+        // get all nodes from memberData.nodes
+        let nodesData = await Node.find({
+          _id: memberData.nodes.map(function (item) {
+            return item._id.toString();
+          }),
         });
 
-        changeMatchByServer(nodeNow, memberData);
+        // console.log("nodesData = " , nodesData)
+
+        // console.log("change = " , change)
+
+        // console.log("change = " , change)
+
+        // add only the new ones as relationship on Neo4j
+        for (let i = 0; i < nodesData.length; i++) {
+          let nodeNow = nodesData[i];
+          deleteConnectionANYBetweenNodes_neo4j({
+            nodeID_1: memberData._id,
+            nodeID_2: nodeNow._id,
+          });
+
+          changeMatchByServer(nodeNow, memberData);
+        }
+
+        deleteNode_neo4j({
+          nodeID: memberData._id,
+        });
+
+        // delete memberData from mongoDB database
+        memberData2 = await Members.findOneAndDelete({ _id: memberID });
+
+        return memberData2;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
       }
-
-      deleteNode_neo4j({
-        nodeID: memberData._id,
-      });
-
-      // delete memberData from mongoDB database
-      memberData2 = await Members.findOneAndDelete({ _id: memberID });
-
-      return memberData2;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
     }
-  },
+  ),
   addPreferencesToMember: async (parent, args, context, info) => {
     const { memberID } = args.fields;
     let { preferences } = args.fields;
