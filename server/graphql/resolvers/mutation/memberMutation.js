@@ -1091,7 +1091,7 @@ module.exports = {
         );
       }
     }
-  },
+  ),
   addFavoriteProject: combineResolvers(
     IsAuthenticated,
     async (parent, args, { user }, info) => {
