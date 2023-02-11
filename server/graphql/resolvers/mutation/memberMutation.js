@@ -960,104 +960,115 @@ module.exports = {
       );
     }
   },
-  addPreferencesToMember: async (parent, args, context, info) => {
-    const { memberID } = args.fields;
-    let { preferences } = args.fields;
-    console.log(
-      "Mutation > addPreferencesToMember > args.fields = ",
-      args.fields
-    );
+  addPreferencesToMember: combineResolvers(
+    IsAuthenticated,
 
-    if (!memberID) throw new ApolloError("memberID is required");
-
-    if (!preferences) preferences = [];
-
-    try {
-      let memberData = await Members.findOne({ _id: memberID }).select(
-        "_id name preferences"
+    async (parent, args, { user }, info) => {
+      const { memberID } = args.fields;
+      let { preferences } = args.fields;
+      console.log(
+        "Mutation > addPreferencesToMember > args.fields = ",
+        args.fields
       );
-      if (!memberData) throw new ApolloError("Member not found");
 
-      let current_preferences = memberData.preferences;
+      if (!memberID) throw new ApolloError("memberID is required");
 
-      console.log("current_preferences = ", current_preferences);
+      if (
+        memberID !== user._id ||
+        user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS
+      )
+        throw new ApolloError("Not Authorized");
 
-      for (let i = 0; i < preferences.length; i++) {
-        let preferenceNow = preferences[i];
+      if (!preferences) preferences = [];
 
-        // preferenceNow.preference -> the enum that determine what to change
-        if (preferenceNow.notify !== undefined)
-          current_preferences[preferenceNow.preference].notify =
-            preferenceNow.notify;
-        if (preferenceNow.percentage !== undefined)
-          current_preferences[preferenceNow.preference].percentage =
-            preferenceNow.percentage;
-        if (preferenceNow.interestedMatch !== undefined)
-          current_preferences[preferenceNow.preference].interestedMatch =
-            preferenceNow.interestedMatch;
+      try {
+        let memberData = await Members.findOne({ _id: memberID }).select(
+          "_id name preferences"
+        );
+        if (!memberData) throw new ApolloError("Member not found");
 
-        // preferenceNow.pastSearch.map((x) => x);
+        let current_preferences = memberData.preferences;
 
-        // console.log(
-        //   "change = ",
-        //   preferenceNow.pastSearch.map((x) => x)
-        // );
+        console.log("current_preferences = ", current_preferences);
 
-        if (preferenceNow.pastSearch && preferenceNow.pastSearch.length > 0) {
-          preferenceNow.pastSearch.forEach((x) => {
-            current_preferences[preferenceNow.preference].pastSearch.push(x);
-          });
+        for (let i = 0; i < preferences.length; i++) {
+          let preferenceNow = preferences[i];
 
-          // current_preferences[preferenceNow.preference].pastSearch.push(
+          // preferenceNow.preference -> the enum that determine what to change
+          if (preferenceNow.notify !== undefined)
+            current_preferences[preferenceNow.preference].notify =
+              preferenceNow.notify;
+          if (preferenceNow.percentage !== undefined)
+            current_preferences[preferenceNow.preference].percentage =
+              preferenceNow.percentage;
+          if (preferenceNow.interestedMatch !== undefined)
+            current_preferences[preferenceNow.preference].interestedMatch =
+              preferenceNow.interestedMatch;
+
+          // preferenceNow.pastSearch.map((x) => x);
+
+          // console.log(
+          //   "change = ",
           //   preferenceNow.pastSearch.map((x) => x)
           // );
-          // current_preferences[preferenceNow.preference].pastSearch =
-          //   preferenceNow.pastSearch.map((x) => x);
+
+          if (preferenceNow.pastSearch && preferenceNow.pastSearch.length > 0) {
+            preferenceNow.pastSearch.forEach((x) => {
+              current_preferences[preferenceNow.preference].pastSearch.push(x);
+            });
+
+            // current_preferences[preferenceNow.preference].pastSearch.push(
+            //   preferenceNow.pastSearch.map((x) => x)
+            // );
+            // current_preferences[preferenceNow.preference].pastSearch =
+            //   preferenceNow.pastSearch.map((x) => x);
+          }
         }
+
+        const optionsPref = [
+          "findUser",
+          "findCoFounder",
+          "findMentor",
+          "findMentee",
+          "findProject",
+        ];
+
+        notify_global = false;
+        interestedMatch_global = false;
+        for (let i = 0; i < optionsPref.length; i++) {
+          let optionNow = optionsPref[i];
+          if (current_preferences[optionNow].notify == true)
+            notify_global = true;
+          if (current_preferences[optionNow].interestedMatch == true)
+            interestedMatch_global = true;
+        }
+        console.log("notify_global = ", notify_global);
+        console.log("interestedMatch_global = ", interestedMatch_global);
+
+        current_preferences.notify = notify_global;
+        current_preferences.interestedMatch = interestedMatch_global;
+
+        memberData = await Members.findOneAndUpdate(
+          { _id: memberID },
+          { preferences: current_preferences },
+          { new: true }
+        );
+
+        // console.log("memberData.projects = ", memberData.projects);
+
+        pubsub.publish(memberData._id, {
+          memberUpdated: memberData,
+        });
+        return memberData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
       }
-
-      const optionsPref = [
-        "findUser",
-        "findCoFounder",
-        "findMentor",
-        "findMentee",
-        "findProject",
-      ];
-
-      notify_global = false;
-      interestedMatch_global = false;
-      for (let i = 0; i < optionsPref.length; i++) {
-        let optionNow = optionsPref[i];
-        if (current_preferences[optionNow].notify == true) notify_global = true;
-        if (current_preferences[optionNow].interestedMatch == true)
-          interestedMatch_global = true;
-      }
-      console.log("notify_global = ", notify_global);
-      console.log("interestedMatch_global = ", interestedMatch_global);
-
-      current_preferences.notify = notify_global;
-      current_preferences.interestedMatch = interestedMatch_global;
-
-      memberData = await Members.findOneAndUpdate(
-        { _id: memberID },
-        { preferences: current_preferences },
-        { new: true }
-      );
-
-      // console.log("memberData.projects = ", memberData.projects);
-
-      pubsub.publish(memberData._id, {
-        memberUpdated: memberData,
-      });
-      return memberData;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-        { component: "tmemberQuery > findMember" }
-      );
     }
-  },
+  ),
   addFavoriteProject: async (parent, args, context, info) => {
     const { memberID, projectID, favorite } = args.fields;
     console.log("Mutation > addFavoriteProject > args.fields = ", args.fields);
