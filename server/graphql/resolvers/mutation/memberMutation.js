@@ -652,14 +652,12 @@ module.exports = {
   updateNodesToMember: combineResolvers(
     IsAuthenticated,
     async (parent, args, { user }, info) => {
-      let { memberID, nodesID, nodesID_level, nodeType } = args.fields;
+      let { nodesID, nodesID_level, nodeType } = args.fields;
 
       console.log(
         "Mutation > updateNodesToMember > args.fields = ",
         args.fields
       );
-
-      if (!memberID) throw new ApolloError("memberID is required");
 
       if (!(nodesID == undefined || nodesID_level == undefined))
         throw new ApolloError(
@@ -704,12 +702,9 @@ module.exports = {
         });
         // ---------- All nodes should be equal to nodeType or else throw error -----------
 
-        let memberData = await Members.findOne({ _id: memberID }).select(
+        let memberData = await Members.findOne({ _id: user._id }).select(
           "_id nodes"
         );
-
-        if (memberData._id !== user._id)
-          throw new ApolloError("wrong memberID");
 
         let nodes_member_obj = {};
         for (let i = 0; i < memberData.nodes.length; i++) {
@@ -893,7 +888,7 @@ module.exports = {
         // asdf;
 
         memberData2 = await Members.findOneAndUpdate(
-          { _id: memberID },
+          { _id: user._id },
           {
             $set: {
               nodes: nodeData_member_all,

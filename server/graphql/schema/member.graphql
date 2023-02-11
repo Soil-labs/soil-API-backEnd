@@ -428,7 +428,7 @@ module.exports = `
     
 
     input updateNodesToMemberInput {
-        memberID: ID
+        # memberID: ID
         nodesID: [String]
         nodeType: String
         nodesID_level: [nodesID_levelInput]
