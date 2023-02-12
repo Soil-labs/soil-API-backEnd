@@ -42,8 +42,6 @@ module.exports = {
     const { memberID, showAvatar, nodeSettings, edgeSettings } = args.fields;
     console.log("Query > findMemberGraph > args.fields = ", args.fields);
 
-    // sadf;
-
     if (!memberID) throw new ApolloError("The memberID is required");
 
     try {
@@ -65,33 +63,35 @@ module.exports = {
       res = await generalFunc_neo4j({
         request: `//find node -> and node around of Type
         MATCH res = ((n)-[]-(m))
-        WHERE n._id = "${memberID}" AND (m:sub_expertise or m:sub_typeProject)
+        WHERE n._id = "${memberID}" AND (m:sub_expertise or m:sub_typeProject or m:skill)
         RETURN res
         `,
       });
 
-      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
-        await neo4jToNodeEdgeGraph(res);
+      let { typesNodesReplace, typeNodeSearchAbove } =
+        await readSettingsFindReplaceNodesMultiple(nodeSettings, edgeSettings);
 
-      let { nodesArrNew, edgesArrNew } = await addSettingsNodesSubNodes(
+      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
+        await neo4jToNodeEdgeGraphSettings(res, typesNodesReplace);
+
+      let { edgesArrNew, nodesObj_ } = await replaceNodes(
         nodesObj,
         edgesArr,
         nodesArrReplaceID,
-        numberCoreTypeNodes,
+        typesNodesReplace
+      );
+
+      // asf7;
+      let { nodesArrNew2, edgesArrNew2 } = await addSettingsNodesSubNodes(
+        nodesObj_,
+        edgesArrNew,
         nodeSettings,
         edgeSettings
       );
 
-      // let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
-      //   nodesObj,
-      //   edgesArr,
-      //   nodesArrReplaceID,
-      //   numberCoreTypeNodes
-      // );
-
       return {
-        nodes: nodesArrNew,
-        edges: edgesArrNew,
+        nodes: nodesArrNew2,
+        edges: edgesArrNew2,
       };
     } catch (err) {
       throw new ApolloError(
@@ -104,7 +104,7 @@ module.exports = {
     }
   },
   findProjectGraph: async (parent, args, context, info) => {
-    const { projectID } = args.fields;
+    const { projectID, nodeSettings, edgeSettings } = args.fields;
     console.log("Query > findProjectGraph > args.fields = ", args.fields);
 
     if (!projectID) throw new ApolloError("The projectID is required");
@@ -121,26 +121,183 @@ module.exports = {
       res = await generalFunc_neo4j({
         request: `
         MATCH res = ((n)-[]-(m)-[]-(o))
-        WHERE n._id = "${projectID}" AND (m:Role) AND (o:sub_expertise or o:sub_typeProject)
+        WHERE n._id = "${projectID}" AND (m:Role) AND (o:sub_expertise or o:sub_typeProject or o:skill)
         RETURN res
         `,
       });
 
-      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
-        await neo4jToNodeEdgeGraph(res);
+      let { typesNodesReplace, typeNodeSearchAbove } =
+        await readSettingsFindReplaceNodesMultiple(nodeSettings, edgeSettings);
 
-      let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
+      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
+        await neo4jToNodeEdgeGraphSettings(res, typesNodesReplace);
+
+      let { edgesArrNew, nodesObj_ } = await replaceNodes(
         nodesObj,
         edgesArr,
         nodesArrReplaceID,
-        numberCoreTypeNodes
+        typesNodesReplace
+      );
+
+      // asf7;
+      let { nodesArrNew2, edgesArrNew2 } = await addSettingsNodesSubNodes(
+        nodesObj_,
+        edgesArrNew,
+        nodeSettings,
+        edgeSettings
       );
 
       return {
-        nodes: nodesArrNew,
-        edges: edgesArrNew,
+        nodes: nodesArrNew2,
+        edges: edgesArrNew2,
       };
 
+      // let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
+      //   await neo4jToNodeEdgeGraph(res);
+
+      // let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
+      //   nodesObj,
+      //   edgesArr,
+      //   nodesArrReplaceID,
+      //   numberCoreTypeNodes
+      // );
+
+      // return {
+      //   nodes: nodesArrNew,
+      //   edges: edgesArrNew,
+      // };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findProjectGraph",
+        {
+          component: "graphVisual > findProjectGraph",
+        }
+      );
+    }
+  },
+  findMemberToProjectGraph: async (parent, args, context, info) => {
+    const { memberID, projectID, nodeSettings, edgeSettings } = args.fields;
+    console.log(
+      "Query > findMemberToProjectGraph > args.fields = ",
+      args.fields
+    );
+
+    if (!memberID) throw new ApolloError("The memberID is required");
+
+    try {
+      let memberData = await Members.findOne({ _id: memberID }).select("_id");
+
+      if (!memberData) throw new ApolloError("Member not found");
+
+      console.log("memberData = ", memberData);
+
+      if (projectID == undefined || projectID == "") {
+        res = await generalFunc_neo4j({
+          request: `
+            MATCH res = ((m)-[]-(o)-[]-(r)-[]-(p))
+            WHERE m._id = "${memberID}" AND (p:Project) AND (r: Role) AND (o:sub_expertise or o:sub_typeProject or o:skill)
+            RETURN res
+        `,
+        });
+      } else {
+        res = await generalFunc_neo4j({
+          request: `
+              MATCH res = ((m)-[]-(o)-[]-(r)-[]-(p))
+              WHERE m._id = "${memberID}" AND (p._id="${projectID}") AND (r: Role) AND (o:sub_expertise or o:sub_typeProject or o:skill)
+              RETURN res
+        `,
+        });
+      }
+
+      let { typesNodesReplace, typeNodeSearchAbove } =
+        await readSettingsFindReplaceNodesMultiple(nodeSettings, edgeSettings);
+
+      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
+        await neo4jToNodeEdgeGraphSettings(res, typesNodesReplace);
+
+      let { edgesArrNew, nodesObj_ } = await replaceNodes(
+        nodesObj,
+        edgesArr,
+        nodesArrReplaceID,
+        typesNodesReplace
+      );
+
+      let { nodesArrNew2, edgesArrNew2 } = await addSettingsNodesSubNodes(
+        nodesObj_,
+        edgesArrNew,
+        nodeSettings,
+        edgeSettings
+      );
+
+      return {
+        nodes: nodesArrNew2,
+        edges: edgesArrNew2,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findMemberToProjectGraph",
+        {
+          component: "graphVisual > findMemberToProjectGraph",
+        }
+      );
+    }
+  },
+  findMemberToMemberGraph: async (parent, args, context, info) => {
+    const { memberOneID, memberTwoID, nodeSettings, edgeSettings } =
+      args.fields;
+    console.log(
+      "Query > findMemberToMemberGraph > args.fields = ",
+      args.fields
+    );
+
+    if (!memberOneID && !memberTwoID)
+      throw new ApolloError("The memberIDs is required");
+
+    try {
+      let memberData = await Members.find({
+        _id: [memberOneID, memberTwoID],
+      }).select("_id");
+
+      if (memberData && memberData.length < 2)
+        throw new ApolloError("Member data not found");
+
+      console.log("memberData = ", memberData);
+
+      res = await generalFunc_neo4j({
+        request: `
+        MATCH res = ((m)-[]-()-[]-()-[]-(o))
+        WHERE m._id = "${memberOneID}" AND o._id = "${memberTwoID}"
+        RETURN res
+        `,
+      });
+
+      let { typesNodesReplace, typeNodeSearchAbove } =
+        await readSettingsFindReplaceNodesMultiple(nodeSettings, edgeSettings);
+
+      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
+        await neo4jToNodeEdgeGraphSettings(res, typesNodesReplace);
+
+      let { edgesArrNew, nodesObj_ } = await replaceNodes(
+        nodesObj,
+        edgesArr,
+        nodesArrReplaceID,
+        typesNodesReplace
+      );
+
+      // asf7;
+      let { nodesArrNew2, edgesArrNew2 } = await addSettingsNodesSubNodes(
+        nodesObj_,
+        edgesArrNew,
+        nodeSettings,
+        edgeSettings
+      );
+
+      return {
+        nodes: nodesArrNew2,
+        edges: edgesArrNew2,
+      };
       // nodesObj = {};
       // edgesArr = [];
 
@@ -187,165 +344,6 @@ module.exports = {
       // //console.log("nodesObj = ", nodesObj);
       // //console.log("edgesArr = ", edgesArr);
 
-      // return {
-      //   nodes: nodesArr,
-      //   edges: edgesArr,
-      // };
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "findProjectGraph",
-        {
-          component: "graphVisual > findProjectGraph",
-        }
-      );
-    }
-  },
-  findMemberToProjectGraph: async (parent, args, context, info) => {
-    const { memberID, projectID } = args.fields;
-    console.log(
-      "Query > findMemberToProjectGraph > args.fields = ",
-      args.fields
-    );
-
-    if (!memberID) throw new ApolloError("The memberID is required");
-
-    try {
-      let memberData = await Members.findOne({ _id: memberID }).select("_id");
-
-      if (!memberData) throw new ApolloError("Member not found");
-
-      console.log("memberData = ", memberData);
-
-      if (projectID == undefined || projectID == "") {
-        res = await generalFunc_neo4j({
-          request: `
-            MATCH res = ((m)-[]-(o)-[]-(r)-[]-(p))
-            WHERE m._id = "${memberID}" AND (p:Project) AND (r: Role) AND (o:sub_expertise or o:sub_typeProject)
-            RETURN res
-        `,
-        });
-      } else {
-        res = await generalFunc_neo4j({
-          request: `
-              MATCH res = ((m)-[]-(o)-[]-(r)-[]-(p))
-              WHERE m._id = "${memberID}" AND (p._id="${projectID}") AND (r: Role) AND (o:sub_expertise or o:sub_typeProject)
-              RETURN res
-        `,
-        });
-      }
-      // let nodesObj = {};
-      // let nodesArrReplaceID = [];
-      // let edgesArr = [];
-      // for (let i = 0; i < res.records.length; i++) {
-      //   let record = res.records[i];
-
-      //   for (let j = 0; j < record._fields[0].segments.length; j++) {
-      //     let segment = record._fields[0].segments[j];
-
-      //     let start = segment.start;
-      //     let end = segment.end;
-
-      //     if (nodesObj[start.properties._id] == undefined) {
-      //       nodesObj[start.properties._id] = {
-      //         _id: start.properties._id,
-      //         name: start.properties.name,
-      //         type: start.labels[0],
-      //         show: true,
-      //       };
-
-      //       if (replaceTypeNodes[start.labels[0]] == true) {
-      //         nodesArrReplaceID.push(start.properties._id);
-      //       }
-      //     }
-      //     if (nodesObj[end.properties._id] == undefined) {
-      //       nodesObj[end.properties._id] = {
-      //         _id: end.properties._id,
-      //         name: end.properties.name,
-      //         type: end.labels[0],
-      //         show: true,
-      //       };
-
-      //       if (replaceTypeNodes[end.labels[0]] == true) {
-      //         nodesArrReplaceID.push(end.properties._id);
-      //       }
-      //     }
-
-      //     edgesArr.push({
-      //       source: start.properties._id,
-      //       target: end.properties._id,
-      //       type: segment.relationship.type,
-      //     });
-      //   }
-      // }
-
-      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
-        await neo4jToNodeEdgeGraph(res);
-
-      // console.log("numberCoreTypeNodes = ", numberCoreTypeNodes);
-      // asdf;
-
-      let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
-        nodesObj,
-        edgesArr,
-        nodesArrReplaceID,
-        numberCoreTypeNodes
-      );
-
-      // console.log("nodesArrNew = ", nodesArrNew);
-
-      return {
-        nodes: nodesArrNew,
-        edges: edgesArrNew,
-      };
-
-      // nodesObj = {};
-      // let nodesArrID = [];
-      // let nodesArrReplaceID = [];
-      // edgesArr = [];
-      // for (let i = 0; i < res.records.length; i++) {
-      //   let record = res.records[i];
-
-      //   for (let j = 0; j < record._fields[0].segments.length; j++) {
-      //     let segment = record._fields[0].segments[j];
-
-      //     let start = segment.start;
-      //     let end = segment.end;
-      //     if (nodesObj[start.properties._id] == undefined) {
-      //       nodesObj[start.properties._id] = {
-      //         _id: start.properties._id,
-      //         name: start.properties.name,
-      //         type: start.labels[0],
-      //       };
-      //     }
-      //     if (nodesObj[end.properties._id] == undefined) {
-      //       nodesObj[end.properties._id] = {
-      //         _id: end.properties._id,
-      //         name: end.properties.name,
-      //         type: end.labels[0],
-      //       };
-      //     }
-
-      //     edgesArr.push({
-      //       source: start.properties._id,
-      //       target: end.properties._id,
-      //       type: segment.relationship.type,
-      //     });
-      //   }
-      // }
-
-      // let nodesArr = [];
-      // for (let key in nodesObj) {
-      //   nodesArr.push({
-      //     _id: nodesObj[key]._id,
-      //     name: nodesObj[key].name,
-      //     type: nodesObj[key].type,
-      //   });
-      // }
-
-      //console.log("nodesObj = ", nodesObj);
-      //console.log("edgesArr = ", edgesArr);
-
       // const uniqueEdges = _.uniqWith(edgesArr, _.isEqual);
 
       // return {
@@ -362,98 +360,8 @@ module.exports = {
       );
     }
   },
-  findMemberToMemberGraph: async (parent, args, context, info) => {
-    const { memberOneID, memberTwoID } = args.fields;
-    console.log(
-      "Query > findMemberToMemberGraph > args.fields = ",
-      args.fields
-    );
-
-    if (!memberOneID && !memberTwoID)
-      throw new ApolloError("The memberIDs is required");
-
-    try {
-      let memberData = await Members.find({
-        _id: [memberOneID, memberTwoID],
-      }).select("_id");
-
-      if (memberData && memberData.length < 2)
-        throw new ApolloError("Member data not found");
-
-      console.log("memberData = ", memberData);
-
-      res = await generalFunc_neo4j({
-        request: `
-        MATCH res = ((m)-[]-()-[]-()-[]-(o))
-        WHERE m._id = "${memberOneID}" AND o._id = "${memberTwoID}"
-        RETURN res
-        `,
-      });
-
-      nodesObj = {};
-      edgesArr = [];
-
-      for (let i = 0; i < res.records.length; i++) {
-        let record = res.records[i];
-
-        for (let j = 0; j < record._fields[0].segments.length; j++) {
-          let segment = record._fields[0].segments[j];
-
-          let start = segment.start;
-          let end = segment.end;
-          if (nodesObj[start.properties._id] == undefined) {
-            nodesObj[start.properties._id] = {
-              _id: start.properties._id,
-              name: start.properties.name,
-              type: start.labels[0],
-            };
-          }
-          if (nodesObj[end.properties._id] == undefined) {
-            nodesObj[end.properties._id] = {
-              _id: end.properties._id,
-              name: end.properties.name,
-              type: end.labels[0],
-            };
-          }
-
-          edgesArr.push({
-            source: start.properties._id,
-            target: end.properties._id,
-            type: segment.relationship.type,
-          });
-        }
-      }
-
-      let nodesArr = [];
-      for (let key in nodesObj) {
-        nodesArr.push({
-          _id: nodesObj[key]._id,
-          name: nodesObj[key].name,
-          type: nodesObj[key].type,
-        });
-      }
-
-      //console.log("nodesObj = ", nodesObj);
-      //console.log("edgesArr = ", edgesArr);
-
-      const uniqueEdges = _.uniqWith(edgesArr, _.isEqual);
-
-      return {
-        nodes: nodesArr,
-        edges: uniqueEdges,
-      };
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "findMemberToProjectGraph",
-        {
-          component: "graphVisual > findMemberToProjectGraph",
-        }
-      );
-    }
-  },
   findMultipleMembersProjectsGraph: async (parent, args, context, info) => {
-    const { membersID, projectsID } = args.fields;
+    const { membersID, projectsID, nodeSettings, edgeSettings } = args.fields;
     console.log(
       "Query > findMultipleMembersProjectsGraph > args.fields = ",
       args.fields
@@ -505,20 +413,47 @@ module.exports = {
         `,
       });
 
-      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
-        await neo4jToNodeEdgeGraph(res);
+      let { typesNodesReplace, typeNodeSearchAbove } =
+        await readSettingsFindReplaceNodesMultiple(nodeSettings, edgeSettings);
 
-      let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
+      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
+        await neo4jToNodeEdgeGraphSettings(res, typesNodesReplace);
+
+      let { edgesArrNew, nodesObj_ } = await replaceNodes(
         nodesObj,
         edgesArr,
         nodesArrReplaceID,
-        numberCoreTypeNodes
+        typesNodesReplace
+      );
+
+      // asf7;
+      let { nodesArrNew2, edgesArrNew2 } = await addSettingsNodesSubNodes(
+        nodesObj_,
+        edgesArrNew,
+        nodeSettings,
+        edgeSettings
       );
 
       return {
-        nodes: nodesArrNew,
-        edges: edgesArrNew,
+        nodes: nodesArrNew2,
+        edges: edgesArrNew2,
       };
+
+      // let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
+      //   await neo4jToNodeEdgeGraph(res);
+
+      // let { nodesArrNew, edgesArrNew } = await replaceSubNodesPlusCalcDistance(
+      //   nodesObj,
+      //   edgesArr,
+      //   nodesArrReplaceID,
+      //   numberCoreTypeNodes
+      // );
+
+      // return {
+      //   nodes: nodesArrNew,
+      //   edges: edgesArrNew,
+      // };
+
       // nodesObj = {};
       // edgesArr = [];
 
@@ -701,7 +636,7 @@ async function neo4jToNodeEdgeGraph(res) {
         };
 
         if (coreTypeNodes[start.labels[0]] == true) {
-          console.log("change = ", start.properties.name, start.labels[0]);
+          // console.log("change = ", start.properties.name, start.labels[0]);
           numberCoreTypeNodes += 1;
         }
 
@@ -719,7 +654,7 @@ async function neo4jToNodeEdgeGraph(res) {
         };
 
         if (coreTypeNodes[end.labels[0]] == true) {
-          console.log("change = ", end.properties.name, end.labels[0]);
+          // console.log("change = ", end.properties.name, end.labels[0]);
           numberCoreTypeNodes += 1;
         }
 
@@ -746,6 +681,99 @@ async function neo4jToNodeEdgeGraph(res) {
   };
 }
 
+async function neo4jToNodeEdgeGraphSettings(res, typesNodesReplace = {}) {
+  let nodesObj = {};
+  let nodesArrReplaceID = [];
+  let edgesArr = [];
+  let numberCoreTypeNodes = 0;
+  for (let i = 0; i < res.records.length; i++) {
+    let record = res.records[i];
+
+    for (let j = 0; j < record._fields[0].segments.length; j++) {
+      let segment = record._fields[0].segments[j];
+
+      let start = segment.start;
+      let end = segment.end;
+
+      // ------------- Create nodesObj ----------------
+      if (nodesObj[start.properties._id] == undefined) {
+        nodesObj[start.properties._id] = {
+          _id: start.properties._id,
+          name: start.properties.name,
+          type: start.labels[0],
+          show: true,
+          numEdges: 0,
+          replace: false,
+        };
+      }
+      // ------------- Create nodesObj ----------------
+
+      // ------------- add node for replacement if exist on key ---------
+      let key = start.labels[0] + "|" + end.labels[0];
+
+      if (typesNodesReplace[key]) {
+        numberCoreTypeNodes += 1;
+
+        nodesArrReplaceID.push(start.properties._id);
+
+        nodesObj[start.properties._id].replace = true;
+        nodesObj[start.properties._id].aboveL1Type =
+          typesNodesReplace[key].replaceType;
+        if (typesNodesReplace[key].extraSplit.length > 0) {
+          nodesObj[start.properties._id].aboveL2Type =
+            typesNodesReplace[key].extraSplit[0];
+        }
+      }
+      // ------------- add node for replacement if exist on key ---------
+
+      // ------------- Create nodesObj ----------------
+      if (nodesObj[end.properties._id] == undefined) {
+        nodesObj[end.properties._id] = {
+          _id: end.properties._id,
+          name: end.properties.name,
+          type: end.labels[0],
+          show: true,
+          numEdges: 0,
+          replace: false,
+        };
+      }
+      // ------------- Create nodesObj ----------------
+
+      // ------------- add node for replacement if exist on key ---------
+
+      key = end.labels[0] + "|" + start.labels[0];
+
+      if (typesNodesReplace[key]) {
+        numberCoreTypeNodes += 1;
+
+        nodesArrReplaceID.push(end.properties._id);
+
+        nodesObj[end.properties._id].replace = true;
+        nodesObj[end.properties._id].aboveL1Type =
+          typesNodesReplace[key].replaceType;
+        if (typesNodesReplace[key].extraSplit.length > 0) {
+          nodesObj[end.properties._id].aboveL2Type =
+            typesNodesReplace[key].extraSplit[0];
+        }
+      }
+      // ------------- add node for replacement if exist on key ---------
+
+      edgesArr.push({
+        source: start.properties._id,
+        target: end.properties._id,
+        type: segment.relationship.type,
+      });
+    }
+  }
+
+  return {
+    nodesObj: nodesObj,
+    nodesArrReplaceID: nodesArrReplaceID,
+    edgesArr: edgesArr,
+    numberCoreTypeNodes: numberCoreTypeNodes,
+  };
+}
+
 async function arrayToObject(arrayN, keyName) {
   let objectN = {};
 
@@ -757,17 +785,32 @@ async function arrayToObject(arrayN, keyName) {
   return objectN;
 }
 
-async function arrayToObjectDoubleKey(arrayN, keyName1, keyName2) {
+async function arrayToObjectDoubleKey(
+  arrayN,
+  keyName1,
+  keyName2,
+  position = undefined
+) {
   let objectN = {};
 
   for (let i = 0; i < arrayN.length; i++) {
-    let key1 = arrayN[i][keyName1];
-    let key2 = arrayN[i][keyName2];
+    if (position == undefined) {
+      let key1 = arrayN[i][keyName1];
+      let key2 = arrayN[i][keyName2];
 
-    let ids = [key1, key2].sort();
-    let key = ids.join("_");
+      let ids = [key1, key2].sort();
+      let key = ids.join("_");
 
-    objectN[key] = arrayN[i];
+      objectN[key] = arrayN[i];
+    } else {
+      let key1 = arrayN[i][position][keyName1];
+      let key2 = arrayN[i][position][keyName2];
+
+      let ids = [key1, key2].sort();
+      let key = ids.join("_");
+
+      objectN[key] = arrayN[i];
+    }
   }
 
   return objectN;
@@ -786,8 +829,6 @@ function returnObjectValueDoubleKey(objectN, keyName1, keyName2) {
 async function addSettingsNodesSubNodes(
   nodesObj,
   edgesArr,
-  nodesArrReplaceID,
-  numberCoreTypeNodes,
   nodeSettings,
   edgeSettings
 ) {
@@ -796,16 +837,18 @@ async function addSettingsNodesSubNodes(
   edgeSettingsObj = await arrayToObjectDoubleKey(
     edgeSettings,
     "nodeTypeSource",
-    "nodeTypeTarget"
+    "nodeTypeTarget",
+    "mainEdge"
   );
 
   let nodesArrNew = [];
   let nodesArrNewObj = {};
-  // loop throw the node object
+
+  // ----------- The nodes that we will show to the Graph + settings --------
   for (let key in nodesObj) {
     node = nodesObj[key];
 
-    if (nodeSettingsObj[node.type]) {
+    if (nodeSettingsObj[node.type] && nodesObj[key].showNode == true) {
       // if the type exist on the settings it will be desplayed at the end of the graph
       const settingsN = nodeSettingsObj[node.type];
 
@@ -815,19 +858,10 @@ async function addSettingsNodesSubNodes(
       });
       nodesArrNewObj[node._id] = node;
     }
-    // else {
-    //   // SOS 🆘 TODO -> DELETE only for testing
-    //   nodesArrNew.push({
-    //     ...node,
-    //   });
-    // }
-
-    // if (nodesObj[key])
   }
+  // ----------- The nodes that we will show to the Graph + settings --------
 
-  // console.log("edgeSettingsObj = ", edgeSettingsObj);
-  // asf3;
-
+  // ----------- The edges taht we will show to the Graph + settings --------
   let edgesArrNew = [];
   for (let i = 0; i < edgesArr.length; i++) {
     edge = edgesArr[i];
@@ -838,22 +872,155 @@ async function addSettingsNodesSubNodes(
       nodesArrNewObj[edge.target]?.type
     );
 
-    console.log("edgeSettings = ", edgeSettings);
-    // asdf43;
-    if (edgeSettings) {
+    if (edgeSettings && edgeSettings?.splitEdge == undefined) {
       edgesArrNew.push({
         ...edge,
         style: {
-          ...edgeSettings,
+          stroke: edgeSettings?.mainEdge?.style?.color,
+          fill: edgeSettings?.mainEdge?.style?.color,
+          ...edgeSettings?.mainEdge?.style,
         },
       });
     }
   }
+  // ----------- The edges taht we will show to the Graph + settings --------
+
+  // ---------- If Hidden Edge - You create Fake transparent Edges ------------
+  for (let i = 0; i < edgeSettings.length; i++) {
+    let edgeSetting = edgeSettings[i];
+    // 1) see if there is a hidden edge
+    if (edgeSetting?.hiddenEdge == true) {
+      // 2) find all the nodes that have the source or target type
+      let nodesHiddenEdgeType1 = [];
+      let nodesHiddenEdgeType2 = [];
+      for (let key in nodesArrNewObj) {
+        if (
+          edgeSetting?.mainEdge?.nodeTypeSource == nodesArrNewObj[key]?.type
+        ) {
+          nodesHiddenEdgeType1.push(key);
+        }
+        if (
+          edgeSetting?.mainEdge?.nodeTypeTarget == nodesArrNewObj[key]?.type
+        ) {
+          nodesHiddenEdgeType2.push(key);
+        }
+      }
+      // 3) create a fake edge between all the nodes that have the source or target type
+      for (let i = 0; i < nodesHiddenEdgeType1.length; i++) {
+        for (let j = 0; j < nodesHiddenEdgeType2.length; j++) {
+          if (nodesHiddenEdgeType1[i] == nodesHiddenEdgeType2[j]) continue;
+          edgesArrNew.push({
+            source: nodesHiddenEdgeType1[i],
+            target: nodesHiddenEdgeType2[j],
+            style: {
+              stroke: edgeSetting?.mainEdge?.style?.color,
+              fill: edgeSetting?.mainEdge?.style?.color,
+              distance: edgeSetting?.mainEdge?.style?.distance,
+              strength: edgeSetting?.mainEdge?.style?.strength,
+            },
+          });
+        }
+      }
+    }
+  }
+  // ---------- If Hidden Edge - You create Fake transparent Edges ------------
 
   return {
-    nodesArrNew: nodesArrNew,
-    // edgesArrNew: edgesArr,
-    edgesArrNew: edgesArrNew,
+    nodesArrNew2: nodesArrNew,
+    edgesArrNew2: edgesArrNew,
+    nodeSettingsObj2: nodeSettingsObj,
+    edgeSettingsObj2: edgeSettingsObj,
+  };
+}
+
+async function readSettingsFindReplaceNodes(nodeSettings, edgeSettings) {
+  nodeSettingsObj = await arrayToObject(nodeSettings, "type");
+
+  edgeSettingsObj = await arrayToObjectDoubleKey(
+    edgeSettings,
+    "nodeTypeSource",
+    "nodeTypeTarget",
+    "mainEdge"
+  );
+
+  let typesNodesReplace = {};
+
+  for (let key in edgeSettingsObj) {
+    let edgeSettings = edgeSettingsObj[key];
+
+    if (edgeSettings.splitEdge) {
+      for (let i = 0; i < edgeSettings.splitEdge.length; i++) {
+        let splitEdge = edgeSettings.splitEdge[i];
+
+        typesNodesReplace[splitEdge.nodeTypeSource] = {
+          replaceType: splitEdge.nodeTypeMiddle,
+          typeTarget: splitEdge.nodeTypeTarget,
+          moreThanSplit: edgeSettings.moreThanSplit,
+        };
+      }
+    }
+  }
+  // console.log("typesNodesReplace = ", typesNodesReplace);
+  // asdf2;
+
+  return {
+    nodeSettingsObj: nodeSettingsObj,
+    edgeSettingsObj: edgeSettingsObj,
+    typesNodesReplace: typesNodesReplace,
+  };
+}
+
+async function readSettingsFindReplaceNodesMultiple(
+  nodeSettings,
+  edgeSettings
+) {
+  nodeSettingsObj = await arrayToObject(nodeSettings, "type");
+
+  edgeSettingsObj = await arrayToObjectDoubleKey(
+    edgeSettings,
+    "nodeTypeSource",
+    "nodeTypeTarget",
+    "mainEdge"
+  );
+
+  let typesNodesReplace = {};
+  let typeNodeSearchAbove = {};
+
+  for (let key in edgeSettingsObj) {
+    let edgeSettings = edgeSettingsObj[key];
+
+    if (edgeSettings.splitEdge) {
+      for (let i = 0; i < edgeSettings.splitEdge.length; i++) {
+        let splitEdge = edgeSettings.splitEdge[i];
+
+        const key =
+          edgeSettings.mainEdge.nodeTypeSource +
+          "|" +
+          edgeSettings.mainEdge.nodeTypeTarget;
+
+        if (typesNodesReplace[key] == undefined) {
+          typesNodesReplace[key] = {
+            replaceType: splitEdge.nodeTypeMiddle,
+            typeTarget: splitEdge.nodeTypeTarget,
+            moreThanSplit: edgeSettings.moreThanSplit,
+            extraSplit: [],
+          };
+
+          typeNodeSearchAbove[splitEdge.nodeTypeSource] =
+            splitEdge.nodeTypeMiddle;
+        } else {
+          typesNodesReplace[key].extraSplit.push(splitEdge.nodeTypeMiddle);
+
+          typeNodeSearchAbove[splitEdge.nodeTypeSource] =
+            splitEdge.nodeTypeMiddle;
+        }
+      }
+    }
+  }
+
+  return {
+    typesNodesReplace: typesNodesReplace,
+    typeNodeSearchAbove: typeNodeSearchAbove,
   };
 }
 
@@ -987,7 +1154,10 @@ async function replaceSubNodesPlusCalcDistance(
         distanceRation: distanceNow.close, // small distancec between category and subCategory
       });
 
-      nodesObj[nodeNow.aboveNodes].show = true;
+      if (nodeNow.aboveNodes && nodesObj[nodeNow.aboveNodes]) {
+        nodesObj[nodeNow.aboveNodes].show = true;
+      }
+      // nodesObj[nodeNow.aboveNodes].show = true;
     }
 
     // console.log("dokiii = ", i);
@@ -1038,7 +1208,10 @@ async function replaceSubNodesPlusCalcDistance(
         distanceRation: distanceNow.close, // small distancec between category and subCategory
       });
 
-      nodesObj[nodeNow.aboveNodes].show = true;
+      if (nodeNow.aboveNodes && nodesObj[nodeNow.aboveNodes]) {
+        nodesObj[nodeNow.aboveNodes].show = true;
+      }
+      // nodesObj[nodeNow.aboveNodes].show = true;
     }
 
     if (flatAddEdge == true) {
@@ -1048,17 +1221,6 @@ async function replaceSubNodesPlusCalcDistance(
         distanceRation: 0.5, // the distance here is average for this two nodes
       });
     }
-  }
-  // console.log("----------------------");
-
-  // console.log("edgesArr = ", edgesArr);
-  // console.log("edgesArrNew = ", edgesArrNew);
-  // console.log("nodesObj = ", nodesObj);
-
-  for (let key in nodesObj) {
-    console.log("key = ", key);
-    console.log("nodesObj[key] = ", nodesObj[key]);
-    // if (nodesObj[key].fakeConnection) {
   }
 
   let nodesArrNew = [];
@@ -1070,7 +1232,7 @@ async function replaceSubNodesPlusCalcDistance(
       extraInfo = {
         extraDistanceRation: 1 - 1 / dem,
       };
-      console.log("change = " + nodesObj[key].type, extraInfo);
+      // console.log("change = " + nodesObj[key].type, extraInfo);
     }
     if (nodesObj[key].show == true) {
       if (nodesObj[key].fakeConnection) {
@@ -1097,5 +1259,313 @@ async function replaceSubNodesPlusCalcDistance(
   return {
     nodesArrNew: nodesArrNew,
     edgesArrNew: edgesArrNew,
+  };
+}
+
+// async function readSettingsFindReplaceNodes(nodeSettings, edgeSettings) {
+//   nodeSettingsObj = await arrayToObject(nodeSettings, "type");
+
+//   edgeSettingsObj = await arrayToObjectDoubleKey(
+//     edgeSettings,
+//     "nodeTypeSource",
+//     "nodeTypeTarget",
+//     "mainEdge"
+//   );
+
+//   let typesNodesReplace = {};
+
+//   for (let key in edgeSettingsObj) {
+//     let edgeSettings = edgeSettingsObj[key];
+
+//     if (edgeSettings.splitEdge) {
+//       for (let i = 0; i < edgeSettings.splitEdge.length; i++) {
+//         let splitEdge = edgeSettings.splitEdge[i];
+
+//         typesNodesReplace[splitEdge.nodeTypeSource] = {
+//           replaceType: splitEdge.nodeTypeMiddle,
+//           typeTarget: splitEdge.nodeTypeTarget,
+//           moreThanSplit: edgeSettings.moreThanSplit,
+//         };
+//       }
+//     }
+//   }
+//   // console.log("typesNodesReplace = ", typesNodesReplace);
+//   // asdf2;
+
+//   return {
+//     nodeSettingsObj: nodeSettingsObj,
+//     edgeSettingsObj: edgeSettingsObj,
+//     typesNodesReplace: typesNodesReplace,
+//   };
+// }
+
+async function searchAboveNodesOneLayer(searchNodes, nodesObj_n) {
+  // -------------- Find replace Nodes ------------
+  let nodesData = await Node.find({ _id: searchNodes }).select(
+    "_id name node aboveNodes"
+  );
+
+  // console.log("searchNodes = ", searchNodes);
+  let aboveNodesID = [];
+  for (let i = 0; i < nodesData.length; i++) {
+    if (nodesObj_n[nodesData[i]._id] != undefined) {
+      nodesObj_n[nodesData[i]._id].type = nodesData[i].node;
+      nodesObj_n[nodesData[i]._id].name = nodesData[i].name;
+      nodesObj_n[nodesData[i]._id].aboveNodes = nodesData[i].aboveNodes;
+    } else {
+      nodesObj_n[nodesData[i]._id] = {
+        _id: nodesData[i]._id,
+        name: nodesData[i].name,
+        type: nodesData[i].node,
+        aboveNodes: nodesData[i].aboveNodes,
+      };
+    }
+
+    // if (nodesData[i]._id == "63d1ad93a90f12cef67a7c7b") {
+    //   console.log("nodesData[i].aboveNodes = ", nodesData[i].aboveNodes);
+    //   asfd23;
+    // }
+
+    for (let j = 0; j < nodesData[i].aboveNodes.length; j++) {
+      let aboveNodeID = nodesData[i].aboveNodes[j];
+      if (nodesObj_n[aboveNodeID] == undefined) {
+        aboveNodesID.push(aboveNodeID);
+
+        nodesObj_n[aboveNodeID] = {
+          _id: aboveNodeID,
+          subNodes: [nodesData[i]._id],
+        };
+      } else {
+        nodesObj_n[aboveNodeID].subNodes.push(nodesData[i]._id);
+      }
+
+      // if (
+      //   nodesData[i]._id == "63d1ad93a90f12cef67a7c7b" &&
+      //   aboveNodeID == "637a912ab8953f12f501e0b8"
+      // ) {
+      //   console.log("nodesData[i].aboveNodes = ", nodesData[i].aboveNodes);
+      //   asfd24;
+      // }
+    }
+  }
+
+  // console.log("aboveNodesID = ", aboveNodesID);
+
+  return {
+    searchNodes: aboveNodesID,
+    nodesObj_n: nodesObj_n,
+  };
+}
+
+async function searchAboveNodesAllLayers(searchNodes, nodesObj_n) {
+  let resultsL1 = await searchAboveNodesOneLayer(searchNodes, nodesObj_n);
+
+  let resultsL2 = await searchAboveNodesOneLayer(
+    resultsL1.searchNodes,
+    resultsL1.nodesObj_n
+  );
+
+  let resultsL3 = await searchAboveNodesOneLayer(
+    resultsL2.searchNodes,
+    resultsL2.nodesObj_n
+  );
+
+  //  -------------- Add the L1 and L2 of the searchNodes ------------
+  const nodesObj_F = resultsL3.nodesObj_n;
+  for (let i = 0; i < searchNodes.length; i++) {
+    let nodeID = searchNodes[i];
+    if (nodesObj_F[nodeID] != undefined) {
+      let aboveNodeID = await findAndAddAboveNodes(
+        nodesObj_F,
+        nodesObj_F[nodeID].aboveNodes,
+        nodeID,
+        nodesObj_F[nodeID].aboveL1Type
+      );
+
+      nodesObj_F[nodeID].aboveL1ID = aboveNodeID;
+      nodesObj_n[nodeID].aboveL1ID = aboveNodeID;
+      if (nodesObj_n[aboveNodeID] == undefined) {
+        nodesObj_n[aboveNodeID] = nodesObj_F[aboveNodeID];
+      }
+
+      if (nodesObj_F[nodeID].aboveL2Type != undefined) {
+        let aboveNodeID2 = await findAndAddAboveNodes(
+          nodesObj_F,
+          nodesObj_F[aboveNodeID].aboveNodes,
+          nodeID,
+          nodesObj_F[nodeID].aboveL2Type
+        );
+
+        nodesObj_F[nodeID].aboveL2ID = aboveNodeID2;
+
+        nodesObj_n[nodeID].aboveL2ID = aboveNodeID2;
+
+        if (nodesObj_n[aboveNodeID2] == undefined) {
+          nodesObj_n[aboveNodeID2] = nodesObj_F[aboveNodeID];
+        }
+      }
+    }
+  }
+  //  -------------- Add the L1 and L2 of the searchNodes ------------
+
+  return nodesObj_n;
+}
+
+async function findAndAddAboveNodes(
+  nodesObj_,
+  aboveNodes_T,
+  nodeID,
+  aboveLType
+) {
+  let res_aboveNodeID = undefined;
+  for (let k = 0; k < aboveNodes_T.length; k++) {
+    let aboveNodeID = aboveNodes_T[k];
+
+    if (nodesObj_[aboveNodeID]?.type == aboveLType) {
+      res_aboveNodeID = aboveNodeID;
+
+      return res_aboveNodeID;
+    }
+  }
+  return res_aboveNodeID;
+}
+
+async function splitEdgeFunc(
+  nodesObj,
+  edgeFirst,
+  edgeSecond,
+  typesNodesReplace,
+  edgesArrNew
+) {
+  let flagAddEdge = true;
+  // ------------ Split edge source ---------
+  let key = nodesObj[edgeFirst].type + "|" + nodesObj[edgeSecond].type;
+  if (typesNodesReplace[key]) {
+    if (nodesObj[edgeFirst].aboveL1ID != undefined) {
+      if (nodesObj[edgeFirst].aboveL2ID != undefined) {
+        edgesArrNew.push({
+          source: edgeFirst,
+          target: nodesObj[edgeFirst].aboveL1ID,
+        });
+
+        edgesArrNew.push({
+          source: nodesObj[edgeFirst].aboveL1ID,
+          target: nodesObj[edgeFirst].aboveL2ID,
+        });
+
+        edgesArrNew.push({
+          source: nodesObj[edgeFirst].aboveL2ID,
+          target: edgeSecond,
+        });
+
+        nodesObj[edgeFirst].showNode = true;
+        nodesObj[edgeSecond].showNode = true;
+        nodesObj[nodesObj[edgeFirst].aboveL1ID].showNode = true;
+        nodesObj[nodesObj[edgeFirst].aboveL2ID].showNode = true;
+
+        // console.log("edgesArrNew = ", edgesArrNew);
+
+        flagAddEdge = false;
+      } else {
+        edgesArrNew.push({
+          source: edgeFirst,
+          target: nodesObj[edgeFirst].aboveL1ID,
+        });
+        // and the other one from above to target node
+        edgesArrNew.push({
+          source: nodesObj[edgeFirst].aboveL1ID,
+          target: edgeSecond,
+        });
+
+        nodesObj[edgeFirst].showNode = true;
+        nodesObj[edgeSecond].showNode = true;
+        nodesObj[nodesObj[edgeFirst].aboveL1ID].showNode = true;
+
+        flagAddEdge = false;
+      }
+    }
+  }
+  // ------------ Split edge source --------
+
+  return {
+    flagAddEdge: flagAddEdge,
+    edgesArrNew: edgesArrNew,
+    nodesObj: nodesObj,
+  };
+}
+
+// create function that will check for the above nodes and replace with expertise the edges
+async function replaceNodes(
+  nodesObj,
+  edgesArr,
+  nodesArrReplaceID,
+  typesNodesReplace
+) {
+  let nodesObj_n = await searchAboveNodesAllLayers(nodesArrReplaceID, nodesObj);
+
+  nodesObj = nodesObj_n;
+
+  let edgesArrNew = [];
+
+  for (let i = 0; i < edgesArr.length; i++) {
+    let edgeSource = edgesArr[i].source;
+    let edgeTarget = edgesArr[i].target;
+
+    // ------------ Add number of edges for each node ---------
+    if (nodesObj[edgeSource].numEdges == undefined) {
+      nodesObj[edgeSource].numEdges = 1;
+    } else {
+      nodesObj[edgeSource].numEdges++;
+    }
+
+    if (nodesObj[edgeTarget].numEdges == undefined) {
+      nodesObj[edgeTarget].numEdges = 1;
+    } else {
+      nodesObj[edgeTarget].numEdges++;
+    }
+    // ------------ Add number of edges for each node ---------
+
+    // ------------ splitEdgeFunc ------------
+    let splitRes1 = await splitEdgeFunc(
+      nodesObj,
+      edgeSource,
+      edgeTarget,
+      typesNodesReplace,
+      edgesArrNew
+    );
+
+    edgesArrNew = splitRes1.edgesArrNew;
+    nodesObj = splitRes1.nodesObj;
+
+    let splitRes2 = await splitEdgeFunc(
+      nodesObj,
+      edgeTarget,
+      edgeSource,
+      typesNodesReplace,
+      edgesArrNew
+    );
+
+    edgesArrNew = splitRes2.edgesArrNew;
+    nodesObj = splitRes2.nodesObj;
+    // ------------ splitEdgeFunc ------------
+
+    // ------------ Dont Split ---------
+    if (splitRes1.flagAddEdge == true && splitRes2.flagAddEdge == true) {
+      edgesArrNew.push({
+        source: edgeSource,
+        target: edgeTarget,
+        distanceRation: 0.5, // the distance here is average for this two nodes
+      });
+      // console.log("TOROSDFJSODF = ");
+
+      nodesObj[edgeSource].showNode = true;
+      nodesObj[edgeTarget].showNode = true;
+    }
+    // ------------ Dont Split ---------
+  }
+
+  return {
+    edgesArrNew: edgesArrNew,
+    nodesObj_: nodesObj,
   };
 }
