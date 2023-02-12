@@ -58,4 +58,69 @@ module.exports = {
       );
     }
   },
+  activeMembersStatsGroupByMonth: async (parent, args, context, info) => {
+    try {
+      const count = await Members.aggregate([
+        {
+          $match: {
+            bio: { $ne: null },
+          },
+        },
+        {
+          $project: {
+            month: { $month: "$registeredAt" },
+            year: { $year: "$registeredAt" },
+          },
+        },
+        {
+          $group: {
+            _id: { month: "$month", year: "$year" },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { "_id.year": -1 , "_id.month": 1 } },
+      ]);
+
+      console.log("active members each month : ", count);
+      return count;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "activeMembersStatsGroupByMonth",
+        {
+          component: "edenMetricsQuery > activeMembersStatsGroupByMonth",
+        }
+      );
+    }
+  },
+  memberstatsGroupByMonth: async (parent, args, context, info) => {
+    try {
+      const count = await Members.aggregate([
+        {
+          $project: {
+            month: { $month: "$registeredAt" },
+            year: { $year: "$registeredAt" },
+          },
+        },
+        {
+          $group: {
+            _id: { month: "$month", year: "$year" },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { "_id.year": -1 , "_id.month": 1 } },
+      ]);
+
+      console.log("active members each month : ", count);
+      return count;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "memberstatsGroupByMonth",
+        {
+          component: "edenMetricsQuery > memberstatsGroupByMonth",
+        }
+      );
+    }
+  },
 };
