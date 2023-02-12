@@ -78,6 +78,13 @@ const {
   findOneMemberToMembersGraph,
 } = require("./query/graphVisualQuery");
 
+const {
+  activeMembersStatsGroupByMonth,
+  activeMembersStats,
+  newMemberStats,
+  memberstatsGroupByMonth
+} = require("./query/edenMetricsQuery");
+
 const { errors } = require("./query/errorQuery");
 
 module.exports = {
@@ -169,5 +176,11 @@ module.exports = {
     findMemberToMemberGraph,
     findMultipleMembersProjectsGraph,
     findOneMemberToMembersGraph,
+
+    //----------- EDEN METRICS QUERY ------------------
+    activeMembersStatsGroupByMonth,
+    activeMembersStats,
+    newMemberStats,
+    memberstatsGroupByMonth,
   },
 };

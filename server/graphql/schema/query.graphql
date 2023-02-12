@@ -102,5 +102,13 @@ module.exports = `
           findMultipleMembersProjectsGraph(fields: findMultipleMembersProjectsGraphInput ): Graph
           findOneMemberToMembersGraph(fields: findOneMemberToMembersGraphInput): Graph
 
+
+          # ---------- EDEN METRICS QUERY ----------------
+          activeMembersStats(fields: activeMembersStatsInput):Int
+          newMemberStats(fields: newMemberStatsInput):Int
+          activeMembersStatsGroupByMonth: [MetricsGroupByMonthResult]
+          memberstatsGroupByMonth: [MetricsGroupByMonthResult]
+          
+
         }
 `;
