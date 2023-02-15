@@ -3,7 +3,16 @@ require("dotenv").config();
 
 const edenMetricsSchema = mongoose.Schema({
   memberID: String,
-  signUpDate: Date,
+  profileCreatedDate: Date,
+  activeUserLogin: [
+    {
+      date: Date,
+    },
+  ],
+  exploreFeatures: [
+    //this is an array that tracks the order the main product feature is clicked
+    { buttonClicked: String, timeClicked: Date, index: Number },
+  ],
   visited: [
     {
       loginTime: Date,
