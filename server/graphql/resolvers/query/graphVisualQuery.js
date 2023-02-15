@@ -230,9 +230,102 @@ module.exports = {
         edgeSettings
       );
 
+      const edgesArrNew2_unique = _.uniqWith(edgesArrNew2, _.isEqual);
+      const nodesArrNew2_unique = _.uniqWith(nodesArrNew2, _.isEqual);
+
       return {
-        nodes: nodesArrNew2,
-        edges: edgesArrNew2,
+        nodes: nodesArrNew2_unique,
+        edges: edgesArrNew2_unique,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findMemberToProjectGraph",
+        {
+          component: "graphVisual > findMemberToProjectGraph",
+        }
+      );
+    }
+  },
+  dynamicSearchToProjectGraph: async (parent, args, context, info) => {
+    const { nodesID, projectID, nodeSettings, edgeSettings } = args.fields;
+    console.log(
+      "Query > dynamicSearchToProjectGraph > args.fields = ",
+      args.fields
+    );
+
+    if (!nodesID) throw new ApolloError("The nodesID is required");
+
+    try {
+      let nodesData = await Node.find({ _id: nodesID }).select("_id");
+
+      if (!nodesData) throw new ApolloError("Member not found");
+
+      // console.log("nodesData = ", nodesData);
+
+      let nodeDataIds = [];
+      let nodeDataObj = {};
+      for (let i = 0; i < nodesData.length; i++) {
+        nodeDataIds.push(nodesData[i]._id);
+        nodeDataObj[nodesData[i]._id] = nodesData[i];
+      }
+
+      const nodeDataIds_str = JSON.stringify(nodeDataIds);
+      console.log("nodeDataIds_str = ", nodeDataIds_str);
+      // asdf;
+
+      if (projectID == undefined || projectID == "") {
+        res = await generalFunc_neo4j({
+          request: `
+            MATCH res = ((o)-[]-(r)-[]-(p))
+            WHERE o._id IN ${nodeDataIds_str} AND (p:Project) AND (r: Role)
+            RETURN res
+        `,
+        });
+      } else {
+        res = await generalFunc_neo4j({
+          request: `
+              MATCH res = ((o)-[]-(r)-[]-(p))
+              WHERE o._id IN ${nodeDataIds_str} AND (p._id="${projectID}") AND (r: Role)
+              RETURN res
+        `,
+        });
+      }
+
+      // console.log("res = ", res);
+      // asdf0;
+
+      let { typesNodesReplace, typeNodeSearchAbove } =
+        await readSettingsFindReplaceNodesMultiple(nodeSettings, edgeSettings);
+
+      let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
+        await neo4jToNodeEdgeGraphSettings(
+          res,
+          typesNodesReplace,
+          true,
+          nodeDataObj
+        );
+
+      let { edgesArrNew, nodesObj_ } = await replaceNodes(
+        nodesObj,
+        edgesArr,
+        nodesArrReplaceID,
+        typesNodesReplace
+      );
+
+      let { nodesArrNew2, edgesArrNew2 } = await addSettingsNodesSubNodes(
+        nodesObj_,
+        edgesArrNew,
+        nodeSettings,
+        edgeSettings
+      );
+
+      const edgesArrNew2_unique = _.uniqWith(edgesArrNew2, _.isEqual);
+      const nodesArrNew2_unique = _.uniqWith(nodesArrNew2, _.isEqual);
+
+      return {
+        nodes: nodesArrNew2_unique,
+        edges: edgesArrNew2_unique,
       };
     } catch (err) {
       throw new ApolloError(
@@ -681,11 +774,39 @@ async function neo4jToNodeEdgeGraph(res) {
   };
 }
 
-async function neo4jToNodeEdgeGraphSettings(res, typesNodesReplace = {}) {
+async function neo4jToNodeEdgeGraphSettings(
+  res,
+  typesNodesReplace = {},
+  dynamicSearch = false, // dynamic search = give Nodes instead of Member or Project that conencts to nodes
+  nodeDataObj = {} // So will have to create a Fake Node to connect everything together
+) {
   let nodesObj = {};
   let nodesArrReplaceID = [];
   let edgesArr = [];
   let numberCoreTypeNodes = 0;
+
+  if (dynamicSearch == true) {
+    const fakeNodeID = "dynamicsearchnode0123456";
+    nodesObj[fakeNodeID] = {
+      _id: fakeNodeID,
+      name: "Dynamic Node Search",
+      type: "dynamicSearch",
+      show: true,
+      numEdges: 0,
+      replace: false,
+    };
+
+    // if (typesNodesReplace["dynamicSearch"]) {
+    //   nodesArrReplaceID.push(fakeNodeID);
+
+    //   nodesObj[fakeNodeID].replace = true;
+    //   nodesObj[fakeNodeID].aboveL1Type = typesNodesReplace[key].replaceType;
+    //   if (typesNodesReplace[key].extraSplit.length > 0) {
+    //     nodesObj[fakeNodeID].aboveL2Type = typesNodesReplace[key].extraSplit[0];
+    //   }
+    // }
+  }
+
   for (let i = 0; i < res.records.length; i++) {
     let record = res.records[i];
 
@@ -710,6 +831,11 @@ async function neo4jToNodeEdgeGraphSettings(res, typesNodesReplace = {}) {
 
       // ------------- add node for replacement if exist on key ---------
       let key = start.labels[0] + "|" + end.labels[0];
+      // if (dynamicSearch == true) {
+      //   if (nodeDataObj[start.properties._id]) {
+      //     key = nodeDataObj[start.properties._id].type + "|" + end.labels[0];
+      //   }
+      // }
 
       if (typesNodesReplace[key]) {
         numberCoreTypeNodes += 1;
@@ -740,7 +866,6 @@ async function neo4jToNodeEdgeGraphSettings(res, typesNodesReplace = {}) {
       // ------------- Create nodesObj ----------------
 
       // ------------- add node for replacement if exist on key ---------
-
       key = end.labels[0] + "|" + start.labels[0];
 
       if (typesNodesReplace[key]) {
@@ -763,8 +888,53 @@ async function neo4jToNodeEdgeGraphSettings(res, typesNodesReplace = {}) {
         target: end.properties._id,
         type: segment.relationship.type,
       });
+
+      if (dynamicSearch == true) {
+        // If it is dynamic search you need to connect inupt nodes to search node
+        if (nodeDataObj[start.properties._id] != undefined) {
+          edgesArr.push({
+            source: start.properties._id,
+            target: "dynamicsearchnode0123456",
+            type: "dynamicSearch",
+          });
+
+          key = start.labels[0] + "|" + "dynamicSearch";
+          nodesArrReplaceID.push(start.properties._id);
+
+          nodesObj[start.properties._id].replace = true;
+          nodesObj[start.properties._id].aboveL1Type =
+            typesNodesReplace[key].replaceType;
+          if (typesNodesReplace[key].extraSplit.length > 0) {
+            nodesObj[start.properties._id].aboveL2Type =
+              typesNodesReplace[key].extraSplit[0];
+          }
+        }
+        if (nodeDataObj[end.properties._id] != undefined) {
+          edgesArr.push({
+            source: end.properties._id,
+            target: "dynamicsearchnode0123456",
+            type: "dynamicSearch",
+          });
+
+          key = end.labels[0] + "|" + "dynamicSearch";
+          nodesArrReplaceID.push(end.properties._id);
+
+          nodesObj[end.properties._id].replace = true;
+          nodesObj[end.properties._id].aboveL1Type =
+            typesNodesReplace[key].replaceType;
+          if (typesNodesReplace[key].extraSplit.length > 0) {
+            nodesObj[end.properties._id].aboveL2Type =
+              typesNodesReplace[key].extraSplit[0];
+          }
+        }
+      }
     }
   }
+
+  // console.log("typesNodesReplace = ", typesNodesReplace);
+  // console.log("nodesObj = ", nodesObj);
+  // console.log("edgesArr = ", edgesArr);
+  // sfd4;
 
   return {
     nodesObj: nodesObj,
