@@ -3,6 +3,7 @@ const { Node } = require("../../../models/nodeModal");
 const { Skills } = require("../../../models/skillsModel");
 const { Projects } = require("../../../models/projectsModel");
 const { RoleTemplate } = require("../../../models/roleTemplateModal");
+const { EdenMetrics } = require("../../../models/edenMetrics");
 
 const { ApolloError } = require("apollo-server-express");
 const { driver } = require("../../../../server/neo4j_config");
@@ -417,6 +418,32 @@ module.exports = {
               { new: true }
             );
             // console.log("res2 = " , res2)
+          }
+        }
+
+        //add the user to the metrics model
+        const memberMetricsData = await EdenMetrics.find({
+          memberID: user._id,
+        });
+
+        if (!memberMetricsData) {
+          //create a new one
+          const newMemberMetrics = await new EdenMetrics({
+            memberID: user._id,
+            profileCreatedDate: new Date(),
+          });
+          newMemberMetrics.save();
+        } else {
+          //check if the profileCreatedDate has been filled
+          if (!memberMetricsData.profileCreatedDate) {
+            await EdenMetrics.findOneAndUpdate(
+              { memberID: user._id },
+              {
+                $set: {
+                  profileCreatedDate: new Date(),
+                },
+              }
+            );
           }
         }
 

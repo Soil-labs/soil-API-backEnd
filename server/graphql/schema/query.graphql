@@ -108,7 +108,9 @@ module.exports = `
           newMemberStats(fields: newMemberStatsInput):Int
           activeMembersStatsGroupByMonth: [MetricsGroupByMonthResult]
           memberstatsGroupByMonth: [MetricsGroupByMonthResult]
+          lurkersContributorsQuery:LurkersAndContributors
+          activeUsersLoginQuery(fields: activeUsersLoginQueryInput):Int
           
-
+      
         }
 `;

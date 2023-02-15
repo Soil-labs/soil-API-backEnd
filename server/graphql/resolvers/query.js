@@ -82,7 +82,9 @@ const {
   activeMembersStatsGroupByMonth,
   activeMembersStats,
   newMemberStats,
-  memberstatsGroupByMonth
+  memberstatsGroupByMonth,
+  lurkersContributorsQuery,
+  activeUsersLoginQuery
 } = require("./query/edenMetricsQuery");
 
 const { errors } = require("./query/errorQuery");
@@ -182,5 +184,7 @@ module.exports = {
     activeMembersStats,
     newMemberStats,
     memberstatsGroupByMonth,
+    lurkersContributorsQuery,
+    activeUsersLoginQuery
   },
 };

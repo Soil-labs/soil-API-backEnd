@@ -98,5 +98,10 @@ module.exports = `
         # ------------- ERROR MUTATIONS ------------
         createError(fields: createErrorInput!): ErrorLog
         deleteError(fields: deleteErrorInput!): ErrorLog
+
+
+        # -------------- EDEN METRICS --------------
+        saveCoreProductFeatureInteration(fields:saveCoreProductFeatureInterationInput):Boolean
+        saveDailyLogin(fields: saveDailyLoginInput):Boolean
     }
 `

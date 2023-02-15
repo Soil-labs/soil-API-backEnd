@@ -78,7 +78,7 @@ module.exports = {
             count: { $sum: 1 },
           },
         },
-        { $sort: { "_id.year": -1 , "_id.month": 1 } },
+        { $sort: { "_id.year": -1, "_id.month": 1 } },
       ]);
 
       console.log("active members each month : ", count);
@@ -108,7 +108,7 @@ module.exports = {
             count: { $sum: 1 },
           },
         },
-        { $sort: { "_id.year": -1 , "_id.month": 1 } },
+        { $sort: { "_id.year": -1, "_id.month": 1 } },
       ]);
 
       console.log("active members each month : ", count);
@@ -119,6 +119,86 @@ module.exports = {
         err.extensions?.code || "memberstatsGroupByMonth",
         {
           component: "edenMetricsQuery > memberstatsGroupByMonth",
+        }
+      );
+    }
+  },
+  lurkersContributorsQuery: async (parent, args, context, info) => {
+    try {
+      const contributors = await EdenMetrics.countDocuments();
+      const totalMembers = await Members.countDocuments();
+
+      const lurkers = +totalMembers - +contributors;
+
+      return {
+        lurkers,
+        contributors,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "lurkersContributorsQuery",
+        {
+          component: "edenMetricsQuery > lurkersContributorsQuery",
+        }
+      );
+    }
+  },
+  activeUsersLoginQuery: async (parent, args, context, info) => {
+    const { startDate, endDate } = args.fields;
+    let start = new Date(startDate);
+    let end = new Date(endDate);
+    try {
+      const countArray = await EdenMetrics.aggregate([
+        {
+          $match: {
+            activeUserLogin: {
+              $elemMatch: {
+                date: {
+                  $gte: start,
+                  $lte: end,
+                },
+              },
+            },
+          },
+        },
+        {
+          $unwind: "$activeUserLogin",
+        },
+        {
+          $match: {
+            "activeUserLogin.date": {
+              $gte: start,
+              $lte: end,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$memberID",
+            count: {
+              $sum: 1,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: {
+              $sum: 1,
+            },
+          },
+        },
+      ]);
+
+      console.log("count ", countArray);
+      return countArray.length > 0 ? countArray[0].total : 0;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "activeUsersLoginQuery",
+        {
+          component: "edenMetricsQuery > activeUsersLoginQuery",
         }
       );
     }

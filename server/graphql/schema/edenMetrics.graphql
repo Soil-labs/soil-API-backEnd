@@ -20,6 +20,32 @@ scalar Date
     count: Int
   }
 
+  type LurkersAndContributors {
+     lurkers: Int
+     contributors: Int
+  }
+
+  enum exploreFeatureEnum {
+       skillButton
+       findFriendButton
+       exploreProjectsButton
+       grantButton
+    }
+
+  
+  input saveCoreProductFeatureInterationInput {
+    buttonClicked: exploreFeatureEnum!
+  }
+
+  input saveDailyLoginInput {
+    loginDate: String
+  }
+
+  input activeUsersLoginQueryInput{
+    startDate: String
+    endDate: String
+  }
+
   
 
 
