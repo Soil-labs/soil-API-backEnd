@@ -31,7 +31,7 @@ const projectSchema = mongoose.Schema({
       title: String,
       description: String,
       shortDescription: String,
-      keyRosponsibilities: String,
+      keyResponsibilities: String,
       openPositions: Number,
 
       expectations: [String],

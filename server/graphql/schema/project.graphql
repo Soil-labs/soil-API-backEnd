@@ -126,7 +126,7 @@ module.exports = `
         title: String
         description: String
         shortDescription: String
-        keyRosponsibilities: String,
+        keyResponsibilities: String,
         openPositions: Int,
 
         expectations: [String]
@@ -335,7 +335,7 @@ module.exports = `
         title: String
         description: String
         shortDescription: String
-        keyRosponsibilities: String,
+        keyResponsibilities: String,
         openPositions: Int,
         
         expectations: [String]
