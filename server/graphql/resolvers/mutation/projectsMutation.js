@@ -709,7 +709,7 @@ module.exports = {
           "role._id": projectRoleID,
         }).select("_id title role nodes serverID champion");
 
-        if (champion != projectData && projectData.champion) {
+        if (!projectData && champion != projectData.champion) {
           throw new ApolloError("You are not the project champion");
         }
 
