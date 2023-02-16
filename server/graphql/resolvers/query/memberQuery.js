@@ -2255,6 +2255,8 @@ module.exports = {
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
 
+      console.log("nodeData = ", nodeData);
+
       for (let i = 0; i < nodeData.length; i++) {
         // loop on the nodes
         let match_v2 = nodeData[i].match_v2;
@@ -2318,7 +2320,12 @@ module.exports = {
 
       let mapped_value;
       for (const key in projectRoleObj) {
-        let projectData = await Projects.findOne({ "role._id": key });
+        let projectData = await Projects.findOne({ "role._id": key }).select(
+          "_id title serverID role"
+        );
+
+        console.log("projectObj = ", projectObj);
+        console.log("projectRoleObj = ", projectRoleObj);
 
         if (projectData) {
           if (original_max_m - original_min_m > 0) {
@@ -2328,7 +2335,7 @@ module.exports = {
                 (original_max_m - original_min_m) +
               new_max_m;
           } else {
-            mapped_value = projectObj[key].pers;
+            mapped_value = projectRoleObj[key].pers;
           }
 
           if (projectObj[projectData._id]) {
@@ -2362,6 +2369,7 @@ module.exports = {
           }
         }
       }
+      console.log("chattanooga = ");
 
       const projectArr = [];
       for (const key in projectObj) {
