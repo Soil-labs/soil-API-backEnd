@@ -163,6 +163,7 @@ module.exports = `
     type matchMembersToSkillOutput {
         matchPercentage: MatchPercentage,
         member: Members,
+        extraMatch: Boolean, # if you extraMatch = true, means that it is not the real main match but it is extra becuae there wasn't enough matches!  
         nodesPercentage: [nodesPercentageType]
         skillsPercentage: [SkillsPercentage]
         
@@ -177,6 +178,7 @@ module.exports = `
     type MatchPercentage {
         totalPercentage: Float,
         realTotalPercentage: Float,
+        percentageWithPenalty: Float,
         skillTotalPercentage: Float,
         hoursPercentage: Float,
         budgetPercentage: Float,

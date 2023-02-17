@@ -74,6 +74,8 @@ const {
   findProjectGraph,
   findMemberToProjectGraph,
   dynamicSearchToProjectGraph,
+  dynamicSearchGraph,
+  dynamicSearchToMemberGraph,
   findMemberToMemberGraph,
   findMultipleMembersProjectsGraph,
   findOneMemberToMembersGraph,
@@ -85,7 +87,7 @@ const {
   newMemberStats,
   memberstatsGroupByMonth,
   lurkersContributorsQuery,
-  activeUsersLoginQuery
+  activeUsersLoginQuery,
 } = require("./query/edenMetricsQuery");
 
 const { errors } = require("./query/errorQuery");
@@ -177,6 +179,8 @@ module.exports = {
     findProjectGraph,
     findMemberToProjectGraph,
     dynamicSearchToProjectGraph,
+    dynamicSearchGraph,
+    dynamicSearchToMemberGraph,
     findMemberToMemberGraph,
     findMultipleMembersProjectsGraph,
     findOneMemberToMembersGraph,
@@ -187,6 +191,6 @@ module.exports = {
     newMemberStats,
     memberstatsGroupByMonth,
     lurkersContributorsQuery,
-    activeUsersLoginQuery
+    activeUsersLoginQuery,
   },
 };
