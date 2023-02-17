@@ -109,6 +109,19 @@ module.exports = `
         nodeSettings: [nodeSetting]
         edgeSettings: [edgeSetting]
     }
+    input dynamicSearchGraphInput {
+        nodesID: [ID]
+        showAvatar: Boolean
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
+    }
+    input dynamicSearchToMemberGraphInput {
+        nodesID: [ID]
+        memberID: ID
+        showAvatar: Boolean
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
+    }
 
     input findMemberToMemberGraphInput {
         memberOneID: ID
