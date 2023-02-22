@@ -82,12 +82,9 @@ const {
 } = require("./query/graphVisualQuery");
 
 const {
-  activeMembersStatsGroupByMonth,
-  activeMembersStats,
-  newMemberStats,
-  memberstatsGroupByMonth,
+  membersStats,
   lurkersContributorsQuery,
-  activeUsersLoginQuery,
+  activeMembersStats,
 } = require("./query/edenMetricsQuery");
 
 const { errors } = require("./query/errorQuery");
@@ -186,11 +183,8 @@ module.exports = {
     findOneMemberToMembersGraph,
 
     //----------- EDEN METRICS QUERY ------------------
-    activeMembersStatsGroupByMonth,
-    activeMembersStats,
-    newMemberStats,
-    memberstatsGroupByMonth,
+    membersStats,
     lurkersContributorsQuery,
-    activeUsersLoginQuery,
+    activeMembersStats,
   },
 };

@@ -107,12 +107,9 @@ module.exports = `
 
 
           # ---------- EDEN METRICS QUERY ----------------
-          activeMembersStats(fields: activeMembersStatsInput):Int
-          newMemberStats(fields: newMemberStatsInput):Int
-          activeMembersStatsGroupByMonth: [MetricsGroupByMonthResult]
-          memberstatsGroupByMonth: [MetricsGroupByMonthResult]
+          membersStats(fields: statsInput):[ResultCount]
           lurkersContributorsQuery:LurkersAndContributors
-          activeUsersLoginQuery(fields: activeUsersLoginQueryInput):Int
+          activeMembersStats(fields: statsInput):[ResultCount]
           
       
         }

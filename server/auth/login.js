@@ -7,6 +7,7 @@ const {
 const {
   createNode_neo4j,
 } = require("../neo4j/func_neo4j");
+const { saveDailyLogin } = require("../utils/saveLoginData");
 
 const login = async ({ body }, res) => {
   try {
@@ -56,6 +57,8 @@ const login = async ({ body }, res) => {
 
     await retrieveAndMergeServersUserIsIn(access_token, dbUser);
 
+    //save the daily login detail🧷 
+    saveDailyLogin(dbUser._id, new Date())
     // Return user and token
     res.json({ discord_user: user, eden_user: dbUser, token });
   } catch (error) {
