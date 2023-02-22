@@ -4,121 +4,112 @@ const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
 
 module.exports = {
-  newMemberStats: async (parent, args, context, info) => {
+  membersStats: async (parent, args, context, info) => {
     try {
-      const { startPeriod, endPeriod } = args.fields;
-      if (!startPeriod && !endPeriod)
+      const { startDate, endDate, range } = args.fields;
+      if (!startDate && !endDate)
         throw new ApolloError("The start period and end period is required");
+      let start = new Date(startDate * 1000);
+      let end = new Date(endDate * 1000);
 
-      const usersCount = await Members.countDocuments({
-        registeredAt: {
-          $gte: new Date(startPeriod),
-          $lte: new Date(endPeriod),
-        },
-      });
-      console.log("member number : ", usersCount);
-      return +usersCount;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "newMemberStats",
-        {
-          component: "edenMetricsQuery > newMemberStats",
-        }
-      );
-    }
-  },
-  activeMembersStats: async (parent, args, context, info) => {
-    try {
-      const { startPeriod, endPeriod } = args.fields;
-      if (!startPeriod && !endPeriod)
-        throw new ApolloError("The start period and end period is required");
-
-      const usersCount = await Members.countDocuments({
-        $and: [
-          { bio: { $ne: null } },
+      if (range == "months") {
+        const countArray = await Members.aggregate([
           {
-            registeredAt: {
-              $gte: new Date(startPeriod),
-              $lte: new Date(endPeriod),
+            $match: {
+              registeredAt: {
+                $gte: start,
+                $lte: end,
+              },
             },
           },
-        ],
-      });
 
-      console.log("active members number : ", usersCount);
-      return +usersCount;
+          {
+            $project: {
+              month: { $month: "$registeredAt" },
+              year: { $year: "$registeredAt" },
+            },
+          },
+
+          {
+            $group: {
+              _id: {
+                month: "$month",
+                year: "$year",
+              },
+              count: { $sum: 1 },
+            },
+          },
+
+          {
+            $project: {
+              _id: 0,
+              date: {
+                month: "$_id.month",
+                year: "$_id.year",
+              },
+              count: "$count",
+            },
+          },
+          {
+            $sort: {"date.month": 1}
+          }
+        ]);
+        console.log("count of months ", countArray);
+        return countArray;
+      } else {
+        const countArray = await Members.aggregate([
+          {
+            $match: {
+              registeredAt: {
+                $gte: start,
+                $lte: end,
+              },
+            },
+          },
+
+          {
+            $project: {
+              dayOfMonth: { $dayOfMonth: "$registeredAt" },
+              month: { $month: "$registeredAt" },
+              year: { $year: "$registeredAt" },
+            },
+          },
+
+          {
+            $group: {
+              _id: {
+                dayOfMonth: "$dayOfMonth",
+                month: "$month",
+                year: "$year",
+              },
+              count: { $sum: 1 },
+            },
+          },
+
+          {
+            $project: {
+              _id: 0,
+              date: {
+                day: "$_id.dayOfMonth",
+                month: "$_id.month",
+                year: "$_id.year",
+              },
+              count: "$count",
+            },
+          },
+          {
+            $sort: {"date.month": 1, "date.day": 1}
+          }
+        ]);
+        console.log("count of months ", countArray);
+        return countArray;
+      }
     } catch (err) {
       throw new ApolloError(
         err.message,
         err.extensions?.code || "newMemberStats",
         {
           component: "edenMetricsQuery > newMemberStats",
-        }
-      );
-    }
-  },
-  activeMembersStatsGroupByMonth: async (parent, args, context, info) => {
-    try {
-      const count = await Members.aggregate([
-        {
-          $match: {
-            bio: { $ne: null },
-          },
-        },
-        {
-          $project: {
-            month: { $month: "$registeredAt" },
-            year: { $year: "$registeredAt" },
-          },
-        },
-        {
-          $group: {
-            _id: { month: "$month", year: "$year" },
-            count: { $sum: 1 },
-          },
-        },
-        { $sort: { "_id.year": -1, "_id.month": 1 } },
-      ]);
-
-      console.log("active members each month : ", count);
-      return count;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "activeMembersStatsGroupByMonth",
-        {
-          component: "edenMetricsQuery > activeMembersStatsGroupByMonth",
-        }
-      );
-    }
-  },
-  memberstatsGroupByMonth: async (parent, args, context, info) => {
-    try {
-      const count = await Members.aggregate([
-        {
-          $project: {
-            month: { $month: "$registeredAt" },
-            year: { $year: "$registeredAt" },
-          },
-        },
-        {
-          $group: {
-            _id: { month: "$month", year: "$year" },
-            count: { $sum: 1 },
-          },
-        },
-        { $sort: { "_id.year": -1, "_id.month": 1 } },
-      ]);
-
-      console.log("active members each month : ", count);
-      return count;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "memberstatsGroupByMonth",
-        {
-          component: "edenMetricsQuery > memberstatsGroupByMonth",
         }
       );
     }
@@ -144,11 +135,64 @@ module.exports = {
       );
     }
   },
-  activeUsersLoginQuery: async (parent, args, context, info) => {
-    const { startDate, endDate } = args.fields;
-    let start = new Date(startDate);
-    let end = new Date(endDate);
+  activeMembersStats: async (parent, args, context, info) => {
+    const { startDate, endDate, range } = args.fields;
+    let start = new Date(startDate * 1000);
+    let end = new Date(endDate * 1000);
+
+    console.log("start date ", start);
+    console.log("end date ", end);
+    //range = day| month | week
     try {
+      if (range == "months") {
+        const countArray = await EdenMetrics.aggregate([
+          {
+            $match: {
+              activeUserLogin: {
+                $elemMatch: {
+                  date: {
+                    $gte: start,
+                    $lte: end,
+                  },
+                },
+              },
+            },
+          },
+          {
+            $unwind: "$activeUserLogin",
+          },
+
+          {
+            $project: {
+              month: { $month: "$activeUserLogin.date" },
+              year: { $year: "$activeUserLogin.date" },
+            },
+          },
+
+          {
+            $group: {
+              _id: {
+                month: "$month",
+                year: "$year",
+              },
+              count: { $sum: 1 },
+            },
+          },
+
+          {
+            $project: {
+              _id: 0,
+              date: {
+                month: "$_id.month",
+                year: "$_id.year",
+              },
+              count: "$count",
+            },
+          },
+        ]);
+        console.log("count of months ", countArray);
+        return countArray;
+      }
       const countArray = await EdenMetrics.aggregate([
         {
           $match: {
@@ -165,34 +209,41 @@ module.exports = {
         {
           $unwind: "$activeUserLogin",
         },
+
         {
-          $match: {
-            "activeUserLogin.date": {
-              $gte: start,
-              $lte: end,
-            },
+          $project: {
+            dayOfMonth: { $dayOfMonth: "$activeUserLogin.date" },
+            month: { $month: "$activeUserLogin.date" },
+            year: { $year: "$activeUserLogin.date" },
           },
         },
+
         {
           $group: {
-            _id: "$memberID",
-            count: {
-              $sum: 1,
+            _id: {
+              dayOfMonth: "$dayOfMonth",
+              month: "$month",
+              year: "$year",
             },
+            count: { $sum: 1 },
           },
         },
+
         {
-          $group: {
-            _id: null,
-            total: {
-              $sum: 1,
+          $project: {
+            _id: 0,
+            date: {
+              day: "$_id.dayOfMonth",
+              month: "$_id.month",
+              year: "$_id.year",
             },
+            count: "$count",
           },
         },
       ]);
 
       console.log("count ", countArray);
-      return countArray.length > 0 ? countArray[0].total : 0;
+      return countArray;
     } catch (err) {
       throw new ApolloError(
         err.message,

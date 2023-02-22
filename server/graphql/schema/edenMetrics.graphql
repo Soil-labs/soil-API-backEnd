@@ -1,24 +1,5 @@
 module.exports = `
 scalar Date
-  input newMemberStatsInput {
-     startPeriod: String
-     endPeriod: String
-  }
-
-  input activeMembersStatsInput {
-    startPeriod: String
-     endPeriod: String
-  }
-
-  type MonthAndYear{
-      month: Int
-      year: Int
-  }
-
-  type MetricsGroupByMonthResult {
-    _id: MonthAndYear
-    count: Int
-  }
 
   type LurkersAndContributors {
      lurkers: Int
@@ -32,7 +13,6 @@ scalar Date
        grantButton
     }
 
-  
   input saveCoreProductFeatureInterationInput {
     buttonClicked: exploreFeatureEnum!
   }
@@ -41,13 +21,27 @@ scalar Date
     loginDate: String
   }
 
-  input activeUsersLoginQueryInput{
-    startDate: String
-    endDate: String
+  input statsInput{
+    startDate: Date
+    endDate: Date
+    range: range
   }
 
-  
+  enum range {
+     months
+     days
+  }
+
+  type ResultCount {
+      date: DateType
+      count: Int
+  }
 
 
-  #{ _id: { month: 12, year: 2022 }, count: 15 },
+  type DateType {
+     month: Int
+     day: Int
+     year: Int
+  }
+
 `
