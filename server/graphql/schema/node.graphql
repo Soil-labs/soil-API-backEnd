@@ -106,6 +106,7 @@ module.exports = `
     input findNodesInput {
         _id: [ID]
         name: String
+        names: [String]
         node: String
         recalculate_en: recalculateEnum # Only return the nodes that need to be recalculated based on teh enum
         show_match_v2: Boolean # its always hiden in order to save on speed, exchept if you make this variable true 
