@@ -19,7 +19,7 @@ const contextResolver = ({ req, req: { headers } }) => {
         JWT_SECRET || ""
       );
 
-      console.log("request payload", contextPayload);
+      // console.log("request payload", contextPayload);
 
       if (
         !(contextPayload && contextPayload._id && contextPayload.discordName)

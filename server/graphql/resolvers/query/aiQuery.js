@@ -1,6 +1,8 @@
 const { AI } = require("../../../models/aiModel");
 const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
+const { Configuration, OpenAIApi } = require("openai");
+
 
 const DEFAULT_PAGE_LIMIT = 20;
 
@@ -117,6 +119,65 @@ module.exports = {
         err.extensions?.code || "findMessage",
         {
           component: "aiQuery > findMessage",
+        }
+      );
+    }
+  },
+  edenGPTreply: async (parent, args, context, info) => {
+    const { message } = args.fields;
+    console.log("Query > edenGPTreply > args.fields = ", args.fields);
+    try {
+
+      const configuration = new Configuration({
+        apiKey: "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",
+      });
+      const openai = new OpenAIApi(configuration);
+
+      // -------------- Find Reply -------------
+      const response = await openai.createCompletion({
+        model: "davinci:ft-eden-protocol-2023-02-22-13-21-15",
+        prompt: message + "\nReply:",
+        temperature: 0.7,
+        stop: ["==END=="],
+        max_tokens: 500,
+        // top_p: 1,
+        // frequency_penalty: 0,
+        // presence_penalty: 0,
+      });
+    
+      let replyEden = response.data.choices[0].text;
+      // -------------- Find Reply -------------
+
+
+      // -------------- Find Keywords -------------
+      const response_keywords = await openai.createCompletion({
+        model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
+        prompt: message + "\nKeywords:",
+        temperature: 0.7,
+        stop: ["==END=="],
+        max_tokens: 300,
+        // top_p: 1,
+        // frequency_penalty: 0,
+        // presence_penalty: 0,
+      });
+    
+      let keywordsEden = response_keywords.data.choices[0].text;
+      // console.log("keywordsEden = " , keywordsEden)
+
+      var keywordsEdenArray = keywordsEden.split(',');
+      // -------------- Find Keywords -------------
+
+
+      return {
+        reply: replyEden,
+        keywords: keywordsEdenArray
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "edenGPTreply",
+        {
+          component: "aiQuery > edenGPTreply",
         }
       );
     }

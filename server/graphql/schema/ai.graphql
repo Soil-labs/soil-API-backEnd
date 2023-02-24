@@ -50,6 +50,15 @@ module.exports = `
         edenAI: EdenAIInput
     }
 
+    input edenGPTreplyInput {
+        message: String
+    }
+
+    type edenGPTreplyOutput {
+        reply: String
+        keywords: [String]
+    }
+
     input useAI_OnMessageInput {
         message: String
         cash: Boolean
