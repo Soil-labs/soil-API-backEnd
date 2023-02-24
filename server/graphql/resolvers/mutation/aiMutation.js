@@ -123,6 +123,7 @@ module.exports = {
       );
     }
   },
+  
   messageToGPT: combineResolvers(
     IsAuthenticated,
     async (parent, args, context, info) => {
@@ -178,6 +179,9 @@ module.exports = {
     let model = "text-davinci-003";
     const prompt =
       'I give you four things: a one-liner for a project + a description of that project  + the title of a role for that project + [categories of specialization for that role within that same project ]\n\nYour job is to take all those 4 things and create a wholistic context from it, focus on "the title of a role for that project" and "[categories of specialization for that role within that same project ]" and to give me the following:\n1. A full description of that role(always label this output with "Role Description:")\n2. Four Expectations for that role (always label this output with "Expectations for Role:") + Return this list  as a Javascript Arra\n3. Four Benefits of this role (always label this output with "Benefits:") + Return this list  as a Javascript Array  \n\nHere we go: \n\n';
+
+    console.log("hey 2")
+    
     const input =
       prompt +
       " " +
@@ -188,6 +192,10 @@ module.exports = {
       titleRole +
       " + " +
       expertiseRole;
+
+
+    console.log("hey 2")
+    
     const response = await openai.createCompletion({
       model,
       prompt: input,
@@ -197,6 +205,8 @@ module.exports = {
       frequency_penalty: 0,
       presence_penalty: 0,
     });
+
+    console.log("hey 3")
 
     // console.log(
     //   "prompt + oneLinerProject + descriptionProject + titleRole + expertiseRole",
@@ -213,6 +223,9 @@ module.exports = {
 
     let generatedText = response.data.choices[0].text;
     let result = generatedText.replace(/\n\n/g, "");
+
+    console.log("hey 4")
+
     const descriptionRoleHandler = () => {
       const startIndex = result.indexOf("Role Description:");
       const endIndex = result.indexOf("Expectations for Role:");
@@ -222,24 +235,55 @@ module.exports = {
 
       return descriptionRole;
     };
+
+    console.log("hey 5")
+
     const expectationRoleHandler = () => {
+      console.log("hey 10")
       const startIndex = result.indexOf("Expectations for Role:");
+      console.log("hey 11")
       const endIndex = result.indexOf("Benefits:");
       const expectationRoleString = result
         .slice(startIndex + "Expectations for Role:".length, endIndex)
         .trim();
+      console.log("hey 12",result)
+      console.log("hey 12",expectationRoleString)
+      
 
       const expectationRole = JSON.parse(expectationRoleString);
+      console.log("hey 13",expectationRole)
+
       return expectationRole;
     };
+    console.log("hey 6")
+
+
     const benefitRoleHandler = () => {
       const startIndex = result.indexOf("Benefits:");
+
       const benefitRoleString = result
         .slice(startIndex + "Benefits:".length)
         .trim();
+
+      
       const benefitRole = JSON.parse(benefitRoleString);
       return benefitRole;
     };
+
+    console.log("hey 7")
+
+
+    descriptionRoleHandler()
+
+    console.log("hey 8")
+
+
+    expectationRoleHandler()
+
+    console.log("hey 9")
+
+
+    benefitRoleHandler()
 
     try {
       return {
