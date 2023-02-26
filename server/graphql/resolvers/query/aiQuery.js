@@ -238,7 +238,7 @@ module.exports = {
   },
   edenGPTsearchProfiles: async (parent, args, context, info) => {
     const { message,profileIDs } = args.fields;
-    console.log("Query > edenGPTsearchProfiles > args.fields = ", args.fields);
+    console.log("Query > edenGPTsearchProfiles 22> args.fields = ", args.fields);
     // try {
 
       console.log("change = 1" )
