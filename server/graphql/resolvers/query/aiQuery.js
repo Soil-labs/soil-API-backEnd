@@ -241,11 +241,14 @@ module.exports = {
     console.log("Query > edenGPTsearchProfiles > args.fields = ", args.fields);
     // try {
 
+      console.log("change = 1" )
       const pinecone = new PineconeClient();
+      console.log("change = 2" )
       await pinecone.init({
         environment: "us-east1-gcp",
         apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
       });
+      // console.log("change = 1" )
 
       console.log("change = ",pinecone )
       console.log("change = ",await pinecone.listIndexes() )
