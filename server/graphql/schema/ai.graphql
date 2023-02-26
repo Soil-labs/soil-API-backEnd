@@ -53,6 +53,13 @@ module.exports = `
     input edenGPTreplyInput {
         message: String
     }
+    input edenGPTsearchProfilesInput {
+        message: String
+        profileIDs: [ID]
+    }
+    type edenGPTsearchProfilesOutput {
+        reply: String
+    }
 
     type edenGPTreplyOutput {
         reply: String

@@ -1319,7 +1319,7 @@ module.exports = {
     if (page != null && limit != null) {
     } else {
       page = 0;
-      limit = 15;
+      limit = 30;
     }
 
     try {
@@ -1507,6 +1507,10 @@ module.exports = {
         // console.log("memberObj = ", memberObj);
       }
 
+      // console.log("original_min_m = ", original_min_m);
+      // console.log("original_max_m = ", original_max_m);
+      // console.log("memberObj = ", memberObj);
+
       console.log("memberIDs = ", memberIDs);
       let dataAllMembers2 = await Members.find({ _id: memberIDs })
         .select("_id discordName preferences")
@@ -1517,16 +1521,14 @@ module.exports = {
         return memObj;
       }, {});
 
-      numberMatches = 0;
-
-      // --- Penalty not match preference ---
-      penaltyPreference = 100;
-      // --- Penalty not match preference ---
+      // console.log("memberData_obj = ", memberData_obj);
+      // asdf;
 
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
       for (const [key, value] of Object.entries(memberObj)) {
         // ----------- Calculate preferences of user (mentor, mentee, find porject, ...) --------------
+
         if (preference != undefined) {
           addMember = false;
           if (memberData_obj[key] == undefined) {
@@ -1587,63 +1589,50 @@ module.exports = {
         ).toFixed(2);
         // ---------- Recalculate the persentage based on wh_k_arr ------------
 
-        // --- Penalty not match preference ---
-        let persWithPenalty = pers;
-        if (addMember == true) {
-          persWithPenalty = persWithPenalty + penaltyPreference;
-
-          numberMatches++;
-        } else {
-          persWithPenalty = persWithPenalty - penaltyPreference;
-        }
-        // --- Penalty not match preference ---
-
         memberObj[key] = {
           ...value,
           C1,
           C2: C2 * penaltySmallNumPath,
           pers: pers,
-          persWithPenalty: persWithPenalty,
           numPath_weighted: numPath_weighted,
           addMember,
         };
 
-        // // if (addMember == true) {
-        // if (Number(persWithPenalty) > Number(original_max_m)) {
-        //   original_max_m = Number(persWithPenalty);
-        // }
-        // if (Number(persWithPenalty) < Number(original_min_m)) {
-        //   original_min_m = Number(persWithPenalty);
-        // }
-        // // }
+        if (addMember == true) {
+          if (Number(pers) > Number(original_max_m)) {
+            original_max_m = Number(pers);
+          }
+          if (Number(pers) < Number(original_min_m)) {
+            original_min_m = Number(pers);
+          }
+        }
       }
 
-      // --------- Prepare --------
-
-      // // --- Threshold ---
-      // threshold_cut_members = 15 ;
-      // if (original_min_m < threshold_cut_members) {
-      //   original_min_m = threshold_cut_members; // we need to change the original minimum to the
+      // asdf;
+      // for (const [key, value] of Object.entries(memberObj)) {
+      //   if (key == "472426060441714688") console.log("value = ", key, value);
       // }
-      // // --- Threshold ---
+      // console.log("memberObj = ", memberObj);
 
-      // --- Penalty not match preference ---
-      penaltyPreference = 20;
-      // --- Penalty not match preference ---
+      // asdf2;
 
-      // --------- Prepare --------
+      threshold_cut_members = 15;
+      if (original_min_m < threshold_cut_members) {
+        original_min_m = threshold_cut_members; // we need to change the original minimum to the threshold
+      }
 
       const memberArr = [];
       for (const key in memberObj) {
         // transform the object to array
 
-        // if (memberObj[key].addMember == false) {
-        //   // Delete the people that are not interested on this specific prefefrences
-        //   continue;
-        // }
+        if (memberObj[key].addMember == false) {
+          // Delete the people that are not interested on this specific prefefrences
+          continue;
+        } else {
+          console.log("change = tru ");
+        }
 
         // ------------ conn_node_wh_arr --------------
-        // Sort the Nodes and how valueable they are to this match
         let conn_node_wh_arr = [];
         let conn_node_wh_obj = memberObj[key].conn_node_wh_obj;
         for (const key in conn_node_wh_obj) {
@@ -1654,115 +1643,52 @@ module.exports = {
               100,
           });
         }
-        conn_node_wh_arr.sort((a, b) => b.totalPercentage - a.totalPercentage);
+
+        conn_node_wh_arr.sort(
+          // sort it by the percentage
+          (a, b) => b.totalPercentage - a.totalPercentage
+        );
         // ------------ conn_node_wh_arr --------------
 
-        // // --- Penalty match preference ---
-        // memberObj[key].pers = memberObj[key].pers - penaltyPreference;
-        // // --- Penalty match preference ---
+        if (memberObj[key].pers > threshold_cut_members) {
+          if (original_max_m - original_min_m > 0) {
+            mapped_value =
+              ((memberObj[key].pers - original_min_m) *
+                (new_min_m - new_max_m)) /
+                (original_max_m - original_min_m) +
+              new_max_m;
+          } else {
+            mapped_value = memberObj[key].pers;
+          }
 
-        // // if (memberObj[key].pers > threshold_cut_members) {
-        // // ------------ If there is difference between max min of origin map to different value ----
-        // if (original_max_m - original_min_m > 0) {
-        //   mapped_value =
-        //     ((memberObj[key].persWithPenalty - original_min_m) *
-        //       (new_min_m - new_max_m)) /
-        //       (original_max_m - original_min_m) +
-        //     new_max_m;
-        // } else {
-        //   mapped_value = memberObj[key].persWithPenalty;
-        // }
-        // // ------------ If there is difference between max min of origin map to different value ----
-
-        // ---------- Add the users to the array for display -------
-        memberArr.push({
-          matchPercentage: {
-            // totalPercentage: mapped_value,
-            realTotalPercentage: memberObj[key].pers,
-            percentageWithPenalty: memberObj[key].persWithPenalty,
-          },
-          nodesPercentage: conn_node_wh_arr,
-          memberID: key,
-          extraMatch: !memberObj[key].addMember,
-        });
-        // ---------- Add the users to the array for display -------
-
-        // ---------- Find what you compare with -------
-        // regular persentages if there is enough matches, otherwise with penalty to show more results
-        if (numberMatches > limit) {
-          memberArr[memberArr.length - 1].matchPercentage.comparePers =
-            memberObj[key].pers;
-        } else {
-          memberArr[memberArr.length - 1].matchPercentage.comparePers =
-            memberObj[key].persWithPenalty;
+          memberArr.push({
+            matchPercentage: {
+              totalPercentage: mapped_value,
+              realTotalPercentage: memberObj[key].pers,
+            },
+            nodesPercentage: conn_node_wh_arr,
+            memberID: key,
+          });
         }
-        // ---------- Find what you compare with -------
       }
-      // }
 
-      // ---------- Sort array by persentage --------
+      // memberArr.forEach((member) => {
+      //   console.log("member = ", member);
+      //   // console.log("member = ", member.nodesPercentage);
+      // });
+
+      // console.log("memberArr = ", memberArr);
+
       memberArr.sort(
-        (a, b) => b.matchPercentage.comparePers - a.matchPercentage.comparePers
+        // sort it by the percentage
+        (a, b) =>
+          b.matchPercentage.realTotalPercentage -
+          a.matchPercentage.realTotalPercentage
       );
-      // ---------- Sort array by persentage --------
 
-      // ---------- limit results & map  --------
-      let memberArrFinal = [];
-      let numberRes = 0;
-      if (numberMatches < limit) {
-        memberArr.length > limit
-          ? (numberRes = limit)
-          : (numberRes = memberArr.length);
-      } else {
-        numberRes = memberArr.length;
-      }
+      // console.log("memberObj = ", memberObj);
 
-      //  -----  find the original_max_m, original_min_m  -------
-      for (let i = 0; i < numberRes; i++) {
-        if (memberArr[i].matchPercentage.comparePers > original_max_m) {
-          original_max_m = memberArr[i].matchPercentage.comparePers;
-        }
-        if (memberArr[i].matchPercentage.comparePers < original_min_m) {
-          original_min_m = memberArr[i].matchPercentage.comparePers;
-        }
-      }
-      //  -----  find the original_max_m, original_min_m  -------
-
-      console.log("original_max_m = ", original_max_m);
-      console.log("original_min_m = ", original_min_m);
-
-      // -----  map the values  -------
-      for (let i = 0; i < numberRes; i++) {
-        // ------------ If there is difference between max min of origin map to different value ----
-        if (original_max_m - original_min_m > 0) {
-          mapped_value =
-            ((memberArr[i].matchPercentage.comparePers - original_min_m) *
-              (new_min_m - new_max_m)) /
-              (original_max_m - original_min_m) +
-            new_max_m;
-        } else {
-          mapped_value = memberArr[i].matchPercentage.comparePers;
-        }
-        // ------------ If there is difference between max min of origin map to different value ----
-
-        console.log("mapped_value = ", mapped_value);
-
-        memberArrFinal.push({
-          ...memberArr[i],
-          matchPercentage: {
-            ...memberArr[i].matchPercentage,
-            totalPercentage: Number(mapped_value),
-          },
-        });
-      }
-      // -----  map the values  -------
-
-      // ---------- limit results & map --------
-
-      console.log("memberArrFinal = ", memberArrFinal);
-
-      // ---- only show the ones inside the right page with the limit
-      return memberArrFinal.slice(page * limit, (page + 1) * limit);
+      return memberArr.slice(page * limit, (page + 1) * limit);
     } catch (err) {
       throw new ApolloError(
         err.message,
