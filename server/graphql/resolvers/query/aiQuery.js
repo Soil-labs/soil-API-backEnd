@@ -3,10 +3,15 @@ const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
 const axios = require("axios");
 
+const fetch = require('cross-fetch');
+// const fetch = require('node-fetch')
+// import fetch from 'node-fetch'
+
 const { PineconeClient } = require("@pinecone-database/pinecone");
 // import { PineconeClient } from "@pinecone-database/pinecone";
 const { Configuration, OpenAIApi } = require("openai");
 
+globalThis.fetch = fetch
 
 function chooseAPIkey() {
   // openAI_keys = [
