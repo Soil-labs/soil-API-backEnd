@@ -241,6 +241,9 @@ module.exports = {
     console.log("Query > edenGPTsearchProfiles 22> args.fields = ", args.fields);
     // try {
 
+
+    // ------------- TEST PRODUCTIN ---------
+
       console.log("change = 1" )
       const pinecone = new PineconeClient();
       console.log("change = 2" )
