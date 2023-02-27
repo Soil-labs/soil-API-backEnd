@@ -1023,11 +1023,7 @@ module.exports = {
 
       if (!memberID) throw new ApolloError("memberID is required");
 
-      if (
-        memberID !== user._id ||
-        user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS
-      )
-        throw new ApolloError("Not Authorized");
+      if (memberID !== user._id) throw new ApolloError("Not Authorized");
 
       if (!preferences) preferences = [];
 
