@@ -2328,7 +2328,7 @@ module.exports = {
       let mapped_value;
       for (const key in projectRoleObj) {
         let projectData = await Projects.findOne({ "role._id": key }).select(
-          "_id title serverID role"
+          "_id title serverID role champion"
         );
 
         console.log("projectObj = ", projectObj);
