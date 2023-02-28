@@ -89,6 +89,7 @@ module.exports = `
 
         # ------------- AI MUTATIONS ------------
         addMessage(fields: addMessageInput): AI
+        storeLongTermMemory(fields: storeLongTermMemoryInput): storeLongTermMemoryOutput
         addMessages(fields: addMessagesInput): [AI]
         updateMessage(fields: updateMessageInput): AI
         useAI_OnMessage(fields: useAI_OnMessageInput): useAI_OnMessageOutput
