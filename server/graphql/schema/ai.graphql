@@ -26,6 +26,23 @@ module.exports = `
         serverID: String
     }
 
+    input messageInp {
+        message: String
+        date: String
+        name: String
+
+    }
+
+    input storeLongTermMemoryInput {
+        messages: [messageInp]
+        userID: ID
+    }
+
+    type storeLongTermMemoryOutput {
+        summary: String
+        success: Boolean
+    }
+
     input addMessagesInput {
         data: [addMessageInput]
     }
@@ -62,6 +79,17 @@ module.exports = `
     }
 
     type edenGPTreplyOutput {
+        reply: String
+        keywords: [String]
+    }
+
+
+    input edenGPTreplyMemoryInput {
+        message: String
+        memorySort: String
+        userID: ID
+    }
+    type edenGPTreplyMemoryOutput {
         reply: String
         keywords: [String]
     }

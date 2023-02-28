@@ -28,6 +28,78 @@ function chooseAPIkey() {
   return key;
 }
 
+async function useGPT(prompt, temperature = 0.7) {
+  const configuration = new Configuration({
+    apiKey: "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",
+  });
+  const openai = new OpenAIApi(configuration);
+  // let model = "text-curie-001";
+  let model = "text-davinci-003";
+  const response = await openai.createCompletion({
+    model,
+    prompt,
+    temperature,
+    max_tokens: 256,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+  });
+
+  // ----------- Clean up the Results ---------
+  let generatedText = response.data.choices[0].text;
+
+  // ----------- Clean up the Results ---------
+
+  return generatedText;
+}
+
+async function findBestEmbedings(message,filter,topK = 3) {
+
+  //  filter: {
+  //   '_id': profileIDs[0]
+  //    'label': "long_term_memory",
+  // }
+  const pinecone = new PineconeClient();
+  await pinecone.init({
+    environment: "us-east1-gcp",
+    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+  });
+
+
+  const index = await pinecone.Index("profile-eden-information");
+
+
+  embed = await createEmbedingsGPT(message)
+
+  // console.log("embed = " , embed)
+  
+
+  let queryRequest = {
+    topK: topK,
+    vector: embed[0],
+    includeMetadata: true,
+  }
+
+  if (filter != undefined){
+    queryRequest = {
+      ...queryRequest,
+      filter: filter
+    }
+  }
+
+  console.log("filter = " , filter)
+  console.log("queryRequest = " , queryRequest)
+  
+  const queryResponse = await index.query({ queryRequest })
+
+
+  console.log("queryResponse = " , queryResponse)
+
+  // const contexts = queryResponse.matches.map(x => x.metadata.name + ": " + x.metadata.text);
+
+  return queryResponse.matches;
+}
+
 
 async function createEmbedingsGPT(words_n) {
   // words_n = ["node.js", "react", "angular"];
@@ -205,24 +277,24 @@ module.exports = {
       console.log("change = 2" )
 
 
-      // // -------------- Find Keywords -------------
-      let keywordsEdenArray = [];
-      // const response_keywords = await openai.createCompletion({
-      //   model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
-      //   prompt: message + "\nKeywords:",
-      //   temperature: 0.7,
-      //   stop: ["==END=="],
-      //   max_tokens: 300,
-      //   // top_p: 1,
-      //   // frequency_penalty: 0,
-      //   // presence_penalty: 0,
-      // });
+      // -------------- Find Keywords -------------
+      // let keywordsEdenArray = [];
+      const response_keywords = await openai.createCompletion({
+        model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
+        prompt: message + "\nKeywords:",
+        temperature: 0.7,
+        stop: ["==END=="],
+        max_tokens: 300,
+        // top_p: 1,
+        // frequency_penalty: 0,
+        // presence_penalty: 0,
+      });
     
-      // let keywordsEden = response_keywords.data.choices[0].text;
-      // // console.log("keywordsEden = " , keywordsEden)
+      let keywordsEden = response_keywords.data.choices[0].text;
+      // console.log("keywordsEden = " , keywordsEden)
 
-      // var keywordsEdenArray = keywordsEden.split(',');
-      // // -------------- Find Keywords -------------
+      var keywordsEdenArray = keywordsEden.split(',');
+      // -------------- Find Keywords -------------
 
       console.log("change = 3" )
 
@@ -240,29 +312,122 @@ module.exports = {
       );
     }
   },
+  edenGPTreplyMemory: async (parent, args, context, info) => {
+    const { message,memorySort,userID } = args.fields;
+    console.log("Query > edenGPTreplyMemory > args.fields = ", args.fields);
+    try {
+
+      const filter = {
+        label: "long_term_memory",
+      }
+      if (userID) {
+        filter._id = userID;
+      }
+
+      longTermMemories = await findBestEmbedings(message,filter ,topK = 3)
+
+      // console.log("longTermMemories = " , longTermMemories)
+      // ads
+
+      
+      let prompt_longTermMemory = "Long Term Memory:";
+      for (let i = 0; i < longTermMemories.length; i++) {
+
+        prompt_longTermMemory = prompt_longTermMemory + "\n" + longTermMemories[i].metadata.text;
+      }
+
+      console.log("prompt_longTermMemory = " , prompt_longTermMemory)
+      // asdf
+
+      prompot_General = `
+      You are playing the role of Eden
+      - Eden is an recruiter that match projects to people, so it tries to find the best person for the job
+
+      - Eden is an expert recruiter that knows exactly the role that the manager is looking for so it can ask really insightful quesitons in order to uderstand the skills and expertise that the candidate should have
+
+      - Eden only ask one quesiton at a time
+      - ask questions back to uderstand in detail the skills and expertise that the candidate should have!!
+      `
+
+      prompot_General = prompot_General + "\n" + prompt_longTermMemory ;
+
+      // console.log("prompot_General = 1" , prompot_General)
+
+      if (memorySort) {
+        prompot_General = prompot_General + "\n\n\n" + "Conversation so far: " + memorySort;
+      }
+
+      // console.log("prompot_General = 2" , prompot_General)
+
+      prompot_General = prompot_General + "\n\n\n" + "Question from user: " + "\n"+message + "\n" + "Reply:";
+
+
+      // console.log("prompot_General = 3" , prompot_General)
+      // asdf
+
+      reply = useGPT(prompot_General)
+
+
+      // -------------- Find Keywords -------------
+      const configuration = new Configuration({
+        apiKey: "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",
+      });
+      const openai = new OpenAIApi(configuration);
+      // let keywordsEdenArray = [];
+      const response_keywords = await openai.createCompletion({
+        model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
+        prompt: message + "\nKeywords:",
+        temperature: 0.7,
+        stop: ["==END=="],
+        max_tokens: 300,
+        // top_p: 1,
+        // frequency_penalty: 0,
+        // presence_penalty: 0,
+      });
+    
+      let keywordsEden = response_keywords.data.choices[0].text;
+      // console.log("keywordsEden = " , keywordsEden)
+
+      var keywordsEdenArray = keywordsEden.split(',');
+
+      // delete any empty string
+      keywordsEdenArray = keywordsEdenArray.filter(function (el) {
+        return el != "";
+      });
+      
+      // -------------- Find Keywords -------------
+
+
+      return {
+        reply: reply,
+        keywords: keywordsEdenArray
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "edenGPTreplyMemory",
+        {
+          component: "aiQuery > edenGPTreplyMemory",
+        }
+      );
+    }
+  },
   edenGPTsearchProfiles: async (parent, args, context, info) => {
     const { message,profileIDs } = args.fields;
     console.log("Query > edenGPTsearchProfiles 22> args.fields = ", args.fields);
-    // try {
+    try {
 
 
-    // ------------- TEST PRODUCTIN ---------
 
-      console.log("change = 1" )
       const pinecone = new PineconeClient();
-      console.log("change = 2" )
       await pinecone.init({
         environment: "us-east1-gcp",
         apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
       });
-      // console.log("change = 1" )
 
-      console.log("change = ",pinecone )
-      console.log("change = ",await pinecone.listIndexes() )
 
       const index = await pinecone.Index("profile-eden-information");
 
-      console.log("index = " , index)
 
       embed = await createEmbedingsGPT(message)
 
@@ -335,14 +500,15 @@ module.exports = {
       return {
         reply: replyEden,
       };
-    // } catch (err) {
-    //   throw new ApolloError(
-    //     err.message,
-    //     err.extensions?.code || "edenGPTsearchProfiles",
-    //     {
-    //       component: "aiQuery > edenGPTsearchProfiles",
-    //     }
-    //   );
-    // }
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "edenGPTsearchProfiles",
+        {
+          component: "aiQuery > edenGPTsearchProfiles",
+        }
+      );
+    }
   },
+  
 };

@@ -94,6 +94,7 @@ module.exports = `
           # ---------- AI QUERY -------------
           findMessage(fields: findMessageInputPaginated): PaginatedMessages
           edenGPTreply(fields: edenGPTreplyInput): edenGPTreplyOutput
+          edenGPTreplyMemory(fields: edenGPTreplyMemoryInput): edenGPTreplyMemoryOutput
           edenGPTsearchProfiles(fields: edenGPTsearchProfilesInput): edenGPTsearchProfilesOutput
 
           # ---------- GRAPH VISUAL QUERY -------------

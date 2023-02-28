@@ -68,7 +68,7 @@ const {
 } = require("./query/skillSubCategoryQuery");
 
 const { findChat } = require("./query/chatQuery");
-const { findMessage, edenGPTreply,edenGPTsearchProfiles} = require("./query/aiQuery");
+const { findMessage, edenGPTreply,edenGPTreplyMemory,edenGPTsearchProfiles} = require("./query/aiQuery");
 const {
   findMemberGraph,
   findProjectGraph,
@@ -169,7 +169,7 @@ module.exports = {
     findChat,
 
     //----------- AI QUERY ------------------
-    findMessage,edenGPTreply,edenGPTsearchProfiles,
+    findMessage,edenGPTreply,edenGPTreplyMemory,edenGPTsearchProfiles,
 
     //----------- GRAPH VISUAL QUERY ------------------
     findMemberGraph,
