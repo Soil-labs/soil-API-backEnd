@@ -1,4 +1,6 @@
 const { AI } = require("../../../models/aiModel");
+const { Node } = require("../../../models/nodeModal");
+
 const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
 const axios = require("axios");
@@ -28,15 +30,27 @@ function chooseAPIkey() {
   return key;
 }
 
-async function useGPT(prompt, temperature = 0.7) {
+
+
+function remapValues(data, min, max, newMin, newMax) {
+  const range = max - min;
+  const newRange = newMax - newMin;
+  for (let i = 0; i < data.length; i++) {
+    const normalizedValue = (data[i].value - min) / range;
+    const newValue = (normalizedValue * newRange) + newMin;
+    data[i].value = Math.round(newValue);
+  }
+  return data;
+}
+async function useGPT(prompt, temperature = 0.7,model="text-davinci-003") {
   const configuration = new Configuration({
     apiKey: "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",
   });
   const openai = new OpenAIApi(configuration);
   // let model = "text-curie-001";
-  let model = "text-davinci-003";
+  // let model = "text-davinci-003";
   const response = await openai.createCompletion({
-    model,
+    model: model,
     prompt,
     temperature,
     max_tokens: 256,
@@ -247,6 +261,188 @@ module.exports = {
       );
     }
   },
+  messageMapKG: async (parent, args, context, info) => {
+    const { message } = args.fields;
+    console.log("Query > messageMapKG > args.fields = ", args.fields);
+    try {
+
+
+      // -------------- Find best keywrods from embeding -------------
+      const filter = {
+        label: "KnowledgeGraph",
+      }
+
+      bestKeywordsFromEmbed = await findBestEmbedings(message,filter ,topK = 10)
+
+      console.log("bestKeywordsFromEmbed = " , bestKeywordsFromEmbed)
+      // -------------- Find best keywrods from embeding -------------
+
+
+
+      // -------------- map values of keywords -------------
+      // map bestKeywordsFromEmbed to a new object array that has the value and the keyword
+      let minValue = Infinity;
+      let maxValue = -Infinity;
+
+      let keywordValObj = {}
+      bestKeywordsFromEmbed_cl = bestKeywordsFromEmbed.map((obj) => {
+        if (obj.score < minValue) {
+          minValue = obj.score;
+        }
+        if (obj.score > maxValue) {
+          maxValue = obj.score;
+        }
+        
+        return {
+          value: obj.score,
+          originalValue: obj.score,
+          keyword: obj.metadata.keyword,
+          category: obj.metadata.category,
+          context: obj.metadata.text,
+        }
+      })
+
+      console.log("bestKeywordsFromEmbed_cl = " , bestKeywordsFromEmbed_cl)
+      console.log("minValue = " , minValue)
+      console.log("maxValue = " , maxValue)
+
+      bestKeywordsFromEmbed_map = remapValues(bestKeywordsFromEmbed_cl, minValue, maxValue, 3, 10)
+      console.log("bestKeywordsFromEmbed_map = " , bestKeywordsFromEmbed_map)
+      // asfd1
+      // -------------- map values of keywords -------------
+
+
+
+      // --------------- prepare prompt keyword -----------
+      keywords_str = ""
+      numKeywords = 0
+      for (let i = 0; i < bestKeywordsFromEmbed_map.length; i++) {
+        const element = bestKeywordsFromEmbed_map[i];
+
+        if (!keywordValObj[element.keyword.toLowerCase().trim()]) {
+          keywordValObj[element.keyword.toLowerCase().trim()] = {
+            value: element.value,
+            originalKeyword: element.keyword,
+          }
+        }
+        
+        if (element.value >= 6 && element.originalValue >= 0.74){
+          // if (element.value >= 6 && element.originalValue >= 0.76){
+          // keywords_str += element.keyword + " | "
+          // keywords_str += element.keyword + ": "  +element.context.replace("\n","").replace("\n","")+  " | \n\n"
+          // keywords_str += element.keyword + ": " + element.value + " - " +element.context.replace("\n","").replace("\n","")+  " | "
+          keywords_str += element.keyword + ": " + element.value +  " | "
+
+          numKeywords += 1
+        }
+      }
+      // console.log("keywords_str = " , keywords_str)
+      // --------------- prepare prompt keyword -----------
+
+
+      // -------------- Find best keywrods from prompt engineering -------------
+
+      if (numKeywords > 0){
+        prompt_general = "paragraph: " + message + "\n\n"
+
+
+        prompt_general += "keywords: " + keywords_str + "\n\n"
+
+        // prompt_general += "You have as input a paragraph, and keywords together with their explanation \n\n"
+        // prompt_general += "You have as input a paragraph, and keywords with the score of how related they are, from 0 to 10 together with their explanation \n\n"
+        prompt_general += "You have as input a paragraph, and keywords with the score of how related they are, from 0 to 10 \n\n"
+
+        // prompt_general += "Choose the keywords that best describe the paragraph! you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
+        // prompt_general += "Choose the smallest number of keywords that describe accurately the paragraph! you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
+        prompt_general += "Choose only keywords that exist on the paragraph! choose the smallest number of keywords to describe paragraph! you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
+        // prompt_general += "Try to choose the smallest number of keywords that best describe the paragraph! you can choose from 0 to 5 keywords \n\n" + "keywords: "
+        // prompt_general += "Choose keywords that best describe the paragraph! Don't put any unesesary keywords! you can choose from 0 to 5 keywords \n\n" + "keywords: "
+
+        console.log("prompt_general = " , prompt_general)
+        // asfd1
+
+        // res_gpt = await useGPT(prompt_general,0.7,"text-curie-001")
+        res_gpt = await useGPT(prompt_general)
+
+        console.log("res_gpt = " , res_gpt)
+
+        
+        if (res_gpt.includes(",")){
+          keywords = res_gpt.split(",")
+        } else if (res_gpt.includes("|")){
+          keywords = res_gpt.split("|")
+        } else {
+          keywords = [res_gpt]
+        }
+
+        keywords = keywords.map(strT => strT.replace("\n", "").trim());
+
+        keywordsValues = []
+        keywordsNameOnly = []
+        keywords.forEach( (keyword, index) => {
+          // console.log("keyword,keywordValObj[keyword] = " , keyword,keywordValObj[keyword.toLowerCase()])
+
+          // let arr = keyword.split(":");
+          let keyword_cl = keyword.split(":").shift();
+
+          if (keywordValObj[keyword_cl.toLowerCase()]){
+            keywordsValues.push({
+              keyword: keyword_cl,
+              confidence: parseInt(keywordValObj[keyword_cl.toLowerCase()].value)
+            })
+            keywordsNameOnly.push(keywordValObj[keyword_cl.toLowerCase()].originalKeyword)
+          } 
+          // else {
+          //   keywordsValues.push({
+          //     keyword: keyword_cl,
+          //     confidence: undefined
+          //   })
+          // }
+        })
+
+        let nodeData = await Node.find({name: keywordsNameOnly}).select("_id name");
+
+        nodeDataObj = {}
+        nodeData.forEach((node) => {
+          nodeDataObj[node.name] = node._id
+        })
+
+        keywordsValues = keywordsValues.map((keyword) => {
+          return {
+            ...keyword,
+            nodeID: nodeDataObj[keyword.keyword]
+          }
+        })
+
+        // console.log("nodeData = " , nodeData)
+        // console.log("keywordsNameOnly = " , keywordsNameOnly)
+        // asf1
+
+
+
+      } else {
+        keywordsValues = []
+      }
+      // -------------- Find best keywrods from prompt engineering -------------
+
+      console.log("keywordValObj = " , keywordValObj)
+
+      console.log("keywordsValues = " , keywordsValues)
+
+      return {
+        keywords: keywordsValues,
+      }
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "messageMapKG",
+        {
+          component: "aiQuery > messageMapKG",
+        }
+      );
+    }
+  },
   edenGPTreply: async (parent, args, context, info) => {
     const { message } = args.fields;
     console.log("Query > edenGPTreply > args.fields = ", args.fields);
@@ -277,30 +473,30 @@ module.exports = {
       console.log("change = 2" )
 
 
-      // -------------- Find Keywords -------------
-      // let keywordsEdenArray = [];
-      const response_keywords = await openai.createCompletion({
-        model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
-        prompt: message + "\nKeywords:",
-        temperature: 0.7,
-        stop: ["==END=="],
-        max_tokens: 300,
-        // top_p: 1,
-        // frequency_penalty: 0,
-        // presence_penalty: 0,
-      });
+      // // -------------- Find Keywords -------------
+      // // let keywordsEdenArray = [];
+      // const response_keywords = await openai.createCompletion({
+      //   model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
+      //   prompt: message + "\nKeywords:",
+      //   temperature: 0.7,
+      //   stop: ["==END=="],
+      //   max_tokens: 300,
+      //   // top_p: 1,
+      //   // frequency_penalty: 0,
+      //   // presence_penalty: 0,
+      // });
     
-      let keywordsEden = response_keywords.data.choices[0].text;
-      // console.log("keywordsEden = " , keywordsEden)
+      // let keywordsEden = response_keywords.data.choices[0].text;
+      // // console.log("keywordsEden = " , keywordsEden)
 
-      var keywordsEdenArray = keywordsEden.split(',');
-      // -------------- Find Keywords -------------
+      // var keywordsEdenArray = keywordsEden.split(',');
+      // // -------------- Find Keywords -------------
 
       console.log("change = 3" )
 
       return {
         reply: replyEden,
-        keywords: keywordsEdenArray
+        // keywords: keywordsEdenArray
       };
     } catch (err) {
       throw new ApolloError(
@@ -368,39 +564,39 @@ module.exports = {
       reply = useGPT(prompot_General)
 
 
-      // -------------- Find Keywords -------------
-      const configuration = new Configuration({
-        apiKey: "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",
-      });
-      const openai = new OpenAIApi(configuration);
-      // let keywordsEdenArray = [];
-      const response_keywords = await openai.createCompletion({
-        model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
-        prompt: message + "\nKeywords:",
-        temperature: 0.7,
-        stop: ["==END=="],
-        max_tokens: 300,
-        // top_p: 1,
-        // frequency_penalty: 0,
-        // presence_penalty: 0,
-      });
+      // // -------------- Find Keywords -------------
+      // const configuration = new Configuration({
+      //   apiKey: "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",
+      // });
+      // const openai = new OpenAIApi(configuration);
+      // // let keywordsEdenArray = [];
+      // const response_keywords = await openai.createCompletion({
+      //   model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
+      //   prompt: message + "\nKeywords:",
+      //   temperature: 0.7,
+      //   stop: ["==END=="],
+      //   max_tokens: 300,
+      //   // top_p: 1,
+      //   // frequency_penalty: 0,
+      //   // presence_penalty: 0,
+      // });
     
-      let keywordsEden = response_keywords.data.choices[0].text;
-      // console.log("keywordsEden = " , keywordsEden)
+      // let keywordsEden = response_keywords.data.choices[0].text;
+      // // console.log("keywordsEden = " , keywordsEden)
 
-      var keywordsEdenArray = keywordsEden.split(',');
+      // var keywordsEdenArray = keywordsEden.split(',');
 
-      // delete any empty string
-      keywordsEdenArray = keywordsEdenArray.filter(function (el) {
-        return el != "";
-      });
+      // // delete any empty string
+      // keywordsEdenArray = keywordsEdenArray.filter(function (el) {
+      //   return el != "";
+      // });
       
-      // -------------- Find Keywords -------------
+      // // -------------- Find Keywords -------------
 
 
       return {
         reply: reply,
-        keywords: keywordsEdenArray
+        // keywords: keywordsEdenArray
       };
     } catch (err) {
       throw new ApolloError(

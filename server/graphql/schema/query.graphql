@@ -94,6 +94,7 @@ module.exports = `
           # ---------- AI QUERY -------------
           findMessage(fields: findMessageInputPaginated): PaginatedMessages
           edenGPTreply(fields: edenGPTreplyInput): edenGPTreplyOutput
+          messageMapKG(fields: messageMapKGInput): messageMapKGOutput
           edenGPTreplyMemory(fields: edenGPTreplyMemoryInput): edenGPTreplyMemoryOutput
           edenGPTsearchProfiles(fields: edenGPTsearchProfilesInput): edenGPTsearchProfilesOutput
 
