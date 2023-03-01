@@ -80,7 +80,14 @@ module.exports = `
 
     type edenGPTreplyOutput {
         reply: String
-        keywords: [String]
+    }
+
+    input messageMapKGInput {
+        message: String
+    }
+
+    type messageMapKGOutput {
+        keywords: [keywordValue]
     }
 
 
@@ -89,9 +96,15 @@ module.exports = `
         memorySort: String
         userID: ID
     }
+
+    type keywordValue {
+        keyword: String
+        confidence: Int
+        nodeID: ID
+    }
     type edenGPTreplyMemoryOutput {
         reply: String
-        keywords: [String]
+        # keywords: [String]
     }
 
     input useAI_OnMessageInput {
