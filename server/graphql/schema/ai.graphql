@@ -107,6 +107,22 @@ module.exports = `
         # keywords: [String]
     }
 
+    input messageChat {
+        role: String
+        content: String
+    }
+
+    input edenGPTreplyChatAPIInput {
+        message: String
+        conversation: [messageChat]
+        userID: ID
+    }
+
+    type edenGPTreplyChatAPIOutput {
+        reply: String
+        # keywords: [String]
+    }
+
     input useAI_OnMessageInput {
         message: String
         cash: Boolean

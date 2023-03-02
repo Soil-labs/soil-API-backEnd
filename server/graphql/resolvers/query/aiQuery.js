@@ -67,6 +67,63 @@ async function useGPT(prompt, temperature = 0.7,model="text-davinci-003") {
   return generatedText;
 }
 
+async function useGPTchatHelloWorld () {
+  let OPENAI_API_KEY = chooseAPIkey();
+  response = await axios.post(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      messages: [{"role": "user", "content": "Hello!"}],
+      model: "gpt-3.5-turbo",
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+    }
+  );
+
+
+  return response.data.choices[0].message.content
+
+}
+
+async function useGPTchat(userNewMessage,discussion,systemPrompt,userQuestion = "") {
+  
+  discussion.push({
+    "role": "user",
+    "content": userNewMessage + "\n" + userQuestion
+  })
+
+
+  discussion.unshift({
+    "role": "system", 
+    "content": systemPrompt
+  });
+
+  console.log("discussion = " , discussion)
+  
+  let OPENAI_API_KEY = chooseAPIkey();
+  response = await axios.post(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      messages: discussion,
+      model: "gpt-3.5-turbo",
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+    }
+  );
+  // console.log("response = " , response)
+
+  // console.log("response.data = " , response.data)
+
+  return response.data.choices[0].message.content;
+}
+
 async function findBestEmbedings(message,filter,topK = 3) {
 
   //  filter: {
@@ -607,6 +664,30 @@ module.exports = {
         }
       );
     }
+  },
+  edenGPTreplyChatAPI: async (parent, args, context, info) => {
+    const { message,conversation,userID } = args.fields;
+    console.log("Query > edenGPTreplyChatAPI > args.fields = ", args.fields);
+    // try {
+
+      systemPrompt = `
+      You are a recruiter, The only think that you do is ask one questions at a time to understand the skills that the candidate should have.
+      You give as consise as small answeres as possible
+      `
+      responseGPTchat = await useGPTchat(message,conversation,systemPrompt,"ask me questino what other skills candidate should have based on the cntext that you have")
+
+      return {
+        reply: responseGPTchat,
+      };
+    // } catch (err) {
+    //   throw new ApolloError(
+    //     err.message,
+    //     err.extensions?.code || "edenGPTreplyChatAPI",
+    //     {
+    //       component: "aiQuery > edenGPTreplyChatAPI",
+    //     }
+    //   );
+    // }
   },
   edenGPTsearchProfiles: async (parent, args, context, info) => {
     const { message,profileIDs } = args.fields;
