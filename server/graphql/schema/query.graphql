@@ -96,6 +96,7 @@ module.exports = `
           edenGPTreply(fields: edenGPTreplyInput): edenGPTreplyOutput
           messageMapKG(fields: messageMapKGInput): messageMapKGOutput
           edenGPTreplyMemory(fields: edenGPTreplyMemoryInput): edenGPTreplyMemoryOutput
+          edenGPTreplyChatAPI(fields: edenGPTreplyChatAPIInput): edenGPTreplyChatAPIOutput
           edenGPTsearchProfiles(fields: edenGPTsearchProfilesInput): edenGPTsearchProfilesOutput
 
           # ---------- GRAPH VISUAL QUERY -------------
