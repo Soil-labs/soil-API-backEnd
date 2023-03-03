@@ -338,7 +338,7 @@ module.exports = {
     }
   },
   dynamicSearchGraph: async (parent, args, context, info) => {
-    const { nodesID, nodeSettings, edgeSettings } = args.fields;
+    const { nodesID, nodeSettings, edgeSettings,numEdgesSplit } = args.fields;
     console.log("Query > dynamicSearchGraph > args.fields = ", args.fields);
 
     if (!nodesID) throw new ApolloError("The nodesID is required");
@@ -358,26 +358,8 @@ module.exports = {
       }
 
       const nodeDataIds_str = JSON.stringify(nodeDataIds);
-      console.log("nodeDataIds_str = ", nodeDataIds_str);
-      // asdf;
-
-      // if (projectID == undefined || projectID == "") {
-      //   res = await generalFunc_neo4j({
-      //     request: `
-      //       MATCH res = ((o)-[]-(r)-[]-(p))
-      //       WHERE o._id IN ${nodeDataIds_str} AND (p:Project) AND (r: Role)
-      //       RETURN res
-      //   `,
-      //   });
-      // } else {
-      //   res = await generalFunc_neo4j({
-      //     request: `
-      //         MATCH res = ((o)-[]-(r)-[]-(p))
-      //         WHERE o._id IN ${nodeDataIds_str} AND (p._id="${projectID}") AND (r: Role)
-      //         RETURN res
-      //   `,
-      //   });
-      // }
+      // console.log("nodeDataIds_str = ", nodeDataIds_str);
+      
 
       res = await generalFunc_neo4j({
         request: `
@@ -387,7 +369,7 @@ module.exports = {
         `,
       });
 
-      console.log("res = ", res);
+      // console.log("res = ", res);
       // asdf0;
 
       let { typesNodesReplace, typeNodeSearchAbove } =
@@ -401,27 +383,41 @@ module.exports = {
           nodeDataObj
         );
 
-      // console.log("nodesObj = ", nodesObj);
-      // console.log("edgesArr = ", edgesArr);
-      // console.log("nodesArrReplaceID = ", nodesArrReplaceID);
-      // asdf1;
+
 
       let { edgesArrNew, nodesObj_ } = await replaceNodes(
         nodesObj,
         edgesArr,
         nodesArrReplaceID,
-        typesNodesReplace
+        typesNodesReplace,
+        numEdgesSplit
       );
+
+      console.log("nodesObj_ = " , nodesObj_)
+
+      console.log("edgesArr = " , edgesArr)
+
 
       let { nodesArrNew2, edgesArrNew2 } = await addSettingsNodesSubNodes(
         nodesObj_,
         edgesArrNew,
         nodeSettings,
-        edgeSettings
+        edgeSettings,
+        numEdgesSplit
       );
 
-      const edgesArrNew2_unique = _.uniqWith(edgesArrNew2, _.isEqual);
-      const nodesArrNew2_unique = _.uniqWith(nodesArrNew2, _.isEqual);
+      // const edgesArrNew2_unique = _.uniqWith(edgesArrNew2, _.isEqual);
+      // const nodesArrNew2_unique = _.uniqWith(nodesArrNew2, _.isEqual);
+
+      // let edgesArrNew2_unique = edgesArrNew2.filter((obj, index, self) =>
+      //   index === self.findIndex((t) => (
+      //     t.source === obj.source && t.target === obj.target
+      //   ))
+      // );
+
+      let edgesArrNew2_unique = [...new Set(edgesArrNew2.map(obj => JSON.stringify(obj)))].map(str => JSON.parse(str));
+      let nodesArrNew2_unique = [...new Set(nodesArrNew2.map(obj => JSON.stringify(obj)))].map(str => JSON.parse(str));
+
 
       return {
         nodes: nodesArrNew2_unique,
@@ -1154,7 +1150,6 @@ async function arrayToObjectDoubleKey(
 
       let ids = [key1, key2].sort();
       let key = ids.join("_");
-
       objectN[key] = arrayN[i];
     } else {
       let key1 = arrayN[i][position][keyName1];
@@ -1184,7 +1179,8 @@ async function addSettingsNodesSubNodes(
   nodesObj,
   edgesArr,
   nodeSettings,
-  edgeSettings
+  edgeSettings,
+  numEdgesSplit = undefined
 ) {
   nodeSettingsObj = await arrayToObject(nodeSettings, "type");
 
@@ -1204,21 +1200,37 @@ async function addSettingsNodesSubNodes(
 
     if (nodeSettingsObj[node.type] && nodesObj[key].showNode == true) {
       // if the type exist on the settings it will be desplayed at the end of the graph
-      const settingsN = nodeSettingsObj[node.type];
 
-      nodesArrNew.push({
-        ...node,
-        ...settingsN,
-      });
-      nodesArrNewObj[node._id] = node;
+      if (nodesObj[key].splitNode == true && numEdgesSplit != undefined){
+        if (nodesObj[key].numEdges>1){
+          const settingsN = nodeSettingsObj[node.type];
+
+          nodesArrNew.push({
+            ...node,
+            ...settingsN,
+          });
+          nodesArrNewObj[node._id] = node;
+        }
+      } else {
+        const settingsN = nodeSettingsObj[node.type];
+
+        nodesArrNew.push({
+          ...node,
+          ...settingsN,
+        });
+        nodesArrNewObj[node._id] = node;
+      }
     }
   }
   // ----------- The nodes that we will show to the Graph + settings --------
 
   // ----------- The edges taht we will show to the Graph + settings --------
   let edgesArrNew = [];
+  console.log("edgeSettingsObj = " , edgeSettingsObj)
   for (let i = 0; i < edgesArr.length; i++) {
     edge = edgesArr[i];
+
+    console.log("hey bruskitorinotori = " ,edge)
 
     let edgeSettings = returnObjectValueDoubleKey(
       edgeSettingsObj,
@@ -1226,58 +1238,64 @@ async function addSettingsNodesSubNodes(
       nodesArrNewObj[edge.target]?.type
     );
 
-    if (edgeSettings && edgeSettings?.splitEdge == undefined) {
-      edgesArrNew.push({
-        ...edge,
-        style: {
-          stroke: edgeSettings?.mainEdge?.style?.color,
-          fill: edgeSettings?.mainEdge?.style?.color,
-          ...edgeSettings?.mainEdge?.style,
-        },
-      });
+    console.log("edgeSettings = " , edgeSettings)
+
+    if (edgeSettings.hiddenEdge != true) {
+      if (edgeSettings?.splitEdge == undefined || (edge.alwaysAllow == true && numEdgesSplit != undefined)) {
+        edgesArrNew.push({
+          ...edge,
+          style: {
+            stroke: edgeSettings?.mainEdge?.style?.color,
+            fill: edgeSettings?.mainEdge?.style?.color,
+            ...edgeSettings?.mainEdge?.style,
+          },
+        });
+      }
     }
   }
   // ----------- The edges taht we will show to the Graph + settings --------
 
-  // ---------- If Hidden Edge - You create Fake transparent Edges ------------
-  for (let i = 0; i < edgeSettings.length; i++) {
-    let edgeSetting = edgeSettings[i];
-    // 1) see if there is a hidden edge
-    if (edgeSetting?.hiddenEdge == true) {
-      // 2) find all the nodes that have the source or target type
-      let nodesHiddenEdgeType1 = [];
-      let nodesHiddenEdgeType2 = [];
-      for (let key in nodesArrNewObj) {
-        if (
-          edgeSetting?.mainEdge?.nodeTypeSource == nodesArrNewObj[key]?.type
-        ) {
-          nodesHiddenEdgeType1.push(key);
-        }
-        if (
-          edgeSetting?.mainEdge?.nodeTypeTarget == nodesArrNewObj[key]?.type
-        ) {
-          nodesHiddenEdgeType2.push(key);
-        }
-      }
-      // 3) create a fake edge between all the nodes that have the source or target type
-      for (let i = 0; i < nodesHiddenEdgeType1.length; i++) {
-        for (let j = 0; j < nodesHiddenEdgeType2.length; j++) {
-          if (nodesHiddenEdgeType1[i] == nodesHiddenEdgeType2[j]) continue;
-          edgesArrNew.push({
-            source: nodesHiddenEdgeType1[i],
-            target: nodesHiddenEdgeType2[j],
-            style: {
-              stroke: edgeSetting?.mainEdge?.style?.color,
-              fill: edgeSetting?.mainEdge?.style?.color,
-              distance: edgeSetting?.mainEdge?.style?.distance,
-              strength: edgeSetting?.mainEdge?.style?.strength,
-            },
-          });
-        }
-      }
-    }
-  }
-  // ---------- If Hidden Edge - You create Fake transparent Edges ------------
+  // // ---------- If Hidden Edge - You create Fake transparent Edges ------------
+  // for (let i = 0; i < edgeSettings.length; i++) {
+  //   let edgeSetting = edgeSettings[i];
+  //   // 1) see if there is a hidden edge
+  //   if (edgeSetting?.hiddenEdge == true) {
+  //     // 2) find all the nodes that have the source or target type
+  //     let nodesHiddenEdgeType1 = [];
+  //     let nodesHiddenEdgeType2 = [];
+  //     for (let key in nodesArrNewObj) {
+  //       if (
+  //         edgeSetting?.mainEdge?.nodeTypeSource == nodesArrNewObj[key]?.type
+  //       ) {
+  //         nodesHiddenEdgeType1.push(key);
+  //       }
+  //       if (
+  //         edgeSetting?.mainEdge?.nodeTypeTarget == nodesArrNewObj[key]?.type
+  //       ) {
+  //         nodesHiddenEdgeType2.push(key);
+  //       }
+  //     }
+  //     console.log("nodesHiddenEdgeType1 = " , nodesHiddenEdgeType1)
+  //     console.log("nodesHiddenEdgeType2 = " , nodesHiddenEdgeType2)
+  //     // 3) create a fake edge between all the nodes that have the source or target type
+  //     for (let i = 0; i < nodesHiddenEdgeType1.length; i++) {
+  //       for (let j = 0; j < nodesHiddenEdgeType2.length; j++) {
+  //         if (nodesHiddenEdgeType1[i] == nodesHiddenEdgeType2[j]) continue;
+  //         edgesArrNew.push({
+  //           source: nodesHiddenEdgeType1[i],
+  //           target: nodesHiddenEdgeType2[j],
+  //           style: {
+  //             stroke: edgeSetting?.mainEdge?.style?.color,
+  //             fill: edgeSetting?.mainEdge?.style?.color,
+  //             distance: edgeSetting?.mainEdge?.style?.distance,
+  //             strength: edgeSetting?.mainEdge?.style?.strength,
+  //           },
+  //         });
+  //       }
+  //     }
+  //   }
+  // }
+  // // ---------- If Hidden Edge - You create Fake transparent Edges ------------
 
   return {
     nodesArrNew2: nodesArrNew,
@@ -1812,10 +1830,29 @@ async function splitEdgeFunc(
           target: edgeSecond,
         });
 
+        nodesObj[edgeFirst].originalEdnge = edgeSecond
+        nodesObj[edgeSecond].originalEdnge = edgeFirst
+
         nodesObj[edgeFirst].showNode = true;
         nodesObj[edgeSecond].showNode = true;
         nodesObj[nodesObj[edgeFirst].aboveL1ID].showNode = true;
         nodesObj[nodesObj[edgeFirst].aboveL2ID].showNode = true;
+        nodesObj[nodesObj[edgeFirst].aboveL1ID].splitNode = true;
+        nodesObj[nodesObj[edgeFirst].aboveL2ID].splitNode = true;
+
+
+
+        if (nodesObj[nodesObj[edgeFirst].aboveL1ID].numEdges == undefined) {
+          nodesObj[nodesObj[edgeFirst].aboveL1ID].numEdges = 1;
+        } else {
+          nodesObj[nodesObj[edgeFirst].aboveL1ID].numEdges++;
+        }
+
+        if (nodesObj[nodesObj[edgeFirst].aboveL2ID].numEdges == undefined) {
+          nodesObj[nodesObj[edgeFirst].aboveL2ID].numEdges = 1;
+        } else {
+          nodesObj[nodesObj[edgeFirst].aboveL2ID].numEdges++;
+        }
 
         // console.log("edgesArrNew = ", edgesArrNew);
 
@@ -1831,9 +1868,20 @@ async function splitEdgeFunc(
           target: edgeSecond,
         });
 
+        nodesObj[edgeFirst].originalEdnge = edgeSecond
+        nodesObj[edgeSecond].originalEdnge = edgeFirst
+
+
         nodesObj[edgeFirst].showNode = true;
         nodesObj[edgeSecond].showNode = true;
         nodesObj[nodesObj[edgeFirst].aboveL1ID].showNode = true;
+        nodesObj[nodesObj[edgeFirst].aboveL1ID].splitNode = true;
+
+        if (nodesObj[nodesObj[edgeFirst].aboveL1ID].numEdges == undefined) {
+          nodesObj[nodesObj[edgeFirst].aboveL1ID].numEdges = 1;
+        } else {
+          nodesObj[nodesObj[edgeFirst].aboveL1ID].numEdges++;
+        }
 
         flagAddEdge = false;
       }
@@ -1853,7 +1901,8 @@ async function replaceNodes(
   nodesObj,
   edgesArr,
   nodesArrReplaceID,
-  typesNodesReplace
+  typesNodesReplace,
+  numEdgesSplit = undefined
 ) {
   let nodesObj_n = await searchAboveNodesAllLayers(nodesArrReplaceID, nodesObj);
 
@@ -1918,8 +1967,80 @@ async function replaceNodes(
     // ------------ Dont Split ---------
   }
 
+  // ------------ return the edges that have only one node --------------
+  if (numEdgesSplit != undefined) {
+    edgesArrNew_clean = [] // clean up the split edges that had only one node, and return them to the original format
+    for (let i = 0; i < edgesArrNew.length; i++) {
+      let edgeSource = edgesArrNew[i].source;
+      let edgeTarget = edgesArrNew[i].target;
+
+      if (nodesObj[edgeSource].splitNode == true ) {
+        if (nodesObj[edgeSource].numEdges <2 ){
+          // ------- Find original node -------
+
+          const originalNode = nodesObj[edgeSource].subNodes[0]
+          const connectionNode = nodesObj[originalNode].originalEdnge
+          // ------- Find original node -------
+
+          edgesArrNew_clean.push({
+            source: originalNode,
+            // source: connectionNode,
+            target: edgeTarget,
+            alwaysAllow: true
+          });
+        } else {
+          edgesArrNew_clean.push({
+            source: edgeSource,
+            target: edgeTarget,
+          });
+        }
+      } else {
+        if (nodesObj[edgeSource].splitNode == false ) {
+          edgesArrNew_clean.push({
+            source: edgeSource,
+            target: edgeTarget,
+          });
+        }
+      }
+
+      if (nodesObj[edgeTarget].splitNode == true ) {
+        if (nodesObj[edgeTarget].numEdges <2 ){
+          console.log("change = 2" )
+
+          // ------- Find original node -------
+          const originalNode = nodesObj[edgeTarget].subNodes[0]
+          const connectionNode = nodesObj[originalNode].originalEdnge
+          // ------- Find original node -------
+
+          edgesArrNew_clean.push({
+            source: edgeSource,
+            // target: originalNode,
+            target: connectionNode,
+            alwaysAllow: true
+          });
+        } else {
+          edgesArrNew_clean.push({
+            source: edgeSource,
+            target: edgeTarget,
+          });
+        }
+      } else {
+        if (nodesObj[edgeSource].splitNode == false ) {
+          edgesArrNew_clean.push({
+            source: edgeSource,
+            target: edgeTarget,
+          });
+        }
+      }
+    }
+  } else {
+    edgesArrNew_clean = edgesArrNew
+  }
+  // ------------ return the edges that have only one node --------------
+
+
   return {
-    edgesArrNew: edgesArrNew,
+    edgesArrNew: edgesArrNew_clean,
     nodesObj_: nodesObj,
   };
 }

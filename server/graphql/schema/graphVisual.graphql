@@ -90,6 +90,7 @@ module.exports = `
     input findProjectGraphInput {
         projectID: ID
         showAvatar: Boolean
+        numEdgesSplit: Int
         nodeSettings: [nodeSetting]
         edgeSettings: [edgeSetting]
     }
@@ -98,6 +99,7 @@ module.exports = `
         memberID: ID
         projectID: ID
         showAvatar: Boolean
+        numEdgesSplit: Int
         nodeSettings: [nodeSetting]
         edgeSettings: [edgeSetting]
     }
@@ -106,12 +108,14 @@ module.exports = `
         nodesID: [ID]
         projectID: ID
         showAvatar: Boolean
+        numEdgesSplit: Int
         nodeSettings: [nodeSetting]
         edgeSettings: [edgeSetting]
     }
     input dynamicSearchGraphInput {
         nodesID: [ID]
         showAvatar: Boolean
+        numEdgesSplit: Int
         nodeSettings: [nodeSetting]
         edgeSettings: [edgeSetting]
     }
@@ -119,6 +123,7 @@ module.exports = `
         nodesID: [ID]
         memberID: ID
         showAvatar: Boolean
+        numEdgesSplit: Int
         nodeSettings: [nodeSetting]
         edgeSettings: [edgeSetting]
     }
@@ -127,6 +132,7 @@ module.exports = `
         memberOneID: ID
         memberTwoID: ID
         showAvatar: Boolean
+        numEdgesSplit: Int
         nodeSettings: [nodeSetting]
         edgeSettings: [edgeSetting]
     }
@@ -135,6 +141,7 @@ module.exports = `
         membersID: [ID]
         projectsID: [ID]
         showAvatar: Boolean
+        numEdgesSplit: Int
         
         nodeSettings: [nodeSetting]
         edgeSettings: [edgeSetting]
@@ -143,6 +150,7 @@ module.exports = `
     input findOneMemberToMembersGraphInput {
         memberID: ID
         showAvatar: Boolean
+        numEdgesSplit: Int
         
         nodeSettings: [nodeSetting]
         edgeSettings: [edgeSetting]
