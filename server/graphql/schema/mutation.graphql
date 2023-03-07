@@ -14,6 +14,7 @@ module.exports = `
         deleteMember(fields:deleteMemberInput!): Members
         # addSkillToMember(fields:addSkillToMember_Input!):Members
         addEndorsement(fields: addEndorsementInput ): Members
+        createFakeUser(fields: createFakeUserInput ): Members
         endorseAttribute(fields:endorseAttributeInput!): Members
 
 

@@ -800,6 +800,31 @@ module.exports = {
 
     return matchRelativePosition;
   },
+  matchPrepareAnything_AI4_neo4j: async (req, res) => {
+    const { nodeID, find, weightSkills,distancePenalty } = req;
+
+    matchRelativePosition = {};
+
+    // find all the nodes that have distance from 1 to 3 hops from the node with ID "nodeID"
+    // all the nodes should be on the save server with ID "serverID"
+    await findMatch_translateArray_path_K_hop_AI4(
+      `
+            MATCH (n{_id: '${nodeID}'}),
+            p = (n)-[*1..3]-(friend:${find})
+            WHERE NONE(x IN relationships(p) WHERE type(x) = '${find}')
+            RETURN p
+        `,
+      matchRelativePosition,
+      weightSkills,
+      distancePenalty
+    );
+    
+
+    // console.log("matchRelativePosition = " , matchRelativePosition)
+    // asdf
+
+    return matchRelativePosition;
+  },
   findAllNodesDistanceRfromNode_neo4j: async (req, res) => {
     const { nodeID } = req;
 
@@ -1135,10 +1160,8 @@ async function findMatch_translateArray_path_K_hop(
 
         const nodeID = names_oneHopeMatch[i]._fields[0].end.properties._id; // find what is the ID of the member that connects throw this path
 
-        let hop = N_weight - 1;
+        let hop = N_weight;
 
-        wh = totalWeight ** hop;
-        // console.log("totalWeight ** hop = ", totalWeight, hop, wh.toFixed(2));
 
         if (matchRelativePosition[nodeID]) {
           // make all the equations for this specific path
@@ -1152,7 +1175,7 @@ async function findMatch_translateArray_path_K_hop(
 
           let conn_node_wh_obj = matchRelativePosition[nodeID].conn_node_wh_obj;
 
-          WH_new = totalWeight_avg ** (hop + 1);
+          WH_new = totalWeight_avg ** (hop);
 
           if (WH_new > kt[0][1]) {
             // if the new weight is bigger then the weight of the first hop then it adds it to the weight of the first hop
@@ -1175,7 +1198,7 @@ async function findMatch_translateArray_path_K_hop(
             wh_k_arr[2].numPath += 1;
           }
 
-          let totAvW = totalWeight_avg ** (hop + 1);
+          let totAvW = totalWeight_avg ** (hop);
 
           if (conn_node_wh_obj[nodeConnID_pathLastConnection]) {
             conn_node_wh_obj[nodeConnID_pathLastConnection].wh_sum += totAvW;
@@ -1216,7 +1239,7 @@ async function findMatch_translateArray_path_K_hop(
             },
           ];
 
-          WH_new = totalWeight_avg ** (hop + 1);
+          WH_new = totalWeight_avg ** (hop );
 
           if (WH_new > kt[0][1]) {
             wh_k += WH_new * kt[0][0];
@@ -1240,11 +1263,128 @@ async function findMatch_translateArray_path_K_hop(
 
           matchRelativePosition[nodeID] = {
             // here is the part that updates it
-            WH: totalWeight_avg ** (hop + 1),
+            WH: totalWeight_avg ** (hop),
             N: 1,
             wh_k,
             k_sum,
             wh_k_arr,
+            conn_node_wh_obj: {
+              [nodeConnID_pathLastConnection]: {
+                wh_sum: WH_new,
+                numPath: 1,
+              },
+            },
+          };
+        }
+      }
+    }
+  }
+  // asdf;
+
+  // -----------------  Hope -----------------
+
+  session.close();
+
+  return member_oneHopeMatch;
+}
+
+async function findMatch_translateArray_path_K_hop_AI4(
+  shyperCode,
+  matchRelativePosition,
+  weightSkills,
+  distancePenalty = [1,1,1]
+) {
+  const session = driver.session({ database: "neo4j" });
+
+  // // ----------------- Hope -----------------
+  // calculate all the connections between the nodes and the Users
+  result_oneHopeMatch = await session.writeTransaction((tx) =>
+    tx.run(shyperCode)
+  );
+
+  let names_oneHopeMatch = result_oneHopeMatch.records.map((row) => {
+    return row;
+  });
+
+  console.log("names_oneHopeMatch = " , names_oneHopeMatch)
+  
+
+  kt = [
+    // This is the weight for each hop // it was choosen base on intuition
+    [9, 0.7], // hop 1
+    [3, 0.4], // hop 2
+    [1, 0], // hop 3
+  ];
+
+  member_oneHopeMatch = [];
+  if (names_oneHopeMatch.length > 0) {
+    for (let i = 0; i < names_oneHopeMatch.length; ++i) {
+      // make a for loop to all the connections between the nodes and the Users
+      if (
+        names_oneHopeMatch[i] &&
+        names_oneHopeMatch[i]._fields &&
+        names_oneHopeMatch[i]._fields[0]
+      ) {
+
+        res = await weightPath( names_oneHopeMatch[i] )
+
+        let totalWeight = res.totalWeight;
+        let N_weight = res.N_weight;
+        let nodeConnID_pathLastConnection = res.nodeConnID_pathLastConnection;
+        let flag_dontRunIfUseMemberOnPath = res.flag_dontRunIfUseMemberOnPath;
+
+        console.log("totalWeight = ", totalWeight);
+        console.log("N_weight = ", N_weight);
+
+        // asfd;
+
+        if (flag_dontRunIfUseMemberOnPath == true) continue;
+
+        totalWeight_avg = totalWeight; // calculate the average of the weights
+        if (N_weight > 0) totalWeight_avg = totalWeight / N_weight;
+
+        member_oneHopeMatch.push(
+          names_oneHopeMatch[i]._fields[0].end.properties
+        );
+
+        const nodeID = names_oneHopeMatch[i]._fields[0].end.properties._id; // find what is the ID of the member that connects throw this path
+
+        let hop = N_weight;
+
+        if (matchRelativePosition[nodeID]) {
+          // make all the equations for this specific path
+          let WH_now = matchRelativePosition[nodeID].WH;
+          let N_now = matchRelativePosition[nodeID].N;
+
+          let conn_node_wh_obj = matchRelativePosition[nodeID].conn_node_wh_obj;
+
+          WH_new = (totalWeight_avg ** (hop))*distancePenalty[hop-1];
+
+          if (conn_node_wh_obj[nodeConnID_pathLastConnection]) {
+            conn_node_wh_obj[nodeConnID_pathLastConnection].wh_sum += WH_new;
+            conn_node_wh_obj[nodeConnID_pathLastConnection].numPath += 1;
+          } else {
+            conn_node_wh_obj[nodeConnID_pathLastConnection] = {
+              wh_sum: WH_new,
+              numPath: 1,
+            };
+          }
+
+          matchRelativePosition[nodeID] = {
+            // it saves the new values of the weight and the number of paths
+            WH: WH_now + WH_new,
+            N: N_now + 1,
+            conn_node_wh_obj,
+          };
+        } else {
+          // here it is to update, so if there is multiple times the same node will update the weights of the path base on the equaltions
+
+          WH_new = (totalWeight_avg ** (hop))*distancePenalty[hop-1];
+
+          matchRelativePosition[nodeID] = {
+            // here is the part that updates it
+            WH: WH_new,
+            N: 1,
             conn_node_wh_obj: {
               [nodeConnID_pathLastConnection]: {
                 wh_sum: WH_new,
@@ -1341,8 +1481,6 @@ async function findMatch_translateArray_path(
           console.log("Don't match = ");
         }
 
-        wh = totalWeight ** hop;
-        // console.log("totalWeight ** hop = ", totalWeight, hop, wh.toFixed(2));
 
         if (matchRelativePosition[nodeID]) {
           let WH_now = matchRelativePosition[nodeID].WH;
@@ -1462,4 +1600,69 @@ async function findMatch_translateArray_path(
   session.close();
 
   return member_oneHopeMatch;
+}
+
+
+
+
+async function weightPath(
+  names_oneHopeMatch
+) {
+  let totalWeight = 0;
+  let N_weight = 0;
+  let mul_weight = 1;
+  nodeConnID_pathLastConnection = ""; // the nodeID for the connected node
+  pathLength = names_oneHopeMatch._fields[0].segments.length;
+
+  let flag_dontRunIfUseMemberOnPath = false;
+  names_oneHopeMatch._fields[0].segments.forEach((s, idx) => {
+    // go over the path that made the connection between the node and the user and calculate the weight
+
+    if (s.relationship.properties.weight) {
+      // if they have weight then it adds it to the weight of the path
+
+      let weightN
+      if (s.relationship.properties.weight.low == undefined){
+        weightN = s.relationship.properties.weight
+      } else {
+        weightN = 0.8
+      }
+
+      if (s.relationship.type == "connection") {
+        if (weightSkills == true) {
+          mul_weight *= weightN;
+          totalWeight += weightN;
+          N_weight += 1;
+        }
+      } else {
+        mul_weight *= weightN;
+        totalWeight += weightN;
+        N_weight += 1;
+      }
+    } else {
+      // it doesn't have weight, so 1
+      totalWeight += 1;
+      N_weight += 1;
+    }
+    if (idx === pathLength - 1) {
+      nodeConnID_pathLastConnection = s.start.properties._id;
+    } else {
+      // SOS 🆘 -> Take out all the paths that has in the middle nodes that are not on the knowledge graph and they are Members,Projects, etc.
+      if (
+        s.end.labels[0] == "Member" ||
+        s.end.labels[0] == "Project" ||
+        s.end.labels[0] == "Role"
+      ) {
+        flag_dontRunIfUseMemberOnPath = true;
+      }
+    }
+  });
+
+  return {
+    totalWeight,
+    N_weight,
+    nodeConnID_pathLastConnection,
+    flag_dontRunIfUseMemberOnPath,
+  }
+
 }

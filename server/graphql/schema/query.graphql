@@ -25,10 +25,12 @@ module.exports = `
             matchMembersToProjectRole(fields:matchMembersToProjectRoleInput): [matchMembersToProjectRoleOutput]
             matchPrepareSkillToMembers(fields:matchPrepareSkillToMembersInput): Skills
             matchPrepareNode(fields:matchPrepareNodeInput): Node
+            matchPrepareNode_AI4(fields:matchPrepareNode_AI4Input): Node
             matchPrepareNode_old(fields:matchPrepareNodeInput): Node
             matchPrepareSkillToProjectRoles(fields:matchPrepareSkillToProjectRolesInput): Skills
             matchSkillsToMembers(fields:matchSkillsToMembersInput): [matchMembersToSkillOutput]
             matchNodesToMembers(fields:matchNodesToMembersInput): [matchMembersToSkillOutput]
+            matchNodesToMembers_AI4(fields:matchNodesToMembers_AI4Input): [matchMembersToSkillOutput]
             setAllMatch_v2(val: Boolean,node: String): Boolean
             matchNodesToMembers_old(fields:matchNodesToMembersInput): [matchMembersToSkillOutput]
             matchSkillsToProjects(fields:matchSkillsToProjectsInput): [matchSkillsToProjectsOutput]
