@@ -106,7 +106,7 @@ async function main() {
   app.use(cors());
   app.use("/auth", authRoutes());
 
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase() === "production") {
     app.use((req, res, next) => {
       if (req.header("x-forwarded-proto") !== "https")
         res.redirect(`https://${req.header("host")}${req.url}`);
@@ -126,16 +126,20 @@ async function main() {
 
   //cron job running every five hours
   cron.schedule("0 */5 * * *", async function () {
-    console.log("start running the cron");
-    await cronFunctionToUpdateAvatar();
-    console.log("running a task every five hours");
+    if (process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase() === "production") {
+      console.log("start running the cron");
+      await cronFunctionToUpdateAvatar();
+      console.log("running a task every five hours");
+    }
   });
 
   //running every 2 days at 1am
   cron.schedule("0 1 * * */2", async function () {
-    console.log("start running the update icon cron");
-    await cronJobToUpdateServerIcon();
-    console.log("ended running the task every 2 days");
+    if (process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase() === "production") {
+      console.log("start running the update icon cron");
+      await cronJobToUpdateServerIcon();
+      console.log("ended running the task every 2 days");
+    }
   });
 }
 
