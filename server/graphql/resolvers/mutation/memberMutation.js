@@ -5,6 +5,8 @@ const { Projects } = require("../../../models/projectsModel");
 const { RoleTemplate } = require("../../../models/roleTemplateModal");
 const { EdenMetrics } = require("../../../models/edenMetrics");
 
+const {arrayToKeyObject,getRandomIDs,fetchRandomAvatar,useGPTchat,generateRandomID,addNewFakeUser,addNodesToFakeMember} = require("../utils/helperFunc");
+
 const { ApolloError } = require("apollo-server-express");
 const { driver } = require("../../../../server/neo4j_config");
 const {
@@ -950,13 +952,69 @@ module.exports = {
       }
     }
   ),
-  deleteMember: combineResolvers(
-    IsAuthenticated,
-    async (parent, args, { user }, info) => {
+  // deleteMember: combineResolvers(
+  //   IsAuthenticated,
+  //   async (parent, args, { user }, info) => {
+  //     const { memberID } = args.fields;
+
+  //     if (!user && user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS)
+  //       throw new ApolloError("Not Authorized");
+
+  //     console.log("Mutation > deleteMember > args.fields = ", args.fields);
+
+  //     if (!memberID) throw new ApolloError("memberID is required");
+
+  //     try {
+  //       let memberData = await Members.findOne({ _id: memberID });
+
+  //       if (!memberData) throw new ApolloError("memberID not found");
+
+  //       // console.log("memberData = " , memberData)
+
+  //       // get all nodes from memberData.nodes
+  //       let nodesData = await Node.find({
+  //         _id: memberData.nodes.map(function (item) {
+  //           return item._id.toString();
+  //         }),
+  //       });
+
+  //       // console.log("nodesData = " , nodesData)
+
+  //       // console.log("change = " , change)
+
+  //       // console.log("change = " , change)
+
+  //       // add only the new ones as relationship on Neo4j
+  //       for (let i = 0; i < nodesData.length; i++) {
+  //         let nodeNow = nodesData[i];
+  //         deleteConnectionANYBetweenNodes_neo4j({
+  //           nodeID_1: memberData._id,
+  //           nodeID_2: nodeNow._id,
+  //         });
+
+  //         changeMatchByServer(nodeNow, memberData);
+  //       }
+
+  //       deleteNode_neo4j({
+  //         nodeID: memberData._id,
+  //       });
+
+  //       // delete memberData from mongoDB database
+  //       memberData2 = await Members.findOneAndDelete({ _id: memberID });
+
+  //       return memberData2;
+  //     } catch (err) {
+  //       throw new ApolloError(
+  //         err.message,
+  //         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+  //         { component: "tmemberQuery > findMember" }
+  //       );
+  //     }
+  //   }
+  // ),
+  deleteMember: async (parent, args, { user }, info) => {
       const { memberID } = args.fields;
 
-      if (!user && user.accessLevel > ACCESS_LEVELS.OPERATOR_ACCESS)
-        throw new ApolloError("Not Authorized");
 
       console.log("Mutation > deleteMember > args.fields = ", args.fields);
 
@@ -1008,8 +1066,7 @@ module.exports = {
           { component: "tmemberQuery > findMember" }
         );
       }
-    }
-  ),
+    },
 
   addPreferencesToMember: combineResolvers(
     IsAuthenticated,
@@ -1558,6 +1615,182 @@ module.exports = {
         err.message,
         err.extensions?.code || "addEndorsement",
         { component: "memberMutation > addEndorsement" }
+      );
+    }
+  },
+  createFakeUser: async (parent, args, context, info) => {
+    const { expertise,interests } = args.fields;
+    console.log("Mutation > createFakeUser > args.fields = ", args.fields);
+    try {
+      
+      let userData = {}
+
+      // ----------- array of IDs and object of nodes -----------
+      res = await arrayToKeyObject(expertise,"expertise")
+      res2 = await arrayToKeyObject(interests,"interest")
+
+      let nodeArr = [...res.nodeArr, ...res2.nodeArr]
+      let nodeObj = {...res.nodeObj, ...res2.nodeObj}
+      
+      console.log("nodeArr = " , nodeArr) // TODO: remove
+      console.log("nodeObj = " , nodeObj) // TODO: remove
+
+      const expertiseInterest = [...nodeArr]
+      // ----------- array of IDs and object of nodes -----------
+
+      // --------- Find Nodes ------------
+      let nodesData = await Node.find({ _id: nodeArr }).select("-match_v2_update -match_v2 -relatedNodes -aboveNodes -state");
+      console.log("nodesData = " , nodesData) // TODO: remove
+      // --------- Find Nodes ------------
+
+      // --------- Find SubNodes ---------
+      nodeArr = []
+      for (const node of nodesData) {
+        const subNodes = node.subNodes
+        numberNodes = nodeObj[node._id].numberNodes
+
+        
+
+        // get numberNodes random nodes from subNodes
+        const randomSubNodes = await getRandomIDs(subNodes, numberNodes)
+        console.log("randomSubNodes = " , randomSubNodes) // TODO: remove
+        nodeArr = [...nodeArr, ...randomSubNodes]
+
+        nodeObj[node._id] = {
+          ...nodeObj[node._id], 
+          ...node._doc,
+          nodesAddUser: randomSubNodes
+        }
+      }
+      // --------- Find SubNodes ---------
+
+      // --------- Find Nodes ------------
+      nodesData = await Node.find({ _id: nodeArr }).select("-match_v2_update -match_v2 -subNodes -relatedNodes -aboveNodes -state");
+      
+      for (const node of nodesData) {
+        nodeObj[node._id] = {...nodeObj[node._id], ...node._doc}
+      }
+
+      console.log("nodeObj = " , nodeObj) // TODO: removenodeObj
+      // --------- Find Nodes ------------
+
+      
+
+      // --------- Get Avatar for user --------
+      const avatarUser = await fetchRandomAvatar()
+      console.log("avatarUser = " , avatarUser) // TODO: remove
+      userData.discordAvatar = avatarUser
+      // --------- Get Avatar for user --------
+
+      
+
+      // --------- make random ID --------
+      const randomID = await generateRandomID(18)
+      console.log("randomID = " , randomID) // TODO: remove
+      userData._id = randomID
+      // --------- make random ID --------
+
+
+      // --------- Server IDs -----------
+      serverID =  [
+        "883478451850473483",
+        "996558082098339953",
+        "988301790795685930",
+        "695578393957236816",
+        "1005112113754284112"
+      ]
+      userData.serverID = serverID
+      // --------- Server IDs -----------
+
+      // -------- Expertise and Interst Prompt ------
+      let expertiseInterestPrompt = "This is my skills and interests: \n"
+      for (const node of expertiseInterest) {
+        const nodeCategoryInfo = nodeObj[node]
+        for (const nodeInfo of nodeCategoryInfo.nodesAddUser) {
+          if (nodeCategoryInfo.type === "interest"){
+            expertiseInterestPrompt += " - Interest: " + nodeObj[node].name + " - " + nodeObj[nodeInfo].name + "\n"
+          } else {
+            expertiseInterestPrompt += " - Expertise: " + nodeObj[node].name + " - " + nodeObj[nodeInfo].name + "\n"
+          }
+        }
+      }
+      console.log("expertiseInterestPrompt = " , expertiseInterestPrompt) // TODO: remove
+      // -------- Expertise and Interst Prompt ------
+
+
+
+      // --------- find name user ------
+      let promptT = expertiseInterestPrompt + "\n" + "Give me a bio for my profile: \n"
+
+      const bio = await useGPTchat(promptT)
+      console.log("bio = " , bio) // TODO: remove
+      userData.bio = bio
+      // --------- find name user ------
+
+
+      // --------- find name user ------
+      const name = await useGPTchat("Give me a cool user name for my platform")
+      console.log("name = " , name) // TODO: remove
+      userData.discordName = name.trim().replace("\n", "").replace("\n", "")
+      // --------- find name user ------
+
+      
+
+      // --------- Create Job discriptions -------
+      jobs = []
+      for (let i=0;i<3;i++){
+        let promptT = expertiseInterestPrompt + "\n" + "Give me 1 title, and description of a job that I did in my past, be creative with the title of the position, organise it as Title: and Description: \n"
+
+        const jobData = await useGPTchat(promptT)
+        console.log("jobData = " , jobData) // TODO: remove
+
+        
+        const lines = jobData.split("\n");
+        let title, description;
+
+        for (const line of lines) {
+          const [key, value] = line.split(": ");
+
+          if (key === "Title") {
+            title = value;
+          } else if (key === "Description") {
+            description = value;
+          }
+        }
+
+        // console.log(title); // "Website Designer"
+        // console.log(description);
+        jobs.push({
+          title,
+          description
+        })
+      }
+      userData.previousProjects = jobs
+      // --------- Create Job discriptions -------
+
+      
+
+
+      //  --------- Create User ---------
+      res = await addNewFakeUser(userData)
+      //  --------- Create User ---------
+
+      // --------- add Nodes to Member --------
+      const fields = {
+        memberID: userData._id,
+        nodesID: nodeArr,
+      }
+      userWithNodes = await addNodesToFakeMember(fields)
+      // --------- add Nodes to Member --------
+
+      console.log("change = afdasfdas22efe22f2" )
+
+      return (userWithNodes)
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "createFakeUser",
+        { component: "memberMutation > createFakeUser" }
       );
     }
   },

@@ -269,11 +269,17 @@ module.exports = `
         serverID: [String]
     }
 
-     input matchPrepareNodeInput {
+    input matchPrepareNodeInput {
         nodeID: ID
         serverID: [String]
         find: findEnum
         weightSkills: Boolean
+    }
+    input matchPrepareNode_AI4Input {
+        nodeID: ID
+        serverID: [String]
+        find: findEnum
+        distancePenalty: [Float]
     }
 
     enum findEnum {
@@ -304,6 +310,19 @@ module.exports = `
         limit: Int
         preference: [preferencesEnum]
     }
+
+    input weightModulesInput {
+        type: String
+        weight: Int
+    }
+
+    input matchNodesToMembers_AI4Input {
+        nodesID: [ID]
+        weightModules: [weightModulesInput]
+        page: Int
+        limit: Int
+    }
+
 
 
     input matchSkillsToProjectsInput {
@@ -509,5 +528,13 @@ module.exports = `
         endorserID: ID
         endorseeID: ID
         endorsementMessage: String
+    }
+    input nodeCategoryInput {
+        _id: ID
+        numberNodes: Int
+    }
+    input createFakeUserInput {
+        expertise: [nodeCategoryInput]
+        interests: [nodeCategoryInput]
     }
 `
