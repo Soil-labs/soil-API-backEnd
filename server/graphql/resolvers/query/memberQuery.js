@@ -1443,7 +1443,7 @@ module.exports = {
       limit = 30;
     }
 
-    // try {
+    try {
 
       memberObj = {}
 
@@ -1459,13 +1459,13 @@ module.exports = {
 
     return memberArray
       // return memberArr.slice(page * limit, (page + 1) * limit);
-    // } catch (err) {
-    //   throw new ApolloError(
-    //     err.message,
-    //     err.extensions?.code || "matchNodesToMembers_AI4",
-    //     { component: "tmemberQuery > matchNodesToMembers_AI4" }
-    //   );
-    // }
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "matchNodesToMembers_AI4",
+        { component: "tmemberQuery > matchNodesToMembers_AI4" }
+      );
+    }
   },
   matchNodesToMembers: async (parent, args, context, info) => {
     const { nodesID, hoursPerWeek, budgetAmount, serverID, preference } =

@@ -172,6 +172,7 @@ module.exports = `
     type nodesPercentageType {
         node: Node
         totalPercentage: Float
+        conn_nodeIDs: [ID]
     }
     
 
