@@ -13,11 +13,15 @@ const nodes_aiModule = async (nodesID,weightModules,memberObj) => {
 
     if (!nodeData) throw new ApolloError("Node Don't exist");
 
-    console.log("nodeData = " , nodeData)
+    // console.log("nodeData = " , nodeData)
 
     // const nodeData_subExpertise = nodeData.filter(obj => obj.node == 'sub_expertise');
 
     memberObj = await nodesFindMembers(nodeData,memberObj)
+
+    // console.log("memberObj = " , memberObj)
+    // showObject(memberObj,"memberObj")
+    // asf1
 
 
     memberObj = await membersScoreMap(memberObj,weightModulesObj)
@@ -81,7 +85,7 @@ const sortArray_aiModule = async (memberObj) => {
     for (const [memberID, member] of Object.entries(memberObj)) {
         let score = member.total.score;
 
-        console.log("member = " , member)
+        // console.log("member = " , member)
 
         // -------------- Add Nodes --------------
         nodesPercentage = []
@@ -241,11 +245,20 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
         // console.log("memberObj[memberID] = " , memberObj[memberID]) // TODO: delete
         // console.log("memberObj[memberID].nodes[nodeID] = " , memberObj[memberID].nodes[nodeID]) // TODO: delete
 
-        memberObj[memberID].nodes[nodeID].score = scoreUserMap;
+        if (Number.isNaN(scoreUserMap)) {
+            memberObj[memberID].nodes[nodeID].score = 0.6
+        } else {
+            memberObj[memberID].nodes[nodeID].score = scoreUserMap;
+        }
+
+        // console.log("change = " , scoreUserMap)
+
+        // console.log("scoreUserMap = -------------" , scoreUserMap,scoreUser, min_S, max_S, newMin_nodeMember, newMax_nodeMember)
 
         
     }
     // ---------- Map Score [0,1]-----------
+    // sfaf6
 
     return memberObj
 
