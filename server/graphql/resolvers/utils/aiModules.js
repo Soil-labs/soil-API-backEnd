@@ -90,9 +90,11 @@ const sortArray_aiModule = async (memberObj) => {
         // -------------- Add Nodes --------------
         nodesPercentage = []
         for (const [nodeID, node] of Object.entries(member.nodes)) {
+            console.log("node = " , node)
             nodesPercentage.push({
                 nodeID: nodeID,
-                totalPercentage: parseInt(node.score*100)
+                totalPercentage: parseInt(node.score*100),
+                conn_nodeIDs: node.conn_nodeIDs,
             })
         }
 
@@ -206,29 +208,32 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
         let memberID = match_v2[j].nodeResID;
         let scoreUser = match_v2[j].wh_sum;
 
+        // ------------- Find all connected nodes -------------
+        let conn_node = match_v2[j].conn_node_wh;
+        let conn_nodeIDs = conn_node.map((item) => item.nodeConnID);
+
+        // console.log("conn_nodeIDs = " , conn_nodeIDs)
+        // asdf2
+        // ------------- Find all connected nodes -------------
+
         if (scoreUser > max_S) max_S = scoreUser;
         if (scoreUser < min_S) min_S = scoreUser;
 
         if (!memberObj[memberID]) {
-            // memberObj[memberID] = {
-            //     nodes: {
-            //         `${nodeID}`: {
-            //             scoreOriginal: scoreUser,
-            //             type: node.node
-            //         }
-            //     }
-            // };
+            
             memberObj[memberID] = {
                 nodes: {}
             }
             memberObj[memberID].nodes[nodeID] = {
                 scoreOriginal: scoreUser,
-                type: node.node
+                type: node.node,
+                conn_nodeIDs: conn_nodeIDs
             }
         } else {
             memberObj[memberID].nodes[nodeID] = {
                 scoreOriginal: scoreUser,
-                type: node.node
+                type: node.node,
+                conn_nodeIDs: conn_nodeIDs
             };
         }
     }

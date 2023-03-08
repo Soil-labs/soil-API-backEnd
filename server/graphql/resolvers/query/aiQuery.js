@@ -411,7 +411,7 @@ module.exports = {
           }
         }
         
-        if (element.value >= 4 && element.originalValue >= 0.72){
+        if (element.value >= 5 && element.originalValue >= 0.74){
           // if (element.value >= 6 && element.originalValue >= 0.76){
           // keywords_str += element.keyword + " | "
           // keywords_str += element.keyword + ": "  +element.context.replace("\n","").replace("\n","")+  " | \n\n"
