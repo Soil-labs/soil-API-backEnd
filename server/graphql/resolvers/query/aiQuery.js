@@ -329,7 +329,7 @@ module.exports = {
         label: "KnowledgeGraph",
       }
 
-      bestKeywordsFromEmbed = await findBestEmbedings(message,filter ,topK = 10)
+      bestKeywordsFromEmbed = await findBestEmbedings(message,filter ,topK = 20)
 
       console.log("bestKeywordsFromEmbed = " , bestKeywordsFromEmbed)
       // -------------- Find best keywrods from embeding -------------
@@ -363,7 +363,7 @@ module.exports = {
       console.log("minValue = " , minValue)
       console.log("maxValue = " , maxValue)
 
-      bestKeywordsFromEmbed_map = remapValues(bestKeywordsFromEmbed_cl, minValue, maxValue, 3, 10)
+      bestKeywordsFromEmbed_map = remapValues(bestKeywordsFromEmbed_cl, minValue, maxValue, 2, 10)
       console.log("bestKeywordsFromEmbed_map = " , bestKeywordsFromEmbed_map)
       // asfd1
       // -------------- map values of keywords -------------
@@ -383,7 +383,7 @@ module.exports = {
           }
         }
         
-        if (element.value >= 6 && element.originalValue >= 0.74){
+        if (element.value >= 4 && element.originalValue >= 0.72){
           // if (element.value >= 6 && element.originalValue >= 0.76){
           // keywords_str += element.keyword + " | "
           // keywords_str += element.keyword + ": "  +element.context.replace("\n","").replace("\n","")+  " | \n\n"
@@ -409,9 +409,12 @@ module.exports = {
         // prompt_general += "You have as input a paragraph, and keywords with the score of how related they are, from 0 to 10 together with their explanation \n\n"
         prompt_general += "You have as input a paragraph, and keywords with the score of how related they are, from 0 to 10 \n\n"
 
+        prompt_general += "You try to find the skills and interest from the paragraph \n\n"
+
+
         // prompt_general += "Choose the keywords that best describe the paragraph! you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
         // prompt_general += "Choose the smallest number of keywords that describe accurately the paragraph! you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
-        prompt_general += "Choose only keywords that exist on the paragraph! choose the smallest number of keywords to describe paragraph! you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
+        prompt_general += "Choose only keywords that exist on the paragraph! choose the smallest number of keywords to describe paragraph!  you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
         // prompt_general += "Try to choose the smallest number of keywords that best describe the paragraph! you can choose from 0 to 5 keywords \n\n" + "keywords: "
         // prompt_general += "Choose keywords that best describe the paragraph! Don't put any unesesary keywords! you can choose from 0 to 5 keywords \n\n" + "keywords: "
 
@@ -485,6 +488,9 @@ module.exports = {
       console.log("keywordValObj = " , keywordValObj)
 
       console.log("keywordsValues = " , keywordsValues)
+      
+      // sort an keywordsValues based on object value confidence 
+      keywordsValues.sort((a, b) => (a.confidence > b.confidence) ? -1 : 1)
 
       return {
         keywords: keywordsValues,
