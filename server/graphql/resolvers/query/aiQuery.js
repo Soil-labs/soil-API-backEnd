@@ -124,6 +124,34 @@ async function useGPTchat(userNewMessage,discussion,systemPrompt,userQuestion = 
   return response.data.choices[0].message.content;
 }
 
+async function useGPTchatSimple(prompt) {
+  
+  discussion = [{
+    "role": "user",
+    "content": prompt
+  }]
+
+
+  
+  let OPENAI_API_KEY = chooseAPIkey();
+  response = await axios.post(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      messages: discussion,
+      model: "gpt-3.5-turbo",
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+    }
+  );
+
+  return response.data.choices[0].message.content;
+}
+
+
 async function findBestEmbedings(message,filter,topK = 3) {
 
   //  filter: {
@@ -409,7 +437,7 @@ module.exports = {
         // prompt_general += "You have as input a paragraph, and keywords with the score of how related they are, from 0 to 10 together with their explanation \n\n"
         prompt_general += "You have as input a paragraph, and keywords with the score of how related they are, from 0 to 10 \n\n"
 
-        prompt_general += "You try to find the skills and interest from the paragraph \n\n"
+        // prompt_general += "You try to find the skills and interest from the paragraph \n\n"
 
 
         // prompt_general += "Choose the keywords that best describe the paragraph! you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
@@ -422,7 +450,8 @@ module.exports = {
         // asfd1
 
         // res_gpt = await useGPT(prompt_general,0.7,"text-curie-001")
-        res_gpt = await useGPT(prompt_general)
+        // res_gpt = await useGPT(prompt_general)
+        res_gpt = await useGPTchatSimple(prompt_general)
 
         console.log("res_gpt = " , res_gpt)
 
