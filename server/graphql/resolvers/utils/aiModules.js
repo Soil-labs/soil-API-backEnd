@@ -161,6 +161,8 @@ const membersScoreMap = async (memberObj,weightModulesObj) => {
         let score = member.nodesTotal.scoreOriginal;
         let scoreMap = mapValue(score, min_S, max_S, newMin_members, newMax_members);
 
+        console.log("scoreMap = " , scoreMap, min_S, max_S, newMin_members, newMax_members)
+
         memberObj[memberID].nodesTotal.score = scoreMap;
     }
     // ----------- Map Scores every Member -----------
@@ -266,9 +268,13 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
 
 function mapValue(value, oldMin, oldMax, newMin, newMax) {
     var oldRange = oldMax - oldMin;
-    var newRange = newMax - newMin;
-    var newValue = ((value - oldMin) * newRange / oldRange) + newMin;
-    return newValue;
+    if (oldRange == 0){
+        return newMin;
+    } else {
+        var newRange = newMax - newMin;
+        var newValue = ((value - oldMin) * newRange / oldRange) + newMin;
+        return newValue;
+    }
 }
 
 async function showArray(arr,name="arr") {
