@@ -6,8 +6,14 @@ const math = require("mathjs");
 const numeric = require("numeric");
 const fs = require("fs");
 
+
 const { combineResolvers } = require("graphql-resolvers");
 const { IsAuthenticated } = require("../../../utils/authorization");
+
+const { PineconeClient } = require("@pinecone-database/pinecone");
+const fetch = require("node-fetch")
+
+globalThis.fetch = fetch
 
 const configuration = new Configuration({
   apiKey: chooseAPIkey(),
@@ -123,6 +129,58 @@ module.exports = {
       );
     }
   },
+  storeLongTermMemory: async (parent, args, context, info) => {
+    const { messages,userID} = args.fields;
+    console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
+    try {
+
+      // ------------ create string paragraph for prompot --------
+      const paragraph = messages.reduce((accumulator, message) => {
+        if (message.name)
+          return accumulator + message.name + ": " + message.message + " \n ";
+        else
+          return accumulator + message.message + " \n ";
+      }, "");
+
+      // ------------ create string paragraph for prompot --------
+
+      // console.log("paragraph = " , paragraph)
+      // asdf
+
+      prompt = "Sumarise this conversation between user and recruiter in order to keep it as a long term memory: \n \n" + paragraph
+
+      summary = await useGPT(prompt,0.7)
+      // summary = "The conversation between the user and recruiter was about finding a Designer for the user's company. The desired skills for the designer were the ability to work well in a team, and proficiency in Figma and wireframe design. The user's company is working with a web3 NFT marketplace."
+
+
+      embed_summary = await createEmbedingsGPT(summary)
+
+
+
+
+      upsertDoc = await upsertEmbedingPineCone({
+        text: summary,
+        embedding: embed_summary[0],
+        _id: userID,
+        label: "long_term_memory",
+      })
+
+      console.log("upsertDoc = " , upsertDoc)
+
+
+
+
+      return {
+        summary: summary,
+        success: true,
+      }
+      
+    } catch (err) {
+      throw new ApolloError(err.message, err.extensions?.code || "storeLongTermMemory", {
+        component: "aiMutation > storeLongTermMemory",
+      });
+    }
+  },
   messageToGPT: combineResolvers(
     IsAuthenticated,
     async (parent, args, context, info) => {
@@ -178,6 +236,9 @@ module.exports = {
     let model = "text-davinci-003";
     const prompt =
       'I give you four things: a one-liner for a project + a description of that project  + the title of a role for that project + [categories of specialization for that role within that same project ]\n\nYour job is to take all those 4 things and create a wholistic context from it, focus on "the title of a role for that project" and "[categories of specialization for that role within that same project ]" and to give me the following:\n1. A full description of that role(always label this output with "Role Description:")\n2. Four Expectations for that role (always label this output with "Expectations for Role:") + Return this list  as a Javascript Arra\n3. Four Benefits of this role (always label this output with "Benefits:") + Return this list  as a Javascript Array  \n\nHere we go: \n\n';
+
+    console.log("hey 2")
+    
     const input =
       prompt +
       " " +
@@ -188,6 +249,10 @@ module.exports = {
       titleRole +
       " + " +
       expertiseRole;
+
+
+    console.log("hey 2")
+    
     const response = await openai.createCompletion({
       model,
       prompt: input,
@@ -197,6 +262,8 @@ module.exports = {
       frequency_penalty: 0,
       presence_penalty: 0,
     });
+
+    console.log("hey 3")
 
     // console.log(
     //   "prompt + oneLinerProject + descriptionProject + titleRole + expertiseRole",
@@ -213,6 +280,9 @@ module.exports = {
 
     let generatedText = response.data.choices[0].text;
     let result = generatedText.replace(/\n\n/g, "");
+
+    console.log("hey 4")
+
     const descriptionRoleHandler = () => {
       const startIndex = result.indexOf("Role Description:");
       const endIndex = result.indexOf("Expectations for Role:");
@@ -222,24 +292,55 @@ module.exports = {
 
       return descriptionRole;
     };
+
+    console.log("hey 5")
+
     const expectationRoleHandler = () => {
+      console.log("hey 10")
       const startIndex = result.indexOf("Expectations for Role:");
+      console.log("hey 11")
       const endIndex = result.indexOf("Benefits:");
       const expectationRoleString = result
         .slice(startIndex + "Expectations for Role:".length, endIndex)
         .trim();
+      console.log("hey 12",result)
+      console.log("hey 12",expectationRoleString)
+      
 
       const expectationRole = JSON.parse(expectationRoleString);
+      console.log("hey 13",expectationRole)
+
       return expectationRole;
     };
+    console.log("hey 6")
+
+
     const benefitRoleHandler = () => {
       const startIndex = result.indexOf("Benefits:");
+
       const benefitRoleString = result
         .slice(startIndex + "Benefits:".length)
         .trim();
+
+      
       const benefitRole = JSON.parse(benefitRoleString);
       return benefitRole;
     };
+
+    console.log("hey 7")
+
+
+    descriptionRoleHandler()
+
+    console.log("hey 8")
+
+
+    expectationRoleHandler()
+
+    console.log("hey 9")
+
+
+    benefitRoleHandler()
 
     try {
       return {
@@ -599,7 +700,7 @@ function mapRange(input, inputMin, inputMax, outputMin, outputMax) {
   );
 }
 
-async function useGPT(prompt, temperature) {
+async function useGPT(prompt, temperature = 0.7) {
   // let model = "text-curie-001";
   let model = "text-davinci-003";
   const response = await openai.createCompletion({
@@ -615,14 +716,9 @@ async function useGPT(prompt, temperature) {
   // ----------- Clean up the Results ---------
   let generatedText = response.data.choices[0].text;
 
-  // console.log("generatedText = ", generatedText);
-  generatedText = generatedText.replace("\n", "");
-  // console.log("generatedText = ", generatedText);
-
-  arr = generatedText.split(", ");
   // ----------- Clean up the Results ---------
 
-  return arr;
+  return generatedText;
 }
 
 async function createEmbedingsGPT(words_n) {
@@ -632,7 +728,7 @@ async function createEmbedingsGPT(words_n) {
     "https://api.openai.com/v1/embeddings",
     {
       input: words_n,
-      model: "text-similarity-davinci-001",
+      model: "text-embedding-ada-002",
       // model: "text-embedding-ada-002",
     },
     {
@@ -678,6 +774,58 @@ async function cashData(name, array) {
     if (err) throw err;
     console.log("Saved!");
   });
+}
+
+// Generates a random 6-digit ID
+async function generateRandomID(numDigit = 8) {
+  // Define a string of possible characters to choose from
+  const possibleChars = "0123456789abcdefghijklmnopqrstuvwxyz";
+  // Initialize an empty string to hold the ID
+  let id = "";
+  
+  // Loop 6 times to generate each digit of the ID
+  for (let i = 0; i < numDigit; i++) {
+    // Generate a random index into the possibleChars string
+    const randomIndex = Math.floor(Math.random() * possibleChars.length);
+    // Get the character at the random index and add it to the ID
+    id += possibleChars.charAt(randomIndex);
+  }
+
+  // Return the generated ID
+  return id;
+}
+
+
+async function upsertEmbedingPineCone(data) {
+
+  const pinecone = new PineconeClient();
+  await pinecone.init({
+    environment: "us-east1-gcp",
+    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+  });
+
+
+  const index = await pinecone.Index("profile-eden-information");
+
+  id_message = await generateRandomID(8)
+
+  const upsertRequest = {
+    vectors: [
+      {
+        id: id_message,
+        values: data.embedding,
+        metadata: {
+          text: data.text,
+          _id: data._id,
+          label: data.label,
+        }
+      },
+    ],
+  };
+
+  const upsertResponse = await index.upsert({upsertRequest});
+
+  return upsertResponse
 }
 
 function chooseAPIkey() {

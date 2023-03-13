@@ -13,12 +13,22 @@ const {
   matchMembersToProjectRole_neo4j,
   matchPrepareSkillToMembers_neo4j,
   matchPrepareAnything_neo4j,
+  matchPrepareAnything_AI4_neo4j,
   matchPrepareAnything_neo4j_old,
   matchPrepareSkillToProjectRoles_neo4j,
 } = require("../../../neo4j/func_neo4j");
 
 const { ApolloError } = require("apollo-server-express");
 const { IsAuthenticated } = require("../../../utils/authorization");
+
+const {nodes_aiModule,totalScore_aiModule,showObject,sortArray_aiModule} = require("../utils/aiModules")
+
+function mapRange(input, inputMin, inputMax, outputMin, outputMax) {
+  return (
+    ((input - inputMin) * (outputMax - outputMin)) / (inputMax - inputMin) +
+    outputMin
+  );
+}
 
 module.exports = {
   findMember:
@@ -810,6 +820,7 @@ module.exports = {
 
         typeNeo = find;
         if (typeNeo == "ProjectRole") typeNeo = "Role";
+
         result_matchRelat = await matchPrepareAnything_neo4j({
           nodeID: nodeData._id,
           node: nodeData.node,
@@ -916,6 +927,131 @@ module.exports = {
         { component: "tmemberQuery > findMember" }
       );
     }
+  },
+  matchPrepareNode_AI4: async (parent, args, context, info) => {
+    const { nodeID, serverID, find, weightSkills,distancePenalty } = args.fields;
+    console.log(
+      "Query > matchPrepareNode_AI4 > args.fields = ",
+      args.fields
+    );
+
+    if (!nodeID) throw new ApolloError("node is required");
+
+    if (!find) throw new ApolloError("find Enum is required");
+
+    let queryServerID = [];
+    if (serverID) {
+    serverID.forEach((id) => {
+        queryServerID.push({ serverID: id });
+      });
+    }
+
+    // try {
+      let nodeData = await Node.findOne({ _id: nodeID }).select(
+        "-subNodes -relatedNodes -aboveNodes"
+      );
+
+      console.log("nodeData = " , nodeData)
+
+      if (!nodeData) throw new ApolloError("Node Don't exist");
+
+      let match_v2 = nodeData.match_v2;
+      console.log("match_v2 = " , match_v2)
+
+      matchRelativePosition_gl = {};
+      typeNeo = find;
+      if (typeNeo == "ProjectRole") typeNeo = "Role";
+
+      result_matchRelat = await matchPrepareAnything_AI4_neo4j({
+        nodeID: nodeData._id,
+        find: typeNeo,
+        weightSkills: weightSkills,
+        distancePenalty: distancePenalty,
+      });
+
+      // console.log("-----------SERVERID --------- ", server._id);
+      // console.log("result_matchRelat = ", result_matchRelat);
+
+      // sadf;
+
+      // check if there is something new that we need to include
+      for (const [key, value] of Object.entries(result_matchRelat)) {
+        console.log("key = " , key)
+        console.log("value = " , value)
+        // asdf2
+        if (matchRelativePosition_gl[key] === undefined) {
+          matchRelativePosition_gl[key] = {
+            ...value,
+          };
+        }
+      }
+
+      // prepare the array to save in the database
+      match_v2 = [];
+      for (const [key, value] of Object.entries(matchRelativePosition_gl)) {
+        // ---------------- prepare the conn_node_wh_obj to array ----------------
+        conn_node_wh_arr = [];
+        for (const [key_c, value_c] of Object.entries(value.conn_node_wh_obj)) {
+          conn_node_wh_arr.push({
+            nodeConnID: key_c,
+            wh_sum: value_c.wh_sum,
+            numPath: value_c.numPath,
+          });
+        }
+        // ---------------- prepare the conn_node_wh_obj to array ----------------
+
+        match_v2.push({
+          nodeResID: key,
+          wh_sum: value.WH,
+          numPath: value.N,
+          type: find,
+          conn_node_wh: conn_node_wh_arr,
+        });
+      }
+
+      //filter out the ones that have type = "Member"
+      let match_v2_old = nodeData.match_v2.filter((item) => item.type != find);
+
+      // update with the new "Member"
+      match_v2 = [...match_v2_old, ...match_v2];
+
+      match_v2_update = {};
+      // save what was updated
+      if (find == "Member") {
+        match_v2_update = {
+          member: false,
+          projectRole: nodeData.match_v2_update.projectRole,
+        };
+      } else if (find == "ProjectRole") {
+        match_v2_update = {
+          member: nodeData.match_v2_update.member,
+          projectRole: false,
+        };
+      }
+
+
+      nodeDataNew = await Node.findOneAndUpdate(
+        {
+          _id: nodeID,
+        },
+        {
+          $set: {
+            match_v2_update: match_v2_update,
+            match_v2,
+          },
+        },
+        { new: true }
+      );
+
+
+      return nodeDataNew;
+    // } catch (err) {
+    //   throw new ApolloError(
+    //     err.message,
+    //     err.extensions?.code || "matchPrepareNode_AI4",
+    //     { component: "tmemberQuery > matchPrepareNode_AI4" }
+    //   );
+    // }
   },
 
   matchPrepareSkillToProjectRoles: async (parent, args, context, info) => {
@@ -1291,6 +1427,45 @@ module.exports = {
     );
 
     return val;
+  },
+  matchNodesToMembers_AI4: async (parent, args, context, info) => {
+    const { nodesID, weightModules } =
+      args.fields;
+    let { page, limit } = args.fields;
+    console.log("Query > matchNodesToMembers_AI4 > args.fields = ", args.fields);
+
+    if (!nodesID) throw new ApolloError("nodesID is required");
+
+
+    if (page != null && limit != null) {
+    } else {
+      page = 0;
+      limit = 30;
+    }
+
+    try {
+
+      memberObj = {}
+
+      memberObj = await nodes_aiModule(nodesID,weightModules,memberObj)
+
+      memberObj = await totalScore_aiModule(memberObj,weightModules)
+
+      memberArray = await sortArray_aiModule(memberObj)
+
+      // await showObject(memberObj,"memberObj")
+
+    
+
+    return memberArray
+      // return memberArr.slice(page * limit, (page + 1) * limit);
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "matchNodesToMembers_AI4",
+        { component: "tmemberQuery > matchNodesToMembers_AI4" }
+      );
+    }
   },
   matchNodesToMembers: async (parent, args, context, info) => {
     const { nodesID, hoursPerWeek, budgetAmount, serverID, preference } =
@@ -2255,6 +2430,8 @@ module.exports = {
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
 
+      console.log("nodeData = ", nodeData);
+
       for (let i = 0; i < nodeData.length; i++) {
         // loop on the nodes
         let match_v2 = nodeData[i].match_v2;
@@ -2318,7 +2495,12 @@ module.exports = {
 
       let mapped_value;
       for (const key in projectRoleObj) {
-        let projectData = await Projects.findOne({ "role._id": key });
+        let projectData = await Projects.findOne({ "role._id": key }).select(
+          "_id title serverID role champion"
+        );
+
+        console.log("projectObj = ", projectObj);
+        console.log("projectRoleObj = ", projectRoleObj);
 
         if (projectData) {
           if (original_max_m - original_min_m > 0) {
@@ -2328,7 +2510,7 @@ module.exports = {
                 (original_max_m - original_min_m) +
               new_max_m;
           } else {
-            mapped_value = projectObj[key].pers;
+            mapped_value = projectRoleObj[key].pers;
           }
 
           if (projectObj[projectData._id]) {
@@ -2362,6 +2544,7 @@ module.exports = {
           }
         }
       }
+      console.log("chattanooga = ");
 
       const projectArr = [];
       for (const key in projectObj) {

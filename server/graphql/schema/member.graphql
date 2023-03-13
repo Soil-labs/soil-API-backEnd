@@ -32,7 +32,7 @@ module.exports = `
 
         registeredAt: String,
 
-        previusProjects: [previusProjectsType],
+        previousProjects: [previousProjectsType],
 
         links: [linkType],
 
@@ -128,7 +128,7 @@ module.exports = `
         Reformer: Int,
     }
 
-    type previusProjectsType {
+    type previousProjectsType {
         title: String,
         description: String,
         positionName: String,
@@ -163,6 +163,7 @@ module.exports = `
     type matchMembersToSkillOutput {
         matchPercentage: MatchPercentage,
         member: Members,
+        extraMatch: Boolean, # if you extraMatch = true, means that it is not the real main match but it is extra becuae there wasn't enough matches!  
         nodesPercentage: [nodesPercentageType]
         skillsPercentage: [SkillsPercentage]
         
@@ -171,12 +172,14 @@ module.exports = `
     type nodesPercentageType {
         node: Node
         totalPercentage: Float
+        conn_nodeIDs: [ID]
     }
     
 
     type MatchPercentage {
         totalPercentage: Float,
         realTotalPercentage: Float,
+        percentageWithPenalty: Float,
         skillTotalPercentage: Float,
         hoursPercentage: Float,
         budgetPercentage: Float,
@@ -267,11 +270,17 @@ module.exports = `
         serverID: [String]
     }
 
-     input matchPrepareNodeInput {
+    input matchPrepareNodeInput {
         nodeID: ID
         serverID: [String]
         find: findEnum
         weightSkills: Boolean
+    }
+    input matchPrepareNode_AI4Input {
+        nodeID: ID
+        serverID: [String]
+        find: findEnum
+        distancePenalty: [Float]
     }
 
     enum findEnum {
@@ -303,6 +312,19 @@ module.exports = `
         preference: [preferencesEnum]
     }
 
+    input weightModulesInput {
+        type: String
+        weight: Int
+    }
+
+    input matchNodesToMembers_AI4Input {
+        nodesID: [ID]
+        weightModules: [weightModulesInput]
+        page: Int
+        limit: Int
+    }
+
+
 
     input matchSkillsToProjectsInput {
         skillsID: [ID]
@@ -331,7 +353,7 @@ module.exports = `
 
         serverID: String,
 
-        previusProjects: [previusProjectsInput],
+        previousProjects: [previousProjectsInput],
 
     }
 
@@ -355,7 +377,7 @@ module.exports = `
 
         hoursPerWeek: Float,
 
-        previusProjects: [previusProjectsInput],
+        previousProjects: [previousProjectsInput],
 
         links: [linkInput],
 
@@ -468,7 +490,7 @@ module.exports = `
         senior
     }
 
-     input previusProjectsInput {
+     input previousProjectsInput {
         title: String,
         description: String,
         positionName: String,
@@ -507,5 +529,13 @@ module.exports = `
         endorserID: ID
         endorseeID: ID
         endorsementMessage: String
+    }
+    input nodeCategoryInput {
+        _id: ID
+        numberNodes: Int
+    }
+    input createFakeUserInput {
+        expertise: [nodeCategoryInput]
+        interests: [nodeCategoryInput]
     }
 `

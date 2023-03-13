@@ -23,6 +23,10 @@ module.exports = {
                 pos: idx,
               };
               nodesSearch.push(node._id);
+            } else if (node.type == "dynamicSearch") {
+              nodes[idx].avatar =
+                // "https://cdn-icons-png.flaticon.com/512/122/122932.png";
+                "https://cdn0.iconfinder.com/data/icons/very-basic-2-android-l-lollipop-icon-pack/24/search-512.png";
             }
           });
           // console.log("nodesSearch = ", nodesSearch);

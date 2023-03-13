@@ -25,10 +25,12 @@ module.exports = `
             matchMembersToProjectRole(fields:matchMembersToProjectRoleInput): [matchMembersToProjectRoleOutput]
             matchPrepareSkillToMembers(fields:matchPrepareSkillToMembersInput): Skills
             matchPrepareNode(fields:matchPrepareNodeInput): Node
+            matchPrepareNode_AI4(fields:matchPrepareNode_AI4Input): Node
             matchPrepareNode_old(fields:matchPrepareNodeInput): Node
             matchPrepareSkillToProjectRoles(fields:matchPrepareSkillToProjectRolesInput): Skills
             matchSkillsToMembers(fields:matchSkillsToMembersInput): [matchMembersToSkillOutput]
             matchNodesToMembers(fields:matchNodesToMembersInput): [matchMembersToSkillOutput]
+            matchNodesToMembers_AI4(fields:matchNodesToMembers_AI4Input): [matchMembersToSkillOutput]
             setAllMatch_v2(val: Boolean,node: String): Boolean
             matchNodesToMembers_old(fields:matchNodesToMembersInput): [matchMembersToSkillOutput]
             matchSkillsToProjects(fields:matchSkillsToProjectsInput): [matchSkillsToProjectsOutput]
@@ -93,14 +95,29 @@ module.exports = `
 
           # ---------- AI QUERY -------------
           findMessage(fields: findMessageInputPaginated): PaginatedMessages
+          edenGPTreply(fields: edenGPTreplyInput): edenGPTreplyOutput
+          messageMapKG(fields: messageMapKGInput): messageMapKGOutput
+          edenGPTreplyMemory(fields: edenGPTreplyMemoryInput): edenGPTreplyMemoryOutput
+          edenGPTreplyChatAPI(fields: edenGPTreplyChatAPIInput): edenGPTreplyChatAPIOutput
+          edenGPTsearchProfiles(fields: edenGPTsearchProfilesInput): edenGPTsearchProfilesOutput
 
           # ---------- GRAPH VISUAL QUERY -------------
           findMemberGraph(fields: findMemberGraphInput): Graph
           findProjectGraph(fields: findProjectGraphInput): Graph
           findMemberToProjectGraph(fields: findMemberToProjectGraphInput): Graph
+          dynamicSearchToProjectGraph(fields: dynamicSearchToProjectGraphInput): Graph
+          dynamicSearchGraph(fields: dynamicSearchGraphInput): Graph
+          dynamicSearchToMemberGraph(fields: dynamicSearchToMemberGraphInput): Graph
           findMemberToMemberGraph(fields: findMemberToMemberGraphInput ): Graph
           findMultipleMembersProjectsGraph(fields: findMultipleMembersProjectsGraphInput ): Graph
           findOneMemberToMembersGraph(fields: findOneMemberToMembersGraphInput): Graph
 
+
+          # ---------- EDEN METRICS QUERY ----------------
+          membersStats(fields: statsInput):[ResultCount]
+          lurkersContributorsQuery:LurkersAndContributors
+          activeMembersStats(fields: statsInput):[ResultCount]
+          
+      
         }
 `;

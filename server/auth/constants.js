@@ -11,6 +11,7 @@ const OPERATORS = [
   "702954417946886286", // @jamiebones
   "812342397790191638", // @impactbilli | joineden.xyz
   "812526237074456577", // @Alex1237
+  "961730944170090516", // @Milo
 ];
 
 module.exports = {

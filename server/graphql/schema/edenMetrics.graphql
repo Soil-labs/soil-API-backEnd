@@ -1,12 +1,47 @@
 module.exports = `
 scalar Date
-  input newMemberStatsInput {
-     startPeriod: String
-     endPeriod: String
+
+  type LurkersAndContributors {
+     lurkers: Int
+     contributors: Int
   }
 
-  input activeMembersStatsInput {
-    startPeriod: String
-     endPeriod: String
+  enum exploreFeatureEnum {
+       skillButton
+       findFriendButton
+       exploreProjectsButton
+       grantButton
+    }
+
+  input saveCoreProductFeatureInterationInput {
+    buttonClicked: exploreFeatureEnum!
   }
+
+  input saveDailyLoginInput {
+    loginDate: String
+  }
+
+  input statsInput{
+    startDate: Date
+    endDate: Date
+    range: range
+  }
+
+  enum range {
+     months
+     days
+  }
+
+  type ResultCount {
+      date: DateType
+      count: Int
+  }
+
+
+  type DateType {
+     month: Int
+     day: Int
+     year: Int
+  }
+
 `

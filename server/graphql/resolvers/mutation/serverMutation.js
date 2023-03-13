@@ -29,8 +29,6 @@ module.exports = {
 
     if (!_id) throw new ApolloError("_id -> serverID is required");
 
-    // if (!title) throw new ApolloError( "title is required");
-
     let fields = {};
 
     if (_id) fields._id = _id;
@@ -47,19 +45,27 @@ module.exports = {
       let serverData;
       if (_id) {
         serverData = await ServerTemplate.findOne({ _id: _id });
-        fields = {
-          ...fields,
-          channel: {
-            chatID: channelChatID ? channelChatID : serverData.channel.chatID,
-            forumID: forumChatID ? forumChatID : serverData.channel.forumID,
-          },
-        };
+
         if (!serverData) {
+          fields = {
+            ...fields,
+            channel: {
+              chatID: channelChatID ? channelChatID : null,
+              forumID: forumChatID ? forumChatID : null,
+            },
+          };
           serverData = await new ServerTemplate(fields);
           serverData.save();
 
           isNewServer = true;
         } else {
+          fields = {
+            ...fields,
+            channel: {
+              chatID: channelChatID ? channelChatID : serverData.channel.chatID,
+              forumID: forumChatID ? forumChatID : serverData.channel.forumID,
+            },
+          };
           serverData = await ServerTemplate.findOneAndUpdate(
             { _id: serverData._id },
             {

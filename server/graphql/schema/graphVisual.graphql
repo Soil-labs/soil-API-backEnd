@@ -33,10 +33,13 @@ module.exports = `
     }
 
     type StyleEdgeOut {
-        edgeColor: String
+        stroke: String
+        fill: String
         distance: Float
         strength: Float
     }
+
+
 
     
 
@@ -49,19 +52,37 @@ module.exports = `
 
     input nodeSetting {
         type: String
-        size: Int
         style: StyleIn
     }
 
     input StyleIn {
+        size: Int
         fill: String
         stroke: String
     }
 
     input edgeSetting {
+        mainEdge: edgeSettingIn
+        moreThanSplit: Int # If the number is bigger than this, then you split the Edge
+        hiddenEdge: Boolean
+        splitEdge: [edgeSettingSplitIn] # If you want to split the Edge and put something in the middle
+    }
+
+    input edgeSettingIn{
         nodeTypeSource: String
         nodeTypeTarget: String
-        edgeColor: String
+
+        style: styleEdgeIn
+    }
+
+    input edgeSettingSplitIn{
+        nodeTypeSource: String
+        nodeTypeMiddle: String
+        nodeTypeTarget: String
+    }
+
+    input styleEdgeIn {
+        color: String
         distance: Float
         strength: Float
     }
@@ -69,30 +90,64 @@ module.exports = `
     input findProjectGraphInput {
         projectID: ID
         showAvatar: Boolean
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
     }
 
     input findMemberToProjectGraphInput {
         memberID: ID
         projectID: ID
         showAvatar: Boolean
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
+    }
+
+    input dynamicSearchToProjectGraphInput {
+        nodesID: [ID]
+        projectID: ID
+        showAvatar: Boolean
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
+    }
+    input dynamicSearchGraphInput {
+        nodesID: [ID]
+        showAvatar: Boolean
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
+    }
+    input dynamicSearchToMemberGraphInput {
+        nodesID: [ID]
+        memberID: ID
+        showAvatar: Boolean
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
     }
 
     input findMemberToMemberGraphInput {
         memberOneID: ID
         memberTwoID: ID
         showAvatar: Boolean
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
     }
 
     input findMultipleMembersProjectsGraphInput {
         membersID: [ID]
         projectsID: [ID]
         showAvatar: Boolean
+        
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
     }
 
     input findOneMemberToMembersGraphInput {
         memberID: ID
         showAvatar: Boolean
+        
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
     }
+
 
     
 `

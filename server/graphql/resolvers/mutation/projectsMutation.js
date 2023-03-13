@@ -25,6 +25,8 @@ const {
   deleteNode_neo4j,
 } = require("../../../neo4j/func_neo4j");
 
+const { ACCESS_LEVELS } = require("../../../auth/constants");
+
 module.exports = {
   createProject: combineResolvers(
     IsAuthenticated,
@@ -709,7 +711,7 @@ module.exports = {
           "role._id": projectRoleID,
         }).select("_id title role nodes serverID champion");
 
-        if (champion != projectData && projectData.champion) {
+        if (!projectData && champion != projectData.champion) {
           throw new ApolloError("You are not the project champion");
         }
 

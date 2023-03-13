@@ -176,7 +176,7 @@ module.exports = {
         discriminator,
         bio,
         hoursPerWeek,
-        previusProjects,
+        previousProjects,
         interest,
         timeZone,
         level,
@@ -207,7 +207,7 @@ module.exports = {
       if (discriminator) fields = { ...fields, discriminator };
       if (bio) fields = { ...fields, bio };
       if (hoursPerWeek) fields = { ...fields, hoursPerWeek };
-      if (previusProjects) fields = { ...fields, previusProjects };
+      if (previousProjects) fields = { ...fields, previousProjects };
       if (interest) fields = { ...fields, interest };
       if (timeZone) fields = { ...fields, timeZone };
       if (level) fields = { ...fields, level };

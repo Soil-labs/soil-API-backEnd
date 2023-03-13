@@ -6,11 +6,11 @@ const {
   matchMembersToProject,
   matchMembersToProjectRole,
   matchPrepareSkillToMembers,
-  matchPrepareNode,
+  matchPrepareNode,matchPrepareNode_AI4,
   matchPrepareNode_old,
   matchPrepareSkillToProjectRoles,
   matchSkillsToMembers,
-  matchNodesToMembers,
+  matchNodesToMembers,matchNodesToMembers_AI4,
   setAllMatch_v2,
   matchNodesToMembers_old,
   matchSkillsToProjects,
@@ -68,15 +68,24 @@ const {
 } = require("./query/skillSubCategoryQuery");
 
 const { findChat } = require("./query/chatQuery");
-const { findMessage } = require("./query/aiQuery");
+const { findMessage, edenGPTreply,messageMapKG,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTsearchProfiles} = require("./query/aiQuery");
 const {
   findMemberGraph,
   findProjectGraph,
   findMemberToProjectGraph,
+  dynamicSearchToProjectGraph,
+  dynamicSearchGraph,
+  dynamicSearchToMemberGraph,
   findMemberToMemberGraph,
   findMultipleMembersProjectsGraph,
   findOneMemberToMembersGraph,
 } = require("./query/graphVisualQuery");
+
+const {
+  membersStats,
+  lurkersContributorsQuery,
+  activeMembersStats,
+} = require("./query/edenMetricsQuery");
 
 const { errors } = require("./query/errorQuery");
 
@@ -103,11 +112,11 @@ module.exports = {
     matchMembersToProject,
     matchMembersToProjectRole,
     matchPrepareSkillToMembers,
-    matchPrepareNode,
+    matchPrepareNode,matchPrepareNode_AI4,
     matchPrepareNode_old,
     matchPrepareSkillToProjectRoles,
     matchSkillsToMembers,
-    matchNodesToMembers,
+    matchNodesToMembers,matchNodesToMembers_AI4,
     setAllMatch_v2,
     matchNodesToMembers_old,
     matchSkillsToProjects,
@@ -160,14 +169,22 @@ module.exports = {
     findChat,
 
     //----------- AI QUERY ------------------
-    findMessage,
+    findMessage,edenGPTreply,messageMapKG,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTsearchProfiles,
 
     //----------- GRAPH VISUAL QUERY ------------------
     findMemberGraph,
     findProjectGraph,
     findMemberToProjectGraph,
+    dynamicSearchToProjectGraph,
+    dynamicSearchGraph,
+    dynamicSearchToMemberGraph,
     findMemberToMemberGraph,
     findMultipleMembersProjectsGraph,
     findOneMemberToMembersGraph,
+
+    //----------- EDEN METRICS QUERY ------------------
+    membersStats,
+    lurkersContributorsQuery,
+    activeMembersStats,
   },
 };

@@ -26,6 +26,23 @@ module.exports = `
         serverID: String
     }
 
+    input messageInp {
+        message: String
+        date: String
+        name: String
+
+    }
+
+    input storeLongTermMemoryInput {
+        messages: [messageInp]
+        userID: ID
+    }
+
+    type storeLongTermMemoryOutput {
+        summary: String
+        success: Boolean
+    }
+
     input addMessagesInput {
         data: [addMessageInput]
     }
@@ -48,6 +65,62 @@ module.exports = `
     input updateMessageInput {
         messageID: ID
         edenAI: EdenAIInput
+    }
+
+    input edenGPTreplyInput {
+        message: String
+    }
+    input edenGPTsearchProfilesInput {
+        message: String
+        profileIDs: [ID]
+    }
+    type edenGPTsearchProfilesOutput {
+        reply: String
+    }
+
+    type edenGPTreplyOutput {
+        reply: String
+    }
+
+    input messageMapKGInput {
+        message: String
+    }
+
+    type messageMapKGOutput {
+        keywords: [keywordValue]
+    }
+
+
+    input edenGPTreplyMemoryInput {
+        message: String
+        memorySort: String
+        userID: ID
+    }
+
+    type keywordValue {
+        keyword: String
+        confidence: Int
+        nodeID: ID
+    }
+    type edenGPTreplyMemoryOutput {
+        reply: String
+        # keywords: [String]
+    }
+
+    input messageChat {
+        role: String
+        content: String
+    }
+
+    input edenGPTreplyChatAPIInput {
+        message: String
+        conversation: [messageChat]
+        userID: ID
+    }
+
+    type edenGPTreplyChatAPIOutput {
+        reply: String
+        # keywords: [String]
     }
 
     input useAI_OnMessageInput {
