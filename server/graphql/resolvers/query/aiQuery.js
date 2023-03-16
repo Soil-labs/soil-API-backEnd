@@ -5,14 +5,13 @@ const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
 const axios = require("axios");
 
-const fetch = require("node-fetch")
+const fetch = require("node-fetch");
 
 const { PineconeClient } = require("@pinecone-database/pinecone");
 // import { PineconeClient } from "@pinecone-database/pinecone";
 const { Configuration, OpenAIApi } = require("openai");
 
-globalThis.fetch = fetch
-
+globalThis.fetch = fetch;
 
 function chooseAPIkey() {
   // openAI_keys = [
@@ -30,19 +29,17 @@ function chooseAPIkey() {
   return key;
 }
 
-
-
 function remapValues(data, min, max, newMin, newMax) {
   const range = max - min;
   const newRange = newMax - newMin;
   for (let i = 0; i < data.length; i++) {
     const normalizedValue = (data[i].value - min) / range;
-    const newValue = (normalizedValue * newRange) + newMin;
+    const newValue = normalizedValue * newRange + newMin;
     data[i].value = Math.round(newValue);
   }
   return data;
 }
-async function useGPT(prompt, temperature = 0.7,model="text-davinci-003") {
+async function useGPT(prompt, temperature = 0.7, model = "text-davinci-003") {
   const configuration = new Configuration({
     apiKey: "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",
   });
@@ -67,12 +64,12 @@ async function useGPT(prompt, temperature = 0.7,model="text-davinci-003") {
   return generatedText;
 }
 
-async function useGPTchatHelloWorld () {
+async function useGPTchatHelloWorld() {
   let OPENAI_API_KEY = chooseAPIkey();
   response = await axios.post(
     "https://api.openai.com/v1/chat/completions",
     {
-      messages: [{"role": "user", "content": "Hello!"}],
+      messages: [{ role: "user", content: "Hello!" }],
       model: "gpt-3.5-turbo",
     },
     {
@@ -83,26 +80,27 @@ async function useGPTchatHelloWorld () {
     }
   );
 
-
-  return response.data.choices[0].message.content
-
+  return response.data.choices[0].message.content;
 }
 
-async function useGPTchat(userNewMessage,discussion,systemPrompt,userQuestion = "") {
-  
+async function useGPTchat(
+  userNewMessage,
+  discussion,
+  systemPrompt,
+  userQuestion = ""
+) {
   discussion.push({
-    "role": "user",
-    "content": userNewMessage + "\n" + userQuestion
-  })
-
-
-  discussion.unshift({
-    "role": "system", 
-    "content": systemPrompt
+    role: "user",
+    content: userNewMessage + "\n" + userQuestion,
   });
 
-  console.log("discussion = " , discussion)
-  
+  discussion.unshift({
+    role: "system",
+    content: systemPrompt,
+  });
+
+  console.log("discussion = ", discussion);
+
   let OPENAI_API_KEY = chooseAPIkey();
   response = await axios.post(
     "https://api.openai.com/v1/chat/completions",
@@ -125,14 +123,13 @@ async function useGPTchat(userNewMessage,discussion,systemPrompt,userQuestion = 
 }
 
 async function useGPTchatSimple(prompt) {
-  
-  discussion = [{
-    "role": "user",
-    "content": prompt
-  }]
+  discussion = [
+    {
+      role: "user",
+      content: prompt,
+    },
+  ];
 
-
-  
   let OPENAI_API_KEY = chooseAPIkey();
   response = await axios.post(
     "https://api.openai.com/v1/chat/completions",
@@ -151,9 +148,7 @@ async function useGPTchatSimple(prompt) {
   return response.data.choices[0].message.content;
 }
 
-
-async function findBestEmbedings(message,filter,topK = 3) {
-
+async function findBestEmbedings(message, filter, topK = 3) {
   //  filter: {
   //   '_id': profileIDs[0]
   //    'label': "long_term_memory",
@@ -164,41 +159,36 @@ async function findBestEmbedings(message,filter,topK = 3) {
     apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
   });
 
-
   const index = await pinecone.Index("profile-eden-information");
 
-
-  embed = await createEmbedingsGPT(message)
+  embed = await createEmbedingsGPT(message);
 
   // console.log("embed = " , embed)
-  
 
   let queryRequest = {
     topK: topK,
     vector: embed[0],
     includeMetadata: true,
-  }
+  };
 
-  if (filter != undefined){
+  if (filter != undefined) {
     queryRequest = {
       ...queryRequest,
-      filter: filter
-    }
+      filter: filter,
+    };
   }
 
-  console.log("filter = " , filter)
-  console.log("queryRequest = " , queryRequest)
-  
-  const queryResponse = await index.query({ queryRequest })
+  console.log("filter = ", filter);
+  console.log("queryRequest = ", queryRequest);
 
+  const queryResponse = await index.query({ queryRequest });
 
-  console.log("queryResponse = " , queryResponse)
+  console.log("queryResponse = ", queryResponse);
 
   // const contexts = queryResponse.matches.map(x => x.metadata.name + ": " + x.metadata.text);
 
   return queryResponse.matches;
 }
-
 
 async function createEmbedingsGPT(words_n) {
   // words_n = ["node.js", "react", "angular"];
@@ -225,7 +215,6 @@ async function createEmbedingsGPT(words_n) {
   // console.log("res = ", res);
   return res;
 }
-
 
 const DEFAULT_PAGE_LIMIT = 20;
 
@@ -350,26 +339,26 @@ module.exports = {
     const { message } = args.fields;
     console.log("Query > messageMapKG > args.fields = ", args.fields);
     try {
-
-
       // -------------- Find best keywrods from embeding -------------
       const filter = {
         label: "KnowledgeGraph",
-      }
+      };
 
-      bestKeywordsFromEmbed = await findBestEmbedings(message,filter ,topK = 20)
+      bestKeywordsFromEmbed = await findBestEmbedings(
+        message,
+        filter,
+        (topK = 20)
+      );
 
-      console.log("bestKeywordsFromEmbed = " , bestKeywordsFromEmbed)
+      console.log("bestKeywordsFromEmbed = ", bestKeywordsFromEmbed);
       // -------------- Find best keywrods from embeding -------------
-
-
 
       // -------------- map values of keywords -------------
       // map bestKeywordsFromEmbed to a new object array that has the value and the keyword
       let minValue = Infinity;
       let maxValue = -Infinity;
 
-      let keywordValObj = {}
+      let keywordValObj = {};
       bestKeywordsFromEmbed_cl = bestKeywordsFromEmbed.map((obj) => {
         if (obj.score < minValue) {
           minValue = obj.score;
@@ -377,30 +366,34 @@ module.exports = {
         if (obj.score > maxValue) {
           maxValue = obj.score;
         }
-        
+
         return {
           value: obj.score,
           originalValue: obj.score,
           keyword: obj.metadata.keyword,
           category: obj.metadata.category,
           context: obj.metadata.text,
-        }
-      })
+        };
+      });
 
-      console.log("bestKeywordsFromEmbed_cl = " , bestKeywordsFromEmbed_cl)
-      console.log("minValue = " , minValue)
-      console.log("maxValue = " , maxValue)
+      console.log("bestKeywordsFromEmbed_cl = ", bestKeywordsFromEmbed_cl);
+      console.log("minValue = ", minValue);
+      console.log("maxValue = ", maxValue);
 
-      bestKeywordsFromEmbed_map = remapValues(bestKeywordsFromEmbed_cl, minValue, maxValue, 2, 10)
-      console.log("bestKeywordsFromEmbed_map = " , bestKeywordsFromEmbed_map)
+      bestKeywordsFromEmbed_map = remapValues(
+        bestKeywordsFromEmbed_cl,
+        minValue,
+        maxValue,
+        2,
+        10
+      );
+      console.log("bestKeywordsFromEmbed_map = ", bestKeywordsFromEmbed_map);
       // asfd1
       // -------------- map values of keywords -------------
 
-
-
       // --------------- prepare prompt keyword -----------
-      keywords_str = ""
-      numKeywords = 0
+      keywords_str = "";
+      numKeywords = 0;
       for (let i = 0; i < bestKeywordsFromEmbed_map.length; i++) {
         const element = bestKeywordsFromEmbed_map[i];
 
@@ -408,123 +401,124 @@ module.exports = {
           keywordValObj[element.keyword.toLowerCase().trim()] = {
             value: element.value,
             originalKeyword: element.keyword,
-          }
+          };
         }
-        
-        if (element.value >= 5 && element.originalValue >= 0.74){
+
+        if (element.value >= 5 && element.originalValue >= 0.74) {
           // if (element.value >= 6 && element.originalValue >= 0.76){
           // keywords_str += element.keyword + " | "
           // keywords_str += element.keyword + ": "  +element.context.replace("\n","").replace("\n","")+  " | \n\n"
           // keywords_str += element.keyword + ": " + element.value + " - " +element.context.replace("\n","").replace("\n","")+  " | "
-          keywords_str += element.keyword + ": " + element.value +  " | "
+          keywords_str += element.keyword + ": " + element.value + " | ";
 
-          numKeywords += 1
+          numKeywords += 1;
         }
       }
       // console.log("keywords_str = " , keywords_str)
       // --------------- prepare prompt keyword -----------
 
-
       // -------------- Find best keywrods from prompt engineering -------------
 
-      if (numKeywords > 0){
-        prompt_general = "paragraph: " + message + "\n\n"
+      if (numKeywords > 0) {
+        prompt_general = "paragraph: " + message + "\n\n";
 
-
-        prompt_general += "keywords: " + keywords_str + "\n\n"
+        prompt_general += "keywords: " + keywords_str + "\n\n";
 
         // prompt_general += "You have as input a paragraph, and keywords together with their explanation \n\n"
         // prompt_general += "You have as input a paragraph, and keywords with the score of how related they are, from 0 to 10 together with their explanation \n\n"
-        prompt_general += "You have as input a paragraph, and keywords with the score of how related they are, from 0 to 10 \n\n"
+        prompt_general +=
+          "You have as input a paragraph, and keywords with the score of how related they are, from 0 to 10 \n\n";
 
         // prompt_general += "You try to find the skills and interest from the paragraph \n\n"
 
-
         // prompt_general += "Choose the keywords that best describe the paragraph! you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
         // prompt_general += "Choose the smallest number of keywords that describe accurately the paragraph! you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
-        prompt_general += "Choose only keywords that exist on the paragraph! choose the smallest number of keywords to describe paragraph!  you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
+        prompt_general +=
+          "Choose only keywords that exist on the paragraph! choose the smallest number of keywords to describe paragraph!  you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" +
+          "Result: ";
         // prompt_general += "Try to choose the smallest number of keywords that best describe the paragraph! you can choose from 0 to 5 keywords \n\n" + "keywords: "
         // prompt_general += "Choose keywords that best describe the paragraph! Don't put any unesesary keywords! you can choose from 0 to 5 keywords \n\n" + "keywords: "
 
-        console.log("prompt_general = " , prompt_general)
+        console.log("prompt_general = ", prompt_general);
         // asfd1
 
         // res_gpt = await useGPT(prompt_general,0.7,"text-curie-001")
         // res_gpt = await useGPT(prompt_general)
-        res_gpt = await useGPTchatSimple(prompt_general)
+        res_gpt = await useGPTchatSimple(prompt_general);
 
-        console.log("res_gpt = " , res_gpt)
+        console.log("res_gpt = ", res_gpt);
 
-        
-        if (res_gpt.includes(",")){
-          keywords = res_gpt.split(",")
-        } else if (res_gpt.includes("|")){
-          keywords = res_gpt.split("|")
+        if (res_gpt.includes(",")) {
+          keywords = res_gpt.split(",");
+        } else if (res_gpt.includes("|")) {
+          keywords = res_gpt.split("|");
         } else {
-          keywords = [res_gpt]
+          keywords = [res_gpt];
         }
 
-        keywords = keywords.map(strT => strT.replace("\n", "").trim());
+        keywords = keywords.map((strT) => strT.replace("\n", "").trim());
 
-        keywordsValues = []
-        keywordsNameOnly = []
-        keywords.forEach( (keyword, index) => {
+        keywordsValues = [];
+        keywordsNameOnly = [];
+        keywords.forEach((keyword, index) => {
           // console.log("keyword,keywordValObj[keyword] = " , keyword,keywordValObj[keyword.toLowerCase()])
 
           // let arr = keyword.split(":");
           let keyword_cl = keyword.split(":").shift();
 
-          if (keywordValObj[keyword_cl.toLowerCase()]){
+          if (keywordValObj[keyword_cl.toLowerCase()]) {
             keywordsValues.push({
               keyword: keyword_cl,
-              confidence: parseInt(keywordValObj[keyword_cl.toLowerCase()].value)
-            })
-            keywordsNameOnly.push(keywordValObj[keyword_cl.toLowerCase()].originalKeyword)
-          } 
+              confidence: parseInt(
+                keywordValObj[keyword_cl.toLowerCase()].value
+              ),
+            });
+            keywordsNameOnly.push(
+              keywordValObj[keyword_cl.toLowerCase()].originalKeyword
+            );
+          }
           // else {
           //   keywordsValues.push({
           //     keyword: keyword_cl,
           //     confidence: undefined
           //   })
           // }
-        })
+        });
 
-        let nodeData = await Node.find({name: keywordsNameOnly}).select("_id name");
+        let nodeData = await Node.find({ name: keywordsNameOnly }).select(
+          "_id name"
+        );
 
-        nodeDataObj = {}
+        nodeDataObj = {};
         nodeData.forEach((node) => {
-          nodeDataObj[node.name] = node._id
-        })
+          nodeDataObj[node.name] = node._id;
+        });
 
         keywordsValues = keywordsValues.map((keyword) => {
           return {
             ...keyword,
-            nodeID: nodeDataObj[keyword.keyword]
-          }
-        })
+            nodeID: nodeDataObj[keyword.keyword],
+          };
+        });
 
         // console.log("nodeData = " , nodeData)
         // console.log("keywordsNameOnly = " , keywordsNameOnly)
         // asf1
-
-
-
       } else {
-        keywordsValues = []
+        keywordsValues = [];
       }
       // -------------- Find best keywrods from prompt engineering -------------
 
-      console.log("keywordValObj = " , keywordValObj)
+      console.log("keywordValObj = ", keywordValObj);
 
-      console.log("keywordsValues = " , keywordsValues)
-      
-      // sort an keywordsValues based on object value confidence 
-      keywordsValues.sort((a, b) => (a.confidence > b.confidence) ? -1 : 1)
+      console.log("keywordsValues = ", keywordsValues);
+
+      // sort an keywordsValues based on object value confidence
+      keywordsValues.sort((a, b) => (a.confidence > b.confidence ? -1 : 1));
 
       return {
         keywords: keywordsValues,
-      }
-
+      };
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -539,13 +533,12 @@ module.exports = {
     const { message } = args.fields;
     console.log("Query > edenGPTreply > args.fields = ", args.fields);
     try {
-
       const configuration = new Configuration({
         apiKey: "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",
       });
       const openai = new OpenAIApi(configuration);
 
-      console.log("change = 1" )
+      console.log("change = 1");
 
       // -------------- Find Reply -------------
       const response = await openai.createCompletion({
@@ -558,12 +551,11 @@ module.exports = {
         // frequency_penalty: 0,
         // presence_penalty: 0,
       });
-    
+
       let replyEden = response.data.choices[0].text;
       // -------------- Find Reply -------------
 
-      console.log("change = 2" )
-
+      console.log("change = 2");
 
       // // -------------- Find Keywords -------------
       // // let keywordsEdenArray = [];
@@ -577,14 +569,14 @@ module.exports = {
       //   // frequency_penalty: 0,
       //   // presence_penalty: 0,
       // });
-    
+
       // let keywordsEden = response_keywords.data.choices[0].text;
       // // console.log("keywordsEden = " , keywordsEden)
 
       // var keywordsEdenArray = keywordsEden.split(',');
       // // -------------- Find Keywords -------------
 
-      console.log("change = 3" )
+      console.log("change = 3");
 
       return {
         reply: replyEden,
@@ -601,30 +593,28 @@ module.exports = {
     }
   },
   edenGPTreplyMemory: async (parent, args, context, info) => {
-    const { message,memorySort,userID } = args.fields;
+    const { message, memorySort, userID } = args.fields;
     console.log("Query > edenGPTreplyMemory > args.fields = ", args.fields);
     try {
-
       const filter = {
         label: "long_term_memory",
-      }
+      };
       if (userID) {
         filter._id = userID;
       }
 
-      longTermMemories = await findBestEmbedings(message,filter ,topK = 3)
+      longTermMemories = await findBestEmbedings(message, filter, (topK = 3));
 
       // console.log("longTermMemories = " , longTermMemories)
       // ads
 
-      
       let prompt_longTermMemory = "Long Term Memory:";
       for (let i = 0; i < longTermMemories.length; i++) {
-
-        prompt_longTermMemory = prompt_longTermMemory + "\n" + longTermMemories[i].metadata.text;
+        prompt_longTermMemory =
+          prompt_longTermMemory + "\n" + longTermMemories[i].metadata.text;
       }
 
-      console.log("prompt_longTermMemory = " , prompt_longTermMemory)
+      console.log("prompt_longTermMemory = ", prompt_longTermMemory);
       // asdf
 
       prompot_General = `
@@ -635,26 +625,32 @@ module.exports = {
 
       - Eden only ask one quesiton at a time
       - ask questions back to uderstand in detail the skills and expertise that the candidate should have!!
-      `
+      `;
 
-      prompot_General = prompot_General + "\n" + prompt_longTermMemory ;
+      prompot_General = prompot_General + "\n" + prompt_longTermMemory;
 
       // console.log("prompot_General = 1" , prompot_General)
 
       if (memorySort) {
-        prompot_General = prompot_General + "\n\n\n" + "Conversation so far: " + memorySort;
+        prompot_General =
+          prompot_General + "\n\n\n" + "Conversation so far: " + memorySort;
       }
 
       // console.log("prompot_General = 2" , prompot_General)
 
-      prompot_General = prompot_General + "\n\n\n" + "Question from user: " + "\n"+message + "\n" + "Reply:";
-
+      prompot_General =
+        prompot_General +
+        "\n\n\n" +
+        "Question from user: " +
+        "\n" +
+        message +
+        "\n" +
+        "Reply:";
 
       // console.log("prompot_General = 3" , prompot_General)
       // asdf
 
-      reply = useGPT(prompot_General)
-
+      reply = useGPT(prompot_General);
 
       // // -------------- Find Keywords -------------
       // const configuration = new Configuration({
@@ -672,7 +668,7 @@ module.exports = {
       //   // frequency_penalty: 0,
       //   // presence_penalty: 0,
       // });
-    
+
       // let keywordsEden = response_keywords.data.choices[0].text;
       // // console.log("keywordsEden = " , keywordsEden)
 
@@ -682,9 +678,8 @@ module.exports = {
       // keywordsEdenArray = keywordsEdenArray.filter(function (el) {
       //   return el != "";
       // });
-      
-      // // -------------- Find Keywords -------------
 
+      // // -------------- Find Keywords -------------
 
       return {
         reply: reply,
@@ -701,19 +696,24 @@ module.exports = {
     }
   },
   edenGPTreplyChatAPI: async (parent, args, context, info) => {
-    const { message,conversation,userID } = args.fields;
+    const { message, conversation, userID } = args.fields;
     console.log("Query > edenGPTreplyChatAPI > args.fields = ", args.fields);
     // try {
 
-      systemPrompt = `
+    systemPrompt = `
       You are a recruiter, The only think that you do is ask one questions at a time to understand the skills that the candidate should have.
       You give as consise as small answeres as possible
-      `
-      responseGPTchat = await useGPTchat(message,conversation,systemPrompt,"ask me questino what other skills candidate should have based on the cntext that you have")
+      `;
+    responseGPTchat = await useGPTchat(
+      message,
+      conversation,
+      systemPrompt,
+      "ask me questino what other skills candidate should have based on the cntext that you have"
+    );
 
-      return {
-        reply: responseGPTchat,
-      };
+    return {
+      reply: responseGPTchat,
+    };
     // } catch (err) {
     //   throw new ApolloError(
     //     err.message,
@@ -724,78 +724,111 @@ module.exports = {
     //   );
     // }
   },
-  edenGPTsearchProfiles: async (parent, args, context, info) => {
-    const { message,profileIDs } = args.fields;
-    console.log("Query > edenGPTsearchProfiles 22> args.fields = ", args.fields);
+  edenGPTEndorseChatAPI: async (parent, args, context, info) => {
+    const { message, conversation, userID } = args.fields;
+    console.log("Query > edenGPTEndorseChatAPI > args.fields = ", args.fields);
+
+    systemPrompt = `
+      You are a Technical Performance Reviewer.  The only thing that you do is ask one question at a time to help understand the user's review another user on a project they worked together on.  You give as concise and short answers as possible.
+      `;
+
+    userQuestion = `Ask me a question about the user's skills being reviewed should have based on the context that you have.`;
+
     try {
+      responseGPTchat = await useGPTchat(
+        message,
+        conversation,
+        systemPrompt,
+        userQuestion
+      );
 
-
-
+      return {
+        reply: responseGPTchat,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "edenGPTEndorseChatAPI",
+        {
+          component: "aiQuery > edenGPTEndorseChatAPI",
+        }
+      );
+    }
+  },
+  edenGPTsearchProfiles: async (parent, args, context, info) => {
+    const { message, profileIDs } = args.fields;
+    console.log(
+      "Query > edenGPTsearchProfiles 22> args.fields = ",
+      args.fields
+    );
+    try {
       const pinecone = new PineconeClient();
       await pinecone.init({
         environment: "us-east1-gcp",
         apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
       });
 
-
       const index = await pinecone.Index("profile-eden-information");
 
-
-      embed = await createEmbedingsGPT(message)
-
-      
+      embed = await createEmbedingsGPT(message);
 
       let queryRequest = {
         topK: 3,
         vector: embed[0],
         includeMetadata: true,
-      }
+      };
 
-      if (profileIDs!= undefined){
+      if (profileIDs != undefined) {
         queryRequest = {
           ...queryRequest,
           filter: {
-            '_id': profileIDs[0]
-          }
-        }
+            _id: profileIDs[0],
+          },
+        };
       }
-      
-      const queryResponse = await index.query({ queryRequest })
 
+      const queryResponse = await index.query({ queryRequest });
 
-      console.log("queryResponse = " , queryResponse)
+      console.log("queryResponse = ", queryResponse);
 
-      const contexts = queryResponse.matches.map(x => x.metadata.name + ": " + x.metadata.text);
+      const contexts = queryResponse.matches.map(
+        (x) => x.metadata.name + ": " + x.metadata.text
+      );
 
-      
-
-      const promptStart = "Answer the question based on the context below. \n\nContext:\n";
+      const promptStart =
+        "Answer the question based on the context below. \n\nContext:\n";
       const promptEnd = `\n\nQuestion: ${message}\nAnswer:`;
 
-      const limit=3750
+      const limit = 3750;
       let prompt = "";
-
 
       for (let i = 0; i < contexts.length; i++) {
         if (contexts.slice(0, i).join("\n\n---\n\n").length >= limit) {
-          prompt = promptStart + "\n\n---\n\n" + contexts.slice(0, i-1).join("\n\n---\n\n") + promptEnd;
+          prompt =
+            promptStart +
+            "\n\n---\n\n" +
+            contexts.slice(0, i - 1).join("\n\n---\n\n") +
+            promptEnd;
           break;
         } else if (i === contexts.length - 1) {
-          prompt = promptStart + "\n\n---\n\n" + contexts.join("\n\n---\n\n") + promptEnd;
+          prompt =
+            promptStart +
+            "\n\n---\n\n" +
+            contexts.join("\n\n---\n\n") +
+            promptEnd;
         }
       }
 
-      console.log("prompt = ",prompt);
+      console.log("prompt = ", prompt);
       // asdf1
 
-      
       const configuration = new Configuration({
         apiKey: "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",
       });
       const openai = new OpenAIApi(configuration);
 
-       // -------------- Find Reply -------------
-       const response = await openai.createCompletion({
+      // -------------- Find Reply -------------
+      const response = await openai.createCompletion({
         model: "text-davinci-003",
         prompt: prompt,
         temperature: 0.0,
@@ -805,7 +838,7 @@ module.exports = {
         // frequency_penalty: 0,
         // presence_penalty: 0,
       });
-    
+
       let replyEden = response.data.choices[0].text;
       // -------------- Find Reply -------------
 
@@ -822,5 +855,4 @@ module.exports = {
       );
     }
   },
-  
 };
