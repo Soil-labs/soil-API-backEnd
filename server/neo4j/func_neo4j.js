@@ -754,7 +754,7 @@ module.exports = {
     await findMatch_translateArray_path_K_hop(
       `
             MATCH (n{_id: '${nodeID}'}),
-            p = (n)-[*1..3]->(friend:${find})
+            p = (n)-[*1..3]-(friend:${find})
             WHERE NONE(x IN relationships(p) WHERE type(x) = '${find}')
               AND '${serverID}' IN friend.serverID
             RETURN p
@@ -1306,7 +1306,7 @@ async function findMatch_translateArray_path_K_hop_AI4(
     return row;
   });
 
-  console.log("names_oneHopeMatch = " , names_oneHopeMatch)
+  // console.log("names_oneHopeMatch = " , names_oneHopeMatch)
   
 
   kt = [
@@ -1333,8 +1333,8 @@ async function findMatch_translateArray_path_K_hop_AI4(
         let nodeConnID_pathLastConnection = res.nodeConnID_pathLastConnection;
         let flag_dontRunIfUseMemberOnPath = res.flag_dontRunIfUseMemberOnPath;
 
-        console.log("totalWeight = ", totalWeight);
-        console.log("N_weight = ", N_weight);
+        // console.log("totalWeight = ", totalWeight);
+        // console.log("N_weight = ", N_weight);
 
         // asfd;
 
@@ -1650,8 +1650,8 @@ async function weightPath(
       // SOS 🆘 -> Take out all the paths that has in the middle nodes that are not on the knowledge graph and they are Members,Projects, etc.
       if (
         s.end.labels[0] == "Member" ||
-        s.end.labels[0] == "Project" ||
-        s.end.labels[0] == "Role"
+        s.end.labels[0] == "Project"
+        // || s.end.labels[0] == "Role"
       ) {
         flag_dontRunIfUseMemberOnPath = true;
       }

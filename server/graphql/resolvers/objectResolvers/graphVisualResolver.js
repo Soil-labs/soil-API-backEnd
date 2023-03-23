@@ -11,7 +11,9 @@ module.exports = {
       try {
         const nodes = parent.nodes;
 
+        
         if (context.body.variables.fields.showAvatar == true) {
+          console.log("change = 3323" )
           node_obj_memb = {};
           nodesSearch = [];
           nodes.forEach((node, idx) => {
@@ -35,7 +37,7 @@ module.exports = {
             "_id discordAvatar"
           );
 
-          // console.log("nodeData = ", nodeData);
+          console.log("nodeData = ", nodeData);
 
           // nodes.forEach((node) => {
           for (i = 0; i < nodeData.length; i++) {

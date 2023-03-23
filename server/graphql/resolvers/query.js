@@ -70,22 +70,15 @@ const {
 } = require("./query/skillSubCategoryQuery");
 
 const { findChat } = require("./query/chatQuery");
-const {
-  findMessage,
-  edenGPTreply,
-  messageMapKG,
-  edenGPTreplyMemory,
-  edenGPTreplyChatAPI,
-  edenGPTEndorseChatAPI,
-  edenGPTsearchProfiles,
-} = require("./query/aiQuery");
+const { findMessage, edenGPTreply,messageMapKG,messageMapKG_V2,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTsearchProfiles,edenGPTsummaryProfile,edenGPTEndorseChatAPI} = require("./query/aiQuery");
+
 const {
   findMemberGraph,
   findProjectGraph,
   findMemberToProjectGraph,
   dynamicSearchToProjectGraph,
   dynamicSearchGraph,
-  dynamicSearchToMemberGraph,
+  dynamicSearchToMemberGraph,dynamicSearchToMemberGraphV2,dynamicSearchToMemberGraphGPT,dynamicSearchToMemberCategoryGroup,
   findMemberToMemberGraph,
   findMultipleMembersProjectsGraph,
   findOneMemberToMembersGraph,
@@ -182,13 +175,8 @@ module.exports = {
     findChat,
 
     //----------- AI QUERY ------------------
-    findMessage,
-    edenGPTreply,
-    messageMapKG,
-    edenGPTreplyMemory,
-    edenGPTreplyChatAPI,
-    edenGPTEndorseChatAPI,
-    edenGPTsearchProfiles,
+    findMessage,edenGPTreply,messageMapKG,messageMapKG_V2,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTsearchProfiles,edenGPTsummaryProfile,edenGPTEndorseChatAPI,
+
 
     //----------- GRAPH VISUAL QUERY ------------------
     findMemberGraph,
@@ -196,7 +184,7 @@ module.exports = {
     findMemberToProjectGraph,
     dynamicSearchToProjectGraph,
     dynamicSearchGraph,
-    dynamicSearchToMemberGraph,
+    dynamicSearchToMemberGraph,dynamicSearchToMemberGraphV2,dynamicSearchToMemberGraphGPT,dynamicSearchToMemberCategoryGroup,
     findMemberToMemberGraph,
     findMultipleMembersProjectsGraph,
     findOneMemberToMembersGraph,

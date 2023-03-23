@@ -13,10 +13,77 @@ const {
   IsOnlyOperator,
 } = require("../../../utils/authorization");
 
+
+async function findOrCreateNode(node,nodeID,nodeName,serverID) {
+  let nodeData;
+
+  if (nodeID){
+    nodeData = await Node.findOne({ _id: nodeID }).select("_id name node  groupNodes aboveNodes categoryNodes subNodes");
+
+
+  } else if (nodeName){
+    nodeData = await Node.findOne({ name: nodeName }).select("_id name node  groupNodes aboveNodes categoryNodes subNodes");
+
+  }
+
+  if (!nodeData){
+    if (nodeName){
+      let fields = {
+        name: nodeName,
+        node,
+        state: "approved",
+        registeredAt: new Date(),
+        matchByServer_update: true,
+      };
+
+      nodeData = await new Node(fields);
+
+      nodeData.save();
+
+      await createNode_neo4j_field({
+        fields: {
+          node: nodeData.node,
+          _id: nodeData._id,
+          serverID_code: "828",
+          name: nodeData.name,
+          serverID: serverID,
+        },
+      });
+
+    }
+  }
+
+
+  return nodeData
+
+}
+
+async function updateNode(nodeData) {
+
+  nodeData = await Node.findOneAndUpdate(
+    { _id: nodeData._id },
+    {
+      $set: {
+        subNodes: nodeData.subNodes,
+        aboveNodes: nodeData.aboveNodes,
+        groupNodes: nodeData.groupNodes,
+        categoryNodes: nodeData.categoryNodes,
+      },
+    },
+    { new: true }
+  );
+
+  return nodeData
+
+
+}
+
+
 module.exports = {
-  createNode: combineResolvers(
-    IsAuthenticated,
-    IsOnlyOperator,
+  createNode: 
+  // combineResolvers(
+  //   IsAuthenticated,
+  //   IsOnlyOperator,
     async (parent, args, context, info) => {
       const { node, name, subNodes, aboveNodes, state } = args.fields;
       console.log("Mutation > createNode > args.fields = ", args.fields);
@@ -120,6 +187,7 @@ module.exports = {
 
         connect_node_to_aboveNode(nodeData, aboveNodes, 1);
 
+        console.log("DONE ......" )
         return nodeData;
       } catch (err) {
         throw new ApolloError(
@@ -128,12 +196,118 @@ module.exports = {
           { component: "tmemberQuery > addNewMember" }
         );
       }
-    }
-  ),
+    },
+  // ),
 
-  relatedNode: combineResolvers(
-    IsAuthenticated,
-    IsOnlyOperator,
+  createNodeCategoryGroup: 
+  // combineResolvers(
+  //   IsAuthenticated,
+  //   IsOnlyOperator,
+    async (parent, args, context, info) => {
+      const { name,node,categoryName,categoryID,groupName,groupID } = args.fields;
+      console.log("Mutation > createNodeCategoryGroup > args.fields = ", args.fields);
+
+      if (!name)
+        throw new ApolloError("You need to specify the name of the node");
+      if (!node) throw new ApolloError( "You need to specify the type of the node");
+
+
+      try {
+
+        
+
+        // ----------------- Save the Server on the Skills -----------------
+        let serverData = await ServerTemplate.find({});
+
+        let serverID = [];
+        serverData.map((server) => {
+          serverID.push(server._id);
+        });
+        // ----------------- Save the Server on the Skills -----------------
+
+        // ----------- Find the Group Node -----------
+        let groupNodeData = await findOrCreateNode("Group",groupID,groupName)
+        // ----------- Find the Group Node -----------
+
+        // ----------- Find the Category Node -----------
+        let categoryNodeData = await findOrCreateNode("Category",categoryID,categoryName)
+        
+        // ----------- Find the Category Node -----------
+ 
+        // ----------- Find the Node -----------
+        let nodeData = await findOrCreateNode(node,"",name)
+        // ----------- Find the Node -----------
+
+
+
+        // ------------- Category - Group -------------
+        console.log("change = 1",categoryNodeData )
+        console.log("change = 1",categoryNodeData.aboveNodes )
+        if (!categoryNodeData.aboveNodes.includes(groupNodeData._id)) {
+          categoryNodeData.aboveNodes.push(groupNodeData._id);
+        }
+        console.log("change = 3" )
+
+        if (!groupNodeData.subNodes.includes(categoryNodeData._id)) {
+          groupNodeData.subNodes.push(categoryNodeData._id);
+        }
+        console.log("change = 2" )
+        if (!categoryNodeData.groupNodes.includes(groupNodeData._id)) {
+          categoryNodeData.groupNodes.push(groupNodeData._id);
+        }
+        // ------------- Category - Group -------------
+
+        console.log("change = 1" )
+
+        // ------------- Node - Category -------------
+        if (!nodeData.aboveNodes.includes(categoryNodeData._id)) {
+          nodeData.aboveNodes.push(categoryNodeData._id);
+        }
+        if (!categoryNodeData.subNodes.includes(nodeData._id)) {
+          categoryNodeData.subNodes.push(nodeData._id);
+        }
+        console.log("change = 1" )
+
+        if (!nodeData.categoryNodes.includes(categoryNodeData._id)) {
+          nodeData.categoryNodes.push(categoryNodeData._id);
+        }
+        // ------------- Node - Category -------------
+        console.log("change = 1" )
+
+        // ------------- Node - Group -------------
+        if (!nodeData.groupNodes.includes(groupNodeData._id)) {
+          nodeData.groupNodes.push(groupNodeData._id);
+        }
+        // ------------- Node - Group -------------
+
+
+
+        // --------- Update Nodes ----------
+        nodeData = await updateNode(nodeData)
+
+        categoryNodeData = await updateNode(categoryNodeData)
+
+        groupNodeData = await updateNode(groupNodeData)
+        // --------- Update Nodes ----------
+
+
+
+        console.log("DONE ......" )
+        return nodeData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "createNodeCategoryGroup",
+          { component: "tmemberQuery > createNodeCategoryGroup" }
+        );
+      }
+    },
+  // ),
+
+  relatedNode: 
+  // combineResolvers(
+  //   IsAuthenticated,
+  //   IsOnlyOperator,
     async (parent, args, context, info) => {
       const { _id, relatedNode_id } = args.fields;
       console.log("Mutation > relatedNode > args.fields = ", args.fields);
@@ -192,12 +366,13 @@ module.exports = {
       }
 
       return nodeData;
-    }
-  ),
+    },
+  // ),
 
-  relatedNode_name: combineResolvers(
-    IsAuthenticated,
-    IsOnlyOperator,
+  relatedNode_name: 
+  // combineResolvers(
+  //   IsAuthenticated,
+  //   IsOnlyOperator,
     async (parent, args, context, info) => {
       const { name, relatedNode_name, weight, connection } = args.fields;
       console.log("Mutation > relatedNode_name > args.fields = ", args.fields);
@@ -282,8 +457,8 @@ module.exports = {
       }
 
       return nodeData;
-    }
-  ),
+    },
+  // ),
 };
 
 async function connect_node_to_subNode(nodeData, subNodes, weight = undefined) {

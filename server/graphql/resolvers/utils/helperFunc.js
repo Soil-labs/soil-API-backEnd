@@ -3,6 +3,8 @@ const { Configuration, OpenAIApi } = require("openai");
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
 
+// const md5 = require('md5'); // Used to hash the email address
+
 const {
   createNode_neo4j,
   updateNode_neo4j_serverID,
@@ -14,13 +16,13 @@ const arrayToKeyObject = async (arrayT,type) => {
 
     const nodeArr = []
     const nodeObj = {};
-    arrayT.forEach(obj => {
-    const id = obj._id.toString();
-    nodeObj[id] = {
-        ...obj,
-        type: type
-    }
-    nodeArr.push(id)
+    arrayT?.forEach(obj => {
+      const id = obj._id.toString();
+      nodeObj[id] = {
+          ...obj,
+          type: type
+      }
+      nodeArr.push(id)
     });
 
     return {
@@ -31,7 +33,11 @@ const arrayToKeyObject = async (arrayT,type) => {
 
 const getRandomIDs = async (arrayT, num) => {
     const randomIDs = [];
-    while (randomIDs.length < num) {
+    console.log("arrayT = " , arrayT)
+    mini = Math.min(num,arrayT.length)
+    console.log("mini = " , mini)
+    // asfd5
+    while (randomIDs.length < mini) {
         const randomIndex = Math.floor(Math.random() * arrayT.length);
         const randomID = arrayT[randomIndex];
         if (!randomIDs.includes(randomID)) {
@@ -62,6 +68,25 @@ const getRandomIDs = async (arrayT, num) => {
     }
   }
 
+  const  randomPicture = async() => {
+    try {
+
+      let randomNumber = Math.floor(Math.random() * 1070) + 1;
+
+      // Extract the URL of the large avatar picture from the response
+      const avatarUrl = `https://picsum.photos/id/${randomNumber}/200`
+  
+      // Return the URL of the avatar picture
+      return avatarUrl;
+    } catch (error) {
+      // Handle any errors that occur during the API call
+      console.error('Error fetching random avatar:', error.message);
+      throw error;
+    }
+  }
+
+
+
 function chooseAPIkey() {
 // openAI_keys = [
 //   "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",
@@ -78,6 +103,7 @@ let key = openAI_keys[randomIndex];
 return key;
 }
   
+
 
 async function useGPTchat(prompt) {
   
@@ -330,4 +356,5 @@ module.exports = {
     generateRandomID,
     addNewFakeUser,
     addNodesToFakeMember,
+    randomPicture,
   };

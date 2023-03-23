@@ -74,6 +74,13 @@ module.exports = `
         message: String
         profileIDs: [ID]
     }
+    input edenGPTsummaryProfileInput {
+        conversation: [messageChat]
+        memberID: ID
+    }
+    type edenGPTsummaryProfileOutput {
+        reply: String
+    }
     type edenGPTsearchProfilesOutput {
         reply: String
     }
@@ -87,7 +94,15 @@ module.exports = `
     }
 
     type messageMapKGOutput {
-        keywords: [keywordValue]
+        keywords: [KeywordValue]
+    }
+
+    input messageMapKG_V2Input {
+        message: String
+    }
+
+    type messageMapKG_V2Output {
+        keywords: [KeywordValue]
     }
 
 
@@ -97,10 +112,11 @@ module.exports = `
         userID: ID
     }
 
-    type keywordValue {
+    type KeywordValue {
         keyword: String
         confidence: Int
         nodeID: ID
+        node: Node
     }
     type edenGPTreplyMemoryOutput {
         reply: String
