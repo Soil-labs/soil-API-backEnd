@@ -541,6 +541,37 @@ module.exports = {
       );
     }
   },
+  edenGPTEndorseChatAPI: async (parent, args, context, info) => {
+    const { message, conversation, userID } = args.fields;
+    console.log("Query > edenGPTEndorseChatAPI > args.fields = ", args.fields);
+
+    systemPrompt = `
+      You are a Technical Performance Reviewer.  The only thing that you do is ask one question at a time to help understand the user's review another user on a project they worked together on.  You give as concise and short answers as possible.
+      `;
+
+    userQuestion = `Ask me a question about the user's skills being reviewed should have based on the context that you have.`;
+
+    try {
+      responseGPTchat = await useGPTchat(
+        message,
+        conversation,
+        systemPrompt,
+        userQuestion
+      );
+
+      return {
+        reply: responseGPTchat,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "edenGPTEndorseChatAPI",
+        {
+          component: "aiQuery > edenGPTEndorseChatAPI",
+        }
+      );
+    }
+  },
   messageMapKG_V2: async (parent, args, context, info) => {
     const { message } = args.fields;
     console.log("Query > messageMapKG_V2 > args.fields = ", args.fields);
