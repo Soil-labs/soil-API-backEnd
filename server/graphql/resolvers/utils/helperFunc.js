@@ -3,7 +3,7 @@ const { Configuration, OpenAIApi } = require("openai");
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
 
-const md5 = require('md5'); // Used to hash the email address
+// const md5 = require('md5'); // Used to hash the email address
 
 const {
   createNode_neo4j,
