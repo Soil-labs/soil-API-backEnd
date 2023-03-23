@@ -80,10 +80,13 @@ const {
   inputToGPT,
 } = require("./mutation/aiMutation");
 
-
 const { createError, deleteError } = require("./mutation/errorsMutation");
 
-const { saveCoreProductFeatureInteration,saveDailyLogin } = require("./mutation/edenMetricsMutation")
+const {
+  saveCoreProductFeatureInteration,
+  saveDailyLogin,
+  saveActionsPerformed,
+} = require("./mutation/edenMetricsMutation");
 
 module.exports = {
   Mutation: {
@@ -177,7 +180,8 @@ module.exports = {
 
     // -------------- EDEN METRICS MUTATION --------------
     saveCoreProductFeatureInteration,
-    saveDailyLogin
+    saveDailyLogin,
+    saveActionsPerformed,
   },
   Subscription: {
     memberUpdated,

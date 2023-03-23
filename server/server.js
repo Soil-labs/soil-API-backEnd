@@ -16,6 +16,7 @@ const authRoutes = require("./auth");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 
+
 require("dotenv").config();
 
 const typeDefs = require("./graphql/schema");
@@ -96,7 +97,9 @@ async function main() {
         useCreateIndex: true,
       }
     )
-    .then(() => console.log("Connected to db"))
+    .then(() => {
+      console.log("Connected to db")
+    })
     .catch((err) => console.log(err.message));
 
   // Data parsing
