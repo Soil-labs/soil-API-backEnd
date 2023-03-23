@@ -118,6 +118,7 @@ module.exports = `
           membersStats(fields: statsInput):[ResultCount]
           lurkersContributorsQuery:LurkersAndContributors
           activeMembersStats(fields: statsInput):[ResultCount]
+          activeUsersQueryStats(fields: activeUsersInput):[ResultCount2]
           
       
         }

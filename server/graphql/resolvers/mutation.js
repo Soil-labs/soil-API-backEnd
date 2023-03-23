@@ -10,7 +10,8 @@ const {
   // addSkillToMember,
   endorseAttribute,
   memberUpdated,
-  addEndorsement,createFakeUser,
+  addEndorsement,
+  createFakeUser,
 } = require("./mutation/memberMutation");
 const {
   updateProject,
@@ -80,10 +81,13 @@ const {
   inputToGPT,
 } = require("./mutation/aiMutation");
 
-
 const { createError, deleteError } = require("./mutation/errorsMutation");
 
-const { saveCoreProductFeatureInteration,saveDailyLogin } = require("./mutation/edenMetricsMutation")
+const {
+  saveCoreProductFeatureInteration,
+  saveDailyLogin,
+  saveActionsPerformed,
+} = require("./mutation/edenMetricsMutation");
 
 module.exports = {
   Mutation: {
@@ -98,7 +102,8 @@ module.exports = {
     addFavoriteProject,
     addPreferencesToMember,
     // addSkillToMember,
-    addEndorsement,createFakeUser,
+    addEndorsement,
+    createFakeUser,
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
@@ -177,7 +182,8 @@ module.exports = {
 
     // -------------- EDEN METRICS MUTATION --------------
     saveCoreProductFeatureInteration,
-    saveDailyLogin
+    saveDailyLogin,
+    saveActionsPerformed,
   },
   Subscription: {
     memberUpdated,

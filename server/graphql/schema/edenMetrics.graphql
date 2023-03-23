@@ -44,4 +44,31 @@ scalar Date
      year: Int
   }
 
+  enum actionTypeEnum {
+    # the type of actions that the user perfomed on the site
+    searchProfile
+    messageUser
+  }
+
+  enum range2 {
+     months
+     weekly
+     daily
+  }
+
+  input saveActionsPerformedInput {
+      actionType: actionTypeEnum
+  }
+
+   input activeUsersInput{
+    startDate: Date
+    endDate: Date
+    range: range2
+  }
+
+   type ResultCount2 {
+      date: String
+      count: Int
+  }
+
 `

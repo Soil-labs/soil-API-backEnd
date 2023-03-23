@@ -92,6 +92,30 @@ module.exports = {
       }
     }
   ),
+  saveActionsPerformed: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, { user }, info) => {
+      const { actionType } = args.fields;
+      try {
+        await EdenMetrics.findOneAndUpdate(
+          { memberID: user._id },
+          {
+            $push: { actions: { actionType: actionType, actionDate: new Date() } },
+          },
+          { new: true }
+        );
+        return true;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "saveActionsPerformed",
+          {
+            component: "edenMetricsMutation > saveActionsPerformed",
+          }
+        );
+      }
+    }
+  ),
 };
 
 //activeUserLogin

@@ -95,6 +95,7 @@ const {
   membersStats,
   lurkersContributorsQuery,
   activeMembersStats,
+  activeUsersQueryStats
 } = require("./query/edenMetricsQuery");
 
 const { errors } = require("./query/errorQuery");
@@ -204,5 +205,6 @@ module.exports = {
     membersStats,
     lurkersContributorsQuery,
     activeMembersStats,
+    activeUsersQueryStats
   },
 };

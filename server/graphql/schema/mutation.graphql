@@ -105,5 +105,6 @@ module.exports = `
         # -------------- EDEN METRICS --------------
         saveCoreProductFeatureInteration(fields:saveCoreProductFeatureInterationInput):Boolean
         saveDailyLogin(fields: saveDailyLoginInput):Boolean
+        saveActionsPerformed(fields: saveActionsPerformedInput):Boolean
     }
 `
