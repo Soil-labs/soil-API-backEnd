@@ -86,7 +86,6 @@ async function useGPTchatHelloWorld() {
   return response.data.choices[0].message.content;
 }
 
-<<<<<<< HEAD
 async function useGPTchat(userNewMessage,discussion,systemPrompt,userQuestion = "") {
 
   discussion.unshift({
@@ -101,18 +100,6 @@ async function useGPTchat(userNewMessage,discussion,systemPrompt,userQuestion = 
 
 
   
-=======
-async function useGPTchat(
-  userNewMessage,
-  discussion,
-  systemPrompt,
-  userQuestion = ""
-) {
-  discussion.push({
-    role: "user",
-    content: userNewMessage + "\n" + userQuestion,
-  });
->>>>>>> develop
 
   discussion.unshift({
     role: "system",
@@ -142,22 +129,12 @@ async function useGPTchat(
   return response.data.choices[0].message.content;
 }
 
-<<<<<<< HEAD
 async function useGPTchatSimple(prompt,temperature=0.7) {
   
   discussion = [{
     "role": "user",
     "content": prompt
   }]
-=======
-async function useGPTchatSimple(prompt) {
-  discussion = [
-    {
-      role: "user",
-      content: prompt,
-    },
-  ];
->>>>>>> develop
 
   let OPENAI_API_KEY = chooseAPIkey();
   response = await axios.post(
@@ -236,7 +213,6 @@ async function findBestEmbedings(message, filter, topK = 3) {
     };
   }
 
-<<<<<<< HEAD
   // console.log("filter = " , filter)
   // console.log("queryRequest = " , queryRequest)
   
@@ -246,21 +222,12 @@ async function findBestEmbedings(message, filter, topK = 3) {
 
 
   // console.log("queryResponse = " , queryResponse)
-=======
-  console.log("filter = ", filter);
-  console.log("queryRequest = ", queryRequest);
-
-  const queryResponse = await index.query({ queryRequest });
-
-  console.log("queryResponse = ", queryResponse);
->>>>>>> develop
 
   // const contexts = queryResponse.matches.map(x => x.metadata.name + ": " + x.metadata.text);
 
   return queryResponse.matches;
 }
 
-<<<<<<< HEAD
 async function findBestEmbedingsArray(arr,filter,topK = 3) {
 
   //  filter: {
@@ -421,8 +388,6 @@ async function findBestEmbedingsArray(arr,filter,topK = 3) {
 }
 
 
-=======
->>>>>>> develop
 async function createEmbedingsGPT(words_n) {
   // words_n = ["node.js", "react", "angular"];
   let OPENAI_API_KEY = chooseAPIkey();
@@ -1005,25 +970,12 @@ module.exports = {
     try {
       // -------------- Find best keywrods from embeding -------------
       const filter = {
-<<<<<<< HEAD
         label: "AI_KG4_Context",
       }
 
       bestKeywordsFromEmbed = await findBestEmbedings(message,filter ,topK = 7)
 
       // console.log("bestKeywordsFromEmbed = " , bestKeywordsFromEmbed)
-=======
-        label: "KnowledgeGraph",
-      };
-
-      bestKeywordsFromEmbed = await findBestEmbedings(
-        message,
-        filter,
-        (topK = 20)
-      );
-
-      console.log("bestKeywordsFromEmbed = ", bestKeywordsFromEmbed);
->>>>>>> develop
       // -------------- Find best keywrods from embeding -------------
 
       // -------------- map values of keywords -------------
@@ -1049,15 +1001,9 @@ module.exports = {
         };
       });
 
-<<<<<<< HEAD
       // console.log("bestKeywordsFromEmbed_cl = " , bestKeywordsFromEmbed_cl)
       // console.log("minValue = " , minValue)
       // console.log("maxValue = " , maxValue)
-=======
-      console.log("bestKeywordsFromEmbed_cl = ", bestKeywordsFromEmbed_cl);
-      console.log("minValue = ", minValue);
-      console.log("maxValue = ", maxValue);
->>>>>>> develop
 
       bestKeywordsFromEmbed_map = remapValues(
         bestKeywordsFromEmbed_cl,
@@ -1082,23 +1028,14 @@ module.exports = {
             originalKeyword: element.keyword,
           };
         }
-<<<<<<< HEAD
         
         if (element.value >= 4 && element.originalValue >= 0.74){
-=======
-
-        if (element.value >= 5 && element.originalValue >= 0.74) {
->>>>>>> develop
           // if (element.value >= 6 && element.originalValue >= 0.76){
           // keywords_str += element.keyword + " | "
           // keywords_str += element.keyword + ": "  +element.context.replace("\n","").replace("\n","")+  " | \n\n"
           // keywords_str += element.keyword + ": " + element.value + " - " +element.context.replace("\n","").replace("\n","")+  " | "
-<<<<<<< HEAD
           // keywords_str += element.keyword + ": " + element.value +  " | "
           keywords_str += "*" + element.keyword + "* \n "
-=======
-          keywords_str += element.keyword + ": " + element.value + " | ";
->>>>>>> develop
 
           numKeywords += 1;
         }
@@ -1116,7 +1053,6 @@ module.exports = {
 
         // prompt_general += "You have as input a paragraph, and keywords together with their explanation \n\n"
         // prompt_general += "You have as input a paragraph, and keywords with the score of how related they are, from 0 to 10 together with their explanation \n\n"
-<<<<<<< HEAD
         // prompt_general += "You have as input a paragraph, and keywords with the score of how related they are, from 0 to 10 \n\n"
         prompt_general += "You have as input a paragraph, and keywords \n\n"
 
@@ -1136,29 +1072,12 @@ module.exports = {
         // prompt_general += "Choose keywords that best describe the paragraph! Don't put any unesesary keywords! you can choose from 0 to 5 keywords \n\n" + "keywords: "
 
         // console.log("prompt_general = " , prompt_general)
-=======
-        prompt_general +=
-          "You have as input a paragraph, and keywords with the score of how related they are, from 0 to 10 \n\n";
-
-        // prompt_general += "You try to find the skills and interest from the paragraph \n\n"
-
-        // prompt_general += "Choose the keywords that best describe the paragraph! you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
-        // prompt_general += "Choose the smallest number of keywords that describe accurately the paragraph! you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" + "Result: "
-        prompt_general +=
-          "Choose only keywords that exist on the paragraph! choose the smallest number of keywords to describe paragraph!  you can give 0 keywords as response for no keywords! you can choose maximum 8 keywords \n\n" +
-          "Result: ";
-        // prompt_general += "Try to choose the smallest number of keywords that best describe the paragraph! you can choose from 0 to 5 keywords \n\n" + "keywords: "
-        // prompt_general += "Choose keywords that best describe the paragraph! Don't put any unesesary keywords! you can choose from 0 to 5 keywords \n\n" + "keywords: "
-
-        console.log("prompt_general = ", prompt_general);
->>>>>>> develop
         // asfd1
 
         // res_gpt = await useGPT(prompt_general,0.7,"text-curie-001")
         // res_gpt = await useGPT(prompt_general)
         res_gpt = await useGPTchatSimple(prompt_general);
 
-<<<<<<< HEAD
         res_gpt = res_gpt.replace("Keywords:","")
 
         console.log("res_gpt = " , res_gpt)
@@ -1244,16 +1163,6 @@ module.exports = {
         while ((match = regex.exec(res_gpt))) {
           // console.log(match[1]); // print each keyword
           keywords.push(match[1])
-=======
-        console.log("res_gpt = ", res_gpt);
-
-        if (res_gpt.includes(",")) {
-          keywords = res_gpt.split(",");
-        } else if (res_gpt.includes("|")) {
-          keywords = res_gpt.split("|");
-        } else {
-          keywords = [res_gpt];
->>>>>>> develop
         }
         // sadf5
         // if (res_gpt.includes(",")){
@@ -1266,18 +1175,11 @@ module.exports = {
 
         keywords = keywords.map((strT) => strT.replace("\n", "").trim());
 
-<<<<<<< HEAD
         console.log("keywords = " , keywords)
 
         keywordsValues = []
         keywordsNameOnly = []
         keywords.forEach( (keyword, index) => {
-=======
-        keywordsValues = [];
-        keywordsNameOnly = [];
-        keywords.forEach((keyword, index) => {
-          // console.log("keyword,keywordValObj[keyword] = " , keyword,keywordValObj[keyword.toLowerCase()])
->>>>>>> develop
 
           if (keepKeyword[index] == true ){
             let keyword_cl = keyword.split(":").shift();
@@ -1292,28 +1194,7 @@ module.exports = {
           }
 
 
-<<<<<<< HEAD
         })
-=======
-          if (keywordValObj[keyword_cl.toLowerCase()]) {
-            keywordsValues.push({
-              keyword: keyword_cl,
-              confidence: parseInt(
-                keywordValObj[keyword_cl.toLowerCase()].value
-              ),
-            });
-            keywordsNameOnly.push(
-              keywordValObj[keyword_cl.toLowerCase()].originalKeyword
-            );
-          }
-          // else {
-          //   keywordsValues.push({
-          //     keyword: keyword_cl,
-          //     confidence: undefined
-          //   })
-          // }
-        });
->>>>>>> develop
 
         let nodeData = await Node.find({ name: keywordsNameOnly }).select(
           "_id name"
@@ -1327,17 +1208,11 @@ module.exports = {
         keywordsValues = keywordsValues.map((keyword) => {
           return {
             ...keyword,
-<<<<<<< HEAD
             nodeID: nodeDataObj[keyword.keyword]
           }
         })
         // ------------- Put Results Together ----------
 
-=======
-            nodeID: nodeDataObj[keyword.keyword],
-          };
-        });
->>>>>>> develop
 
         // console.log("nodeData = " , nodeData)
         // console.log("keywordsNameOnly = " , keywordsNameOnly)
@@ -1347,11 +1222,7 @@ module.exports = {
       }
       // -------------- Find best keywrods from prompt engineering -------------
 
-<<<<<<< HEAD
       // console.log("keywordValObj = " , keywordValObj)
-=======
-      console.log("keywordValObj = ", keywordValObj);
->>>>>>> develop
 
       console.log("keywordsValues = ", keywordsValues);
 
@@ -1542,7 +1413,6 @@ module.exports = {
     console.log("Query > edenGPTreplyChatAPI > args.fields = ", args.fields);
     try {
 
-<<<<<<< HEAD
       systemPrompt = `
       You are a recruiter, The only think that you do is ask only 1 questions at a time to understand the skills that the candidate should have.
       You give as consise as small answeres as possible
@@ -1666,31 +1536,6 @@ module.exports = {
         }
       );
     }
-=======
-    systemPrompt = `
-      You are a recruiter, The only think that you do is ask one questions at a time to understand the skills that the candidate should have.
-      You give as consise as small answeres as possible
-      `;
-    responseGPTchat = await useGPTchat(
-      message,
-      conversation,
-      systemPrompt,
-      "ask me questino what other skills candidate should have based on the cntext that you have"
-    );
-
-    return {
-      reply: responseGPTchat,
-    };
-    // } catch (err) {
-    //   throw new ApolloError(
-    //     err.message,
-    //     err.extensions?.code || "edenGPTreplyChatAPI",
-    //     {
-    //       component: "aiQuery > edenGPTreplyChatAPI",
-    //     }
-    //   );
-    // }
->>>>>>> develop
   },
   edenGPTEndorseChatAPI: async (parent, args, context, info) => {
     const { message, conversation, userID } = args.fields;
