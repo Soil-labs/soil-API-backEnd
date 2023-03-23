@@ -202,6 +202,54 @@ module.exports = {
         );
       }
     },
+    categoryNodes: async (parent, args, context, info) => {
+      // console.log("parent = " , parent)
+
+      try {
+        const categoryNodes = parent.categoryNodes;
+
+        // console.log("categoryNodes = ", parent);
+
+        nodeData = await Node.find({ _id: categoryNodes }).select("_id name node");
+
+        
+
+        return nodeData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "userResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    groupNodes: async (parent, args, context, info) => {
+      // console.log("parent = " , parent)
+
+      try {
+        const groupNodes = parent.groupNodes;
+
+        // console.log("groupNodes = ", parent);
+
+        nodeData = await Node.find({ _id: groupNodes }).select("_id name node");
+
+        
+
+        return nodeData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "userResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
     relatedNodes: async (parent, args, context, info) => {
       // console.log("parent = " , parent)
 

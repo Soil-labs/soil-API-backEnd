@@ -97,10 +97,12 @@ module.exports = `
           findMessage(fields: findMessageInputPaginated): PaginatedMessages
           edenGPTreply(fields: edenGPTreplyInput): edenGPTreplyOutput
           messageMapKG(fields: messageMapKGInput): messageMapKGOutput
+          messageMapKG_V2(fields: messageMapKG_V2Input): messageMapKG_V2Output
           edenGPTreplyMemory(fields: edenGPTreplyMemoryInput): edenGPTreplyMemoryOutput
           edenGPTreplyChatAPI(fields: edenGPTreplyChatAPIInput): edenGPTreplyChatAPIOutput
           edenGPTEndorseChatAPI(fields: edenGPTEndorseChatAPIInput): edenGPTEndorseChatAPIOutput
           edenGPTsearchProfiles(fields: edenGPTsearchProfilesInput): edenGPTsearchProfilesOutput
+          edenGPTsummaryProfile(fields: edenGPTsummaryProfileInput): edenGPTsummaryProfileOutput
 
           # ---------- GRAPH VISUAL QUERY -------------
           findMemberGraph(fields: findMemberGraphInput): Graph
@@ -109,6 +111,9 @@ module.exports = `
           dynamicSearchToProjectGraph(fields: dynamicSearchToProjectGraphInput): Graph
           dynamicSearchGraph(fields: dynamicSearchGraphInput): Graph
           dynamicSearchToMemberGraph(fields: dynamicSearchToMemberGraphInput): Graph
+          dynamicSearchToMemberGraphV2(fields: dynamicSearchToMemberGraphV2Input): Graph
+          dynamicSearchToMemberGraphGPT(fields: dynamicSearchToMemberGraphGPTInput): Graph
+          dynamicSearchToMemberCategoryGroup(fields: dynamicSearchToMemberCategoryGroupInput): Graph
           findMemberToMemberGraph(fields: findMemberToMemberGraphInput ): Graph
           findMultipleMembersProjectsGraph(fields: findMultipleMembersProjectsGraphInput ): Graph
           findOneMemberToMembersGraph(fields: findOneMemberToMembersGraphInput): Graph

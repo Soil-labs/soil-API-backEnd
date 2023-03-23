@@ -10,7 +10,7 @@ const {
   // addSkillToMember,
   endorseAttribute,
   memberUpdated,
-  addEndorsement,createFakeUser,
+  addEndorsement,createFakeUser,uploadUserDataGPT,
 } = require("./mutation/memberMutation");
 const {
   updateProject,
@@ -38,7 +38,7 @@ const {
 const {
   createNode,
   relatedNode,
-  relatedNode_name,
+  relatedNode_name,createNodeCategoryGroup,
 } = require("./mutation/nodeMutation");
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
 const { updateServer } = require("./mutation/serverMutation");
@@ -98,7 +98,7 @@ module.exports = {
     addFavoriteProject,
     addPreferencesToMember,
     // addSkillToMember,
-    addEndorsement,createFakeUser,
+    addEndorsement,createFakeUser,uploadUserDataGPT,
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
@@ -125,7 +125,7 @@ module.exports = {
     // ------------- NODE MUTATION -----------------
     createNode,
     relatedNode,
-    relatedNode_name,
+    relatedNode_name,createNodeCategoryGroup,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,

@@ -3,6 +3,13 @@ module.exports = `
     type Graph {
         nodesVisual: [NodeVisual]
         edges: [Edge]
+        combos: [Combo]
+    }
+    
+    type Combo {
+        id: ID
+        label: String
+        style: StyleNodeOut
     }
 
     type NodeVisual {
@@ -13,6 +20,7 @@ module.exports = `
         type: String
         avatar: String
         extraDistanceRation: Float
+        comboId: String
 
         style: StyleNodeOut
     }
@@ -116,6 +124,41 @@ module.exports = `
         edgeSettings: [edgeSetting]
     }
     input dynamicSearchToMemberGraphInput {
+        nodesID: [ID]
+        memberID: ID
+        showAvatar: Boolean
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
+    }
+
+    input messageChat {
+        role: String
+        content: String
+    }
+
+    input dynamicSearchToMemberGraphGPTInput {
+        nodesID: [ID]
+        memberID: ID
+
+        conversation: [messageChat]
+
+        showOnlyRelevant: Boolean
+
+        showAvatar: Boolean
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
+    }
+
+    input dynamicSearchToMemberCategoryGroupInput {
+        nodesID: [ID]
+        memberID: ID
+        showAvatar: Boolean
+        
+        nodeSettings: [nodeSetting]
+        edgeSettings: [edgeSetting]
+    }
+
+    input dynamicSearchToMemberGraphV2Input {
         nodesID: [ID]
         memberID: ID
         showAvatar: Boolean

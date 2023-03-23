@@ -15,6 +15,7 @@ module.exports = `
         # addSkillToMember(fields:addSkillToMember_Input!):Members
         addEndorsement(fields: addEndorsementInput ): Members
         createFakeUser(fields: createFakeUserInput ): Members
+        uploadUserDataGPT(fields: uploadUserDataGPTInput ): Members
         endorseAttribute(fields:endorseAttributeInput!): Members
 
 
@@ -47,6 +48,7 @@ module.exports = `
         createNode(fields:createNodeInput): Node
         relatedNode(fields:relatedNodeInput): Node
         relatedNode_name(fields:relatedNode_nameInput): Node
+        createNodeCategoryGroup(fields:createNodeCategoryGroupInput): Node
 
 
         #  ---------- ROLE MUTATIONS -------
