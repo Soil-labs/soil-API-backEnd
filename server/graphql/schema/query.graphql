@@ -100,6 +100,7 @@ module.exports = `
           messageMapKG_V2(fields: messageMapKG_V2Input): messageMapKG_V2Output
           edenGPTreplyMemory(fields: edenGPTreplyMemoryInput): edenGPTreplyMemoryOutput
           edenGPTreplyChatAPI(fields: edenGPTreplyChatAPIInput): edenGPTreplyChatAPIOutput
+          edenGPTEndorseChatAPI(fields: edenGPTEndorseChatAPIInput): edenGPTEndorseChatAPIOutput
           edenGPTsearchProfiles(fields: edenGPTsearchProfilesInput): edenGPTsearchProfilesOutput
           edenGPTsummaryProfile(fields: edenGPTsummaryProfileInput): edenGPTsummaryProfileOutput
 

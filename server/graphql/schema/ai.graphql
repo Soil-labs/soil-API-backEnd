@@ -139,6 +139,17 @@ module.exports = `
         # keywords: [String]
     }
 
+    input edenGPTEndorseChatAPIInput {
+        message: String
+        conversation: [messageChat]
+        userID: ID
+    }
+
+    type edenGPTEndorseChatAPIOutput {
+        reply: String
+        # keywords: [String]
+    }
+
     input useAI_OnMessageInput {
         message: String
         cash: Boolean

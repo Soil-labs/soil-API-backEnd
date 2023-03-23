@@ -6,11 +6,13 @@ const {
   matchMembersToProject,
   matchMembersToProjectRole,
   matchPrepareSkillToMembers,
-  matchPrepareNode,matchPrepareNode_AI4,
+  matchPrepareNode,
+  matchPrepareNode_AI4,
   matchPrepareNode_old,
   matchPrepareSkillToProjectRoles,
   matchSkillsToMembers,
-  matchNodesToMembers,matchNodesToMembers_AI4,
+  matchNodesToMembers,
+  matchNodesToMembers_AI4,
   setAllMatch_v2,
   matchNodesToMembers_old,
   matchSkillsToProjects,
@@ -68,7 +70,8 @@ const {
 } = require("./query/skillSubCategoryQuery");
 
 const { findChat } = require("./query/chatQuery");
-const { findMessage, edenGPTreply,messageMapKG,messageMapKG_V2,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTsearchProfiles,edenGPTsummaryProfile} = require("./query/aiQuery");
+const { findMessage, edenGPTreply,messageMapKG,messageMapKG_V2,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTsearchProfiles,edenGPTsummaryProfile,edenGPTEndorseChatAPI} = require("./query/aiQuery");
+
 const {
   findMemberGraph,
   findProjectGraph,
@@ -112,11 +115,13 @@ module.exports = {
     matchMembersToProject,
     matchMembersToProjectRole,
     matchPrepareSkillToMembers,
-    matchPrepareNode,matchPrepareNode_AI4,
+    matchPrepareNode,
+    matchPrepareNode_AI4,
     matchPrepareNode_old,
     matchPrepareSkillToProjectRoles,
     matchSkillsToMembers,
-    matchNodesToMembers,matchNodesToMembers_AI4,
+    matchNodesToMembers,
+    matchNodesToMembers_AI4,
     setAllMatch_v2,
     matchNodesToMembers_old,
     matchSkillsToProjects,
@@ -169,7 +174,8 @@ module.exports = {
     findChat,
 
     //----------- AI QUERY ------------------
-    findMessage,edenGPTreply,messageMapKG,messageMapKG_V2,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTsearchProfiles,edenGPTsummaryProfile,
+    findMessage,edenGPTreply,messageMapKG,messageMapKG_V2,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTsearchProfiles,edenGPTsummaryProfile,edenGPTEndorseChatAPI,
+
 
     //----------- GRAPH VISUAL QUERY ------------------
     findMemberGraph,
