@@ -439,7 +439,7 @@ async function createNodesEdgesSkillsCategoriesV2 (nodesObj,memberID,nodeSetting
       // const keysArray = Object.keys(caetgoryObjNew);
       // const randomIndex = Math.floor(Math.random() * keysArray.length);
       // const nodeID2 = keysArray[randomIndex];
-
+ 
       if (nodeID1 != nodeID2){
         edgeArrNew.unshift({
           source: nodeID1,
