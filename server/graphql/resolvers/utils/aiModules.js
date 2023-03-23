@@ -20,14 +20,14 @@ const nodes_aiModule = async (nodesID,weightModules,memberObj) => {
     memberObj = await nodesFindMembers(nodeData,memberObj)
 
     // console.log("memberObj = " , memberObj)
-    // showObject(memberObj,"memberObj")
+    await showObject(memberObj,"memberObj")
     // asf1
 
 
     memberObj = await membersScoreMap(memberObj,weightModulesObj)
 
     // console.log("change = " , change)
-    // await showObject(memberObj,"memberObj")
+    await showObject(memberObj,"memberObj")
 
     // asdf5
 
@@ -49,6 +49,8 @@ const totalScore_aiModule = async (memberObj,weightModules) => {
     for (const [memberID, member] of Object.entries(memberObj)) {
         let scoreOriginalTotal = 0;
 
+        console.log("member = " , member.nodesTotal)
+
         if (member.nodesTotal) {
             if (weightModules["node_total"]) {
                 scoreOriginalTotal += member.nodesTotal.score * (weightModules["node_total"].weight*0.01);
@@ -66,6 +68,8 @@ const totalScore_aiModule = async (memberObj,weightModules) => {
             }
         }
     }
+
+    console.log("max_S,min_S = " , max_S,min_S)
 
     for (const [memberID, member] of Object.entries(memberObj)) {
         let scoreOriginalTotal = member.total.scoreOriginal;
@@ -131,19 +135,41 @@ const membersScoreMap = async (memberObj,weightModulesObj) => {
         let nodes = member.nodes;
         for (const [nodeID, node] of Object.entries(nodes)) {
             // score += node.score;
-            if (node.type == "sub_expertise") {
-                if (weightModulesObj["node_subExpertise"]) {
-                    score += node.score * (weightModulesObj["node_subExpertise"].weight*0.01);
+
+            if (weightModulesObj[`node_${node.type}`]) {
+                console.log("change = 1" , `node_${node.type}`)
+                score += node.score * (weightModulesObj[`node_${node.type}`].weight*0.01);
+            } else {
+                if (weightModulesObj["node_else"]) {
+                    console.log("change = 2" , `node_else`)
+
+                    score += node.score * (weightModulesObj["node_else"].weight*0.01);
                 } else {
-                    score += node.score;
-                }
-            } else if (node.type == "sub_typeProject") {
-                if (weightModulesObj["node_subTypeProject"]) {
-                    score += node.score * (weightModulesObj["node_subTypeProject"].weight*0.01);
-                } else {
+                    console.log("change = 3" , `node nothing`)
                     score += node.score;
                 }
             }
+            
+
+            // if (node.type == "sub_expertise") {
+                // if (weightModulesObj["node_subExpertise"]) {
+                //     score += node.score * (weightModulesObj["node_subExpertise"].weight*0.01);
+                // } else {
+                //     score += node.score;
+                // }
+            // } else if (node.type == "sub_typeProject") {
+            //     if (weightModulesObj["node_subTypeProject"]) {
+            //         score += node.score * (weightModulesObj["node_subTypeProject"].weight*0.01);
+            //     } else {
+            //         score += node.score;
+            //     }
+            // } else {
+                // if (weightModulesObj["node_else"]) {
+                //     score += node.score * (weightModulesObj["node_else"].weight*0.01);
+                // } else {
+                //     score += node.score;
+                // }
+            // }
         }
         
         if (score > max_S) max_S = score;
@@ -157,13 +183,16 @@ const membersScoreMap = async (memberObj,weightModulesObj) => {
     }
     // ----------- Find original Scores every Member -----------
 
+    // console.log("max_S,min_S = " , max_S,min_S)
+    // asdf12
+
 
     // ----------- Map Scores every Member -----------
     for (const [memberID, member] of Object.entries(memberObj)) {
         let score = member.nodesTotal.scoreOriginal;
         let scoreMap = mapValue(score, min_S, max_S, newMin_members, newMax_members);
 
-        console.log("scoreMap = " , scoreMap, min_S, max_S, newMin_members, newMax_members)
+        // console.log("scoreMap = " , scoreMap, min_S, max_S, newMin_members, newMax_members)
 
         memberObj[memberID].nodesTotal.score = scoreMap;
     }
@@ -274,7 +303,8 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
 function mapValue(value, oldMin, oldMax, newMin, newMax) {
     var oldRange = oldMax - oldMin;
     if (oldRange == 0){
-        return newMin;
+        // return newMax*0.9;
+        return 0.1;
     } else {
         var newRange = newMax - newMin;
         var newValue = ((value - oldMin) * newRange / oldRange) + newMin;

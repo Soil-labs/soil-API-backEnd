@@ -17,6 +17,8 @@ const nodeSchema = mongoose.Schema({
   relatedNodes: [mongoose.Schema.ObjectId],
   subNodes: [mongoose.Schema.ObjectId],
   aboveNodes: [mongoose.Schema.ObjectId],
+  categoryNodes: [mongoose.Schema.ObjectId],
+  groupNodes: [mongoose.Schema.ObjectId],
 
   state: {
     // if this node is approved to be on the Knowedge Graph

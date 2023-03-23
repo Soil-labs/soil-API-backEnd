@@ -538,4 +538,7 @@ module.exports = `
         expertise: [nodeCategoryInput]
         interests: [nodeCategoryInput]
     }
+    input uploadUserDataGPTInput {
+        memberID: ID
+    }
 `

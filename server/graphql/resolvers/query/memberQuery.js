@@ -1451,6 +1451,9 @@ module.exports = {
 
       memberObj = await totalScore_aiModule(memberObj,weightModules)
 
+      // console.log("memberObj = " , memberObj)
+      // asdf2
+
       memberArray = await sortArray_aiModule(memberObj)
 
       // await showObject(memberObj,"memberObj")

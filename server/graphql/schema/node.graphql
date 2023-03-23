@@ -9,6 +9,9 @@ module.exports = `
         subNodes: [Node]
         aboveNodes: [Node]
 
+        categoryNodes: [Node]
+        groupNodes: [Node]
+
         state: stateEnum
         
 
@@ -85,6 +88,15 @@ module.exports = `
         relatedNode_name: String
         weight: String
         connection: String
+    }
+
+    input createNodeCategoryGroupInput {
+        name: String
+        node: String
+        categoryName: String
+        categoryID: ID
+        groupName: String
+        groupID: String
     }
 
     input createNodeInput {

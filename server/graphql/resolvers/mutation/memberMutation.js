@@ -4,9 +4,12 @@ const { Skills } = require("../../../models/skillsModel");
 const { Projects } = require("../../../models/projectsModel");
 const { RoleTemplate } = require("../../../models/roleTemplateModal");
 const { EdenMetrics } = require("../../../models/edenMetrics");
+const axios = require("axios");
 
-const {arrayToKeyObject,getRandomIDs,fetchRandomAvatar,useGPTchat,generateRandomID,addNewFakeUser,addNodesToFakeMember} = require("../utils/helperFunc");
 
+const {arrayToKeyObject,getRandomIDs,fetchRandomAvatar,randomPicture,useGPTchat,generateRandomID,addNewFakeUser,addNodesToFakeMember} = require("../utils/helperFunc");
+
+const { PineconeClient } = require("@pinecone-database/pinecone");
 const { ApolloError } = require("apollo-server-express");
 const { driver } = require("../../../../server/neo4j_config");
 const {
@@ -30,6 +33,105 @@ const { ACCESS_LEVELS } = require("../../../auth/constants");
 
 const { PubSub } = require("graphql-subscriptions");
 const pubsub = new PubSub();
+
+
+
+function chooseAPIkey() {
+  // openAI_keys = [
+  //   "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",
+  //   // "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",
+  //   "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",
+  //   "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",
+  // ];
+  openAI_keys = ["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"];
+
+  // randomly choose one of the keys
+  let randomIndex = Math.floor(Math.random() * openAI_keys.length);
+  let key = openAI_keys[randomIndex];
+
+  return key;
+}
+
+async function createEmbedingsGPT(words_n) {
+  // words_n = ["node.js", "react", "angular"];
+  let OPENAI_API_KEY = chooseAPIkey();
+  response = await axios.post(
+    "https://api.openai.com/v1/embeddings",
+    {
+      input: words_n,
+      model: "text-embedding-ada-002",
+      // model: "text-embedding-ada-002",
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+    }
+  );
+
+  res = response.data.data.map((obj) => {
+    return obj.embedding;
+  });
+
+  // console.log("res = ", res);
+  return res;
+}
+
+
+async function generate12DigitID(inputString) {
+  // Incredible funciton
+  // take any string, that can be any length, and make it a 12 digit ID that will be exactly the same for the same input, but always different for a different input
+
+  const encoder = new TextEncoder();
+  const data = encoder.encode(inputString);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(digest));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  const id = hashHex.slice(0, 12);
+  
+  return id;
+}
+
+
+
+async function upsertEmbedingPineCone(data,ID = undefined) {
+
+
+  embedding = await createEmbedingsGPT(data.text)
+
+  const pinecone = new PineconeClient();
+  await pinecone.init({
+    environment: "us-east1-gcp",
+    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+  });
+
+
+  const index = await pinecone.Index("profile-eden-information");
+
+  if (ID == undefined) ID = await generate12DigitID(data.text)
+
+
+
+
+  const upsertRequest = {
+    vectors: [
+      {
+        id: ID,
+        values: embedding,
+        metadata: {
+          text: data.text,
+          _id: data._id,
+          label: data.label,
+        }
+      },
+    ],
+  };
+
+  const upsertResponse = await index.upsert({upsertRequest});
+
+  return upsertResponse
+}
 
 module.exports = {
   addNewMember: combineResolvers(
@@ -1618,12 +1720,82 @@ module.exports = {
       );
     }
   },
+  uploadUserDataGPT: async (parent, args, context, info) => {
+    const { memberID } = args.fields;
+    console.log("Mutation > uploadUserDataGPT > args.fields = ", args.fields);
+
+
+    if (!memberID) throw new Error("The memberID is required🔥");
+    
+    let membersData = await Members.findOne({ _id: memberID });
+
+
+    try {
+
+      console.log("membersData = " , membersData)
+
+
+      // ------------ Upload Bio ------------
+      upsertDoc = await upsertEmbedingPineCone({
+        text: membersData.bio,
+        _id: memberID,
+        label: "bio",
+        category: "user_data"
+      })
+      // ------------ Upload Bio ------------
+
+      // ------------ Upload Nodes ------------
+      // membersData to IDs
+      let nodesID = membersData.nodes.map((item) => item._id)
+      let nodesData = await Node.find({ _id: nodesID }).select("_id name")
+      
+      for (let i = 0; i < nodesData.length; i++) {
+        const node = nodesData[i];
+        upsertDoc = await upsertEmbedingPineCone({
+          text: node.name,
+          _id: memberID,
+          label: "node",
+          category: "user_data"
+        })
+      }
+      // ------------ Upload Nodes ------------
+
+      // ------------ Upload previousProjects ------------
+      for (let i = 0; i < membersData.previousProjects.length; i++) {
+        const project = membersData.previousProjects[i];
+        upsertDoc = await upsertEmbedingPineCone({
+          text: "Project Title: " + project.title + "\n" + "Project Description: " + project.description,
+          _id: memberID,
+          label: "previusProject",
+          category: "user_data"
+        })
+      }
+      // ------------ Upload previousProjects ------------
+
+
+      return membersData
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "uploadUserDataGPT",
+        { component: "memberMutation > uploadUserDataGPT" }
+      );
+    }
+  },
   createFakeUser: async (parent, args, context, info) => {
     const { expertise,interests } = args.fields;
     console.log("Mutation > createFakeUser > args.fields = ", args.fields);
     try {
+
       
       let userData = {}
+
+      // --------- make random ID --------
+      const randomID = await generateRandomID(18)
+      // console.log("randomID = " , randomID) // TODO: remove
+      userData._id = randomID
+      // --------- make random ID --------
 
       // ----------- array of IDs and object of nodes -----------
       res = await arrayToKeyObject(expertise,"expertise")
@@ -1632,63 +1804,135 @@ module.exports = {
       let nodeArr = [...res.nodeArr, ...res2.nodeArr]
       let nodeObj = {...res.nodeObj, ...res2.nodeObj}
       
-      console.log("nodeArr = " , nodeArr) // TODO: remove
-      console.log("nodeObj = " , nodeObj) // TODO: remove
+      // console.log("nodeArr = " , nodeArr) // TODO: remove
+      // console.log("nodeObj = " , nodeObj) // TODO: remove
 
       const expertiseInterest = [...nodeArr]
       // ----------- array of IDs and object of nodes -----------
 
       // --------- Find Nodes ------------
-      let nodesData = await Node.find({ _id: nodeArr }).select("-match_v2_update -match_v2 -relatedNodes -aboveNodes -state");
+      let nodesData = await Node.find({ _id: nodeArr }).select("-match_v2_update -match_v2  -aboveNodes -state");
       console.log("nodesData = " , nodesData) // TODO: remove
+      console.log("nodesData = " , nodesData.length) // TODO: remove
+      // asdf5
       // --------- Find Nodes ------------
 
       // --------- Find SubNodes ---------
       nodeArr = []
       for (const node of nodesData) {
-        const subNodes = node.subNodes
+        let extraNodes = []
+        if (node?.subNodes?.length > 0 ){
+          extraNodes = [...extraNodes, ...node.subNodes]
+        } 
+        if (node?.relatedNodes?.length > 0 ){
+          extraNodes = [...extraNodes, ...node.relatedNodes]
+        }
+        // for (const subNode of node.subNodes) {
+        //   if (subNode.node == "Skill"){
+        //     extraNodes = [...extraNodes, subNode._id]
+        //   }
+        // }
+        // for (const relatedNode of node.relatedNodes) {
+        //   if (relatedNode.node == "Skill"){
+        //     extraNodes = [...extraNodes, relatedNode._id]
+        //   }
+        // }
+
         numberNodes = nodeObj[node._id].numberNodes
 
+        console.log("numberNodes = " , numberNodes)
+        console.log("extraNodes = " , extraNodes)
+
+        let relatedNodesData = await Node.find({ _id: extraNodes }).select("_id name node");
+
+        acceptedExtraNodes = []
+        for (const relatedNode of relatedNodesData) {
+          if (relatedNode.node == "Skill"){
+            acceptedExtraNodes = [...acceptedExtraNodes, relatedNode._id]
+          }
+        }
+        console.log("acceptedExtraNodes = " , acceptedExtraNodes)
+
+        // asdf9
         
 
-        // get numberNodes random nodes from subNodes
-        const randomSubNodes = await getRandomIDs(subNodes, numberNodes)
-        console.log("randomSubNodes = " , randomSubNodes) // TODO: remove
-        nodeArr = [...nodeArr, ...randomSubNodes]
+        // get numberNodes random nodes from extraNodes
+        const randomExtraNodes = await getRandomIDs(acceptedExtraNodes, numberNodes)
+        // console.log("randomExtraNodes = " , randomExtraNodes) // TODO: remove
+        nodeArr = [...nodeArr, ...randomExtraNodes]
 
         nodeObj[node._id] = {
           ...nodeObj[node._id], 
           ...node._doc,
-          nodesAddUser: randomSubNodes
+          nodesAddUser: randomExtraNodes
         }
       }
-      // --------- Find SubNodes ---------
+      console.log("expertiseInterest = " , expertiseInterest)
+      // console.log("nodeArr = " , nodeArr) // TODO: remove
+      // asdf3
+      // --------- Find ExtraNodes ---------
 
       // --------- Find Nodes ------------
       nodesData = await Node.find({ _id: nodeArr }).select("-match_v2_update -match_v2 -subNodes -relatedNodes -aboveNodes -state");
       
+      categoryDataNow = {}
+      groupDataNode = {}
       for (const node of nodesData) {
-        nodeObj[node._id] = {...nodeObj[node._id], ...node._doc}
+
+        if (node.categoryNodes.length > 0){
+          categoryData = await Node.findOne({ _id: node.categoryNodes[0] }).select("_id name node");
+        }
+
+        if (node.groupNodes.length > 0){
+          groupData = await  Node.findOne({ _id: node.groupNodes[0] }).select("_id name node");
+        }
+
+        nodeObj[node._id] = {
+          ...nodeObj[node._id], 
+          ...node._doc,
+          category: categoryData.name,
+          group: groupData.name
+        }
+
+        // console.log(" nodeObj[node._id] = " ,  nodeObj[node._id])
       }
+      // asdf13
 
-      console.log("nodeObj = " , nodeObj) // TODO: removenodeObj
+      // console.log("nodeObj = " , nodeObj) // TODO: removenodeObj
+
+
+      console.log("DONE - Nodes = " )
       // --------- Find Nodes ------------
+      // ------------ Upload Nodes ------------
+      for (let i = 0; i < nodesData.length; i++) {
+        const node = nodesData[i];
+        upsertDoc = await upsertEmbedingPineCone({
+          text: node.name,
+          _id: randomID,
+          label: "node",
+          category: "user_data"
+        })
+      }
+      // ------------ Upload Nodes ------------
 
+      // asdf4
       
 
       // --------- Get Avatar for user --------
-      const avatarUser = await fetchRandomAvatar()
-      console.log("avatarUser = " , avatarUser) // TODO: remove
+      const avatarUser = await randomPicture()
+      // console.log("avatarUser = " , avatarUser) // TODO: remove
       userData.discordAvatar = avatarUser
       // --------- Get Avatar for user --------
 
+
+      // asdf0
+      console.log("DONE - Avatar = " )
+
+
       
 
-      // --------- make random ID --------
-      const randomID = await generateRandomID(18)
-      console.log("randomID = " , randomID) // TODO: remove
-      userData._id = randomID
-      // --------- make random ID --------
+
+      console.log("DONE - ID = " )
 
 
       // --------- Server IDs -----------
@@ -1707,43 +1951,70 @@ module.exports = {
       for (const node of expertiseInterest) {
         const nodeCategoryInfo = nodeObj[node]
         for (const nodeInfo of nodeCategoryInfo.nodesAddUser) {
-          if (nodeCategoryInfo.type === "interest"){
-            expertiseInterestPrompt += " - Interest: " + nodeObj[node].name + " - " + nodeObj[nodeInfo].name + "\n"
-          } else {
-            expertiseInterestPrompt += " - Expertise: " + nodeObj[node].name + " - " + nodeObj[nodeInfo].name + "\n"
-          }
+            // expertiseInterestPrompt += " - Expertise: " + nodeObj[nodeInfo].name + "\n"
+            expertiseInterestPrompt += " - Skill: " + nodeObj[nodeInfo].name + " - Category: " + nodeObj[nodeInfo].category + " - Group: " + nodeObj[nodeInfo].group  + "\n"
+          // console.log("nodeObj[node] = " , nodeObj[nodeInfo])
+
         }
+        // console.log("nodeObj[node] = " , nodeObj[node])
+        // expertiseInterestPrompt += " - Expertise: " + nodeObj[node].name + "\n"
+
       }
       console.log("expertiseInterestPrompt = " , expertiseInterestPrompt) // TODO: remove
+      // asdf9
       // -------- Expertise and Interst Prompt ------
 
 
 
-      // --------- find name user ------
-      let promptT = expertiseInterestPrompt + "\n" + "Give me a bio for my profile: \n"
+      // --------- find bio user ------
+      let promptT = expertiseInterestPrompt + "\n" + "Give me a bio for my profile, only 1 paragraph \n"
 
       const bio = await useGPTchat(promptT)
-      console.log("bio = " , bio) // TODO: remove
+      // console.log("bio = " , bio) // TODO: remove
       userData.bio = bio
-      // --------- find name user ------
+      console.log("DONE - bio = " )
+
+      // --------- find bio user ------
+       // ------------ Upload Bio ------------
+       upsertDoc = await upsertEmbedingPineCone({
+        text: bio,
+        _id: randomID,
+        label: "bio",
+        category: "user_data"
+      })
+      // ------------ Upload Bio ------------
 
 
+
       // --------- find name user ------
-      const name = await useGPTchat("Give me a cool user name for my platform")
-      console.log("name = " , name) // TODO: remove
-      userData.discordName = name.trim().replace("\n", "").replace("\n", "")
+      // Generate a random number between 0 and 25
+      const randomNumber1 = Math.floor(Math.random() * 26);
+      const randomNumber2 = Math.floor(Math.random() * 26);
+
+      // Convert the random number to a letter
+      const randomLetter1 = String.fromCharCode(97 + randomNumber1); // generates a lowercase letter
+      const randomLetter2 = String.fromCharCode(65 + randomNumber2); // generates an uppercase letter
+
+      const name = await useGPTchat("Give me only one First name of a Programmer, only 1 word, it should include the following two letters: " +randomLetter1+ " "+ randomLetter2 + "\n")
+      // console.log("name = " , name) // TODO: remove
+      userData.discordName = name.trim().replace("\n", "").replace("\n", "").replace("\"", "")
+      console.log("DONE - name = " )
       // --------- find name user ------
 
       
 
       // --------- Create Job discriptions -------
       jobs = []
+
       for (let i=0;i<3;i++){
-        let promptT = expertiseInterestPrompt + "\n" + "Give me 1 title, and description of a job that I did in my past, be creative with the title of the position, organise it as Title: and Description: \n"
+        // for (let i=0;i<Math.floor(Math.random() * 2) + 2;i++){
+        let promptT = expertiseInterestPrompt + "\n" + "Give me 1 title, real company name and description (only 1 paragraph with 2 sentences) of a job that he did in his past, be creative with the title of the position. Example: \n Title: programming at Soil Corp \n Description: main programmer that was working on...  \n Result:"
 
         const jobData = await useGPTchat(promptT)
+        
+        // jobData = ` Mobile Deployment Manager at Skyscape Medpresso:
+        // Managed the deployment of mobile medical apps on Amazon Appstore, Microsoft Store, and Google Play Store. Led a team responsible for testing and ensuring compatibility with Espresso and Robot Framework. Also utilized expertise in Ionic and mobile app frameworks to improve the overall user experience.`
         console.log("jobData = " , jobData) // TODO: remove
-
         
         const lines = jobData.split("\n");
         let title, description;
@@ -1758,15 +2029,32 @@ module.exports = {
           }
         }
 
-        // console.log(title); // "Website Designer"
-        // console.log(description);
+        console.log("Res ------= " )
+        console.log(title); // "Website Designer"
+        console.log(description);
+        console.log("Res ------= " )
         jobs.push({
           title,
           description
         })
+
+        // ------------ Upload previousProjects ------------
+        upsertDoc = await upsertEmbedingPineCone({
+          text: "Project Title: " + title + "\n" + "Project Description: " + description,
+          _id: randomID,
+          label: "previusProject",
+          category: "user_data"
+        })
+        // ------------ Upload previousProjects ------------
+
+        console.log("DONE - Job = ",i )
+
       }
+      // asfd8
+
       userData.previousProjects = jobs
       // --------- Create Job discriptions -------
+      
 
       
 
@@ -1776,6 +2064,7 @@ module.exports = {
       //  --------- Create User ---------
 
       // --------- add Nodes to Member --------
+      nodeArr = [...nodeArr, ...expertiseInterest]
       const fields = {
         memberID: userData._id,
         nodesID: nodeArr,
@@ -1783,7 +2072,10 @@ module.exports = {
       userWithNodes = await addNodesToFakeMember(fields)
       // --------- add Nodes to Member --------
 
-      console.log("change = afdasfdas22efe22f2" )
+      console.log("DONE - Add User Backend = " )
+
+
+      // console.log("change = afdasfdas22efe22f2" )
 
       return (userWithNodes)
     } catch (err) {
