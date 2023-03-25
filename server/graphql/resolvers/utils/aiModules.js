@@ -20,7 +20,7 @@ const nodes_aiModule = async (nodesID,weightModules,memberObj) => {
     memberObj = await nodesFindMembers(nodeData,memberObj)
 
     // console.log("memberObj = " , memberObj)
-    await showObject(memberObj,"memberObj")
+    // await showObject(memberObj,"memberObj")
     // asf1
 
 
@@ -49,7 +49,7 @@ const totalScore_aiModule = async (memberObj,weightModules) => {
     for (const [memberID, member] of Object.entries(memberObj)) {
         let scoreOriginalTotal = 0;
 
-        console.log("member = " , member.nodesTotal)
+        // console.log("member = " , member.nodesTotal)
 
         if (member.nodesTotal) {
             if (weightModules["node_total"]) {
@@ -69,7 +69,7 @@ const totalScore_aiModule = async (memberObj,weightModules) => {
         }
     }
 
-    console.log("max_S,min_S = " , max_S,min_S)
+    // console.log("max_S,min_S = " , max_S,min_S)
 
     for (const [memberID, member] of Object.entries(memberObj)) {
         let scoreOriginalTotal = member.total.scoreOriginal;
@@ -94,7 +94,7 @@ const sortArray_aiModule = async (memberObj) => {
         // -------------- Add Nodes --------------
         nodesPercentage = []
         for (const [nodeID, node] of Object.entries(member.nodes)) {
-            console.log("node = " , node)
+            // console.log("node = " , node)
             nodesPercentage.push({
                 nodeID: nodeID,
                 totalPercentage: parseInt(node.score*100),
@@ -137,16 +137,19 @@ const membersScoreMap = async (memberObj,weightModulesObj) => {
             // score += node.score;
 
             if (weightModulesObj[`node_${node.type}`]) {
-                console.log("change = 1" , `node_${node.type}`)
-                score += node.score * (weightModulesObj[`node_${node.type}`].weight*0.01);
+                // score += node.score * (weightModulesObj[`node_${node.type}`].weight*0.01);
+                score += node.scoreOriginal * (weightModulesObj[`node_${node.type}`].weight*0.01);
+                console.log("change = 1" , `node_${node.type}`,weightModulesObj[`node_${node.type}`].weight,node.scoreOriginal, node.scoreOriginal * (weightModulesObj[`node_${node.type}`].weight*0.01),score,memberID)
             } else {
                 if (weightModulesObj["node_else"]) {
-                    console.log("change = 2" , `node_else`)
+                    // console.log("change = 2" , `node_else`)
 
-                    score += node.score * (weightModulesObj["node_else"].weight*0.01);
+                    // score += node.score * (weightModulesObj["node_else"].weight*0.01);
+                    score += node.scoreOriginal * (weightModulesObj["node_else"].weight*0.01);
                 } else {
-                    console.log("change = 3" , `node nothing`)
-                    score += node.score;
+                    // console.log("change = 3" , `node nothing`)
+                    // score += node.score;
+                    score += node.scoreOriginal;
                 }
             }
             

@@ -1139,6 +1139,12 @@ module.exports = {
       console.log("next phase = " )
       // sdf9
 
+      // ---------Change distanceEnd for Member Nodes ------
+      for (let i = 0; i < memberNodesdData.length; i++) {
+        nodesObj[memberNodesdData[i]._id].distanceEnd = 1
+      }
+      // ---------Change distanceEnd for Member Nodes ------
+
 
       // ------------------------- Choose Categories ----------------
       let nodesToShow = []
