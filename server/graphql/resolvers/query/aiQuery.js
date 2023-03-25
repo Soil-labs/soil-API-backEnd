@@ -582,17 +582,18 @@ module.exports = {
 
         // prompt_general += "Find the keywords (keywords can represent a skill or a role) of the paragraph\n\n"
         // prompt_general += "Find the keywords of the paragraph\n\n"
-        prompt_general += "Find the Skills of the paragraph\n\n"
+        // prompt_general += "Find the minimum Skills/keywords of the paragraph\n\n"
+        prompt_general += "Find the minimum Keywords of the paragraph\n\n"
 
-        prompt_general += "Skills separated by comma:"
+        prompt_general += "Keywords separated by comma:"
 
         // res_gpt = await useGPTchatSimple(prompt_general)
 
         // keywordsGPTresult = await useGPT(prompt_general,0.7,"text-ada-001")
         // console.log("keywordsGPTresult ada= " , keywordsGPTresult)
 
-        keywordsGPTresult = await useGPT(prompt_general,0.7,"text-babbage-001")
-        console.log("keywordsGPTresult babbage= " , keywordsGPTresult)
+        // keywordsGPTresult = await useGPT(prompt_general,0.7,"text-babbage-001")
+        // console.log("keywordsGPTresult babbage= " , keywordsGPTresult)
 
         // keywordsGPTresult = await useGPT(prompt_general,0.7,"text-curie-001")  
         // console.log("keywordsGPTresult curie= " , keywordsGPTresult)
@@ -601,8 +602,8 @@ module.exports = {
         // keywordsGPTresult = await useGPT(prompt_general,0.7,"text-davinci-003")
         // console.log("keywordsGPTresult davinci= " , keywordsGPTresult)
 
-        // keywordsGPTresult = await useGPTchatSimple(prompt_general)
-        // console.log("keywordsGPTresult ChatGPT= " , keywordsGPTresult)
+        keywordsGPTresult = await useGPTchatSimple(prompt_general)
+        console.log("keywordsGPTresult ChatGPT= " , keywordsGPTresult)
 
         // asdf44
 
@@ -905,8 +906,8 @@ module.exports = {
         console.log("prompt_general = " , prompt_general)
 
 
-        res_gpt = await useGPT(prompt_general,0.7,"text-davinci-003")
-        // res_gpt = await useGPTchatSimple(prompt_general)
+        // res_gpt = await useGPT(prompt_general,0.7,"text-davinci-003")
+        res_gpt = await useGPTchatSimple(prompt_general)
         console.log("res_gpt davinci= " , res_gpt)
 
         // sadf
@@ -1538,15 +1539,19 @@ module.exports = {
 
 
       // ------------ Sumary of Profile for the conversation -------------
-      prompt_summary = "Conversation of manager and recruiter, goal is to find a new Employ: \n" + prompt_conversation 
+      prompt_summary=""
+      prompt_summary += "Conversation of manager and recruiter, goal is to find a new Employ: \n" + prompt_conversation 
 
-      prompt_summary = prompt_summary + "\n\n" + "Information that the recruiter has about the User: \n" + promptcontexts
+      // prompt_summary = prompt_summary + "\n\n" + "Information that the recruiter has about the User: \n" + promptcontexts
+      prompt_summary = prompt_summary + "\n\n" + "Information User: \n" + promptcontexts
 
       // prompt_summary = prompt_summary + "\n\n" + "Create a summary of the profile of the Employ that will be hyper relevant to the Manager!:"
 
+      prompt_summary = prompt_summary + "\n\n" + "Don't ever lie and use information that User Don't have"
+      
       
       // prompt_summary = prompt_summary + "\n\n" + "output should be one small sentence and 3 small bullet points:"
-      prompt_summary = prompt_summary + "\n\n" + "Summarise with 3 small bullet points the profile of the User with information that is as related as possible to what the manager is looking for:"
+      prompt_summary = prompt_summary + "\n\n" + "Summarise with 3 small bullet points the User with information that is related to what the manager is looking for:"
 
       // prompt_summary = prompt_summary + "\n\n" + "Highlight thte most importnat information start with symbol * end with symbol *"
 
@@ -1556,10 +1561,10 @@ module.exports = {
       // reply = await useGPT(prompt_summary,0.7,"text-curie-001")  
       // console.log("reply curie ------= " , reply)
 
-      reply = await useGPT(prompt_summary,0,"text-davinci-003")  
-      console.log("reply curie ------= " , reply)
+      // reply = await useGPT(prompt_summary,0,"text-davinci-003")  
+      // console.log("reply curie ------= " , reply)
       
-      // reply = await useGPTchatSimple(prompt_summary,0.6)
+      reply = await useGPTchatSimple(prompt_summary,0.05)
 
       console.log("reply chatGPT -------= " , reply)
       // ------------ Sumary of Profile for the conversation -------------

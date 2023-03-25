@@ -129,7 +129,7 @@ module.exports = {
     let collection = mongoose.connection.db.collection("members");
 
     try {
-      console.log("change = 1", search);
+      // console.log("change = 1", search);
       let result = await collection
         .aggregate([
           {
@@ -2317,7 +2317,7 @@ module.exports = {
         }
       }
 
-      console.log("change = 1");
+      // console.log("change = 1");
 
       matchSkillsToMembersOutput = [];
       projectsID_all = [];
@@ -2678,7 +2678,7 @@ module.exports = {
         }
       }
 
-      console.log("change = 1");
+      // console.log("change = 1");
 
       matchSkillsToMembersOutput = [];
       projectsID_all = [];
