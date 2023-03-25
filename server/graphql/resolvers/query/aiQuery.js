@@ -1546,7 +1546,7 @@ module.exports = {
 
       
       // prompt_summary = prompt_summary + "\n\n" + "output should be one small sentence and 3 small bullet points:"
-      prompt_summary = prompt_summary + "\n\n" + "summarise with 3 small bullet points:"
+      prompt_summary = prompt_summary + "\n\n" + "Summarise with 3 small bullet points the profile of the User with information that is as related as possible to what the manager is looking for:"
 
       // prompt_summary = prompt_summary + "\n\n" + "Highlight thte most importnat information start with symbol * end with symbol *"
 
@@ -1556,7 +1556,7 @@ module.exports = {
       // reply = await useGPT(prompt_summary,0.7,"text-curie-001")  
       // console.log("reply curie ------= " , reply)
 
-      reply = await useGPT(prompt_summary,0.7,"text-davinci-003")  
+      reply = await useGPT(prompt_summary,0,"text-davinci-003")  
       console.log("reply curie ------= " , reply)
       
       // reply = await useGPTchatSimple(prompt_summary,0.6)
