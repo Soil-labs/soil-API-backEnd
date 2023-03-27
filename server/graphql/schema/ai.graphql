@@ -189,16 +189,6 @@ module.exports = `
 
     }
 
-
-
-    input CVtoSummaryInput {
-        cvString: String
-    }
-
-    type CVtoSummaryOutput {
-        result: String
-    }
-
     enum CategoryEnum {
         project
         skill
