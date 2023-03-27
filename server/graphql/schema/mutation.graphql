@@ -98,7 +98,6 @@ module.exports = `
         useAI_OnMessage(fields: useAI_OnMessageInput): useAI_OnMessageOutput
         messageToGPT(fields: messageToGPTInput): messageToGPTOutput
         inputToGPT(fields: inputToGPTInput): inputToGPTOutput
-        CVtoSummary(fields: CVtoSummaryInput): CVtoSummaryOutput
 
         # ------------- ERROR MUTATIONS ------------
         createError(fields: createErrorInput!): ErrorLog
