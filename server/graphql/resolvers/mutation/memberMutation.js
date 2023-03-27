@@ -79,6 +79,34 @@ async function createEmbedingsGPT(words_n) {
 }
 
 
+async function useGPTchatSimple(prompt,temperature=0.7) {
+  
+  discussion = [{
+    "role": "user",
+    "content": prompt
+  }]
+
+
+  
+  let OPENAI_API_KEY = chooseAPIkey();
+  response = await axios.post(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      messages: discussion,
+      model: "gpt-3.5-turbo",
+      temperature: temperature,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+    }
+  );
+
+  return response.data.choices[0].message.content;
+}
+
 async function generate12DigitID(inputString) {
   // Incredible funciton
   // take any string, that can be any length, and make it a 12 digit ID that will be exactly the same for the same input, but always different for a different input
@@ -1657,69 +1685,231 @@ module.exports = {
       return pubsub.asyncIterator(temp);
     },
   },
-  addEndorsement: async (parent, args, context, info) => {
-    const { endorserID, endorseeID, endorsementMessage } = args.fields;
-    console.log("Mutation > addEndorsement > args.fields = ", args.fields);
-    try {
-      if (!endorseeID || !endorserID || !endorsementMessage)
-        throw new Error(
-          "The endorsee, endorser and endorsement message is required🔥"
-        );
+  // addEndorsement: async (parent, args, context, info) => {
+  //   const { endorserID, endorseeID, endorsementMessage, discussion,stars,endorseOrReview,endorseNodes,stake,income } = args.fields;
+  //   console.log("Mutation > addEndorsement > args.fields = ", args.fields);
 
-      //verify if the endorser and endorsee exist
-      let [endorserMember, endorseeMember] = await Promise.all([
-        Members.findOne({ _id: endorserID }),
-        Members.findOne({ _id: endorseeID }),
-      ]);
+  //   if (endorsementMessage && discussion) {
+  //     throw new ApolloError(
+  //       "You should either give the message, or the discussion as input, not both "
+  //     );
+  //   }
+  //   try {
+  //     if (!endorseeID || !endorserID)
+  //       throw new Error(
+  //         "The endorsee, endorser is required🔥"
+  //       );
 
-      if (!endorseeMember) throw new ApolloError("The endorsee record missing");
-      if (!endorserMember) throw new ApolloError("The endorser record missing");
-      //save the endorsement to Arweave
+  //     if (stake && income) throw new Error("You can't have both stake and income, becuase you can only review or endorse | Review -> Income | Endorse -> Stake")
 
-      const fileObject = {
-        endorserDiscordName: endorserMember.discordName,
-        endorseeDiscordName: endorseeMember.discordName,
-        message: endorsementMessage,
-      };
+  //     if (endorseOrReview == "ENDORSE" && income) throw new Error("You can't have income when you endorse | Review -> Income | Endorse -> Stake")
 
-      //const transactionId = await uploadFileToArweave(fileObject);
-      // if (!transactionId)
-      //   throw new Error(
-      //     "No transactionID, check your env if Arweave token is included"
-      //   );
-      // //save the endorsement to the member
+  //     if (endorseOrReview == "REVIEW" && stake) throw new Error("You can't have stake when you review | Review -> Income | Endorse -> Stake")
 
-      let newEndorsement = {
-        endorser: endorserID, //memberID
-        endorsementMessage: endorsementMessage,
-        //arweaveTransactionID: transactionId,
-        arweaveTransactionID: "https://www.arweave.org/",
-      };
+  //     //verify if the endorser and endorsee exist
+  //     let [endorserMember, endorseeMember] = await Promise.all([
+  //       Members.findOne({ _id: endorserID }).select('_id name'),
+  //       Members.findOne({ _id: endorseeID }).select('_id name endorsements'),
+  //     ]);
 
-      let previousEndorsements = endorseeMember.endorsements || [];
-      previousEndorsements.push(newEndorsement);
+  //     if (!endorseeMember) throw new ApolloError("The endorsee record missing");
+  //     if (!endorserMember) throw new ApolloError("The endorser record missing");
 
-      endorseeMember = await Members.findOneAndUpdate(
-        {
-          _id: endorseeID,
-        },
-        {
-          $set: { endorsements: previousEndorsements },
-        },
-        {
-          new: true,
-        }
-      );
 
-      return endorseeMember;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "addEndorsement",
-        { component: "memberMutation > addEndorsement" }
-      );
-    }
-  },
+  //     let newEndorsement = {
+  //       endorser: endorserID,
+  //       endorsee: endorseeID,
+  //     }
+
+  //     if (stars) newEndorsement.stars = stars
+  //     if (endorseOrReview) newEndorsement.endorseOrReview = endorseOrReview
+
+  //     if (endorsementMessage){
+  //       newEndorsement.endorsementMessage = endorsementMessage
+  //     } else if (discussion) {
+  //       // -------------- Prompt of the conversation ------------
+  //       let prompt_discussion = "Endorcment conversation:";
+  //       let roleN
+  //       for (let i = 0; i < discussion.length; i++) {
+  //         roleN = "Endorser"
+  //         if (discussion[i].role == "assistant") roleN = "Recruiter"
+  //         prompt_discussion = prompt_discussion + "\n" + roleN + ": " + discussion[i].content;
+
+  //       }
+  //       prompt_summary=""
+  //       prompt_summary += prompt_discussion 
+
+  //       prompt_summary = prompt_summary + "\n\n" + "Summarize the endorsement in 2 sentenses given in this conversation in two sentences, Write it like the endorser is talking:"
+  //       console.log("prompt_summary = " , prompt_summary)
+  //       // -------------- Prompt of the conversation ------------
+  //       let summaryGPT = await useGPTchatSimple(prompt_summary)
+
+  //       console.log("summaryGPT = " , summaryGPT)
+
+  //       newEndorsement.endorsementMessage = summaryGPT
+  //     }
+
+  //     if (endorseNodes) {
+  //       // endorseNodes only take the nodeID and put them on mongoDB
+  //       let endorseNodesIDArr = []
+  //       let endorseNodesObj = {}
+  //       for (let i = 0; i < endorseNodes.length; i++) {
+  //         if (!endorseNodesObj[endorseNodes[i].nodeID]) {
+  //           endorseNodesObj[endorseNodes[i].nodeID] = endorseNodes[i]
+  //           endorseNodesIDArr.push(endorseNodes[i].nodeID)
+  //         }
+  //       }
+
+  //       nodeData = await Node.find({ _id: endorseNodesIDArr }).select('_id name')
+
+  //       console.log("nodeData = " , nodeData)
+
+  //       nodesSave = []
+  //       for (let i = 0; i < nodeData.length; i++) {
+          
+  //         console.log("nodeData[i]._id = " , nodeData[i]._id)
+  //         endorseNodesObj[nodeData[i]._id] = {
+  //           ...endorseNodesObj[nodeData[i]._id],
+  //           ...nodeData[i]._doc
+  //         }
+  //         nodesSave.push(endorseNodesObj[nodeData[i]._id])
+  //         // SOS 🆘 -> This is the place that you update the profile of the user for the Node and you make it more trust worthy this specific node
+  //       }
+
+  //       console.log("done = " )
+
+  //       newEndorsement.endorseNodes = nodesSave
+  //       newEndorsement.discussion = discussion
+  //     }
+
+  //     if (endorserID) newEndorsement.endorser = endorserID
+
+  //     if (stake) newEndorsement.stake = stake
+
+  //     if (income) newEndorsement.income = income
+
+  //     // console.log("newEndorsement = " , newEndorsement)
+
+
+
+  //     // ----------- Save to Arweave ------------
+  //     // const fileObject = {
+  //     //   endorserDiscordName: endorserMember.discordName,
+  //     //   endorseeDiscordName: endorseeMember.discordName,
+  //     //   message: endorsementMessage,
+  //     // };
+
+  //     //const transactionId = await uploadFileToArweave(fileObject);
+  //     // if (!transactionId)
+  //     //   throw new Error(
+  //     //     "No transactionID, check your env if Arweave token is included"
+  //     //   );
+  //     // //save the endorsement to the member
+  //     // ----------- Save to Arweave ------------
+
+
+  //     // let newEndorsement = {
+  //     //   endorser: endorserID, //memberID
+  //     //   endorsementMessage: endorsementMessage,
+  //     //   //arweaveTransactionID: transactionId,
+  //     //   arweaveTransactionID: "https://www.arweave.org/",
+  //     // };
+
+  //     newEndorsement.arweaveTransactionID = "https://www.arweave.org/"
+
+  //     let previousEndorsements = endorseeMember.endorsements || [];
+  //     previousEndorsements.push(newEndorsement);
+
+  //     console.log("previousEndorsements = " , previousEndorsements)
+
+  //     // --------------- change Summary Endorse --------------
+  //     let endorseReviewUpdate = {}
+  //     if (endorseOrReview == "ENDORSE") {
+  //       let endorseSummaryNew = {
+  //         totalStars: 0,
+  //         totalStake: 0,
+  //         numberEndorsement: 0,
+  //         endorsers: [],
+  //         mainNodes: {},
+  //       }
+
+  //       let prompotAllsummary = ""
+  //       for (let i = 0; i < previousEndorsements.length; i++) {
+  //         if (previousEndorsements[i].endorseOrReview == "ENDORSE") {
+  //           endorseSummaryNew.totalStars += previousEndorsements[i].stars
+  //           endorseSummaryNew.totalStake += previousEndorsements[i].stake
+  //           endorseSummaryNew.numberEndorsement += 1
+  //           endorseSummaryNew.endorsers.push(previousEndorsements[i].endorser)
+
+  //           prompotAllsummary +=  "Endorsement " + i + " " + previousEndorsements[i].endorsementMessage + "\n"
+
+  //           for (let j = 0; j < previousEndorsements[i].endorseNodes.length; j++) {
+  //             let nodeIDnow = previousEndorsements[i].endorseNodes[j].nodeID
+
+  //             if (!endorseSummaryNew.mainNodes[nodeIDnow]) {
+  //               endorseSummaryNew.mainNodes[nodeIDnow] = {
+  //                 nodeID: nodeIDnow,
+  //                 numberEndorsement: 1
+  //               }
+  //             } else {
+  //               endorseSummaryNew.mainNodes[nodeIDnow].numberEndorsement += 1
+  //             }
+  //           }
+  //         }
+  //       }
+
+  //       endorseSummaryNew.averageStars = endorseSummaryNew.totalStars / endorseSummaryNew.numberEndorsement
+
+  //       prompt_n = prompt_n + "\n\n" + "Summarize the endorsement in 3 sentenses given all the endorsements below"
+
+  //       prompt_n = prompt_n + "\n\n" + prompotAllsummary
+
+  //       console.log("prompt_n = " , prompt_n)
+  //       // -------------- Prompt of the conversation ------------
+  //       let summaryGPT = await useGPTchatSimple(prompt_n)
+
+  //       console.log("summaryGPT = " , summaryGPT)
+
+  //       endorseSummaryNew.summary = summaryGPT
+
+  //       endorseReviewUpdate = {
+  //         endorseSummary: endorseSummaryNew
+  //       }
+
+  //     } else if (endorseOrReview == "REVIEW") {
+
+  //     }
+  //     // --------------- change Summary Endorse --------------
+
+  //     // --------------- change Summary Review --------------
+  //     // --------------- change Summary Review --------------
+
+
+
+  //     endorseeMember = await Members.findOneAndUpdate(
+  //       {
+  //         _id: endorseeID,
+  //       },
+  //       {
+  //         $set: { 
+  //           endorsements: previousEndorsements,
+  //           ...endorseReviewUpdate,
+  //         },
+  //       },
+  //       {
+  //         new: true,
+  //       }
+  //     );
+
+  //     return endorseeMember;
+  //   } catch (err) {
+  //     throw new ApolloError(
+  //       err.message,
+  //       err.extensions?.code || "addEndorsement",
+  //       { component: "memberMutation > addEndorsement" }
+  //     );
+  //   }
+  // },
   uploadUserDataGPT: async (parent, args, context, info) => {
     const { memberID } = args.fields;
     console.log("Mutation > uploadUserDataGPT > args.fields = ", args.fields);
