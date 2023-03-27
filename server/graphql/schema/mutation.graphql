@@ -13,10 +13,18 @@ module.exports = `
         deleteNodesFromMember(fields:deleteNodesFromMemberInput!): Members
         deleteMember(fields:deleteMemberInput!): Members
         # addSkillToMember(fields:addSkillToMember_Input!):Members
-        addEndorsement(fields: addEndorsementInput ): Members
         createFakeUser(fields: createFakeUserInput ): Members
         uploadUserDataGPT(fields: uploadUserDataGPTInput ): Members
         endorseAttribute(fields:endorseAttributeInput!): Members
+
+        #  ---------- ENDORSEMENT MUTATIONS -------
+        addEndorsement(fields: addEndorsementInput ): Endorsement
+        findEndorsements(fields: findEndorsementsInput ): [Endorsement]
+
+        #  ---------- REVIEW MUTATIONS -------
+        addReview(fields: addReviewInput ): Review
+        findReviews(fields: findReviewsInput ): [Review]
+
 
 
         #  ---------- PROJECT MUTATIONS -------

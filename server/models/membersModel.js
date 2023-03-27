@@ -65,9 +65,19 @@ const memberSchema = mongoose.Schema({
       orderIndex: Number,
       level: Number,
       weight: Number,
+      trust: {
+        totalTrust: Number,
+        endorseTrust: Number,
+      },
       aboveNodes: [mongoose.Schema.ObjectId],
     },
   ],
+
+  totalNodeTrust: {
+    totalTrustNum: Number,
+    averageTrustNum: Number,
+    numberOfTrustNodes: Number,
+  },
 
   projects: [
     {
@@ -154,13 +164,49 @@ const memberSchema = mongoose.Schema({
     },
   },
 
-  endorsements: [
-    {
-      endorser: String, //memberID
-      endorsementMessage: String,
-      arweaveTransactionID: String, //transactionID saved to Arweave
+  endorsementsSend: [mongoose.Schema.ObjectId],
+  endorsementsReceive: [mongoose.Schema.ObjectId],
+
+
+  endorseSummary: {
+    averageStars: Number,
+    averageStake: Number,
+    totalStake: Number,
+    numberEndorsement: Number,
+    endorsers: [String],
+    summary: String,
+    mainNodes:[{
+      nodeID: mongoose.Schema.ObjectId,
+      confidence: Number
+    }],
+  },
+
+  reviewsSend: [mongoose.Schema.ObjectId],
+  reviewsReceive: [mongoose.Schema.ObjectId],
+
+  reviewSummary: {
+    averageStars: Number,
+    averageIncome: Number,
+    totalIncome: Number,
+    numberReview: Number,
+    reviewers: [String],
+    summary: String,
+    mainNodes:[{
+      nodeID: mongoose.Schema.ObjectId,
+      confidence: Number
+    }],
+  },
+
+  trustIndicators: {
+    totalRevenue: {
+      amount: Number, // 4000 USD
+      note: String, // Eden LVL 3
     },
-  ],
+    totalOpportunities: {
+      amount: Number, // 10 Completed Opportunities
+      note: String, // Eden Native 
+    }
+  },
 
   preferences: {
     interestedMatch: Boolean,

@@ -3,6 +3,8 @@ const query = require("./query.graphql");
 const mutation = require("./mutation.graphql");
 const userType = require("./user.graphql");
 const memberType = require("./member.graphql");
+const endorsementType = require("./endorsement.graphql");
+const reviewType = require("./review.graphql");
 const projectType = require("./project.graphql");
 const projectUpdateType = require("./projectUpdate.graphql");
 const skillsType = require("./skills.graphql");
@@ -27,6 +29,8 @@ const typeDefs = gql`
   ${skillsType}
   ${nodeType}
   ${memberType}
+  ${endorsementType}
+  ${reviewType}
   ${projectType}
   ${projectUpdateType}
   ${roleTemplateType}

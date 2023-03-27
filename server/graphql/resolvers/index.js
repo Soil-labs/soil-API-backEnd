@@ -8,15 +8,19 @@ const {
   nodesType,
   matchMembersToProjectRoleOutput,
   matchPrepareSkillToMembersOutput,
-  skillType_member,
+  skillType_member,endorseSummaryType,
   matchMembersToSkillOutput,
   nodesPercentageType,
   SkillsPercentage,
   matchSkillsToProjectsOutput,
   matchProjectRoles,
-  endorsements,
+  // endorsements,
 } = require("./objectResolvers/memberResolver");
 const { GrantTemplate } = require("./objectResolvers/grantResolver");
+
+
+const { Endorsement,endorseNode } = require("./objectResolvers/endorsementResolver");
+const { Review,reviewNode } = require("./objectResolvers/reviewResolver");
 
 const {
   Project,
@@ -62,7 +66,7 @@ module.exports = {
   nodesType,
   matchMembersToProjectRoleOutput,
   matchPrepareSkillToMembersOutput,
-  skillType_member,
+  skillType_member,endorseSummaryType,Endorsement,endorseNode,Review,reviewNode,
   matchMembersToSkillOutput,
   nodesPercentageType,
   SkillsPercentage,
@@ -72,7 +76,7 @@ module.exports = {
   teamType,
   roleType,
   skillRoleType,
-  endorsements,
+  // endorsements,
   tweetsProject,
   tweetsType,
   projectUserMatchType,

@@ -26,6 +26,7 @@ module.exports = `
         tweets: [String],
         skills: [skillType_member],
         nodes: [nodesType]
+        totalNodeTrust: totalNodeTrustType
         projects: [projectMemberType],
         archiveProjects: [String],
         network: [Members],
@@ -42,9 +43,26 @@ module.exports = `
 
         memberRole: RoleTemplate
         chat: chatResponse
-        endorsements: [endorsements]
+
+        
+        endorsementsSend: [Endorsement]
+        endorsementsReceive: [Endorsement]
+
+        endorseSummary: endorseSummaryType   
+
+        reviewsSend: [Review],
+        reviewsReceive: [Review],
+
+
+        reviewSummary: reviewSummaryType     
 
         preferences: preferencesType
+    }
+    
+    type totalNodeTrustType {
+        totalTrustNum: Float,
+        averageTrustNum: Float,
+        numberOfTrustNodes: Int,
     }
 
     type preferencesType {
@@ -73,10 +91,16 @@ module.exports = `
         orderIndex: Int
         level: Int 
         weight: Float
+        trust: nodeTrustType
         aboveNodes: [Node]
     }
 
-     type chatResponse {
+    type nodeTrustType {
+        totalTrust: Float,
+        endorseTrust: Float,
+    }
+
+    type chatResponse {
         numChat: Int
         numReply: Int
     }
@@ -228,6 +252,41 @@ module.exports = `
         endorser: MembersSmallType
         endorsementMessage: String
         arweaveTransactionID: String
+        endorseNodes: [endorseNode]
+        endorseOrReview: endorseOrReviewEnum
+        stars: Int
+        discussion: [discussionMessage]
+        stake: Float,
+        income: Float,
+    }
+
+    type endorseSummaryType {
+        averageStars: Float,
+        averageStake: Float,
+        totalStake: Float,
+        numberEndorsement: Int,
+        endorsers: [MembersSmallType],
+        summary: String,
+        mainNodes: [endorseNode]
+    }
+
+    type reviewSummaryType {
+        averageStars: Float,
+        totalIncome: Float,
+        numberReview: Int,
+        reviewers: [MembersSmallType],
+        summary: String,
+        mainNodes:[endorseNode],
+    }
+
+    type discussionMessage {
+        role: String,
+        content: String,
+    }
+
+    enum endorseOrReviewEnum {
+        ENDORSE
+        REVIEW
     }
 
 
@@ -525,11 +584,17 @@ module.exports = `
         serverID: [String]
     }
 
-    input addEndorsementInput {
-        endorserID: ID
-        endorseeID: ID
-        endorsementMessage: String
+   
+    input endorseNodeInput {
+        nodeID: ID
+        confidence: Float
     }
+
+    input discussionMessageInput {
+        role: String,
+        content: String,
+    }
+
     input nodeCategoryInput {
         _id: ID
         numberNodes: Int

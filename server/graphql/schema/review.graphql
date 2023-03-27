@@ -1,0 +1,37 @@
+module.exports = `
+    
+    type Review {
+        userSend: Members, 
+        userReceive: Members, 
+        reviewMessage: String, 
+        arweaveTransactionID: String, 
+        nodes: [reviewNode]
+        stars: Int, 
+        discussion: [discussionMessage]
+        income: Float,
+
+        createdAt: Date,
+    }
+
+    type reviewNode {
+        node: Node,
+        confidence: Float,
+    }
+
+    input addReviewInput {
+        userSendID: ID
+        userReceiveID: ID
+        reviewMessage: String
+        discussion: [discussionMessageInput]
+        stars: Int
+        reviewNodes: [endorseNodeInput]
+        income: Float,
+    }
+    
+    input findReviewsInput {
+        reviewsID: [ID]
+        userSend: ID
+        userReceive: ID
+    }
+    
+`
