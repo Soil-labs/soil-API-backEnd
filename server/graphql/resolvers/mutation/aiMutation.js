@@ -288,7 +288,7 @@ module.exports = {
     };
 
     console.log("hey 5");
-    const cvToGPT = () => {};
+
     const expectationRoleHandler = () => {
       console.log("hey 10");
       const startIndex = result.indexOf("Expectations for Role:");
@@ -342,48 +342,24 @@ module.exports = {
       });
     }
   },
-  someFunction: async function (parent, args, context, info) {
-    const { messages, userID } = args.fields;
-    console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
+  CVtoSummary: async (args) => {
+    const { cvString } = args.fields;
+    if (!cvString) throw new ApolloError("The cvString is required");
+
+    prompt =
+      'Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile. Give me that summary in a bullet point format,do not include the name in the summary. Keep the bullet points short. Only up to 5 bullet points are allowed. No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n' +
+      cvString;
+    summaryOfCV = await useGPT(prompt, 0.7);
 
     try {
-      // ------------ create string paragraph for prompt --------
-      const paragraph = messages.reduce((accumulator, message) => {
-        if (message.name)
-          return accumulator + message.name + ": " + message.message + " \n ";
-        else return accumulator + message.message + " \n ";
-      }, "");
-
-      const prompt =
-        "Summarize this conversation between user and recruiter in order to keep it as a long term memory: \n \n" +
-        paragraph;
-
-      const summary = await useGPT(prompt, 0.7);
-      const embed_summary = await createEmbedingsGPT(summary);
-
-      const upsertDoc = await upsertEmbedingPineCone({
-        text: summary,
-        embedding: embed_summary[0],
-        _id: userID,
-        label: "long_term_memory",
-      });
-
-      console.log("upsertDoc = ", upsertDoc);
-
       return {
-        summary: summary,
-        success: true,
+        result: summaryOfCV,
       };
     } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "storeLongTermMemory",
-        {
-          component: "aiMutation > storeLongTermMemory",
-        }
-      );
+      throw new ApolloError(err.message);
     }
   },
+
   useAI_OnMessage: async (parent, args, context, info) => {
     const { message, cash, numberKeywords } = args.fields;
     console.log("Mutation > updateMessage > args.fields = ", args.fields);
