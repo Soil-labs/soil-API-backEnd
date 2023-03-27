@@ -6,14 +6,13 @@ const math = require("mathjs");
 const numeric = require("numeric");
 const fs = require("fs");
 
-
 const { combineResolvers } = require("graphql-resolvers");
 const { IsAuthenticated } = require("../../../utils/authorization");
 
 const { PineconeClient } = require("@pinecone-database/pinecone");
-const fetch = require("node-fetch")
+const fetch = require("node-fetch");
 
-globalThis.fetch = fetch
+globalThis.fetch = fetch;
 
 const configuration = new Configuration({
   apiKey: chooseAPIkey(),
@@ -130,16 +129,14 @@ module.exports = {
     }
   },
   storeLongTermMemory: async (parent, args, context, info) => {
-    const { messages,userID} = args.fields;
+    const { messages, userID } = args.fields;
     console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
     try {
-
       // ------------ create string paragraph for prompot --------
       const paragraph = messages.reduce((accumulator, message) => {
         if (message.name)
           return accumulator + message.name + ": " + message.message + " \n ";
-        else
-          return accumulator + message.message + " \n ";
+        else return accumulator + message.message + " \n ";
       }, "");
 
       // ------------ create string paragraph for prompot --------
@@ -147,38 +144,36 @@ module.exports = {
       // console.log("paragraph = " , paragraph)
       // asdf
 
-      prompt = "Sumarise this conversation between user and recruiter in order to keep it as a long term memory: \n \n" + paragraph
+      prompt =
+        "Sumarise this conversation between user and recruiter in order to keep it as a long term memory: \n \n" +
+        paragraph;
 
-      summary = await useGPT(prompt,0.7)
+      summary = await useGPT(prompt, 0.7);
       // summary = "The conversation between the user and recruiter was about finding a Designer for the user's company. The desired skills for the designer were the ability to work well in a team, and proficiency in Figma and wireframe design. The user's company is working with a web3 NFT marketplace."
 
-
-      embed_summary = await createEmbedingsGPT(summary)
-
-
-
+      embed_summary = await createEmbedingsGPT(summary);
 
       upsertDoc = await upsertEmbedingPineCone({
         text: summary,
         embedding: embed_summary[0],
         _id: userID,
         label: "long_term_memory",
-      })
+      });
 
-      console.log("upsertDoc = " , upsertDoc)
-
-
-
+      console.log("upsertDoc = ", upsertDoc);
 
       return {
         summary: summary,
         success: true,
-      }
-      
+      };
     } catch (err) {
-      throw new ApolloError(err.message, err.extensions?.code || "storeLongTermMemory", {
-        component: "aiMutation > storeLongTermMemory",
-      });
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "storeLongTermMemory",
+        {
+          component: "aiMutation > storeLongTermMemory",
+        }
+      );
     }
   },
   messageToGPT: combineResolvers(
@@ -237,8 +232,8 @@ module.exports = {
     const prompt =
       'I give you four things: a one-liner for a project + a description of that project  + the title of a role for that project + [categories of specialization for that role within that same project ]\n\nYour job is to take all those 4 things and create a wholistic context from it, focus on "the title of a role for that project" and "[categories of specialization for that role within that same project ]" and to give me the following:\n1. A full description of that role(always label this output with "Role Description:")\n2. Four Expectations for that role (always label this output with "Expectations for Role:") + Return this list  as a Javascript Arra\n3. Four Benefits of this role (always label this output with "Benefits:") + Return this list  as a Javascript Array  \n\nHere we go: \n\n';
 
-    console.log("hey 2")
-    
+    console.log("hey 2");
+
     const input =
       prompt +
       " " +
@@ -250,9 +245,8 @@ module.exports = {
       " + " +
       expertiseRole;
 
+    console.log("hey 2");
 
-    console.log("hey 2")
-    
     const response = await openai.createCompletion({
       model,
       prompt: input,
@@ -263,7 +257,7 @@ module.exports = {
       presence_penalty: 0,
     });
 
-    console.log("hey 3")
+    console.log("hey 3");
 
     // console.log(
     //   "prompt + oneLinerProject + descriptionProject + titleRole + expertiseRole",
@@ -281,7 +275,7 @@ module.exports = {
     let generatedText = response.data.choices[0].text;
     let result = generatedText.replace(/\n\n/g, "");
 
-    console.log("hey 4")
+    console.log("hey 4");
 
     const descriptionRoleHandler = () => {
       const startIndex = result.indexOf("Role Description:");
@@ -293,27 +287,25 @@ module.exports = {
       return descriptionRole;
     };
 
-    console.log("hey 5")
+    console.log("hey 5");
 
     const expectationRoleHandler = () => {
-      console.log("hey 10")
+      console.log("hey 10");
       const startIndex = result.indexOf("Expectations for Role:");
-      console.log("hey 11")
+      console.log("hey 11");
       const endIndex = result.indexOf("Benefits:");
       const expectationRoleString = result
         .slice(startIndex + "Expectations for Role:".length, endIndex)
         .trim();
-      console.log("hey 12",result)
-      console.log("hey 12",expectationRoleString)
-      
+      console.log("hey 12", result);
+      console.log("hey 12", expectationRoleString);
 
       const expectationRole = JSON.parse(expectationRoleString);
-      console.log("hey 13",expectationRole)
+      console.log("hey 13", expectationRole);
 
       return expectationRole;
     };
-    console.log("hey 6")
-
+    console.log("hey 6");
 
     const benefitRoleHandler = () => {
       const startIndex = result.indexOf("Benefits:");
@@ -322,25 +314,21 @@ module.exports = {
         .slice(startIndex + "Benefits:".length)
         .trim();
 
-      
       const benefitRole = JSON.parse(benefitRoleString);
       return benefitRole;
     };
 
-    console.log("hey 7")
+    console.log("hey 7");
 
+    descriptionRoleHandler();
 
-    descriptionRoleHandler()
+    console.log("hey 8");
 
-    console.log("hey 8")
+    expectationRoleHandler();
 
+    console.log("hey 9");
 
-    expectationRoleHandler()
-
-    console.log("hey 9")
-
-
-    benefitRoleHandler()
+    benefitRoleHandler();
 
     try {
       return {
@@ -354,6 +342,24 @@ module.exports = {
       });
     }
   },
+  CVtoSummary: async (args) => {
+    const { cvString } = args.fields;
+    if (!cvString) throw new ApolloError("The cvString is required");
+
+    prompt =
+      'Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile. Give me that summary in a bullet point format,do not include the name in the summary. Keep the bullet points short. Only up to 5 bullet points are allowed. No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n' +
+      cvString;
+    summaryOfCV = await useGPT(prompt, 0.7);
+
+    try {
+      return {
+        result: summaryOfCV,
+      };
+    } catch (err) {
+      throw new ApolloError(err.message);
+    }
+  },
+
   useAI_OnMessage: async (parent, args, context, info) => {
     const { message, cash, numberKeywords } = args.fields;
     console.log("Mutation > updateMessage > args.fields = ", args.fields);
@@ -782,7 +788,7 @@ async function generateRandomID(numDigit = 8) {
   const possibleChars = "0123456789abcdefghijklmnopqrstuvwxyz";
   // Initialize an empty string to hold the ID
   let id = "";
-  
+
   // Loop 6 times to generate each digit of the ID
   for (let i = 0; i < numDigit; i++) {
     // Generate a random index into the possibleChars string
@@ -795,19 +801,16 @@ async function generateRandomID(numDigit = 8) {
   return id;
 }
 
-
 async function upsertEmbedingPineCone(data) {
-
   const pinecone = new PineconeClient();
   await pinecone.init({
     environment: "us-east1-gcp",
     apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
   });
 
-
   const index = await pinecone.Index("profile-eden-information");
 
-  id_message = await generateRandomID(8)
+  id_message = await generateRandomID(8);
 
   const upsertRequest = {
     vectors: [
@@ -818,14 +821,14 @@ async function upsertEmbedingPineCone(data) {
           text: data.text,
           _id: data._id,
           label: data.label,
-        }
+        },
       },
     ],
   };
 
-  const upsertResponse = await index.upsert({upsertRequest});
+  const upsertResponse = await index.upsert({ upsertRequest });
 
-  return upsertResponse
+  return upsertResponse;
 }
 
 function chooseAPIkey() {
