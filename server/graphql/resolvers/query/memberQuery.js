@@ -111,7 +111,7 @@ module.exports = {
         }
       }
 
-      //console.log("membersData = " , membersData)
+      console.log("membersData = " , membersData[0].nodes)
 
       return membersData;
     } catch (err) {

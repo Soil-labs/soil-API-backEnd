@@ -10,9 +10,13 @@ const {
   // addSkillToMember,
   endorseAttribute,
   memberUpdated,
+<<<<<<< HEAD
   addEndorsement,
   createFakeUser,
   uploadUserDataGPT,
+=======
+  createFakeUser,uploadUserDataGPT,
+>>>>>>> develop
 } = require("./mutation/memberMutation");
 const {
   updateProject,
@@ -56,6 +60,8 @@ const {
 //   updateSkillSubCategory,
 // } = require("./mutation/skillSubCategoryMutation");
 const { createProjectUpdate } = require("./mutation/projectUpdateMutation");
+const { addEndorsement,findEndorsements } = require("./mutation/endorsementMutation");
+const { addReview, findReviews } = require("./mutation/reviewMutation");
 const {
   createRoom,
   enterRoom,
@@ -105,9 +111,13 @@ module.exports = {
     addFavoriteProject,
     addPreferencesToMember,
     // addSkillToMember,
+<<<<<<< HEAD
     addEndorsement,
     createFakeUser,
     uploadUserDataGPT,
+=======
+    createFakeUser,uploadUserDataGPT,
+>>>>>>> develop
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
@@ -157,6 +167,12 @@ module.exports = {
 
     // ------------- PROJECT UPDATE MUTATION -----------------
     createProjectUpdate,
+
+    // ------------- ENDORSEMENT MUTATION -----------------
+    addEndorsement,findEndorsements,
+
+    // ------------- REVIEW MUTATION -----------------
+    addReview, findReviews,
 
     //---------------ROOM MUTATION --------------------
     createRoom,

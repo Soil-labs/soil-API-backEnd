@@ -1,6 +1,52 @@
 
 
 const { Node } = require("../../../models/nodeModal");
+const axios = require("axios");
+
+
+function chooseAPIkey() {
+    // openAI_keys = [
+    //   "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",
+    //   // "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",
+    //   "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",
+    //   "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",
+    // ];
+    openAI_keys = ["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"];
+  
+    // randomly choose one of the keys
+    let randomIndex = Math.floor(Math.random() * openAI_keys.length);
+    let key = openAI_keys[randomIndex];
+  
+    return key;
+  }
+  
+  async function useGPTchatSimple(prompt,temperature=0.7) {
+    
+    discussion = [{
+      "role": "user",
+      "content": prompt
+    }]
+  
+  
+    
+    let OPENAI_API_KEY = chooseAPIkey();
+    response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        messages: discussion,
+        model: "gpt-3.5-turbo",
+        temperature: temperature,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+      }
+    );
+  
+    return response.data.choices[0].message.content;
+  }
 
 const nodes_aiModule = async (nodesID,weightModules,memberObj) => {
 
@@ -349,4 +395,6 @@ module.exports = {
     totalScore_aiModule,
     showObject,
     sortArray_aiModule,
+    chooseAPIkey,
+    useGPTchatSimple,
   };
