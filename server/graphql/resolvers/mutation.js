@@ -10,7 +10,13 @@ const {
   // addSkillToMember,
   endorseAttribute,
   memberUpdated,
+<<<<<<< HEAD
+  addEndorsement,
+  createFakeUser,
+  uploadUserDataGPT,
+=======
   createFakeUser,uploadUserDataGPT,
+>>>>>>> develop
 } = require("./mutation/memberMutation");
 const {
   updateProject,
@@ -38,7 +44,8 @@ const {
 const {
   createNode,
   relatedNode,
-  relatedNode_name,createNodeCategoryGroup,
+  relatedNode_name,
+  createNodeCategoryGroup,
 } = require("./mutation/nodeMutation");
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
 const { updateServer } = require("./mutation/serverMutation");
@@ -80,6 +87,7 @@ const {
   useAI_OnMessage,
   messageToGPT,
   inputToGPT,
+  CVtoSummary,
 } = require("./mutation/aiMutation");
 
 const { createError, deleteError } = require("./mutation/errorsMutation");
@@ -103,7 +111,13 @@ module.exports = {
     addFavoriteProject,
     addPreferencesToMember,
     // addSkillToMember,
+<<<<<<< HEAD
+    addEndorsement,
+    createFakeUser,
+    uploadUserDataGPT,
+=======
     createFakeUser,uploadUserDataGPT,
+>>>>>>> develop
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
@@ -130,7 +144,8 @@ module.exports = {
     // ------------- NODE MUTATION -----------------
     createNode,
     relatedNode,
-    relatedNode_name,createNodeCategoryGroup,
+    relatedNode_name,
+    createNodeCategoryGroup,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,
@@ -181,6 +196,7 @@ module.exports = {
     useAI_OnMessage,
     messageToGPT,
     inputToGPT,
+    CVtoSummary,
 
     // ------------- ERROR MUTATION -----------------
     createError,
