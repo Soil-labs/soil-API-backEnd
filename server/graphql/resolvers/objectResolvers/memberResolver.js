@@ -1,6 +1,8 @@
 // const { User } = require('../../../models/user');
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
+const { Endorsement } = require("../../../models/endorsementModel");
+const { Review } = require("../../../models/reviewModel");
 const { Skills } = require("../../../models/skillsModel");
 const { Projects } = require("../../../models/projectsModel");
 const { ProjectUpdate } = require("../../../models/projectUpdateModal");
@@ -10,20 +12,6 @@ const { ApolloError } = require("apollo-server-express");
 const { RoleTemplate } = require("../../../models/roleTemplateModal");
 
 module.exports = {
-  endorsements: {
-    endorser: async (parent, args, context, info) => {
-      try {
-        const memberID = parent.endorser;
-        const member = await Members.findOne({ _id: memberID });
-        return member;
-      } catch (err) {
-        throw new ApolloError(err.message, err.extensions?.code || "endorser", {
-          component: "memberResolver > endorser",
-          user: context.req.user?._id,
-        });
-      }
-    },
-  },
   skillType_member: {
     skillInfo: async (parent, args, context, info) => {
       try {
@@ -44,7 +32,94 @@ module.exports = {
       }
     },
   },
+  endorseSummaryType: {
+    endorsers: async (parent, args, context, info) => {
+      try {
+
+        // console.log("change =  I hate everything " ,parent.endorsers)
+        const endorsersID = parent.endorsers;
+
+        const membersData = await Members.find({ _id: endorsersID });
+
+        return membersData;
+      } catch (error) {
+        throw new ApolloError(error);
+      }
+    },
+  },
   Members: {
+    endorsementsReceive: async (parent, args, context, info) => {
+      try {
+        const endorsementsReceiveID = parent.endorsementsReceive;
+
+        const endorsementData = await Endorsement.find({_id: endorsementsReceiveID,});
+
+        return endorsementData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "bluepanda.xyz@gmail.com",
+          {
+            component: "userResolver > bluepanda.xyz@gmail.com",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    endorsementsSend: async (parent, args, context, info) => {
+      try {
+        const endorsementsReceiveID = parent.endorsementsReceive;
+
+        const endorsementData = await Endorsement.find({_id: endorsementsReceiveID,});
+
+        return endorsementData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "bluepanda.xyz@gmail.com",
+          {
+            component: "userResolver > bluepanda.xyz@gmail.com",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    reviewsReceive: async (parent, args, context, info) => {
+      try {
+        const reviewsReceiveID = parent.reviewsReceive;
+
+        const endorsementData = await Review.find({_id: reviewsReceiveID,});
+
+        return endorsementData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "bluepanda.xyz@gmail.com",
+          {
+            component: "userResolver > bluepanda.xyz@gmail.com",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    reviewsSend: async (parent, args, context, info) => {
+      try {
+        const reviewsReceiveID = parent.reviewsReceive;
+
+        const endorsementData = await Review.find({_id: reviewsReceiveID,});
+
+        return endorsementData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "bluepanda.xyz@gmail.com",
+          {
+            component: "userResolver > bluepanda.xyz@gmail.com",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
     skills: async (parent, args, context, info) => {
       // console.log("parent = " , parent)
 
@@ -122,6 +197,7 @@ module.exports = {
             level: nodesObj[node._id].level,
             weight: nodesObj[node._id].weight,
             aboveNodes: nodesObj[node._id].aboveNodes,
+            trust: nodesObj[node._id].trust,
           });
         });
 
@@ -370,6 +446,27 @@ module.exports = {
         );
       }
     },
+    trust: async (parent, args, context, info) => {
+      console.log("parent 22322= " , parent)
+
+      try {
+        const trust = parent.trust;
+
+        // nodesData = await Node.find({ _id: aboveNodes });
+
+        return trust;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "trust",
+          {
+            component: "userResolver > trust",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+
   },
   matchMembersToProjectRoleOutput: {
     member: async (parent, args, context, info) => {
