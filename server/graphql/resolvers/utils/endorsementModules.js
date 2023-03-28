@@ -2,8 +2,78 @@
 const { Endorsement } = require("../../../models/endorsementModel");
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
+const { request, gql} = require('graphql-request');
 
 const {useGPTchatSimple} = require("./aiModules");
+
+const {printC} = require("../../../printModule")
+
+
+const addEndorsementAPIcall = async (fields) => {
+
+    printC(fields,"7","fields","r")
+
+    const query = gql`
+    query FindNodes($fields: findNodesInput) {
+          findNodes(fields: $fields) {
+            _id
+            name
+            node
+          }
+        }
+  `;
+
+  const variables  = {
+    fields: {
+      _id: "6416ae1148d9ba5ceefb68a1"
+    }
+    };
+
+  res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
+
+  console.log("res = " , res)
+
+    // const query = gql`
+    // mutation AddEndorsement($fields: addEndorsementInput) {
+    //     addEndorsement(fields: $fields) {
+    //         _id
+    //         userSend {
+    //             discordName
+    //         }
+    //         userReceive {
+    //             discordName
+    //         }
+    //         endorsementMessage
+    //         nodes {
+    //             node {
+    //                 _id
+    //                 name
+    //             }
+    //         }
+    //         stars
+    //         createdAt
+    //         stake
+    //     }
+    // }`;
+
+    // const variables  = {
+    //     fields: {
+    //         userSendID: fields.userSendID,
+    //         userReceiveID: fields.userReceiveID,
+    //         endorsementMessage: fields.endorsementMessage,
+    //         stars: fields.stars,
+    //         stake: fields.stake,
+    //         endorseNodes: fields.endorseNodes,
+    //     }
+    // };
+
+    // res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
+
+    // // console.log("res = " , res)
+
+    // printC(res,"7","res","r")
+
+}
 
 const arrayToObj = async (arrT) => {
 
@@ -208,8 +278,7 @@ const sumEndorsement = async (userReceiveData) => {
         // console.log("--------------" )
         // console.log("prompt_n = " , prompt_n)
 
-        // let summaryGPT = await useGPTchatSimple(prompt_n)
-        let summaryGPT = "SOS 🆘 change that, fake GPT summary"
+        let summaryGPT = await useGPTchatSimple(prompt_n)
         // console.log("summaryGPT = " , summaryGPT)
         // console.log("--------------" )
 
@@ -292,4 +361,5 @@ module.exports = {
     sumEndorsement,
     arrayToObj,
     checkEndorseNodes,
+    addEndorsementAPIcall,
   };

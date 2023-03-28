@@ -53,7 +53,7 @@ const {
 //   updateSkillSubCategory,
 // } = require("./mutation/skillSubCategoryMutation");
 const { createProjectUpdate } = require("./mutation/projectUpdateMutation");
-const { addEndorsement,findEndorsements } = require("./mutation/endorsementMutation");
+const { addEndorsement,findEndorsements,createFakeEndorsement } = require("./mutation/endorsementMutation");
 const { addReview, findReviews } = require("./mutation/reviewMutation");
 const {
   createRoom,
@@ -154,7 +154,7 @@ module.exports = {
     createProjectUpdate,
 
     // ------------- ENDORSEMENT MUTATION -----------------
-    addEndorsement,findEndorsements,
+    addEndorsement,findEndorsements,createFakeEndorsement,
 
     // ------------- REVIEW MUTATION -----------------
     addReview, findReviews,

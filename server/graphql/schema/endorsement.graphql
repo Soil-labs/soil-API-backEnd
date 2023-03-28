@@ -41,5 +41,10 @@ module.exports = `
         userReceive: ID
     }
 
+    input createFakeEndorsementInput {
+        userSendID: ID
+        userReceiveID: ID
+    }
+
     
 `
