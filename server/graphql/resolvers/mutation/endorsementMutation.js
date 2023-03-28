@@ -1,9 +1,12 @@
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
 const { Endorsement } = require("../../../models/endorsementModel");
+const axios = require("axios");
 
 
-const {sumEndorsement,arrayToObj,checkEndorseNodes} = require("../utils/endorsementModules");
+
+
+const {sumEndorsement,arrayToObj,checkEndorseNodes,addEndorsementAPIcall} = require("../utils/endorsementModules");
 const {useGPTchatSimple} = require("../utils/aiModules");
 const {updateNodeToMemberOnNeo4J} = require("../utils/nodeModules");
 
@@ -118,8 +121,6 @@ module.exports = {
       endorsementData.save()
 
 
-      console.log("userReceiveData?.endorsementsReceive = " , userReceiveData?.endorsementsReceive)
-
       // console.log("change = " , change)
 
       if (userReceiveData?.endorsementsReceive?.length > 0) {
@@ -142,18 +143,17 @@ module.exports = {
       // console.log("nodesEndorserTrustObj = " , nodesEndorserTrustObj)
       // printC("This is the res","2","totalTrust","b")
 
-      printC(nodesEndorserTrustObj,"6","nodesEndorserTrustObj","b")
+      // printC(nodesEndorserTrustObj,"6","nodesEndorserTrustObj","b")
 
 
-      printC(totalTrust,"3","totalTrust","r")
-      printC(userReceiveData.nodes,"2","userReceiveData.nodes","b")
+      // printC(totalTrust,"3","totalTrust","r")
+      // printC(userReceiveData.nodes,"2","userReceiveData.nodes","b")
 
       for (let i = 0; i < userReceiveData.nodes.length; i++) {
         let nodeN = userReceiveData.nodes[i]
 
-        printC(nodeN._id,"5","nodeN._id","y")
+        // printC(nodeN._id,"5","nodeN._id","y")
         if (nodesEndorserTrustObj[nodeN._id]){
-          printC("","8","I am in ","y")
 
           nodesEndorserTrustObj[nodeN._id].Applied = true
 
@@ -168,7 +168,7 @@ module.exports = {
           }
         }
       }
-      printC(userReceiveData.nodes,"4","userReceiveData.nodes","b")
+      // printC(userReceiveData.nodes,"4","userReceiveData.nodes","b")
 
       // asdf01
       // ----------- Test if all endorsed Nodes exist on user nodes ------------
@@ -186,7 +186,7 @@ module.exports = {
 
           nodeData = await Node.findOne({ _id: key }).select("_id name node");
 
-          printC(nodeData,"12","nodeData","p")
+          // printC(nodeData,"12","nodeData","p")
 
 
           // sf00f
@@ -234,6 +234,180 @@ module.exports = {
         err.message,
         err.extensions?.code || "addEndorsement",
         { component: "memberMutation > addEndorsement" }
+      );
+    }
+  },
+  createFakeEndorsement: async (parent, args, context, info) => {
+    const {userSendID,userReceiveID} = args.fields;
+    console.log("Mutation > createFakeEndorsement > args.fields = ", args.fields);
+
+
+    try {
+
+      // ----------- find send receive Endorsement ------------
+      let userSendData = null;
+      let userReceiveData = null;
+
+      if (userSendID){
+        userSendData = await Members.findOne({ _id: userSendID }).select('_id discordName nodes')
+
+        if (!userSendData) throw new Error("userSendID not found");
+      }
+
+      if (userReceiveID){
+        userReceiveData = await Members.findOne({ _id: userReceiveID }).select('_id discordName nodes')
+
+        if (!userReceiveData) throw new Error("userReceiveID not found");
+      }
+
+      if (userSendData == null || userReceiveData == null) {
+        usersAll = await Members.find().select('_id discordName nodes')
+
+        printC(usersAll.slice(0,3),"1","usersAll","r")
+        // dsf9
+
+        while (userSendData == null) {
+          randomUserIndex = Math.floor(Math.random() * usersAll.length);
+          userSendData = usersAll[randomUserIndex];
+
+          if (userSendData.nodes.length == 0){
+            userSendData = null
+          }
+        }
+        usersAll.splice(randomUserIndex, 1);
+
+        // TODO -> Fix getting users with no nodes 
+        while (userReceiveData == null) {
+          randomUserIndex = Math.floor(Math.random() * usersAll.length);
+          userReceiveData = usersAll[randomUserIndex];
+
+          if (userReceiveData.nodes.length == 0){
+            userReceiveData = null
+          }
+        }
+      }
+
+      printC(userSendData,"1","userSendData","b")
+      printC(userReceiveData,"2","userReceiveData","b")
+      // ----------- find send receive Endorsement ------------
+
+
+      // --------- choose random nodes ----------
+      // choose random userSendData.nodes or userReceiveData.nodes
+      let randomUser = Math.floor(Math.random() * 2);
+      let randomUserNodes = null;
+      if (randomUser == 0){
+        randomUserNodes = userSendData.nodes
+      } else {
+        randomUserNodes = userReceiveData.nodes
+      }
+
+      // choose random 1-2 nodes to use
+      let randomNodes = Math.floor(Math.random() * 2) + 1;
+      let randomNodesArray = []
+      for (let i = 0; i < randomNodes; i++) {
+        let randomNodeIndex = Math.floor(Math.random() * randomUserNodes.length);
+        randomNodesArray.push(randomUserNodes[randomNodeIndex]._id)
+      }
+
+      printC(randomNodesArray,"3","randomNodesArray","p")
+
+
+      let nodeData = await Node.find({ _id: randomNodesArray }).select("_id name node");
+
+      printC(nodeData,"4","nodeData","g")
+
+      endorseNodes = []
+
+      for (let i = 0; i < nodeData.length; i++) {
+        endorseNodes.push({
+          nodeID: nodeData[i]._id,
+        })
+      }
+
+      printC(endorseNodes,"5","endorseNodes","g")
+      // --------- choose random nodes ----------
+
+
+      // // -------- create message based Nodes -----------
+
+      // // organise the names of the nodes from nodeData to be used as a prompt for GPT
+      let prompt_nodes = "Skills of user: "
+      for (let i = 0; i < nodeData.length; i++) {
+        prompt_nodes += nodeData[i].name + ", "
+      }
+      prompt_nodes = prompt_nodes.slice(0, -2)
+
+      prompt_nodes += "\n\n"
+
+      printC(prompt_nodes,"5","prompt_nodes","y")
+
+
+
+      prompt_summary="Summarize the endorsement in 2 sentenses given the skills of the user \n\n"
+      prompt_summary += prompt_nodes 
+
+      printC(prompt_summary,"6","prompt_summary","y")
+
+
+      let summaryGPT = await useGPTchatSimple(prompt_summary)
+
+      // summaryGPT = " The user is highly skilled in deep learning and has a strong understanding of its applications. They would be an asset to any team or project that involves deep learning technology."
+
+      printC(summaryGPT,"7","summaryGPT","y")
+      // // -------- create message based Nodes -----------
+
+
+      // -------- choose random stars and stake --------
+      let randomStars = Math.floor(Math.random() * 3) + 3;
+      let randomStake = Math.floor(Math.random() * 100) + 1;
+      // -------- choose random stars and stake --------
+
+      const fields = {
+        userSendID: userSendData._id,
+        userReceiveID: userReceiveData._id,
+        endorsementMessage: summaryGPT,
+        stars: randomStars,
+        stake: randomStake,
+        endorseNodes: endorseNodes,
+        createdAt: new Date(),
+      }
+
+      let newEndorsement = await addEndorsementAPIcall(fields)
+
+      newEndorsement = {
+        ...newEndorsement,
+        endorseNodes: endorseNodes,
+      }
+
+    //   const query = gql`
+    //   query FindNodes($fields: findNodesInput) {
+    //         findNodes(fields: $fields) {
+    //           _id
+    //           name
+    //           node
+    //         }
+    //       }
+    // `;
+
+    // const variables  = {
+    //   fields: {
+    //     _id: "6416ae1148d9ba5ceefb68a1"
+    //   }
+    //   };
+
+    // res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
+
+    // console.log("res = " , res)
+
+ 
+      return newEndorsement
+      // return fields
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "createFakeEndorsement",
+        { component: "memberMutation > createFakeEndorsement" }
       );
     }
   },
