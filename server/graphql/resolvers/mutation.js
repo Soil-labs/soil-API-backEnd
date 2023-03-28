@@ -10,13 +10,8 @@ const {
   // addSkillToMember,
   endorseAttribute,
   memberUpdated,
-<<<<<<< HEAD
-  addEndorsement,
   createFakeUser,
   uploadUserDataGPT,
-=======
-  createFakeUser,uploadUserDataGPT,
->>>>>>> develop
 } = require("./mutation/memberMutation");
 const {
   updateProject,
@@ -111,13 +106,8 @@ module.exports = {
     addFavoriteProject,
     addPreferencesToMember,
     // addSkillToMember,
-<<<<<<< HEAD
-    addEndorsement,
     createFakeUser,
     uploadUserDataGPT,
-=======
-    createFakeUser,uploadUserDataGPT,
->>>>>>> develop
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
