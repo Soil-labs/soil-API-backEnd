@@ -20,6 +20,7 @@ module.exports = `
         #  ---------- ENDORSEMENT MUTATIONS -------
         addEndorsement(fields: addEndorsementInput ): Endorsement
         findEndorsements(fields: findEndorsementsInput ): [Endorsement]
+        createFakeEndorsement(fields: createFakeEndorsementInput ): Endorsement
 
         #  ---------- REVIEW MUTATIONS -------
         addReview(fields: addReviewInput ): Review
