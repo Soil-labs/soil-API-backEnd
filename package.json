@@ -29,6 +29,7 @@
     "express-rate-limit": "^6.7.0",
     "fs": "^0.0.1-security",
     "graphql": "^16.6.0",
+    "graphql-request": "^5.2.0",
     "graphql-resolvers": "^0.4.2",
     "graphql-subscriptions": "^2.0.0",
     "graphql-ws": "^5.10.1",
