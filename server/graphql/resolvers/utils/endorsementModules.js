@@ -13,65 +13,66 @@ const addEndorsementAPIcall = async (fields) => {
 
     printC(fields,"7","fields","r")
 
-    const query = gql`
-    query FindNodes($fields: findNodesInput) {
-          findNodes(fields: $fields) {
-            _id
-            name
-            node
-          }
-        }
-  `;
+//     const query = gql`
+//     query FindNodes($fields: findNodesInput) {
+//           findNodes(fields: $fields) {
+//             _id
+//             name
+//             node
+//           }
+//         }
+//   `;
 
-  const variables  = {
-    fields: {
-      _id: "6416ae1148d9ba5ceefb68a1"
-    }
+//   const variables  = {
+//     fields: {
+//       _id: "6416ae1148d9ba5ceefb68a1"
+//     }
+//     };
+
+//   res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
+
+//   console.log("res = " , res)
+
+    const query = gql`
+    mutation AddEndorsement($fields: addEndorsementInput) {
+        addEndorsement(fields: $fields) {
+            _id
+            userSend {
+                _id
+            }
+            userReceive {
+                _id
+            }
+            endorsementMessage
+            nodes {
+                node {
+                    _id
+                }
+            }
+            stars
+            createdAt
+            stake
+        }
+    }`;
+
+    const variables  = {
+        fields: {
+            userSendID: fields.userSendID,
+            userReceiveID: fields.userReceiveID,
+            endorsementMessage: fields.endorsementMessage,
+            stars: fields.stars,
+            stake: fields.stake,
+            endorseNodes: fields.endorseNodes,
+        }
     };
 
-  res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
+    res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
 
-  console.log("res = " , res)
+    // console.log("res = " , res)
 
-    // const query = gql`
-    // mutation AddEndorsement($fields: addEndorsementInput) {
-    //     addEndorsement(fields: $fields) {
-    //         _id
-    //         userSend {
-    //             discordName
-    //         }
-    //         userReceive {
-    //             discordName
-    //         }
-    //         endorsementMessage
-    //         nodes {
-    //             node {
-    //                 _id
-    //                 name
-    //             }
-    //         }
-    //         stars
-    //         createdAt
-    //         stake
-    //     }
-    // }`;
+    printC(res.addEndorsement,"7","res","r")
 
-    // const variables  = {
-    //     fields: {
-    //         userSendID: fields.userSendID,
-    //         userReceiveID: fields.userReceiveID,
-    //         endorsementMessage: fields.endorsementMessage,
-    //         stars: fields.stars,
-    //         stake: fields.stake,
-    //         endorseNodes: fields.endorseNodes,
-    //     }
-    // };
-
-    // res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
-
-    // // console.log("res = " , res)
-
-    // printC(res,"7","res","r")
+    return res.addEndorsement
 
 }
 

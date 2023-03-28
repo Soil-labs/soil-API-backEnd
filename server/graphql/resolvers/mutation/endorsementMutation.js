@@ -2,7 +2,6 @@ const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
 const { Endorsement } = require("../../../models/endorsementModel");
 const axios = require("axios");
-const { request, gql} = require('graphql-request');
 
 
 
@@ -267,17 +266,24 @@ module.exports = {
         printC(usersAll.slice(0,3),"1","usersAll","r")
         // dsf9
 
-        if (userSendData == null) {
+        while (userSendData == null) {
           randomUserIndex = Math.floor(Math.random() * usersAll.length);
           userSendData = usersAll[randomUserIndex];
 
-          // take out this user from usersAll 
-          usersAll.splice(randomUserIndex, 1);
+          if (userSendData.nodes.length == 0){
+            userSendData = null
+          }
         }
+        usersAll.splice(randomUserIndex, 1);
 
-        if (userReceiveData == null) {
+        // TODO -> Fix getting users with no nodes 
+        while (userReceiveData == null) {
           randomUserIndex = Math.floor(Math.random() * usersAll.length);
           userReceiveData = usersAll[randomUserIndex];
+
+          if (userReceiveData.nodes.length == 0){
+            userReceiveData = null
+          }
         }
       }
 
@@ -326,34 +332,34 @@ module.exports = {
       // // -------- create message based Nodes -----------
 
       // // organise the names of the nodes from nodeData to be used as a prompt for GPT
-      // let prompt_nodes = "Skills of user: "
-      // for (let i = 0; i < nodeData.length; i++) {
-      //   prompt_nodes += nodeData[i].name + ", "
-      // }
-      // prompt_nodes = prompt_nodes.slice(0, -2)
+      let prompt_nodes = "Skills of user: "
+      for (let i = 0; i < nodeData.length; i++) {
+        prompt_nodes += nodeData[i].name + ", "
+      }
+      prompt_nodes = prompt_nodes.slice(0, -2)
 
-      // prompt_nodes += "\n\n"
+      prompt_nodes += "\n\n"
 
-      // printC(prompt_nodes,"5","prompt_nodes","y")
-
-
-
-      // prompt_summary="Summarize the endorsement in 2 sentenses given the skills of the user \n\n"
-      // prompt_summary += prompt_nodes 
-
-      // printC(prompt_summary,"6","prompt_summary","y")
+      printC(prompt_nodes,"5","prompt_nodes","y")
 
 
-      // let summaryGPT = await useGPTchatSimple(prompt_summary)
 
-      summaryGPT = " The user is highly skilled in deep learning and has a strong understanding of its applications. They would be an asset to any team or project that involves deep learning technology."
+      prompt_summary="Summarize the endorsement in 2 sentenses given the skills of the user \n\n"
+      prompt_summary += prompt_nodes 
+
+      printC(prompt_summary,"6","prompt_summary","y")
+
+
+      let summaryGPT = await useGPTchatSimple(prompt_summary)
+
+      // summaryGPT = " The user is highly skilled in deep learning and has a strong understanding of its applications. They would be an asset to any team or project that involves deep learning technology."
 
       printC(summaryGPT,"7","summaryGPT","y")
       // // -------- create message based Nodes -----------
 
 
       // -------- choose random stars and stake --------
-      let randomStars = Math.floor(Math.random() * 5) + 1;
+      let randomStars = Math.floor(Math.random() * 3) + 3;
       let randomStake = Math.floor(Math.random() * 100) + 1;
       // -------- choose random stars and stake --------
 
@@ -364,10 +370,15 @@ module.exports = {
         stars: randomStars,
         stake: randomStake,
         endorseNodes: endorseNodes,
+        createdAt: new Date(),
       }
 
-      const newEndorsement = addEndorsementAPIcall(fields)
+      let newEndorsement = await addEndorsementAPIcall(fields)
 
+      newEndorsement = {
+        ...newEndorsement,
+        endorseNodes: endorseNodes,
+      }
 
     //   const query = gql`
     //   query FindNodes($fields: findNodesInput) {
@@ -390,7 +401,8 @@ module.exports = {
     // console.log("res = " , res)
 
  
-      return {}
+      return newEndorsement
+      // return fields
     } catch (err) {
       throw new ApolloError(
         err.message,
