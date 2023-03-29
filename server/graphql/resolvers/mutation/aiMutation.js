@@ -342,13 +342,14 @@ module.exports = {
       });
     }
   },
-  CVtoSummary: async (args) => {
+  CVtoSummary: async (parent, args, context, info) => {
     const { cvString } = args.fields;
     if (!cvString) throw new ApolloError("The cvString is required");
 
     prompt =
       'Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile. Give me that summary in a bullet point format,do not include the name in the summary. Keep the bullet points short. Only up to 5 bullet points are allowed. No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n' +
       cvString;
+
     summaryOfCV = await useGPT(prompt, 0.7);
 
     try {
