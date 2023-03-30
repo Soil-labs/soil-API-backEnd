@@ -315,6 +315,8 @@ async function findBestEmbedingsArray(arr,filter,topK = 3) {
 
   }
 
+  console.log("change = -------------------------------------- 0.2" )
+
   for (let i = 0; i < embed.length; i++) {
     embedN = embed[i]  
 
@@ -322,17 +324,21 @@ async function findBestEmbedingsArray(arr,filter,topK = 3) {
       topK: topK,
       vector: embed[i],
       includeMetadata: true,
-      filter: {
-        label: "AI_KG4",
-      }
+      // filter: {
+      //   // label:["AI_KG4","AI_KG4_Industry"],
+      //   label: "AI_KG4",
+      // }
+      filter: {"label": {"$in": ["AI_KG4", "AI_KG4_Industry"]}}
     }
     
     let queryResponse = await index.query({ queryRequest })
 
     // matchesRes.push(queryResponse.matches)
-    console.log("queryResponse.matches = " , queryResponse.matches)
+    console.log("queryResponse.matches = 2" , queryResponse.matches)
 
     if (!keywordsObj[queryResponse.matches[0]?.metadata?.keyword]){
+
+      console.log("change = -0------------------------------------- 0" )
 
       // keywordsObj[queryResponse.matches[0].metadata.keyword] = queryResponse.matches[0].score
     
@@ -351,6 +357,7 @@ async function findBestEmbedingsArray(arr,filter,topK = 3) {
 
       }
     } else {
+      console.log("change = -------------------------------------- 1" )
       if (queryResponse.matches[0].score > keywordsObj[queryResponse.matches[0]?.metadata?.keyword].score){
       //   keywordsObj[queryResponse.matches[0].metadata.keyword] = queryResponse.matches[0].score
       //   matchesRes.push({
@@ -637,6 +644,8 @@ module.exports = {
 
       console.log("change = 1")
 
+      // sdf4
+
       let resT = await findBestEmbedingsArray(GPTkeywords,filter ,topK = 1)
       console.log("change = 2")
 
@@ -645,7 +654,7 @@ module.exports = {
       let keywordEmbedObj = resT.matchesObj
 
 
-      // console.log("matchesObj = " , matchesObj)
+      console.log("keywordEmbedObj = " , keywordEmbedObj)
       // asdf99
 
       // bestKeywordsFromEmbed =  [
@@ -1456,11 +1465,27 @@ module.exports = {
     console.log("Query > edenGPTreplyChatAPI > args.fields = ", args.fields);
     try {
 
-      systemPrompt = `
-      You are a recruiter, The only think that you do is ask only 1 questions at a time to understand the skills that the candidate should have.
-      You give as consise as small answeres as possible
-      `
-      responseGPTchat = await useGPTchat(message,conversation,systemPrompt,"ask me only 1 questino what other skills candidate should have based on the context that you have")
+      // ----- ORIGINAL ------
+      // systemPrompt = `You are a recruiter, The only think that you do is ask only 1 questions at a time to understand the skills that the candidate should have.
+      // You give as consise as small answeres as possible`
+      // ----- ORIGINAL ------
+
+      // // ----- TOM ------
+      // systemPrompt = `You are an AI with the name Eden and you have access to a vibrant talent community. 
+      // You are acting as a specialized recruiter who knows everyone in the talent pool assisting a person in helping them find the exact candidate for their needs. 
+      // You ask one helpful question at a time. Your answers are concise and to the point. Your main objective is to help find the perfect candidate`
+      // // ----- TOM ------
+
+      // ----- TOM 2------
+      systemPrompt = `You are an AI with the name Eden. 
+      You are acting as a specialized recruiter who knows everyone in the talent pool assisting a person in helping them find the exact candidate for their needs. 
+      You ask one helpful question at a time. Your answers are concise and to the point. Your main objective is to help find the perfect candidate
+      Only ask me 2 sentense question about skills that candidate should have based on the context`
+      // ----- TOM 2------
+
+      
+      // responseGPTchat = await useGPTchat(message,conversation,systemPrompt,"ask me only 1 questino what other skills candidate should have based on the context that you have")
+      responseGPTchat = await useGPTchat(message,conversation,systemPrompt)
 
       return {
         reply: responseGPTchat,

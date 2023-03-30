@@ -15,11 +15,16 @@ module.exports = `
         content: contentType
         
         interest: String
+        
+        hoursPerWeek: Float
         timeZone: String
+        location: String
+
+        totalIncome: Float
+        completedOpportunities: Int
 
         serverID: [String],
 
-        hoursPerWeek: Float,
 
         invitedBy: MembersSmallType
 
@@ -605,5 +610,15 @@ module.exports = `
     }
     input uploadUserDataGPTInput {
         memberID: ID
+    }
+    input updateMemberSignalInfoInput {
+        memberID: ID
+
+        hoursPerWeek: Int
+        timeZone: String
+        location: String
+
+        totalIncome: Float
+        completedOpportunities: Int
     }
 `

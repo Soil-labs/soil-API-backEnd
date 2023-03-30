@@ -41,6 +41,12 @@ const memberSchema = mongoose.Schema({
 
   hoursPerWeek: Number,
   timeZone: String,
+  location: String,
+
+  totalIncome: Number,
+  completedOpportunities: Number,
+  
+
 
   serverID: [String],
 

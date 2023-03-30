@@ -204,16 +204,20 @@ module.exports = {
   //   IsAuthenticated,
   //   IsOnlyOperator,
     async (parent, args, context, info) => {
-      const { name,node,categoryName,categoryID,groupName,groupID } = args.fields;
+      const { name,node,categoryName,categoryTypeName,categoryID,groupName,groupTypeName,groupID } = args.fields;
       console.log("Mutation > createNodeCategoryGroup > args.fields = ", args.fields);
 
       if (!name)
         throw new ApolloError("You need to specify the name of the node");
       if (!node) throw new ApolloError( "You need to specify the type of the node");
 
-
+      
+      
       try {
+        
+        if (!categoryTypeName) categoryTypeName = "Category"
 
+        if (!groupTypeName) groupTypeName = "Group"
         
 
         // ----------------- Save the Server on the Skills -----------------
@@ -226,11 +230,11 @@ module.exports = {
         // ----------------- Save the Server on the Skills -----------------
 
         // ----------- Find the Group Node -----------
-        let groupNodeData = await findOrCreateNode("Group",groupID,groupName)
+        let groupNodeData = await findOrCreateNode(groupTypeName,groupID,groupName)
         // ----------- Find the Group Node -----------
 
         // ----------- Find the Category Node -----------
-        let categoryNodeData = await findOrCreateNode("Category",categoryID,categoryName)
+        let categoryNodeData = await findOrCreateNode(categoryTypeName,categoryID,categoryName)
         
         // ----------- Find the Category Node -----------
  
