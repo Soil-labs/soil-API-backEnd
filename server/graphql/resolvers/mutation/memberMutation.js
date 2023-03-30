@@ -6,6 +6,9 @@ const { RoleTemplate } = require("../../../models/roleTemplateModal");
 const { EdenMetrics } = require("../../../models/edenMetrics");
 const axios = require("axios");
 
+const {printC} = require("../../../printModule")
+
+
 
 const {arrayToKeyObject,getRandomIDs,fetchRandomAvatar,randomPicture,useGPTchat,generateRandomID,addNewFakeUser,addNodesToFakeMember} = require("../utils/helperFunc");
 
@@ -1973,6 +1976,49 @@ module.exports = {
       );
     }
   },
+  updateMemberSignalInfo: async (parent, args, context, info) => {
+    const { memberID, hoursPerWeek, timeZone, location, totalIncome, completedOpportunities } = args.fields;
+    console.log("Mutation > updateMemberSignalInfo > args.fields = ", args.fields);
+
+    if (!memberID) throw new Error("The memberID is required🔥");
+
+    try {
+
+      let memberData = await Members.findOne({ _id: memberID }).select('_id discordName discordID hoursPerWeek timeZone location totalIncome completedOpportunities');
+
+      if (!memberData) throw new Error("The memberID is not valid🔥 can't find member");
+
+
+      printC(memberData,"1","memberData","b")
+
+
+
+      // update all the fields
+      if (hoursPerWeek) memberData.hoursPerWeek = hoursPerWeek
+      if (timeZone) memberData.timeZone = timeZone
+      if (location) memberData.location = location
+      if (totalIncome) memberData.totalIncome = totalIncome
+      if (completedOpportunities) memberData.completedOpportunities = completedOpportunities
+
+
+
+      // save the member
+      memberData = await memberData.save()
+      
+      printC(memberData,"2","memberData","b")
+
+
+
+      return memberData;
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updateMemberSignalInfo",
+        { component: "memberMutation > updateMemberSignalInfo" }
+      );
+    }
+  },
   createFakeUser: async (parent, args, context, info) => {
     const { expertise,interests } = args.fields;
     console.log("Mutation > createFakeUser > args.fields = ", args.fields);
@@ -2246,6 +2292,52 @@ module.exports = {
       // --------- Create Job discriptions -------
       
 
+
+      // --------- create hourse per week, timezone, location, totalIncome, completedOpportunities -------
+
+      // random hours per week from 10 to 40
+      userData.hoursPerWeek = Math.floor(Math.random() * 30) + 10
+
+      // random timezone GMT + X
+      userData.timeZone = "GMT " + Math.floor(Math.random() * 12) + 1
+
+      // create array of 20 random location and choose one randomly from this array
+      const locations = ["New York", "Los Angeles", "Chicago", "Houston", "Philadelphia", "Phoenix", "San Antonio", "San Diego", "Dallas", "San Jose", "Austin", "Jacksonville", "San Francisco", "Indianapolis", "Columbus", "Fort Worth", "Charlotte", "Detroit", "El Paso", "Memphis"]
+      userData.location = locations[Math.floor(Math.random() * locations.length)]
+
+      // random totalIncome from 1000 to 100000 and round it on the 3 digit 1423 -> 1420
+      userData.totalIncome = Math.floor(Math.random() * 100000) + 1000
+      userData.totalIncome = Math.floor(userData.totalIncome / 10) * 10
+
+      // random completedOpportunities from 0 to 30
+      userData.completedOpportunities = Math.floor(Math.random() * 30)
+      // --------- create hourse per week, timezone, location, totalIncome, completedOpportunities -------
+
+      // --------- Create Role and add to User -------
+
+      // --------- find bio user ------
+      let promptK = "Bio user: " + bio + "\n" + "Give me a role based on the Bio of the user, \n Role using 1 word: \n"
+
+      let roleN = await useGPTchat(promptK)
+
+      roleN = roleN.trim().replace("\n", "").replace("\n", "").replace("\"", "").replace(".","")
+      
+      printC(roleN,"1", "roleN","g")
+
+      let roleTemplateData = await new RoleTemplate({
+        title: roleN,
+      });
+      roleTemplateData.save();
+
+      userData.memberRole = roleTemplateData._id
+
+      // --------- find bio user ------
+
+      // --------- Create Role and add to User -------
+
+
+      printC(userData,"1", "userData","b")
+      // sf0
       
 
 

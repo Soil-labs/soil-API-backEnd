@@ -94,8 +94,10 @@ module.exports = `
         name: String
         node: String
         categoryName: String
+        categoryTypeName: String
         categoryID: ID
         groupName: String
+        groupTypeName: String
         groupID: String
     }
 
