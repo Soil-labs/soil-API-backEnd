@@ -60,6 +60,7 @@ const {
   addEndorsement,
   findEndorsements,
   createFakeEndorsement,
+  createEndorsementLink,
 } = require("./mutation/endorsementMutation");
 const { addReview, findReviews } = require("./mutation/reviewMutation");
 const {
@@ -169,6 +170,7 @@ module.exports = {
     addEndorsement,
     findEndorsements,
     createFakeEndorsement,
+    createEndorsementLink,
 
     // ------------- REVIEW MUTATION -----------------
     addReview,
