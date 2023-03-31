@@ -10,8 +10,9 @@ const {
   // addSkillToMember,
   endorseAttribute,
   memberUpdated,
-  createFakeUser,uploadUserDataGPT,updateMemberSignalInfo,
-
+  createFakeUser,
+  uploadUserDataGPT,
+  updateMemberSignalInfo,
 } = require("./mutation/memberMutation");
 const {
   updateProject,
@@ -55,7 +56,11 @@ const {
 //   updateSkillSubCategory,
 // } = require("./mutation/skillSubCategoryMutation");
 const { createProjectUpdate } = require("./mutation/projectUpdateMutation");
-const { addEndorsement,findEndorsements,createFakeEndorsement } = require("./mutation/endorsementMutation");
+const {
+  addEndorsement,
+  findEndorsements,
+  createFakeEndorsement,
+} = require("./mutation/endorsementMutation");
 const { addReview, findReviews } = require("./mutation/reviewMutation");
 const {
   createRoom,
@@ -83,6 +88,7 @@ const {
   messageToGPT,
   inputToGPT,
   CVtoSummary,
+  CVtoJobs,
 } = require("./mutation/aiMutation");
 
 const { createError, deleteError } = require("./mutation/errorsMutation");
@@ -106,7 +112,9 @@ module.exports = {
     addFavoriteProject,
     addPreferencesToMember,
     // addSkillToMember,
-    createFakeUser,uploadUserDataGPT,updateMemberSignalInfo,
+    createFakeUser,
+    uploadUserDataGPT,
+    updateMemberSignalInfo,
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
@@ -158,10 +166,13 @@ module.exports = {
     createProjectUpdate,
 
     // ------------- ENDORSEMENT MUTATION -----------------
-    addEndorsement,findEndorsements,createFakeEndorsement,
+    addEndorsement,
+    findEndorsements,
+    createFakeEndorsement,
 
     // ------------- REVIEW MUTATION -----------------
-    addReview, findReviews,
+    addReview,
+    findReviews,
 
     //---------------ROOM MUTATION --------------------
     createRoom,
@@ -186,6 +197,7 @@ module.exports = {
     messageToGPT,
     inputToGPT,
     CVtoSummary,
+    CVtoJobs,
 
     // ------------- ERROR MUTATION -----------------
     createError,

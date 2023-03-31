@@ -198,6 +198,13 @@ module.exports = `
     type CVtoSummaryOutput {
         result: String
     }
+    input CVtoJobsInput {
+        cvString: String
+    }
+
+    type CVtoJobsOutput {
+        result: String
+    }
 
     enum CategoryEnum {
         project
