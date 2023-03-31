@@ -134,13 +134,23 @@ async function useGPTchat(prompt) {
 
 async function addNewFakeUser(fields) {
 
-  console.log("fields = " , fields)
-
-  let membersData = await Members.findOne({ _id: fields._id });
+ 
 
   //console.log("membersData = " , membersData)
 
-  if (!membersData) {
+  if (fields?.alreadyExist == true) {
+
+    membersData = await Members.findOneAndUpdate(
+      { _id: fields._id },
+      {
+        $set: {
+          ...fields,
+        }
+      },
+      { new: true }
+    );
+
+  } else {
 
     membersData = await new Members(fields);
 
@@ -153,37 +163,6 @@ async function addNewFakeUser(fields) {
       name: fields.discordName,
       serverID: membersData.serverID,
     });
-
-  } else {
-    if (!membersData.serverID) {
-      membersData = await Members.findOneAndUpdate(
-        { _id: membersData._id },
-        { serverID: serverID },
-        { new: true }
-      );
-
-      updateNode_neo4j_serverID({
-        node: "Member",
-        id: membersData._id,
-        serverID: membersData.serverID,
-      });
-    } else {
-      let serverID_new = [...membersData.serverID];
-      if (!membersData.serverID.includes(serverID)) {
-        serverID_new.push(serverID);
-      }
-      membersData = await Members.findOneAndUpdate(
-        { _id: membersData._id },
-        { serverID: serverID_new },
-        { new: true }
-      );
-
-      updateNode_neo4j_serverID({
-        node: "Member",
-        id: membersData._id,
-        serverID: serverID_new,
-      });
-    }
   }
 
 }

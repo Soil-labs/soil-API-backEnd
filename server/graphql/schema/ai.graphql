@@ -139,6 +139,17 @@ module.exports = `
         # keywords: [String]
     }
 
+    input edenGPTreplyChatAPI_V2Input {
+        message: String
+        conversation: [messageChat]
+        userID: ID
+    }
+
+    type edenGPTreplyChatAPI_V2Output {
+        reply: String
+        # keywords: [String]
+    }
+
     input edenGPTEndorseChatAPIInput {
         message: String
         conversation: [messageChat]

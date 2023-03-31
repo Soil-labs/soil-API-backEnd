@@ -112,9 +112,26 @@ module.exports = {
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "bluepanda.xyz@gmail.com",
+          err.extensions?.code || "reviewsSend",
           {
-            component: "userResolver > bluepanda.xyz@gmail.com",
+            component: "userResolver > reviewsSend",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    budget: async (parent, args, context, info) => {
+      try {
+        const budget = parent.budget;
+
+
+        return budget;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "budget",
+          {
+            component: "userResolver > budget",
             user: context.req.user?._id,
           }
         );
