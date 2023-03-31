@@ -22,6 +22,7 @@ module.exports = `
         addEndorsement(fields: addEndorsementInput ): Endorsement
         findEndorsements(fields: findEndorsementsInput ): [Endorsement]
         createFakeEndorsement(fields: createFakeEndorsementInput ): Endorsement
+        createEndorsementLink(fields: createEndorsementLinkInput ): EndorsementLink
 
         #  ---------- REVIEW MUTATIONS -------
         addReview(fields: addReviewInput ): Review
