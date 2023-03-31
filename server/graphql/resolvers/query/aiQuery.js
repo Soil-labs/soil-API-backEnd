@@ -14,6 +14,9 @@ const { PineconeClient } = require("@pinecone-database/pinecone");
 // import { PineconeClient } from "@pinecone-database/pinecone";
 const { Configuration, OpenAIApi } = require("openai");
 
+
+const {printC} = require("../../../printModule")
+
 globalThis.fetch = fetch
 
 
@@ -91,7 +94,7 @@ async function useGPTchatHelloWorld () {
 
 }
 
-async function useGPTchat(userNewMessage,discussion,systemPrompt,userQuestion = "") {
+async function useGPTchat(userNewMessage,discussion,systemPrompt,userQuestion = "",temperature=0.7) {
 
   discussion.unshift({
     "role": "system", 
@@ -114,6 +117,7 @@ async function useGPTchat(userNewMessage,discussion,systemPrompt,userQuestion = 
     {
       messages: discussion,
       model: "gpt-3.5-turbo",
+      temperature: temperature,
     },
     {
       headers: {
@@ -1466,8 +1470,8 @@ module.exports = {
     try {
 
       // ----- ORIGINAL ------
-      // systemPrompt = `You are a recruiter, The only think that you do is ask only 1 questions at a time to understand the skills that the candidate should have.
-      // You give as consise as small answeres as possible`
+      systemPrompt = `You are a recruiter, The only think that you do is ask only 1 questions at a time to understand the skills that the candidate should have.
+      You give as consise as small answeres as possible`
       // ----- ORIGINAL ------
 
       // // ----- TOM ------
@@ -1476,16 +1480,16 @@ module.exports = {
       // You ask one helpful question at a time. Your answers are concise and to the point. Your main objective is to help find the perfect candidate`
       // // ----- TOM ------
 
-      // ----- TOM 2------
-      systemPrompt = `You are an AI with the name Eden. 
-      You are acting as a specialized recruiter who knows everyone in the talent pool assisting a person in helping them find the exact candidate for their needs. 
-      You ask one helpful question at a time. Your answers are concise and to the point. Your main objective is to help find the perfect candidate
-      Only ask me 2 sentense question about skills that candidate should have based on the context`
-      // ----- TOM 2------
+      // // ----- TOM 2------
+      // systemPrompt = `You are an AI with the name Eden. 
+      // You are acting as a specialized recruiter who knows everyone in the talent pool assisting a person in helping them find the exact candidate for their needs. 
+      // You ask one helpful question at a time. Your answers are concise and to the point. Your main objective is to help find the perfect candidate
+      // Only ask me 2 sentense question about skills that candidate should have based on the context`
+      // // ----- TOM 2------
 
       
-      // responseGPTchat = await useGPTchat(message,conversation,systemPrompt,"ask me only 1 questino what other skills candidate should have based on the context that you have")
-      responseGPTchat = await useGPTchat(message,conversation,systemPrompt)
+      responseGPTchat = await useGPTchat(message,conversation,systemPrompt,"ask me only 1 questino what other skills candidate should have based on the context that you have")
+      // responseGPTchat = await useGPTchat(message,conversation,systemPrompt)
 
       return {
         reply: responseGPTchat,
@@ -1496,6 +1500,108 @@ module.exports = {
         err.extensions?.code || "edenGPTreplyChatAPI",
         {
           component: "aiQuery > edenGPTreplyChatAPI",
+        }
+      );
+    }
+  },
+  edenGPTreplyChatAPI_V2: async (parent, args, context, info) => {
+    const { message,conversation } = args.fields;
+    console.log("Query > edenGPTreplyChatAPI_V2 > args.fields = ", args.fields);
+    try {
+
+       // -------------- Find best keywrods from embeding -------------
+       const filter = {
+        label: "instructions_edenAI",
+      }
+
+      bestKeywordsFromEmbed = await findBestEmbedings(message,filter ,topK = 3)
+
+      printC(bestKeywordsFromEmbed,"1","bestKeywordsFromEmbed","b")
+      // -------------- Find best keywrods from embeding -------------
+
+      // -------------- Find best Instruction to use -----------
+      prompt_T = "What is the most related command to use for the quesiton of the user \n\n"
+
+      prompt_T += "Question: " + message + "\n\n"
+      prompt_T += "Command_1: " + bestKeywordsFromEmbed[0].metadata.text + "\n\n"
+      prompt_T += "Command_2: " + bestKeywordsFromEmbed[1].metadata.text + "\n\n"
+      prompt_T += "Command_3: " + bestKeywordsFromEmbed[2].metadata.text + "\n\n"
+
+      prompt_T += "Result just tell me to use the most related of the two. you can only say command_1, command_2, command_3 \n\n"
+
+
+      printC(prompt_T,"1","prompt_T","r")
+
+      reply = await useGPTchatSimple(prompt_T,0.05)
+
+      printC(reply,"2","reply","r")
+      // sdf3
+      // -------------- Find best Instruction to use -----------
+
+      // // ----- ORIGINAL ------
+      // systemPrompt = `You are a recruiter, The only think that you do is ask only 1 questions at a time to understand the skills that the candidate should have.
+      // You give as consise as small answeres as possible`
+      // // ----- ORIGINAL ------
+
+      // // ----- TOM ------
+      // systemPrompt = `You are an AI with the name Eden and you have access to a vibrant talent community. 
+      // You are acting as a specialized recruiter who knows everyone in the talent pool assisting a person in helping them find the exact candidate for their needs. 
+      // You ask one helpful question at a time. Your answers are concise and to the point. Your main objective is to help find the perfect candidate`
+      // // ----- TOM ------
+
+      // // ----- TOM 2------
+      // systemPrompt = `You are an AI with the name Eden. 
+      // You are acting as a specialized recruiter who knows everyone in the talent pool assisting a person in helping them find the exact candidate for their needs. 
+      // You ask one helpful question at a time. Your answers are concise and to the point. Your main objective is to help find the perfect candidate
+      // Only ask me 2 sentense question about skills that candidate should have based on the context`
+      // // ----- TOM 2------
+
+
+      // ----- Instruction auto choose ------
+      systemPrompt = ""
+      userQuestion = ""
+      if (reply.includes("Command_1")){
+
+        systemPrompt = bestKeywordsFromEmbed[0].metadata.systemPrompt
+        userQuestion = bestKeywordsFromEmbed[0].metadata.userPrompt
+
+      }else if (reply.includes("Command_2")){
+
+        systemPrompt = bestKeywordsFromEmbed[1].metadata.systemPrompt
+        userQuestion = bestKeywordsFromEmbed[1].metadata.userPrompt
+
+      }else if (reply.includes("Command_3")){
+
+        systemPrompt = bestKeywordsFromEmbed[2].metadata.systemPrompt
+        userQuestion = bestKeywordsFromEmbed[2].metadata.userPrompt
+
+      } else {
+        return {
+          reply: "I don't understand what you mean",
+        }
+      }
+      // ----- Instruction auto choose ------
+
+      // systemPrompt = "You are a recruiter, The only think that you do is ask only 1 questions at a time to understand the Industry and Sectors that the candidate shuold have worked on. You give as consise as small answeres as possible"
+      // systemPrompt = "As a recruiter, I talk to a manager and try to uderstand what is the industry and sector experience that the candidate should have. My answers are concise and to the point."
+      // userQuestion = "ask me 1 question related to what other Industries or Sectors the candidate should have worked on based on the context of the conversation" 
+
+
+      
+
+      responseGPTchat = await useGPTchat(message,conversation,systemPrompt,userQuestion,0.3)
+      // responseGPTchat = await useGPTchat(message,conversation,systemPrompt,"ask me only 1 questino what other skills candidate should have based on the context that you have")
+      // responseGPTchat = await useGPTchat(message,conversation,systemPrompt)
+
+      return {
+        reply: responseGPTchat,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "edenGPTreplyChatAPI_V2",
+        {
+          component: "aiQuery > edenGPTreplyChatAPI_V2",
         }
       );
     }
