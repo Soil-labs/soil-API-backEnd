@@ -46,6 +46,8 @@ module.exports = `
 
         gardenUpdate: gardenUpdateType,
 
+        budget: budgetMemberType,
+
         memberRole: RoleTemplate
         chat: chatResponse
 
@@ -62,6 +64,13 @@ module.exports = `
         reviewSummary: reviewSummaryType     
 
         preferences: preferencesType
+    }
+
+    type budgetMemberType {
+        totalBudget: Float,
+        token: String,
+        perHour: Float,
+        perMonth: Float,
     }
     
     type totalNodeTrustType {
@@ -605,6 +614,7 @@ module.exports = `
         numberNodes: Int
     }
     input createFakeUserInput {
+        memberID: ID
         expertise: [nodeCategoryInput]
         interests: [nodeCategoryInput]
     }

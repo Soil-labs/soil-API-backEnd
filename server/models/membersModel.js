@@ -149,10 +149,10 @@ const memberSchema = mongoose.Schema({
   },
 
   budget: {
-    totalBudget: String,
+    totalBudget: Number,
     token: String,
-    perHour: String,
-    perMonth: String,
+    perHour: Number,
+    perMonth: Number,
   },
 
   registeredAt: Date,
