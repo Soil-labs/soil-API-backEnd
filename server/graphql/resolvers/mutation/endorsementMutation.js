@@ -467,8 +467,6 @@ module.exports = {
         args.fields
       );
 
-      console.log("user = ", user);
-
       if (!nodesID)
         throw new ApolloError(
           "you need to use nodesID or nodesID_level, you cant use both"
@@ -476,38 +474,13 @@ module.exports = {
 
       try {
         let endorsementLinkData;
-        // let nodesData = await Node.find({ _id: nodesID }).select(
-        //   "_id name node match_v2_update"
-        // );
-
-        // ---------- All nodes should be equal to nodeType or else throw error -----------
-        // nodesID_array = [];
-        // nodesData.forEach((node) => {
-        //   nodesID_array.push(node._id.toString());
-        //   if (node.node != nodeType) {
-        //     throw new ApolloError(
-        //       "All nodes should be equal to nodeType, problem on nodeID = " +
-        //         node._id +
-        //         " with name = " +
-        //         node.name +
-        //         " and node = " +
-        //         node.node +
-        //         ""
-        //     );
-        //   }
-        // });
-
-        // console.log("nodesData = ", nodesData);
 
         const fields = {
           message: message,
           memberID: user._id,
-          // nodes: [],
           nodes: nodesID,
           createdAt: new Date(),
         };
-
-        // return fields;
 
         endorsementLinkData = await new EndorsementLink(fields);
         endorsementLinkData.save();

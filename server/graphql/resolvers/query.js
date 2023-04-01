@@ -81,6 +81,7 @@ const {
   edenGPTsearchProfiles,
   edenGPTsummaryProfile,
   edenGPTEndorseChatAPI,
+  edenGPTReviewChatAPI,
 } = require("./query/aiQuery");
 
 const {
@@ -201,6 +202,7 @@ module.exports = {
     edenGPTsearchProfiles,
     edenGPTsummaryProfile,
     edenGPTEndorseChatAPI,
+    edenGPTReviewChatAPI,
 
     //----------- GRAPH VISUAL QUERY ------------------
     findMemberGraph,

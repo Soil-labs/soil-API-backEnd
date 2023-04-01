@@ -18,7 +18,7 @@ module.exports = {
         endorsementData = await EndorsementLink.find({});
       }
 
-      console.log("endorsementData = ", endorsementData);
+      //   console.log("endorsementData = ", endorsementData);
 
       return endorsementData;
     } catch (err) {
