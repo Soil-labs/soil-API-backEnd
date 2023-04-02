@@ -98,7 +98,6 @@ module.exports = `
           edenGPTreply(fields: edenGPTreplyInput): edenGPTreplyOutput
           messageMapKG(fields: messageMapKGInput): messageMapKGOutput
           messageMapKG_V2(fields: messageMapKG_V2Input): messageMapKG_V2Output
-          messageMapKG_V3(fields: messageMapKG_V3Input): messageMapKG_V3Output
           edenGPTreplyMemory(fields: edenGPTreplyMemoryInput): edenGPTreplyMemoryOutput
           edenGPTreplyChatAPI(fields: edenGPTreplyChatAPIInput): edenGPTreplyChatAPIOutput
           edenGPTreplyChatAPI_V2(fields: edenGPTreplyChatAPI_V2Input): edenGPTreplyChatAPI_V2Output

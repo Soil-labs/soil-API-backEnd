@@ -105,15 +105,6 @@ module.exports = `
         keywords: [KeywordValue]
     }
 
-    input messageMapKG_V3Input {
-        message: String
-        assistantMessage: String
-    }
-
-    type messageMapKG_V3Output {
-        keywords: [KeywordValue]
-    }
-
 
     input edenGPTreplyMemoryInput {
         message: String

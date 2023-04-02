@@ -1,10 +1,7 @@
 
 
 const { Node } = require("../../../models/nodeModal");
-const { Members } = require("../../../models/membersModel");
-
 const axios = require("axios");
-
 
 
 function chooseAPIkey() {
@@ -62,10 +59,16 @@ const nodes_aiModule = async (nodesID,weightModules,memberObj) => {
 
     if (!nodeData) throw new ApolloError("Node Don't exist");
 
+    // console.log("nodeData = " , nodeData)
+
+    // const nodeData_subExpertise = nodeData.filter(obj => obj.node == 'sub_expertise');
 
     memberObj = await nodesFindMembers(nodeData,memberObj)
 
-    memberObj = await findMemberAndFilter(memberObj)
+    // console.log("memberObj = " , memberObj)
+    // await showObject(memberObj,"memberObj")
+    // asf1
+
 
     memberObj = await membersScoreMap(memberObj,weightModulesObj)
 
@@ -78,7 +81,7 @@ const nodes_aiModule = async (nodesID,weightModules,memberObj) => {
     return memberObj
 }
 
-const totalScore_aiModule = async (memberObj,weightModules,numberNodes) => {
+const totalScore_aiModule = async (memberObj,weightModules) => {
 
 
 
@@ -86,27 +89,19 @@ const totalScore_aiModule = async (memberObj,weightModules,numberNodes) => {
     min_S = 100000000
 
     newMin_total = 20
-    newMax_total = parseInt(nodeToMaxScore(numberNodes))
-
-    // console.log("memberObj = " , memberObj)
-    // sdf01
+    newMax_total = 100
 
     
     for (const [memberID, member] of Object.entries(memberObj)) {
         let scoreOriginalTotal = 0;
-        let scoreOriginalBeforeMap = 0;
 
         // console.log("member = " , member.nodesTotal)
 
         if (member.nodesTotal) {
             if (weightModules["node_total"]) {
                 scoreOriginalTotal += member.nodesTotal.score * (weightModules["node_total"].weight*0.01);
-                scoreOriginalBeforeMap += member.nodesTotal.scoreOriginal * (weightModules["node_total"].weight*0.01);
-
             } else {
                 scoreOriginalTotal += member.nodesTotal.score;
-                scoreOriginalBeforeMap += member.nodesTotal.scoreOriginal;
-
             }
         }
 
@@ -115,8 +110,7 @@ const totalScore_aiModule = async (memberObj,weightModules,numberNodes) => {
         
         if (!memberObj[memberID].total) {
             memberObj[memberID].total = {
-                scoreOriginal: scoreOriginalTotal,
-                scoreOriginalBeforeMap: scoreOriginalBeforeMap,
+                scoreOriginal: scoreOriginalTotal
             }
         }
     }
@@ -125,14 +119,10 @@ const totalScore_aiModule = async (memberObj,weightModules,numberNodes) => {
 
     for (const [memberID, member] of Object.entries(memberObj)) {
         let scoreOriginalTotal = member.total.scoreOriginal;
-        let scoreOriginalBeforeMap = member.total.scoreOriginalBeforeMap;
 
         let scoreMap = mapValue(scoreOriginalTotal, min_S, max_S, newMin_total, newMax_total);
 
         memberObj[memberID].total.score = parseInt(scoreMap);
-        memberObj[memberID].total.realTotalPercentage = scoreOriginalTotal;
-        memberObj[memberID].total.scoreOriginalBeforeMap = scoreOriginalBeforeMap;
-
     }
 
     return memberObj
@@ -164,8 +154,7 @@ const sortArray_aiModule = async (memberObj) => {
         memberArray.push({
             memberID: memberID,
             matchPercentage: {
-                totalPercentage: score,
-                realTotalPercentage: member.total.scoreOriginalBeforeMap,
+                totalPercentage: score
             },
             nodesPercentage: nodesPercentage,
         })
@@ -260,53 +249,6 @@ const membersScoreMap = async (memberObj,weightModulesObj) => {
 
     return memberObj
     
-}
-
-const passFilterTestMember = async (memberData) => {
-
-    console.log("memberData = " , memberData)
-
-    if (!memberData?.hoursPerWeek) return false;
-
-    if (!memberData?.budget?.perHour) return false;
-
-    // if (!memberData?.expirienceLevel?.total) return false;
-
-    return true
-
-}
-
-const findMemberAndFilter = async (memberObj) => {
-
-    
-    // from memberObj take only the keys and make a new array
-    memberIDs = Object.keys(memberObj);
-
-    // search on the mongo for all the members
-    let membersData = await Members.find({ _id: memberIDs }).select('_id discordName hoursPerWeek totalNodeTrust expirienceLevel budget');
-
-    // console.log("membersData = " , membersData)
-
-
-    // add the members data to the memberObj
-    for (let i = 0; i < membersData.length; i++) {
-        let memberID = membersData[i]._id;
-
-        if (memberObj[memberID]) {
-
-            if (passFilterTestMember(membersData[i]) == true){
-                memberObj[memberID] = {
-                    ...memberObj[memberID],
-                    ...membersData[i]._doc
-                }
-            } else {
-                delete memberObj[memberID]
-            }
-
-        }
-    }
-
-    return memberObj
 }
 
 const nodesFindMembers = async (nodeData,memberObj) => {
@@ -444,18 +386,6 @@ async function arrayToObject(arrayT) {
     }
     return objectT;
 }
-
-function nodeToMaxScore(x) {
-    const a = -0.056;
-    const b = 3.972;
-    const c = 66.084;
-    const y = a * Math.pow(x, 2) + b * x + c;
-
-
-
-    return y;
-}
-
 
 
 
