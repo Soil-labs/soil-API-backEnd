@@ -1,0 +1,50 @@
+module.exports = `
+    
+    type Endorsement {
+        _id: ID
+        userSend: Members, 
+        userReceive: Members, 
+        endorsementMessage: String, 
+        arweaveTransactionID: String, 
+        nodes: [endorseNode]
+        stars: Int, 
+        discussion: [discussionMessage]
+        stake: Float,
+
+        createdAt: Date,
+    }
+
+    type endorseNode {
+        node: Node,
+        confidence: Float,
+    }
+
+    type discussionMessage {
+        role: String,
+        content: String,
+    }
+
+     input addEndorsementInput {
+        userSendID: ID
+        userReceiveID: ID
+        endorsementMessage: String
+        discussion: [discussionMessageInput]
+        stars: Int
+        endorseNodes: [endorseNodeInput]
+        stake: Float,
+
+    }
+
+    input findEndorsementsInput {
+        endorsementsID: [ID]
+        userSend: ID
+        userReceive: ID
+    }
+
+    input createFakeEndorsementInput {
+        userSendID: ID
+        userReceiveID: ID
+    }
+
+    
+`

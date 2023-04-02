@@ -70,7 +70,7 @@ const {
 } = require("./query/skillSubCategoryQuery");
 
 const { findChat } = require("./query/chatQuery");
-const { findMessage, edenGPTreply,messageMapKG,messageMapKG_V2,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTreplyChatAPI_V2,edenGPTsearchProfiles,edenGPTsummaryProfile,edenGPTEndorseChatAPI} = require("./query/aiQuery");
+const { findMessage, edenGPTreply,messageMapKG,messageMapKG_V2,messageMapKG_V3,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTreplyChatAPI_V2,edenGPTsearchProfiles,edenGPTsummaryProfile,edenGPTEndorseChatAPI} = require("./query/aiQuery");
 
 const {
   findMemberGraph,
@@ -175,7 +175,7 @@ module.exports = {
     findChat,
 
     //----------- AI QUERY ------------------
-    findMessage,edenGPTreply,messageMapKG,messageMapKG_V2,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTreplyChatAPI_V2,edenGPTsearchProfiles,edenGPTsummaryProfile,edenGPTEndorseChatAPI,
+    findMessage,edenGPTreply,messageMapKG,messageMapKG_V2,messageMapKG_V3,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTreplyChatAPI_V2,edenGPTsearchProfiles,edenGPTsummaryProfile,edenGPTEndorseChatAPI,
 
 
     //----------- GRAPH VISUAL QUERY ------------------

@@ -2358,13 +2358,29 @@ module.exports = {
       }
 
       if (!userData?.budget?.perHour){
-        // random budget per hour from 10 to 130
         userData.budget.perHour = Math.floor(Math.random() * 90) + 10
-
-        // printC(userData.budget,"6","userData.budget","g")
-        // sadf9
       }
       // --------- create hourse per week, timezone, location, totalIncome, completedOpportunities -------
+
+
+      // --------- Create Expirience Level -------
+      if (!userData?.experienceLevel?.total){
+        // random expirience level it can be 3,6 or 9
+        const expirienceLevel = [3,6,9,9]
+        userData.expirienceLevel.total = expirienceLevel[Math.floor(Math.random() * expirienceLevel.length)]
+      }
+
+
+      if (!userData?.experienceLevel?.years){
+        // random yars which is a multiplier of the total years, but it is a random multiplier from 1 to 3
+        const multiplier = Math.floor(Math.random() * 3) + 1
+
+        userData.expirienceLevel.years = userData.expirienceLevel.total * multiplier
+      }
+
+
+      // --------- Create Expirience Level -------
+
 
       // --------- Create Role and add to User -------
       if (!userData?.memberRole){

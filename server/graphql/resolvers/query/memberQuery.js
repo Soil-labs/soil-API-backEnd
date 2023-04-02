@@ -1436,6 +1436,8 @@ module.exports = {
 
     if (!nodesID) throw new ApolloError("nodesID is required");
 
+    const numberNodes = nodesID.length;
+
 
     if (page != null && limit != null) {
     } else {
@@ -1449,16 +1451,15 @@ module.exports = {
 
       memberObj = await nodes_aiModule(nodesID,weightModules,memberObj)
 
-      memberObj = await totalScore_aiModule(memberObj,weightModules)
+      memberObj = await totalScore_aiModule(memberObj,weightModules,numberNodes)
 
-      // console.log("memberObj = " , memberObj)
-      // asdf2
+      console.log("memberObj = " , memberObj)
+      asdf2
 
       memberArray = await sortArray_aiModule(memberObj)
 
       // await showObject(memberObj,"memberObj")
 
-    
 
     return memberArray
       // return memberArr.slice(page * limit, (page + 1) * limit);
