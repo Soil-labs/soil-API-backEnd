@@ -155,6 +155,11 @@ const memberSchema = mongoose.Schema({
     perMonth: Number,
   },
 
+  expirienceLevel: {
+    total: Number, // from 0 to 10
+    years: Number, // from 0 to 99
+  },
+
   registeredAt: Date,
 
   memberRole: mongoose.Schema.ObjectId,

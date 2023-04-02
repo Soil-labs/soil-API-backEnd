@@ -86,6 +86,8 @@ async function useGPTchatHelloWorld() {
   return response.data.choices[0].message.content;
 }
 
+async function useGPTchat(userNewMessage,discussion,systemPrompt="",userQuestion = "",temperature=0.7) {
+
 async function useGPTchat(
   userNewMessage,
   discussion,
@@ -93,6 +95,7 @@ async function useGPTchat(
   userQuestion = "",
   temperature = 0.7
 ) {
+
   discussion.unshift({
     role: "system",
     content: systemPrompt,
@@ -584,6 +587,227 @@ module.exports = {
         err.extensions?.code || "edenGPTReviewChatAPI",
         {
           component: "aiQuery > edenGPTReviewChatAPI",
+        }
+      );
+    }
+  },
+  messageMapKG_V3: async (parent, args, context, info) => {
+    const { message,assistantMessage } = args.fields;
+    console.log("Query > messageMapKG_V3 > args.fields = ", args.fields);
+    try {
+
+      // // -------------- find keywords with GPT -------------
+      //   prompt_general = "paragraph: " + message + "\n\n"
+
+      
+      //   prompt_general += "Find the minimum Keywords of the paragraph\n\n"
+
+      //   prompt_general += "Keywords separated by comma:"
+
+      //   keywordsGPTresult = await useGPTchatSimple(prompt_general)
+      //   console.log("keywordsGPTresult ChatGPT= " , keywordsGPTresult)
+      //   // -------------- find keywords with GPT -------------
+
+        // -------------- find keywords with GPT V2-------------
+        conversation =  [
+          {"role": "assistant", "content": "Assistant: " + assistantMessage},
+          {"role": "user", "content": "Last Message: " + message},
+        ]
+
+
+        
+        keywordsGPTresult = await useGPTchat(
+          "Find the minimum Skills based on the conversation \n Result, skills/keywords separated by comma:",
+          conversation,
+          "Your task is to take a 2 message conversation and find the skills based on the context"
+        );
+        console.log("keywordsGPTresult ChatGPT= " , keywordsGPTresult)
+        if (keywordsGPTresult.includes("cannot find") || keywordsGPTresult.includes("cannot provide") || keywordsGPTresult.includes("I'm sorry")|| keywordsGPTresult.includes("cannot determine")
+        || keywordsGPTresult.includes("unable to")|| keywordsGPTresult.includes("don't have access")){
+          return [{}]
+        }
+      // -------------- find keywords with GPT V2-------------
+
+
+    
+        
+        keywordsGPTresult = keywordsGPTresult.replace(/[\d.]/g, '');
+
+        console.log("keywordsGPTresult = " , keywordsGPTresult)
+
+        let GPTkeywords = keywordsGPTresult.split(/[,|]\s*/);
+        
+        console.log("GPTkeywords = " , GPTkeywords)
+        // asdf9
+
+
+
+      // -------------- Find best keywrods from embeding per keyword -------------
+      let filter = {
+        label: "AI_KG4_Context",
+      }
+
+
+      console.log("change = 1")
+
+      // sdf4
+
+      let resT = await findBestEmbedingsArray(GPTkeywords,filter ,topK = 1)
+      console.log("change = 2")
+
+
+      bestKeywordsFromEmbed = resT.matchesRes
+      let keywordEmbedObj = resT.matchesObj
+
+
+      console.log("keywordEmbedObj = " , keywordEmbedObj)
+     
+
+      finalKeywords = []
+      testKeywords = []
+
+
+      // --------------- prepare prompt keyword -----------
+      keywords_str = ""
+      numKeywords = 0
+      for (let i = 0; i < bestKeywordsFromEmbed.length; i++) {
+        const element = bestKeywordsFromEmbed[i];
+
+        console.log("element = " , element)
+
+        if (element.score >= 0.96){
+          finalKeywords.push({
+            keyword: element.metaData.keyword,
+            confidence: parseInt(element.score*10),
+          })
+          continue;
+        }
+
+        if (element.exactMatch == false && element.score >= 0.74){
+          keywords_str +=  element.metaData.keyword + "\n "
+
+          numKeywords += 1
+
+          // testKeywords.push(element.metaData.keyword)
+          testKeywords.push({
+            keyword: element.metaData.keyword,
+            confidence: element.score,
+          })
+        }
+
+        if (element.exactMatch == true && element.score >= 0.92){
+          // keywords_str +=  element.metaData.keyword + " - "+element.originalKeywordMatch +"\n "
+          keywords_str +=  element.metaData.keyword + "\n "
+
+          numKeywords += 1
+
+          // testKeywords.push(element.metaData.keyword)
+          testKeywords.push({
+            keyword: element.metaData.keyword,
+            confidence: element.score,
+          })
+
+        }
+      }
+      
+      keywords_str += "ReactJS" +"\n "
+      keywords_str += "Angular" +"\n "
+      keywords_str += "C++" +"\n "
+
+      console.log("keywords_str = " , keywords_str)
+      console.log(" " )
+      // adf
+      // --------------- prepare prompt keyword -----------
+
+
+      //   // -------------- Find best keywrods from prompt engineering -------------
+      //   prompt_general = "Given a paragraph, determine if the skills provided as input exist within it.  \n\n"
+      //   prompt_general += "Paragraph: " + message + "\n\n"
+      //   prompt_general += "Skills: " + keywords_str + "\n\n"
+      //   prompt_general += "Answers for every skill only TRUE or FALSE : \n"
+        
+
+      //   console.log("prompt_general = " , prompt_general)
+
+
+      //   // res_gpt = await useGPT(prompt_general,0.7,"text-davinci-003")
+      //   res_gpt = await useGPTchatSimple(prompt_general)
+      //   console.log("res_gpt davinci= " , res_gpt)
+      // // -------------- Find best keywrods from prompt engineering -------------
+
+
+      // -------------- Find best keywrods from prompt engineering V2-------------
+       conversation =  [
+        {"role": "assistant", "content": "Assistant: " + assistantMessage},
+        {"role": "user", "content": "Last Message: " + message},
+      ]
+
+
+      
+      res_gpt = await useGPTchat(
+        "Determine if the skills provided as input exist within the conversation \n Answers for every skill only TRUE or FALSE: ",
+        conversation
+      );
+      console.log("res_gpt ChatGPT= " , res_gpt)
+      // -------------- Find best keywrods from prompt engineering V2-------------
+
+
+
+
+
+
+        const trueFalseArr = res_gpt.split('\n').reduce((acc, str) => {
+          const match = str.match(/(TRUE|FALSE)/);
+          
+          if (match) {
+            acc.push(match[1]);
+          }
+          return acc;
+        }, []);
+        
+        console.log("trueFalseArr = ",trueFalseArr);
+        // sadf3
+
+        console.log("-------------- " , "testKeywords[i]", "-------------")
+        for (let i = 0; i < trueFalseArr.length; i++) {
+          console.log("testKeywords[i] = " , testKeywords[i])
+          if (trueFalseArr[i] == "TRUE" && testKeywords[i]?.keyword && testKeywords[i]?.confidence){
+            finalKeywords.push({
+              keyword: testKeywords[i].keyword,
+              confidence: parseInt(testKeywords[i].confidence*10),
+            })
+          }
+        }
+        
+
+        let nodeData = await Node.find({name: finalKeywords.map(value => value.keyword)}).select("_id name");
+
+        nodeDataObj = {}
+        nodeData.forEach((node) => {
+          nodeDataObj[node.name] = node._id
+        })
+
+        finalKeywords = finalKeywords.map((value) => {
+          return {
+            ...value,
+            nodeID: nodeDataObj[value.keyword]
+          }
+        })
+        
+      // sort an keywordsValues based on object value confidence 
+      finalKeywords.sort((a, b) => (a.confidence > b.confidence) ? -1 : 1)
+
+      return {
+        keywords: finalKeywords,
+
+      }
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "messageMapKG_V3",
+        {
+          component: "aiQuery > messageMapKG_V3",
         }
       );
     }
@@ -1568,9 +1792,11 @@ module.exports = {
         systemPrompt = bestKeywordsFromEmbed[2].metadata.systemPrompt;
         userQuestion = bestKeywordsFromEmbed[2].metadata.userPrompt;
       } else {
-        return {
-          reply: "I don't understand what you mean",
-        };
+        systemPrompt = "You are a recruiter, The only think that you do is ask only 1 questions at a time to understand the skills that the candidate should have. You give as consise as small answeres as possible"
+        userQuestion = "ask me only 1 questino what other skills candidate should have based on the context that you have"
+        // return {
+        //   reply: "I don't understand what you mean",
+        // }
       }
       // ----- Instruction auto choose ------
 
