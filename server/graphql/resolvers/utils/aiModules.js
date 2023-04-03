@@ -115,7 +115,6 @@ const totalScore_aiModule = async (memberObj,weightModulesObj,numberNodes) => {
         if (member.distanceHoursPerWeekMap) {
             if (weightModulesObj["availability_total"]) {
                 scoreOriginalTotal += member.distanceHoursPerWeekMap * (weightModulesObj["availability_total"].weight*0.01);
-
             } 
             // else {
             //     scoreOriginalTotal += member.distanceHoursPerWeekMap;
@@ -125,7 +124,6 @@ const totalScore_aiModule = async (memberObj,weightModulesObj,numberNodes) => {
         if (member.distanceBudgetPerHourMap) {
             if (weightModulesObj["budget_total"]) {
                 scoreOriginalTotal += member.distanceBudgetPerHourMap * (weightModulesObj["budget_total"].weight*0.01);
-
             } 
             // else {
             //     scoreOriginalTotal += member.distanceBudgetPerHourMap;
@@ -135,7 +133,6 @@ const totalScore_aiModule = async (memberObj,weightModulesObj,numberNodes) => {
         if (member.expirience_total) {
             if (weightModulesObj["expirience_total"]) {
                 scoreOriginalTotal += member.expirience_total * (weightModulesObj["expirience_total"].weight*0.01);
-
             } 
             // else {
             //     scoreOriginalTotal += member.expirience_total;
@@ -359,50 +356,60 @@ const distanceFromFilter = async (memberObj,filter) => {
         let distance = 0;
 
         // ---------------------- hoursPerWeek
-        averageFilterHourPerWeek = (filter.availability.minHourPerWeek + filter.availability.maxHourPerWeek) / 2;
-        distance = Math.abs(member.hoursPerWeek - averageFilterHourPerWeek);
-        memberObj[memberID].distanceHoursPerWeek = distance;
+        if (filter?.availability?.minHourPerWeek && filter?.availability?.maxHourPerWeek){
+            averageFilterHourPerWeek = (filter.availability.minHourPerWeek + filter.availability.maxHourPerWeek) / 2;
+            distance = Math.abs(member.hoursPerWeek - averageFilterHourPerWeek);
+            memberObj[memberID].distanceHoursPerWeek = distance;
 
-        if (distance < minDisHoursPerWeek) minDisHoursPerWeek = distance;
-        if (distance > maxDisHoursPerWeek) maxDisHoursPerWeek = distance;
+            if (distance < minDisHoursPerWeek) minDisHoursPerWeek = distance;
+            if (distance > maxDisHoursPerWeek) maxDisHoursPerWeek = distance;
+        }
 
 
         // ---------------------- budget
-        averageFilterBudgetPerHour = (filter.budget.minPerHour + filter.budget.maxPerHour) / 2;
-        distance = Math.abs(member.budget.perHour - averageFilterBudgetPerHour);
-        memberObj[memberID].distanceBudgetPerHour = distance;
+        if (filter?.budget?.minPerHour && filter?.budget?.maxPerHour){
+            averageFilterBudgetPerHour = (filter.budget.minPerHour + filter.budget.maxPerHour) / 2;
+            distance = Math.abs(member.budget.perHour - averageFilterBudgetPerHour);
+            memberObj[memberID].distanceBudgetPerHour = distance;
 
-        if (distance < minDisBudgetPerHour) minDisBudgetPerHour = distance;
-        if (distance > maxDisBudgetPerHour) maxDisBudgetPerHour = distance;
+            if (distance < minDisBudgetPerHour) minDisBudgetPerHour = distance;
+            if (distance > maxDisBudgetPerHour) maxDisBudgetPerHour = distance;
+        }
 
         // ---------------------- expirienceLevel
-        distance = Math.abs(member.expirienceLevel.total - filter.expirienceLevel);
-        memberObj[memberID].distanceExpirienceLevel = distance;
+        if (filter?.expirienceLevel){
+            distance = Math.abs(member.expirienceLevel.total - filter.expirienceLevel);
+            memberObj[memberID].distanceExpirienceLevel = distance;
 
-        if (distance < minDisExpirienceLevel) minDisExpirienceLevel = distance;
-        if (distance > maxDisExpirienceLevel) maxDisExpirienceLevel = distance;
+            if (distance < minDisExpirienceLevel) minDisExpirienceLevel = distance;
+            if (distance > maxDisExpirienceLevel) maxDisExpirienceLevel = distance;
+        }
     }
 
-
-
-    // console.log("memberObj = " , memberObj)
-    // console.log("minDisHoursPerWeek = " , minDisHoursPerWeek)
-    // console.log("maxDisHoursPerWeek = " , maxDisHoursPerWeek)
-    // console.log("minDisBudgetPerHour = " , minDisBudgetPerHour)
-    // console.log("maxDisBudgetPerHour = " , maxDisBudgetPerHour)
-    // console.log("minDisExpirienceLevel = " , minDisExpirienceLevel)
-    // console.log("maxDisExpirienceLevel = " , maxDisExpirienceLevel)
 
     // Map the distance to 0-1
     for (const [memberID, member] of Object.entries(memberObj)) {
 
-        let distanceHoursPerWeek = mapValue(member.distanceHoursPerWeek, minDisHoursPerWeek, maxDisHoursPerWeek, 0, 1);
-        let distanceBudgetPerHour = mapValue(member.distanceBudgetPerHour, minDisBudgetPerHour, maxDisBudgetPerHour, 0, 1);
-        let distanceExpirienceLevel = mapValue(member.distanceExpirienceLevel, minDisExpirienceLevel, maxDisExpirienceLevel, 0.3, 1);
+        memberObj[memberID].distanceHoursPerWeekMap = 0
+        memberObj[memberID].distanceBudgetPerHourMap = 0
+        memberObj[memberID].distanceExpirienceLevelMap = 0
 
-        memberObj[memberID].distanceHoursPerWeekMap = distanceHoursPerWeek;
-        memberObj[memberID].distanceBudgetPerHourMap = distanceBudgetPerHour;
-        memberObj[memberID].distanceExpirienceLevelMap = distanceExpirienceLevel;
+        if (member.distanceHoursPerWeek){
+            let distanceHoursPerWeek = mapValue(member.distanceHoursPerWeek, minDisHoursPerWeek, maxDisHoursPerWeek, 0, 1);
+            memberObj[memberID].distanceHoursPerWeekMap = distanceHoursPerWeek;
+        }
+
+        if (member.distanceBudgetPerHour){
+            let distanceBudgetPerHour = mapValue(member.distanceBudgetPerHour, minDisBudgetPerHour, maxDisBudgetPerHour, 0, 1);
+            memberObj[memberID].distanceBudgetPerHourMap = distanceBudgetPerHour;
+        }
+
+
+        if (member.distanceExpirienceLevel){
+            let distanceExpirienceLevel = mapValue(member.distanceExpirienceLevel, minDisExpirienceLevel, maxDisExpirienceLevel, 0.3, 1);
+            memberObj[memberID].distanceExpirienceLevelMap = distanceExpirienceLevel;
+        }
+
 
     }
 
