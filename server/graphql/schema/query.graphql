@@ -128,5 +128,8 @@ module.exports = `
           activeUsersQueryStats(fields: activeUsersInput):[ResultCount2]
           
       
+          # ---------- EDEN ENDORSEMENT QUERY ----------------
+          findEndorsementLink(fields: findEndorsementLinkInput): [EndorsementLink]
+
         }
 `;

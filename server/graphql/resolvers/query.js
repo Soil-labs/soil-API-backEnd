@@ -70,7 +70,18 @@ const {
 } = require("./query/skillSubCategoryQuery");
 
 const { findChat } = require("./query/chatQuery");
-const { findMessage, edenGPTreply,messageMapKG,messageMapKG_V2,messageMapKG_V3,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTreplyChatAPI_V2,edenGPTsearchProfiles,edenGPTsummaryProfile,edenGPTEndorseChatAPI} = require("./query/aiQuery");
+const {
+  findMessage,
+  edenGPTreply,
+  messageMapKG,
+  messageMapKG_V2,
+  edenGPTreplyMemory,
+  edenGPTreplyChatAPI,
+  edenGPTreplyChatAPI_V2,
+  edenGPTsearchProfiles,
+  edenGPTsummaryProfile,
+  edenGPTEndorseChatAPI,
+} = require("./query/aiQuery");
 
 const {
   findMemberGraph,
@@ -78,7 +89,10 @@ const {
   findMemberToProjectGraph,
   dynamicSearchToProjectGraph,
   dynamicSearchGraph,
-  dynamicSearchToMemberGraph,dynamicSearchToMemberGraphV2,dynamicSearchToMemberGraphGPT,dynamicSearchToMemberCategoryGroup,
+  dynamicSearchToMemberGraph,
+  dynamicSearchToMemberGraphV2,
+  dynamicSearchToMemberGraphGPT,
+  dynamicSearchToMemberCategoryGroup,
   findMemberToMemberGraph,
   findMultipleMembersProjectsGraph,
   findOneMemberToMembersGraph,
@@ -88,8 +102,10 @@ const {
   membersStats,
   lurkersContributorsQuery,
   activeMembersStats,
-  activeUsersQueryStats
+  activeUsersQueryStats,
 } = require("./query/edenMetricsQuery");
+
+const { findEndorsementLink } = require("./query/endorsementQuery");
 
 const { errors } = require("./query/errorQuery");
 
@@ -175,8 +191,16 @@ module.exports = {
     findChat,
 
     //----------- AI QUERY ------------------
-    findMessage,edenGPTreply,messageMapKG,messageMapKG_V2,messageMapKG_V3,edenGPTreplyMemory,edenGPTreplyChatAPI,edenGPTreplyChatAPI_V2,edenGPTsearchProfiles,edenGPTsummaryProfile,edenGPTEndorseChatAPI,
-
+    findMessage,
+    edenGPTreply,
+    messageMapKG,
+    messageMapKG_V2,
+    edenGPTreplyMemory,
+    edenGPTreplyChatAPI,
+    edenGPTreplyChatAPI_V2,
+    edenGPTsearchProfiles,
+    edenGPTsummaryProfile,
+    edenGPTEndorseChatAPI,
 
     //----------- GRAPH VISUAL QUERY ------------------
     findMemberGraph,
@@ -184,7 +208,10 @@ module.exports = {
     findMemberToProjectGraph,
     dynamicSearchToProjectGraph,
     dynamicSearchGraph,
-    dynamicSearchToMemberGraph,dynamicSearchToMemberGraphV2,dynamicSearchToMemberGraphGPT,dynamicSearchToMemberCategoryGroup,
+    dynamicSearchToMemberGraph,
+    dynamicSearchToMemberGraphV2,
+    dynamicSearchToMemberGraphGPT,
+    dynamicSearchToMemberCategoryGroup,
     findMemberToMemberGraph,
     findMultipleMembersProjectsGraph,
     findOneMemberToMembersGraph,
@@ -193,6 +220,9 @@ module.exports = {
     membersStats,
     lurkersContributorsQuery,
     activeMembersStats,
-    activeUsersQueryStats
+    activeUsersQueryStats,
+
+    //----------- EDEN ENDORSEMENT QUERY ------------------
+    findEndorsementLink,
   },
 };

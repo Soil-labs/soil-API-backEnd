@@ -22,6 +22,7 @@ module.exports = `
         addEndorsement(fields: addEndorsementInput ): Endorsement
         findEndorsements(fields: findEndorsementsInput ): [Endorsement]
         createFakeEndorsement(fields: createFakeEndorsementInput ): Endorsement
+        createEndorsementLink(fields: createEndorsementLinkInput ): EndorsementLink
 
         #  ---------- REVIEW MUTATIONS -------
         addReview(fields: addReviewInput ): Review
@@ -109,6 +110,8 @@ module.exports = `
         messageToGPT(fields: messageToGPTInput): messageToGPTOutput
         inputToGPT(fields: inputToGPTInput): inputToGPTOutput
         CVtoSummary(fields: CVtoSummaryInput): CVtoSummaryOutput
+        CVtoJobs(fields: CVtoJobsInput): CVtoJobsOutput
+
 
         # ------------- ERROR MUTATIONS ------------
         createError(fields: createErrorInput!): ErrorLog
