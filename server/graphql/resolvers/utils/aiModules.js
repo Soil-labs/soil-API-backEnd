@@ -264,11 +264,19 @@ const membersScoreMap = async (memberObj,weightModulesObj) => {
 
 const passFilterTestMember = async (memberData) => {
 
-    console.log("memberData = " , memberData)
+
+
+    // console.log("memberData = " , memberData)
+
+    // console.log("change = 0" )
 
     if (!memberData?.hoursPerWeek) return false;
+    // console.log("change = 1" )
 
     if (!memberData?.budget?.perHour) return false;
+
+    // console.log("change = 2" )
+
 
     // if (!memberData?.expirienceLevel?.total) return false;
 
@@ -294,12 +302,15 @@ const findMemberAndFilter = async (memberObj) => {
 
         if (memberObj[memberID]) {
 
-            if (passFilterTestMember(membersData[i]) == true){
+            passFilter = await passFilterTestMember(membersData[i])
+
+            if (passFilter== true){
                 memberObj[memberID] = {
                     ...memberObj[memberID],
                     ...membersData[i]._doc
                 }
             } else {
+                // console.log("change =-------------- dElETE " ,)
                 delete memberObj[memberID]
             }
 
