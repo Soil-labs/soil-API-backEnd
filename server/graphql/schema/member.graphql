@@ -398,10 +398,25 @@ module.exports = `
 
     input matchNodesToMembers_AI4Input {
         nodesID: [ID]
+        budget: budgetInputT
+        expirienceLevel: Int
+        availability: availabilityInput
         weightModules: [weightModulesInput]
         page: Int
         limit: Int
     }
+
+    input budgetInputT {
+        minPerHour: Float
+        maxPerHour: Float
+    }
+
+    input availabilityInput {
+        minHourPerWeek: Int
+        maxHourPerWeek: Int
+    }
+
+    
 
 
 
