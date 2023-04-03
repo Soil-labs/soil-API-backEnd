@@ -46,5 +46,24 @@ module.exports = `
         userReceiveID: ID
     }
 
+    input findEndorsementLinkInput {
+        _id: [ID]
+        serverID: [ID]
+    }
+
+
+    input createEndorsementLinkInput {
+        message: String
+        nodesID: [String]
+    }
+
+    type EndorsementLink {
+        _id: ID
+        memberInfo: Members        
+        message: String
+        nodes: [nodesType]
+        createdAt: Date
+      
+    }
     
 `
