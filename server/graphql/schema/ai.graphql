@@ -170,6 +170,17 @@ module.exports = `
         # keywords: [String]
     }
 
+    input edenGPTReviewChatAPIInput {
+        message: String
+        conversation: [messageChat]
+        userID: ID
+    }
+
+    type edenGPTReviewChatAPIOutput {
+        reply: String
+        # keywords: [String]
+    }
+
     input useAI_OnMessageInput {
         message: String
         cash: Boolean

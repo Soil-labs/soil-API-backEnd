@@ -52,7 +52,6 @@ module.exports = {
     memberInfo: async (parent, args, context, info) => {
       try {
         const memberID = parent.memberID;
-
         const memberData = await Members.findOne({ _id: memberID });
 
         return memberData;
@@ -68,11 +67,8 @@ module.exports = {
       }
     },
     nodes: async (parent, args, context, info) => {
-      // console.log("parent = ", parent);
-
       try {
         const nodes = parent.nodes;
-
         const nodesData = await Node.find({ _id: nodes });
 
         let res = [];
