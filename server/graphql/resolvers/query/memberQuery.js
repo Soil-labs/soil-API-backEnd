@@ -21,7 +21,7 @@ const {
 const { ApolloError } = require("apollo-server-express");
 const { IsAuthenticated } = require("../../../utils/authorization");
 
-const {nodes_aiModule,totalScore_aiModule,showObject,sortArray_aiModule} = require("../utils/aiModules")
+const {nodes_aiModule,totalScore_aiModule,showObject,sortArray_aiModule,arrayToObject} = require("../utils/aiModules")
 
 function mapRange(input, inputMin, inputMax, outputMin, outputMax) {
   return (
@@ -1429,10 +1429,11 @@ module.exports = {
     return val;
   },
   matchNodesToMembers_AI4: async (parent, args, context, info) => {
-    const { nodesID, weightModules } =
+    const { nodesID, weightModules,budget,availability,expirienceLevel } =
       args.fields;
     let { page, limit } = args.fields;
     console.log("Query > matchNodesToMembers_AI4 > args.fields = ", args.fields);
+    // df0
 
     if (!nodesID) throw new ApolloError("nodesID is required");
 
@@ -1447,11 +1448,21 @@ module.exports = {
 
     try {
 
+      weightModulesObj = await arrayToObject(weightModules)
+
+      filter = {}
+
+      if (budget) filter.budget = budget
+
+      if (availability) filter.availability = availability
+
+      if (expirienceLevel) filter.expirienceLevel = expirienceLevel
+
       memberObj = {}
 
-      memberObj = await nodes_aiModule(nodesID,weightModules,memberObj)
+      memberObj = await nodes_aiModule(nodesID,weightModulesObj,memberObj,filter)
 
-      memberObj = await totalScore_aiModule(memberObj,weightModules,numberNodes)
+      memberObj = await totalScore_aiModule(memberObj,weightModulesObj,numberNodes)
 
       // console.log("memberObj = " , memberObj)
       // asdf2
