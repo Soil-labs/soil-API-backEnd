@@ -217,6 +217,12 @@ module.exports = `
         node: Node
         totalPercentage: Float
         conn_nodeIDs: [ID]
+        mostRelevantMemberNodes:[mostRelevantMemberNodeType]
+    }
+
+    type mostRelevantMemberNodeType {
+        node: Node
+        score: Float
     }
     
 

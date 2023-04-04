@@ -65,6 +65,12 @@ const nodes_aiModule = async (nodesID,weightModulesObj,memberObj,filter) => {
 
     memberObj = await nodesFindMembers(nodeData,memberObj)
 
+    // console.log("memberObj = " , memberObj)
+    for (const [memberID, member] of Object.entries(memberObj)) {
+        console.log("member.nodes = " , memberID,member.nodes)
+    }
+    // sdf00
+
     memberObj = await findMemberAndFilter(memberObj)
 
 
@@ -186,6 +192,23 @@ const sortArray_aiModule = async (memberObj) => {
                 totalPercentage: parseInt(node.score*100),
                 conn_nodeIDs: node.conn_nodeIDs,
             })
+
+            // console.log("node.conn_nodeObj = " , member._id,node.conn_nodeObj)
+
+            let mostRelevantMemberNodes = []
+
+            for (const [conn_nodeID, conn_nodeObj] of Object.entries(node.conn_nodeObj)) {
+                // console.log("conn_nodeObj = " , conn_nodeObj)
+                mostRelevantMemberNodes.push({
+                    nodeID: conn_nodeID,
+                    totalPercentage: conn_nodeObj.scoreOriginal*100,
+                })
+            }
+
+            mostRelevantMemberNodes.sort((a, b) => (a.totalPercentage > b.totalPercentage) ? -1 : 1)
+
+            nodesPercentage[nodesPercentage.length-1].mostRelevantMemberNodes = mostRelevantMemberNodes
+
         }
 
         nodesPercentage.sort((a, b) => (a.totalPercentage > b.totalPercentage) ? -1 : 1)
@@ -200,6 +223,21 @@ const sortArray_aiModule = async (memberObj) => {
             nodesPercentage: nodesPercentage,
         })
     }
+
+    // console.log("memberArray = " , memberArray)
+    for (let i = 0; i < memberArray.length; i++) {
+        let member = memberArray[i];
+        // console.log("member._id = " , member._id)
+        let nodesPercentage = member.nodesPercentage;
+        // console.log("nodesPercentage = " , nodesPercentage)
+        for (let j = 0; j < nodesPercentage.length; j++) {
+            let node = nodesPercentage[j];
+            let mostRelevantMemberNodes = node.mostRelevantMemberNodes;
+            // console.log("mostRelevantMemberNodes = " , mostRelevantMemberNodes)
+        }
+    }
+
+    // sdf
 
     // console.log("memberArray = " , memberArray)
 
@@ -425,15 +463,21 @@ const nodesFindMembers = async (nodeData,memberObj) => {
 
     memberIDs = [];
 
+    // console.log(" = --->> tora -1" )
 
     for (let i = 0; i < nodeData.length; i++) {
         // loop on the nodes
         let match_v2 = nodeData[i].match_v2;
         let node = nodeData[i];
 
+        console.log(" = --->> tora tt0", node._id, match_v2.length)
+
         memberObj = await nodeScoreMembersMap(match_v2,node,memberObj)
 
     }
+
+    // console.log(" = --->> tora 3" )
+    
 
 
     return memberObj
@@ -460,12 +504,16 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
         let conn_node = match_v2[j].conn_node_wh;
         let conn_nodeIDs = conn_node.map((item) => item.nodeConnID);
 
-        // console.log("conn_nodeIDs = " , conn_nodeIDs)
+        // console.log("scoreUser = " , scoreUser)
+        // console.log("conn_node = " , conn_node)
         // asdf2
         // ------------- Find all connected nodes -------------
 
         if (scoreUser > max_S) max_S = scoreUser;
         if (scoreUser < min_S) min_S = scoreUser;
+
+        // console.log(" = --->> tora ttk",node._id )
+
 
         if (!memberObj[memberID]) {
             
@@ -475,18 +523,52 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
             memberObj[memberID].nodes[nodeID] = {
                 scoreOriginal: scoreUser,
                 type: node.node,
-                conn_nodeIDs: conn_nodeIDs
+                conn_nodeIDs: conn_nodeIDs,
+                conn_nodeObj: {},
             }
         } else {
-            memberObj[memberID].nodes[nodeID] = {
-                scoreOriginal: scoreUser,
-                type: node.node,
-                conn_nodeIDs: conn_nodeIDs
-            };
+            if (!memberObj[memberID].nodes[nodeID]){
+                memberObj[memberID].nodes[nodeID] = {
+                    scoreOriginal: scoreUser,
+                    type: node.node,
+                    conn_nodeIDs: conn_nodeIDs,
+                    conn_nodeObj: {},
+                };
+            } else {
+                memberObj[memberID].nodes[nodeID].scoreOriginal = scoreUser;
+                memberObj[memberID].nodes[nodeID].type = node.node;
+                memberObj[memberID].nodes[nodeID].conn_nodeIDs = conn_nodeIDs;
+            }
         }
+
+        // console.log(" = --->> tora ttk 2",node._id )
+
+
+        // ----------- Add nodes to conn_nodeObj ----------
+        let conn_nodeObj = memberObj[memberID].nodes[nodeID].conn_nodeObj;
+        for (let k = 0; k < conn_nodeIDs.length; k++) {
+            let conn_nodeID = conn_nodeIDs[k];
+            if (!conn_nodeObj[conn_nodeID]){
+                conn_nodeObj[conn_nodeID] = {
+                    nodeID: conn_nodeID,
+                    scoreOriginal: conn_node[k].wh_sum,
+                }
+            } else {
+                conn_nodeObj[conn_nodeID].scoreOriginal += conn_node[k].wh_sum;
+            }
+        }
+        memberObj[memberID].nodes[nodeID].conn_nodeObj = conn_nodeObj;
+        // ----------- Add nodes to conn_nodeObj ----------
+
+        // console.log(" = --->> tora ttk 3",node._id )
+
+
+        // console.log("memberObj[memberID].nodes[nodeID] = " , memberObj[memberID].nodes[nodeID])
     }
     // ---------- Find nodes and Max Min -----------
+    // sdf99
 
+    // console.log(" = --->> tora 1" )
     // ---------- Map Score [0,1]-----------
     for (let j = 0; j < match_v2.length; j++) {
 
@@ -512,6 +594,8 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
 
         
     }
+    console.log(" = --->> tora 2",memberObj )
+
     // ---------- Map Score [0,1]-----------
     // sfaf6
 
