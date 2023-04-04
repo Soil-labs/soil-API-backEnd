@@ -464,7 +464,7 @@ module.exports = {
       }
     },
     trust: async (parent, args, context, info) => {
-      console.log("parent 22322= " , parent)
+      // console.log("parent 22322= " , parent)
 
       try {
         const trust = parent.trust;
@@ -568,7 +568,8 @@ module.exports = {
       }
     },
     nodesPercentage: async (parent, args, context, info) => {
-      // console.log("parent 22322= ", parent);
+      console.log("parent 22322 TT= ", parent.nodesPercentage);
+      // console.log("parent 22322= ", parent.nodesPercentage);
 
       try {
         const nodesPercentage = parent.nodesPercentage;
@@ -582,6 +583,65 @@ module.exports = {
           err.extensions?.code || "DATABASE_SEARCH_ERROR",
           {
             component: "userResolver > skills",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    // mostRelevantMemberNodes: async (parent, args, context, info) => {
+    //   console.log("parent 22322= ", parent.mostRelevantMemberNodes);
+  
+    //   try {
+    //     const mostRelevantMemberNodes = parent.mostRelevantMemberNodes;
+  
+    //     // nodeData = await Node.findOne({ _id: nodeID });
+  
+    //     return mostRelevantMemberNodes;
+    //   } catch (err) {
+    //     throw new ApolloError(
+    //       err.message,
+    //       err.extensions?.code || "DATABASE_SEARCH_ERROR",
+    //       {
+    //         component: "userResolver > skills",
+    //         user: context.req.user?._id,
+    //       }
+    //     );
+    //   }
+    // },
+  },
+  mostRelevantMemberNodeType: {
+    node: async (parent, args, context, info) => {
+      console.log("parent 22322 kk = ", parent);
+
+      try {
+        const nodeID = parent.nodeID;
+
+        // nodeData = await Node.findOne({ _id: nodeID });
+        nodeData = await Node.findOne({ _id: nodeID }).select("_id name node");
+
+        return nodeData._doc
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "mostRelevantMemberNodeType",
+          {
+            component: "userResolver > mostRelevantMemberNodeType",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    score: async (parent, args, context, info) => {
+      console.log("parent 22322 kk = ", parent);
+
+      try {
+        return parent.totalPercentage
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "mostRelevantMemberNodeType",
+          {
+            component: "userResolver > mostRelevantMemberNodeType",
             user: context.req.user?._id,
           }
         );
