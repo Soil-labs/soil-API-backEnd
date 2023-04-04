@@ -1,7 +1,10 @@
 
 
 const { Node } = require("../../../models/nodeModal");
+const { Members } = require("../../../models/membersModel");
+
 const axios = require("axios");
+
 
 
 function chooseAPIkey() {
@@ -48,9 +51,9 @@ function chooseAPIkey() {
     return response.data.choices[0].message.content;
   }
 
-const nodes_aiModule = async (nodesID,weightModules,memberObj) => {
+const nodes_aiModule = async (nodesID,weightModulesObj,memberObj,filter) => {
 
-    weightModulesObj = await arrayToObject(weightModules)
+    
 
     
     let nodeData = await Node.find({ _id: nodesID }).select(
@@ -59,16 +62,19 @@ const nodes_aiModule = async (nodesID,weightModules,memberObj) => {
 
     if (!nodeData) throw new ApolloError("Node Don't exist");
 
-    // console.log("nodeData = " , nodeData)
-
-    // const nodeData_subExpertise = nodeData.filter(obj => obj.node == 'sub_expertise');
 
     memberObj = await nodesFindMembers(nodeData,memberObj)
 
     // console.log("memberObj = " , memberObj)
-    // await showObject(memberObj,"memberObj")
-    // asf1
+    for (const [memberID, member] of Object.entries(memberObj)) {
+        console.log("member.nodes = " , memberID,member.nodes)
+    }
+    // sdf00
 
+    memberObj = await findMemberAndFilter(memberObj)
+
+
+    memberObj = await distanceFromFilter(memberObj,filter)
 
     memberObj = await membersScoreMap(memberObj,weightModulesObj)
 
@@ -81,7 +87,7 @@ const nodes_aiModule = async (nodesID,weightModules,memberObj) => {
     return memberObj
 }
 
-const totalScore_aiModule = async (memberObj,weightModules) => {
+const totalScore_aiModule = async (memberObj,weightModulesObj,numberNodes) => {
 
 
 
@@ -89,20 +95,54 @@ const totalScore_aiModule = async (memberObj,weightModules) => {
     min_S = 100000000
 
     newMin_total = 20
-    newMax_total = 100
+    newMax_total = parseInt(nodeToMaxScore(numberNodes))
+
+    
 
     
     for (const [memberID, member] of Object.entries(memberObj)) {
         let scoreOriginalTotal = 0;
+        let scoreOriginalBeforeMap = 0;
 
-        // console.log("member = " , member.nodesTotal)
+        console.log("member = " , member)
 
         if (member.nodesTotal) {
-            if (weightModules["node_total"]) {
-                scoreOriginalTotal += member.nodesTotal.score * (weightModules["node_total"].weight*0.01);
-            } else {
-                scoreOriginalTotal += member.nodesTotal.score;
-            }
+            if (weightModulesObj["node_total"]) {
+                scoreOriginalTotal += member.nodesTotal.score * (weightModulesObj["node_total"].weight*0.01);
+                scoreOriginalBeforeMap += member.nodesTotal.scoreOriginal * (weightModulesObj["node_total"].weight*0.01);
+
+            } 
+            // else {
+            //     scoreOriginalTotal += member.nodesTotal.score;
+            //     scoreOriginalBeforeMap += member.nodesTotal.scoreOriginal;
+            // }
+        }
+
+        if (member.distanceHoursPerWeekMap) {
+            if (weightModulesObj["availability_total"]) {
+                scoreOriginalTotal += member.distanceHoursPerWeekMap * (weightModulesObj["availability_total"].weight*0.01);
+            } 
+            // else {
+            //     scoreOriginalTotal += member.distanceHoursPerWeekMap;
+            // }
+        }
+
+        if (member.distanceBudgetPerHourMap) {
+            if (weightModulesObj["budget_total"]) {
+                scoreOriginalTotal += member.distanceBudgetPerHourMap * (weightModulesObj["budget_total"].weight*0.01);
+            } 
+            // else {
+            //     scoreOriginalTotal += member.distanceBudgetPerHourMap;
+            // }
+        }
+
+        if (member.expirience_total) {
+            if (weightModulesObj["expirience_total"]) {
+                scoreOriginalTotal += member.expirience_total * (weightModulesObj["expirience_total"].weight*0.01);
+            } 
+            // else {
+            //     scoreOriginalTotal += member.expirience_total;
+            // }
         }
 
         if (max_S < scoreOriginalTotal) max_S = scoreOriginalTotal;
@@ -110,19 +150,25 @@ const totalScore_aiModule = async (memberObj,weightModules) => {
         
         if (!memberObj[memberID].total) {
             memberObj[memberID].total = {
-                scoreOriginal: scoreOriginalTotal
+                scoreOriginal: scoreOriginalTotal,
+                scoreOriginalBeforeMap: scoreOriginalBeforeMap,
             }
         }
     }
+    // sdf12
 
     // console.log("max_S,min_S = " , max_S,min_S)
 
     for (const [memberID, member] of Object.entries(memberObj)) {
         let scoreOriginalTotal = member.total.scoreOriginal;
+        let scoreOriginalBeforeMap = member.total.scoreOriginalBeforeMap;
 
         let scoreMap = mapValue(scoreOriginalTotal, min_S, max_S, newMin_total, newMax_total);
 
         memberObj[memberID].total.score = parseInt(scoreMap);
+        memberObj[memberID].total.realTotalPercentage = scoreOriginalTotal;
+        memberObj[memberID].total.scoreOriginalBeforeMap = scoreOriginalBeforeMap;
+
     }
 
     return memberObj
@@ -146,6 +192,23 @@ const sortArray_aiModule = async (memberObj) => {
                 totalPercentage: parseInt(node.score*100),
                 conn_nodeIDs: node.conn_nodeIDs,
             })
+
+            // console.log("node.conn_nodeObj = " , member._id,node.conn_nodeObj)
+
+            let mostRelevantMemberNodes = []
+
+            for (const [conn_nodeID, conn_nodeObj] of Object.entries(node.conn_nodeObj)) {
+                // console.log("conn_nodeObj = " , conn_nodeObj)
+                mostRelevantMemberNodes.push({
+                    nodeID: conn_nodeID,
+                    totalPercentage: conn_nodeObj.scoreOriginal*100,
+                })
+            }
+
+            mostRelevantMemberNodes.sort((a, b) => (a.totalPercentage > b.totalPercentage) ? -1 : 1)
+
+            nodesPercentage[nodesPercentage.length-1].mostRelevantMemberNodes = mostRelevantMemberNodes
+
         }
 
         nodesPercentage.sort((a, b) => (a.totalPercentage > b.totalPercentage) ? -1 : 1)
@@ -154,11 +217,27 @@ const sortArray_aiModule = async (memberObj) => {
         memberArray.push({
             memberID: memberID,
             matchPercentage: {
-                totalPercentage: score
+                totalPercentage: score,
+                realTotalPercentage: member.total.scoreOriginalBeforeMap,
             },
             nodesPercentage: nodesPercentage,
         })
     }
+
+    // console.log("memberArray = " , memberArray)
+    for (let i = 0; i < memberArray.length; i++) {
+        let member = memberArray[i];
+        // console.log("member._id = " , member._id)
+        let nodesPercentage = member.nodesPercentage;
+        // console.log("nodesPercentage = " , nodesPercentage)
+        for (let j = 0; j < nodesPercentage.length; j++) {
+            let node = nodesPercentage[j];
+            let mostRelevantMemberNodes = node.mostRelevantMemberNodes;
+            // console.log("mostRelevantMemberNodes = " , mostRelevantMemberNodes)
+        }
+    }
+
+    // sdf
 
     // console.log("memberArray = " , memberArray)
 
@@ -251,19 +330,154 @@ const membersScoreMap = async (memberObj,weightModulesObj) => {
     
 }
 
+const passFilterTestMember = async (memberData) => {
+
+
+    if (!memberData?.hoursPerWeek) return false;
+
+    if (!memberData?.budget?.perHour) return false;
+
+
+
+    if (!memberData?.expirienceLevel?.total) return false;
+
+    return true
+
+}
+
+const findMemberAndFilter = async (memberObj) => {
+
+    
+    // from memberObj take only the keys and make a new array
+    memberIDs = Object.keys(memberObj);
+
+    // search on the mongo for all the members
+    let membersData = await Members.find({ _id: memberIDs }).select('_id hoursPerWeek totalNodeTrust expirienceLevel budget');
+
+    // console.log("membersData = " , membersData)
+
+
+    // add the members data to the memberObj
+    for (let i = 0; i < membersData.length; i++) {
+        let memberID = membersData[i]._id;
+
+        if (memberObj[memberID]) {
+
+            passFilter = await passFilterTestMember(membersData[i])
+
+            if (passFilter== true){
+                memberObj[memberID] = {
+                    ...memberObj[memberID],
+                    ...membersData[i]._doc
+                }
+
+            } else  delete memberObj[memberID]
+
+        }
+    }
+
+    return memberObj
+}
+
+const distanceFromFilter = async (memberObj,filter) => {
+
+    minDisBudgetPerHour = 100000000
+    maxDisBudgetPerHour = -1
+
+    minDisHoursPerWeek = 100000000
+    maxDisHoursPerWeek = -1
+
+    minDisExpirienceLevel = 100000000
+    maxDisExpirienceLevel = -1
+
+    for (const [memberID, member] of Object.entries(memberObj)) {
+        let distance = 0;
+
+        // ---------------------- hoursPerWeek
+        if (filter?.availability?.minHourPerWeek && filter?.availability?.maxHourPerWeek){
+            averageFilterHourPerWeek = (filter.availability.minHourPerWeek + filter.availability.maxHourPerWeek) / 2;
+            distance = Math.abs(member.hoursPerWeek - averageFilterHourPerWeek);
+            memberObj[memberID].distanceHoursPerWeek = distance;
+
+            if (distance < minDisHoursPerWeek) minDisHoursPerWeek = distance;
+            if (distance > maxDisHoursPerWeek) maxDisHoursPerWeek = distance;
+        }
+
+
+        // ---------------------- budget
+        if (filter?.budget?.minPerHour && filter?.budget?.maxPerHour){
+            averageFilterBudgetPerHour = (filter.budget.minPerHour + filter.budget.maxPerHour) / 2;
+            distance = Math.abs(member.budget.perHour - averageFilterBudgetPerHour);
+            memberObj[memberID].distanceBudgetPerHour = distance;
+
+            if (distance < minDisBudgetPerHour) minDisBudgetPerHour = distance;
+            if (distance > maxDisBudgetPerHour) maxDisBudgetPerHour = distance;
+        }
+
+        // ---------------------- expirienceLevel
+        if (filter?.expirienceLevel){
+            distance = Math.abs(member.expirienceLevel.total - filter.expirienceLevel);
+            memberObj[memberID].distanceExpirienceLevel = distance;
+
+            if (distance < minDisExpirienceLevel) minDisExpirienceLevel = distance;
+            if (distance > maxDisExpirienceLevel) maxDisExpirienceLevel = distance;
+        }
+    }
+
+
+    // Map the distance to 0-1
+    for (const [memberID, member] of Object.entries(memberObj)) {
+
+        memberObj[memberID].distanceHoursPerWeekMap = 0
+        memberObj[memberID].distanceBudgetPerHourMap = 0
+        memberObj[memberID].distanceExpirienceLevelMap = 0
+
+        if (member.distanceHoursPerWeek){
+            let distanceHoursPerWeek = mapValue(member.distanceHoursPerWeek, minDisHoursPerWeek, maxDisHoursPerWeek, 0, 1);
+            memberObj[memberID].distanceHoursPerWeekMap = distanceHoursPerWeek;
+        }
+
+        if (member.distanceBudgetPerHour){
+            let distanceBudgetPerHour = mapValue(member.distanceBudgetPerHour, minDisBudgetPerHour, maxDisBudgetPerHour, 0, 1);
+            memberObj[memberID].distanceBudgetPerHourMap = distanceBudgetPerHour;
+        }
+
+
+        if (member.distanceExpirienceLevel){
+            let distanceExpirienceLevel = mapValue(member.distanceExpirienceLevel, minDisExpirienceLevel, maxDisExpirienceLevel, 0.3, 1);
+            memberObj[memberID].distanceExpirienceLevelMap = distanceExpirienceLevel;
+        }
+
+
+    }
+
+    // console.log("memberObj = " , memberObj)
+
+
+    // sdf99
+    
+    return memberObj
+}
+
 const nodesFindMembers = async (nodeData,memberObj) => {
 
     memberIDs = [];
 
+    // console.log(" = --->> tora -1" )
 
     for (let i = 0; i < nodeData.length; i++) {
         // loop on the nodes
         let match_v2 = nodeData[i].match_v2;
         let node = nodeData[i];
 
+        console.log(" = --->> tora tt0", node._id, match_v2.length)
+
         memberObj = await nodeScoreMembersMap(match_v2,node,memberObj)
 
     }
+
+    // console.log(" = --->> tora 3" )
+    
 
 
     return memberObj
@@ -290,12 +504,16 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
         let conn_node = match_v2[j].conn_node_wh;
         let conn_nodeIDs = conn_node.map((item) => item.nodeConnID);
 
-        // console.log("conn_nodeIDs = " , conn_nodeIDs)
+        // console.log("scoreUser = " , scoreUser)
+        // console.log("conn_node = " , conn_node)
         // asdf2
         // ------------- Find all connected nodes -------------
 
         if (scoreUser > max_S) max_S = scoreUser;
         if (scoreUser < min_S) min_S = scoreUser;
+
+        // console.log(" = --->> tora ttk",node._id )
+
 
         if (!memberObj[memberID]) {
             
@@ -305,18 +523,52 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
             memberObj[memberID].nodes[nodeID] = {
                 scoreOriginal: scoreUser,
                 type: node.node,
-                conn_nodeIDs: conn_nodeIDs
+                conn_nodeIDs: conn_nodeIDs,
+                conn_nodeObj: {},
             }
         } else {
-            memberObj[memberID].nodes[nodeID] = {
-                scoreOriginal: scoreUser,
-                type: node.node,
-                conn_nodeIDs: conn_nodeIDs
-            };
+            if (!memberObj[memberID].nodes[nodeID]){
+                memberObj[memberID].nodes[nodeID] = {
+                    scoreOriginal: scoreUser,
+                    type: node.node,
+                    conn_nodeIDs: conn_nodeIDs,
+                    conn_nodeObj: {},
+                };
+            } else {
+                memberObj[memberID].nodes[nodeID].scoreOriginal = scoreUser;
+                memberObj[memberID].nodes[nodeID].type = node.node;
+                memberObj[memberID].nodes[nodeID].conn_nodeIDs = conn_nodeIDs;
+            }
         }
+
+        // console.log(" = --->> tora ttk 2",node._id )
+
+
+        // ----------- Add nodes to conn_nodeObj ----------
+        let conn_nodeObj = memberObj[memberID].nodes[nodeID].conn_nodeObj;
+        for (let k = 0; k < conn_nodeIDs.length; k++) {
+            let conn_nodeID = conn_nodeIDs[k];
+            if (!conn_nodeObj[conn_nodeID]){
+                conn_nodeObj[conn_nodeID] = {
+                    nodeID: conn_nodeID,
+                    scoreOriginal: conn_node[k].wh_sum,
+                }
+            } else {
+                conn_nodeObj[conn_nodeID].scoreOriginal += conn_node[k].wh_sum;
+            }
+        }
+        memberObj[memberID].nodes[nodeID].conn_nodeObj = conn_nodeObj;
+        // ----------- Add nodes to conn_nodeObj ----------
+
+        // console.log(" = --->> tora ttk 3",node._id )
+
+
+        // console.log("memberObj[memberID].nodes[nodeID] = " , memberObj[memberID].nodes[nodeID])
     }
     // ---------- Find nodes and Max Min -----------
+    // sdf99
 
+    // console.log(" = --->> tora 1" )
     // ---------- Map Score [0,1]-----------
     for (let j = 0; j < match_v2.length; j++) {
 
@@ -342,6 +594,8 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
 
         
     }
+    console.log(" = --->> tora 2",memberObj )
+
     // ---------- Map Score [0,1]-----------
     // sfaf6
 
@@ -387,6 +641,18 @@ async function arrayToObject(arrayT) {
     return objectT;
 }
 
+function nodeToMaxScore(x) {
+    const a = -0.056;
+    const b = 3.972;
+    const c = 66.084;
+    const y = a * Math.pow(x, 2) + b * x + c;
+
+
+
+    return y;
+}
+
+
 
 
 
@@ -397,4 +663,5 @@ module.exports = {
     sortArray_aiModule,
     chooseAPIkey,
     useGPTchatSimple,
+    arrayToObject,
   };

@@ -48,6 +48,8 @@ module.exports = `
 
         budget: budgetMemberType,
 
+        expirienceLevel: expirienceLevelType,
+
         memberRole: RoleTemplate
         chat: chatResponse
 
@@ -64,6 +66,11 @@ module.exports = `
         reviewSummary: reviewSummaryType     
 
         preferences: preferencesType
+    }
+
+    type expirienceLevelType {
+        total: Int,
+        years: Int, 
     }
 
     type budgetMemberType {
@@ -203,14 +210,19 @@ module.exports = `
         member: Members,
         extraMatch: Boolean, # if you extraMatch = true, means that it is not the real main match but it is extra becuae there wasn't enough matches!  
         nodesPercentage: [nodesPercentageType]
-        skillsPercentage: [SkillsPercentage]
-        
+        skillsPercentage: [SkillsPercentage] 
     }
 
     type nodesPercentageType {
         node: Node
         totalPercentage: Float
         conn_nodeIDs: [ID]
+        mostRelevantMemberNodes:[mostRelevantMemberNodeType]
+    }
+
+    type mostRelevantMemberNodeType {
+        node: Node
+        score: Float
     }
     
 
@@ -392,10 +404,25 @@ module.exports = `
 
     input matchNodesToMembers_AI4Input {
         nodesID: [ID]
+        budget: budgetInputT
+        expirienceLevel: Int
+        availability: availabilityInput
         weightModules: [weightModulesInput]
         page: Int
         limit: Int
     }
+
+    input budgetInputT {
+        minPerHour: Float
+        maxPerHour: Float
+    }
+
+    input availabilityInput {
+        minHourPerWeek: Int
+        maxHourPerWeek: Int
+    }
+
+    
 
 
 
