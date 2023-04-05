@@ -239,7 +239,7 @@ async function findBestEmbedingsArray(arr, filter, topK = 3) {
 
   embed = await createEmbedingsGPT(arr);
 
-  console.log("embed = ", embed);
+  // console.log("embed = ", embed);
 
   // matchesRes = []
 
@@ -258,7 +258,7 @@ async function findBestEmbedingsArray(arr, filter, topK = 3) {
     };
 
     let queryResponse = await index.query({ queryRequest });
-    console.log("queryResponse.matches = ", queryResponse.matches);
+    // console.log("queryResponse.matches = ", queryResponse.matches);
 
     // matchesRes.push(queryResponse.matches[0])
 
@@ -299,7 +299,7 @@ async function findBestEmbedingsArray(arr, filter, topK = 3) {
     }
   }
 
-  console.log("change = -------------------------------------- 0.2");
+  // console.log("change = -------------------------------------- 0.2");
 
   for (let i = 0; i < embed.length; i++) {
     embedN = embed[i];
@@ -318,10 +318,10 @@ async function findBestEmbedingsArray(arr, filter, topK = 3) {
     let queryResponse = await index.query({ queryRequest });
 
     // matchesRes.push(queryResponse.matches)
-    console.log("queryResponse.matches = 2", queryResponse.matches);
+    // console.log("queryResponse.matches = 2", queryResponse.matches);
 
     if (!keywordsObj[queryResponse.matches[0]?.metadata?.keyword]) {
-      console.log("change = -0------------------------------------- 0");
+      // console.log("change = -0------------------------------------- 0");
 
       // keywordsObj[queryResponse.matches[0].metadata.keyword] = queryResponse.matches[0].score
 
@@ -338,7 +338,7 @@ async function findBestEmbedingsArray(arr, filter, topK = 3) {
         exactMatch: false,
       };
     } else {
-      console.log("change = -------------------------------------- 1");
+      // console.log("change = -------------------------------------- 1");
       if (
         queryResponse.matches[0].score >
         keywordsObj[queryResponse.matches[0]?.metadata?.keyword].score
@@ -773,6 +773,235 @@ module.exports = {
         err.extensions?.code || "messageMapKG_V3",
         {
           component: "aiQuery > messageMapKG_V3",
+        }
+      );
+    }
+  },
+  messageMapKG_V4: async (parent, args, context, info) => {
+    const { message,assistantMessage } = args.fields;
+    console.log("Query > messageMapKG_V4 > args.fields = ", args.fields);
+    try {
+
+        // -------------- find keywords with GPT V2-------------
+        conversation =  [
+          {"role": "assistant", "content": "ASSISTANT: " + assistantMessage},
+          {"role": "user", "content": "USER: " + message},
+        ]
+
+
+        
+        // keywordsGPTresult = await useGPTchat(
+        //   "Find the skills/industries that the USER needs \n\n Result, show SKILLS separated by a comma \n skills:",
+        //   conversation,
+        //   ""
+        // );
+        keywordsGPTresult = await useGPTchat(
+          "Find the minimum keywords that the USER needs from the context \n\n The result, show SKILLS separated by a comma:",
+          conversation,
+          ""
+        );
+        console.log("keywordsGPTresult ChatGPT= " , keywordsGPTresult)
+        if (keywordsGPTresult.includes("cannot find") || keywordsGPTresult.includes("cannot provide") || keywordsGPTresult.includes("I'm sorry")|| keywordsGPTresult.includes("cannot determine")
+        || keywordsGPTresult.includes("unable to")|| keywordsGPTresult.includes("don't have access")){
+          return {}
+        }
+        // asdf0
+      // -------------- find keywords with GPT V2-------------
+
+
+    
+        
+        keywordsGPTresult = keywordsGPTresult.replace(/[\d.]/g, '');
+
+        console.log("keywordsGPTresult = " , keywordsGPTresult)
+
+        let GPTkeywords = keywordsGPTresult.split(/[,|]\s*/);
+        
+        console.log("GPTkeywords = " , GPTkeywords)
+        // asdf9
+
+
+
+      // -------------- Find best keywrods from embeding per keyword -------------
+      let filter = {
+        label: "AI_KG4_Context",
+      }
+
+
+      // console.log("change = 1")
+
+      // sdf4
+
+      let resT = await findBestEmbedingsArray(GPTkeywords,filter ,topK = 1)
+      // console.log("change = 2")
+
+
+      bestKeywordsFromEmbed = resT.matchesRes
+      let keywordEmbedObj = resT.matchesObj
+
+
+      // console.log("keywordEmbedObj = " , keywordEmbedObj)
+
+      // sdf10
+     
+
+      finalKeywords = []
+      testKeywords = []
+
+
+      // --------------- prepare prompt keyword -----------
+      keywords_str = ""
+      numKeywords = 0
+      for (let i = 0; i < bestKeywordsFromEmbed.length; i++) {
+        const element = bestKeywordsFromEmbed[i];
+
+        console.log("element = " , element)
+
+        if (element.score >= 0.96){
+          finalKeywords.push({
+            keyword: element.metaData.keyword,
+            confidence: parseInt(element.score*10),
+          })
+          continue;
+        }
+
+        if (element.exactMatch == false && element.score >= 0.74){
+          keywords_str +=  element.metaData.keyword + "\n "
+
+          numKeywords += 1
+
+          // testKeywords.push(element.metaData.keyword)
+          testKeywords.push({
+            keyword: element.metaData.keyword,
+            confidence: element.score,
+          })
+        }
+
+        if (element.exactMatch == true && element.score >= 0.92){
+          // keywords_str +=  element.metaData.keyword + " - "+element.originalKeywordMatch +"\n "
+          keywords_str +=  element.metaData.keyword + "\n "
+
+          numKeywords += 1
+
+          // testKeywords.push(element.metaData.keyword)
+          testKeywords.push({
+            keyword: element.metaData.keyword,
+            confidence: element.score,
+          })
+
+        }
+      }
+      
+      // keywords_str += "ReactJS" +"\n "
+      // keywords_str += "Angular" +"\n "
+      // keywords_str += "C++" +"\n "
+
+      console.log("keywords_str = " , keywords_str)
+      
+      // adf14
+      // --------------- prepare prompt keyword -----------
+
+
+      //   // -------------- Find best keywrods from prompt engineering -------------
+      //   prompt_general = "Given a paragraph, determine if the skills provided as input exist within it.  \n\n"
+      //   prompt_general += "Paragraph: " + message + "\n\n"
+      //   prompt_general += "Skills: " + keywords_str + "\n\n"
+      //   prompt_general += "Answers for every skill only TRUE or FALSE : \n"
+        
+
+      //   console.log("prompt_general = " , prompt_general)
+
+
+      //   // res_gpt = await useGPT(prompt_general,0.7,"text-davinci-003")
+      //   res_gpt = await useGPTchatSimple(prompt_general)
+      //   console.log("res_gpt davinci= " , res_gpt)
+      // // -------------- Find best keywrods from prompt engineering -------------
+
+
+      // -------------- Find best keywrods from prompt engineering V2-------------
+
+        contextPrompt = `
+        ASSISTANT: ${assistantMessage}
+
+        USER: ${message}
+
+        SKILLS: ${keywords_str}
+        `
+
+
+
+       conversation =  [
+        {"role": "user", "content": contextPrompt},
+      ]
+
+
+      
+      res_gpt = await useGPTchat(
+        "Determine if the SKILLS provided are the skills that the USER wants \n\n Answers for every SKILL only TRUE or FALSE:",
+        conversation,
+        "",
+      );
+      console.log("res_gpt ChatGPT= \n" , res_gpt)
+      // sdf00
+      // -------------- Find best keywrods from prompt engineering V2-------------
+
+
+
+
+
+
+        const trueFalseArr = res_gpt.split('\n').reduce((acc, str) => {
+          const match = str.match(/(TRUE|FALSE)/);
+          
+          if (match) {
+            acc.push(match[1]);
+          }
+          return acc;
+        }, []);
+        
+        console.log("trueFalseArr = ",trueFalseArr);
+        // sadf3
+
+        console.log("-------------- " , "testKeywords[i]", "-------------")
+        for (let i = 0; i < trueFalseArr.length; i++) {
+          console.log("testKeywords[i] = " , testKeywords[i])
+          if (trueFalseArr[i] == "TRUE" && testKeywords[i]?.keyword && testKeywords[i]?.confidence){
+            finalKeywords.push({
+              keyword: testKeywords[i].keyword,
+              confidence: parseInt(testKeywords[i].confidence*10),
+            })
+          }
+        }
+        
+
+        let nodeData = await Node.find({name: finalKeywords.map(value => value.keyword)}).select("_id name");
+
+        nodeDataObj = {}
+        nodeData.forEach((node) => {
+          nodeDataObj[node.name] = node._id
+        })
+
+        finalKeywords = finalKeywords.map((value) => {
+          return {
+            ...value,
+            nodeID: nodeDataObj[value.keyword]
+          }
+        })
+        
+      // sort an keywordsValues based on object value confidence 
+      finalKeywords.sort((a, b) => (a.confidence > b.confidence) ? -1 : 1)
+
+      return {
+        keywords: finalKeywords,
+
+      }
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "messageMapKG_V4",
+        {
+          component: "aiQuery > messageMapKG_V4",
         }
       );
     }
