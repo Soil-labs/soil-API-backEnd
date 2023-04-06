@@ -418,7 +418,7 @@ module.exports = {
 
       const variables = {
         fields: {
-          message: message,
+          message: await responseFromGPT,
         },
       };
 
@@ -434,12 +434,12 @@ module.exports = {
     };
     // if (!cvString) throw new ApolloError("The cvString is required");
 
-    // prompt =
-    //   'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
-    //   cvString;
+    prompt =
+      "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and give me a  summury of that CV in a small paragraph. Keep the paragrpah small. Here is the string:\n" +
+      message;
 
-    // responseFromGPT = await useGPT(prompt, 0.7);
-
+    responseFromGPT = await useGPT(prompt, 0.7);
+    console.log("responseFromGPT", responseFromGPT);
     try {
       return {
         result: await MessageMapKG_V2APICall,
