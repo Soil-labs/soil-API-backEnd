@@ -12,6 +12,8 @@ const { IsAuthenticated } = require("../../../utils/authorization");
 const { PineconeClient } = require("@pinecone-database/pinecone");
 const fetch = require("node-fetch");
 
+const { request, gql } = require("graphql-request");
+
 globalThis.fetch = fetch;
 
 const configuration = new Configuration({
@@ -390,6 +392,57 @@ module.exports = {
     try {
       return {
         result: previousJobs,
+      };
+    } catch (err) {
+      throw new ApolloError(err.message);
+    }
+  },
+  cvMapKG: async (parent, args, context, info) => {
+    const { message } = args.fields;
+
+    const MessageMapKG_V2APICall = async (fields) => {
+      const query = gql`
+        query messageMapKG_V2($fields: messageMapKG_V2Input) {
+          messageMapKG_V2(fields: $fields) {
+            keywords {
+              keyword
+              confidence
+              node {
+                _id
+                name
+              }
+            }
+          }
+        }
+      `;
+
+      const variables = {
+        fields: {
+          message: message,
+        },
+      };
+
+      res = await request(
+        "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+        query,
+        variables
+      );
+
+      // console.log("res = " , res)
+      console.log("res.messageMapKG_V2", res.messageMapKG_V2);
+      return JSON.stringify(res.messageMapKG_V2);
+    };
+    // if (!cvString) throw new ApolloError("The cvString is required");
+
+    // prompt =
+    //   'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
+    //   cvString;
+
+    // responseFromGPT = await useGPT(prompt, 0.7);
+
+    try {
+      return {
+        result: await MessageMapKG_V2APICall,
       };
     } catch (err) {
       throw new ApolloError(err.message);
