@@ -251,8 +251,9 @@ module.exports = `
     }
 
     type cvMapKGOutput {
-        result: String
+        keywords: [KeywordValue]
     }
+
 
     
 
