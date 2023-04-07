@@ -16,14 +16,21 @@ const { printC } = require("../../../printModule");
 
 globalThis.fetch = fetch;
 
-function chooseAPIkey() {
+function chooseAPIkey(chooseAPI="") {
   // openAI_keys = [
   //   "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",
   //   // "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",
   //   "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",
   //   "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",
   // ];
-  openAI_keys = ["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"];
+
+  let openAI_keys = ["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"];
+ 
+  if (chooseAPI == "API 2"){
+    openAI_keys = ["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"];
+  } else if (chooseAPI == "API 1"){
+    openAI_keys = ["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"];
+  }
 
   // randomly choose one of the keys
   let randomIndex = Math.floor(Math.random() * openAI_keys.length);
@@ -88,11 +95,15 @@ async function useGPTchatHelloWorld() {
 
 async function useGPTchat(
   userNewMessage,
-  discussion,
+  discussionOld,
   systemPrompt,
   userQuestion = "",
-  temperature = 0.7
+  temperature = 0.7,
+  chooseAPI = "API 1"
 ) {
+
+  let discussion = [...discussionOld]
+
   discussion.unshift({
     role: "system",
     content: systemPrompt,
@@ -105,7 +116,7 @@ async function useGPTchat(
 
   console.log("discussion = ", discussion);
 
-  let OPENAI_API_KEY = chooseAPIkey();
+  let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
   response = await axios.post(
     "https://api.openai.com/v1/chat/completions",
     {
@@ -124,6 +135,7 @@ async function useGPTchat(
 
   // console.log("response.data = " , response.data)
 
+  // console.log("OPENAI_API_KEY = " , OPENAI_API_KEY)
   return response.data.choices[0].message.content;
 }
 
@@ -796,7 +808,7 @@ module.exports = {
         //   ""
         // );
         keywordsGPTresult = await useGPTchat(
-          "Find the minimum keywords that the USER needs from the context \n\n The result, show SKILLS separated by a comma:",
+          "Find the minimum keywords that the USER needs from the context \n\n Be extremly critical and harsh only give skills that were mentioned \n\n The result, show SKILLS separated by a comma:",
           conversation,
           ""
         );
@@ -937,9 +949,12 @@ module.exports = {
 
       
       res_gpt = await useGPTchat(
-        "Determine if the SKILLS provided are the skills that the USER wants \n\n Answers for every SKILL only TRUE or FALSE:",
+        "Determine if the SKILLS provided are the skills that the USER wants \n Be extremly critical and harsh its way better to say FALSE than TRUE \n\n Answers for every SKILL only TRUE or FALSE:",
         conversation,
         "",
+        "",
+        0.7,
+        "API 2"
       );
       console.log("res_gpt ChatGPT= \n" , res_gpt)
       // sdf00
@@ -1941,6 +1956,186 @@ module.exports = {
         err.extensions?.code || "edenGPTreplyChatAPI",
         {
           component: "aiQuery > edenGPTreplyChatAPI",
+        }
+      );
+    }
+  },
+  edenGPTreplyChatAPI_V3: async (parent, args, context, info) => {
+    const { message } = args.fields;
+    let { conversation, executedTasks } = args.fields;
+    console.log("Query > edenGPTreplyChatAPI_V3 > args.fields = ", args.fields);
+    try {
+      // asdf2
+
+      if (conversation != undefined) {
+        conversation.push({
+          role: "user",
+          content: message,
+        })
+      }
+
+      console.log("conversation = " , conversation)
+      // dsf00
+
+      // executedTasks is an array of objects with taskType and percentageCompleted, I want to translate it to a string in order to use it on GPT
+      let executedTasksString = "Executed Task percentage:\n"
+      executedTasks.forEach((task) => {
+        if ( task.percentageCompleted != 100){
+          executedTasksString = executedTasksString + task.taskType + " - " + task.percentageCompleted + "% \n"
+        } else {
+          executedTasksString = executedTasksString + task.taskType + " - DONE \n"
+
+        }
+      })
+
+      console.log(" executedTasksString = " , executedTasksString)
+
+      // promptToGPT = executedTasksString + `\n Define what is the highest priority task to execute next based on conversation and executed task percentage don't explain why (if you can't determine choose random)`
+
+      // promptToGPT += `\n\n ONLY GIVE ME NEXT TASK: \n`
+
+      // promptToGPT = executedTasksString + `\n Please provide me with only 1 next highest priority Task to execute based on the conversation and executed task percentage. If the priority cannot be determined, please provide a random task.`
+      // promptToGPT = executedTasksString + `\n Please provide me the next priority Task to execute based on the conversation and executed task percentage. If the priority cannot be determined, please provide a random task.`
+      // promptToGPT = executedTasksString + `\n Please provide me the next priority Task to execute based on the conversation and the available executed task percentage. If the priority cannot be determined, please provide a random task.`
+      promptToGPT = executedTasksString + `\n Please provide me the next priority Task to execute based on the conversation and the available executed task percentage. only choose from the ones available`
+
+      promptToGPT += `\n\n Provide the smallest sentence without explanation: \n`
+      // promptToGPT += `\n\n Provide the smallest sentence: \n`
+
+
+      keywordsGPTresult = await useGPTchat(
+        promptToGPT,
+        conversation,
+        ""
+      );
+
+      console.log("keywordsGPTresult = " , keywordsGPTresult)
+
+      // sdf002
+
+
+
+      // -------------- Find best keywrods from embeding -------------
+      const filter = {
+        label: "instructions_edenAI",
+      };
+
+      bestKeywordsFromEmbed = await findBestEmbedings(
+        keywordsGPTresult,
+        filter,
+        (topK = 3)
+      );
+
+      printC(bestKeywordsFromEmbed, "1", "bestKeywordsFromEmbed", "b");
+
+      // sdf13
+      // -------------- Find best keywrods from embeding -------------
+
+
+       // -------------- GPT - Ask question OR Give Ideas -----------
+       prompt_T = `
+       based on the user reply
+
+        Decide if:
+        1) User is asking for ideas or doesn't have an answer
+        or
+        2) had an answer to the question from the assistant
+
+        Answer with only 1 word 
+        1) GIVE IDEAS
+        2) USER ANSWERED
+       `
+
+
+    //  conversation.pop()
+    //  conversation.shift()
+     
+     keywordsGPTresult = await useGPTchat(
+      prompt_T,
+      conversation,
+      "You are a recruiter, talking to a manager and collecting information about a new candidate that wants to find",
+      "",
+      0.7,
+      "API 2"
+    );
+    // sadf030
+
+     printC(keywordsGPTresult, "2", "keywordsGPTresult", "r");
+
+
+    //  sdf00
+      // -------------- GPT - Ask question OR Give Ideas -----------
+
+    
+     
+
+
+      // ---------- Update executedTasks ----------
+      updateTaskType = bestKeywordsFromEmbed[0].metadata.taskType
+
+      // find index of the taskTypeID in the executedTasks array that is equal to updateTaskType
+      let index = executedTasks.findIndex((task) => task.taskTypeID == updateTaskType);
+
+      if (updateTaskType == "skill_task") {
+
+        if (executedTasks[index].percentageCompleted < 50) {
+          executedTasks[index].percentageCompleted += 50
+        } else {
+          executedTasks[index].percentageCompleted = 100
+        }
+
+      } else if (updateTaskType == "insudtry_task") {
+
+        if (executedTasks[index].percentageCompleted < 50) {
+          executedTasks[index].percentageCompleted += 50
+        } else {
+          executedTasks[index].percentageCompleted = 100
+          
+        }
+      } else {
+        executedTasks[index].percentageCompleted = 100
+      }
+
+      // ---------- Update executedTasks ----------
+
+
+      systemPrompt = bestKeywordsFromEmbed[0].metadata.systemPrompt;
+
+      let userQuestion = ""
+
+      if (keywordsGPTresult.includes("GIVE IDEAS")) {
+        userQuestion = bestKeywordsFromEmbed[0].metadata.userPromptGiveIdeas;
+      } else if (keywordsGPTresult.includes("USER ANSWERED")) {
+        userQuestion = bestKeywordsFromEmbed[0].metadata.userPromptAskQuestion;
+      } else {
+        userQuestion = bestKeywordsFromEmbed[0].metadata.userPromptAskQuestion;
+      }
+
+      // conversation.pop()
+      // conversation.shift()
+
+      responseGPTchat = await useGPTchat(
+        userQuestion,
+        conversation,
+        systemPrompt
+      );
+
+      printC(responseGPTchat, "3", "responseGPTchat", "r");
+
+      // SDF0342
+
+      return {
+        reply: responseGPTchat,
+        executedTasks: executedTasks,
+        executeTaskType: bestKeywordsFromEmbed[0].metadata.taskType
+
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "edenGPTreplyChatAPI_V3",
+        {
+          component: "aiQuery > edenGPTreplyChatAPI_V3",
         }
       );
     }

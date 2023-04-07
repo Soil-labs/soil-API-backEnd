@@ -163,9 +163,38 @@ module.exports = `
         userID: ID
     }
 
+   
+
     type edenGPTreplyChatAPI_V2Output {
         reply: String
         # keywords: [String]
+    }
+
+    input edenGPTreplyChatAPI_V3Input {
+        message: String
+        conversation: [messageChat]
+        userID: ID
+        executedTasks: [executedActionInput]
+    }
+
+    input executedActionInput {
+        taskType: String
+        percentageCompleted: Int
+        taskTypeID: String
+    }
+
+    type edenGPTreplyChatAPI_V3Output {
+        reply: String
+        executedTasks: [executedActionType]
+        executeTaskType: String
+        # keywords: [String]
+    }
+
+    type executedActionType {
+        taskType: String
+        percentageCompleted: Int
+        taskTypeID: String
+
     }
 
     input edenGPTEndorseChatAPIInput {

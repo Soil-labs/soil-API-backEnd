@@ -236,14 +236,14 @@ module.exports = {
       try {
         const memberRoleID = parent.memberRole;
 
-        console.log("memberRoleID -- 222= ", memberRoleID);
+        // console.log("memberRoleID -- 222= ", memberRoleID);
 
         const memberRoleData = await RoleTemplate.findOne({
           _id: memberRoleID,
         });
         // const memberRoleData = await RoleTemplate.find({})
 
-        console.log("memberObject Resolver > Member Role", memberRoleData);
+        // console.log("memberObject Resolver > Member Role", memberRoleData);
         return memberRoleData;
       } catch (err) {
         throw new ApolloError(
@@ -568,7 +568,7 @@ module.exports = {
       }
     },
     nodesPercentage: async (parent, args, context, info) => {
-      console.log("parent 22322 TT= ", parent.nodesPercentage);
+      // console.log("parent 22322 TT= ", parent.nodesPercentage);
       // console.log("parent 22322= ", parent.nodesPercentage);
 
       try {
@@ -611,7 +611,7 @@ module.exports = {
   },
   mostRelevantMemberNodeType: {
     node: async (parent, args, context, info) => {
-      console.log("parent 22322 kk = ", parent);
+      // console.log("parent 22322 kk = ", parent);
 
       try {
         const nodeID = parent.nodeID;
@@ -632,7 +632,7 @@ module.exports = {
       }
     },
     score: async (parent, args, context, info) => {
-      console.log("parent 22322 kk = ", parent);
+      // console.log("parent 22322 kk = ", parent);
 
       try {
         return parent.totalPercentage
