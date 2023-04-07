@@ -1153,7 +1153,7 @@ module.exports = {
         // console.log("node.categoryNodes[i] = " , node)
 
         if (node?.distanceEnd != 1) continue
-        console.log("node = " , node.name)
+        // console.log("node = " , node.name)
         // ----- category -------
         for (let i = 0; i < node?.categoryNodes?.length; i++) {
           let catNode = node.categoryNodes[i]
@@ -2115,17 +2115,17 @@ async function neo4jToNodeEdgeGraphSettings(
     // }
   }
 
-  console.log("HEEEEEI 5= " )
+  // console.log("HEEEEEI 5= " )
 
   for (let i = 0; i < res.records.length; i++) {
     let record = res.records[i];
 
-    console.log("HEEEEEI 7= ",record._fields[0].segments )
+    // console.log("HEEEEEI 7= ",record._fields[0].segments )
 
     let j=0
 
     for (j = 0; j < record._fields[0].segments.length; j++) {
-      console.log("HEEEEEI 6= " )
+      // console.log("HEEEEEI 6= " )
 
       let segment = record._fields[0].segments[j];
 
@@ -2137,7 +2137,7 @@ async function neo4jToNodeEdgeGraphSettings(
       //   console.log("end.properties = " , end.properties)
       // }
       // console.log("j = " , j)
-      console.log("HEEEEEI 4= " )
+      // console.log("HEEEEEI 4= " )
 
       // ------------- Create nodesObj ----------------
       if (nodesObj[start.properties._id] == undefined) {
@@ -2474,7 +2474,7 @@ async function addSettingsNodesSubNodes(
       });
       nodesArrNewObj[node._id] = node;
 
-      console.log("node = " , node)
+      // console.log("node = " , node)
       // asdf12
 
       // ------ Add Combo ---------
