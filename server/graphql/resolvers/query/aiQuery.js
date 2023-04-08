@@ -2,6 +2,8 @@ const { AI } = require("../../../models/aiModel");
 const { Node } = require("../../../models/nodeModal");
 const { Members } = require("../../../models/membersModel");
 
+
+
 const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
 const axios = require("axios");
@@ -13,6 +15,7 @@ const { PineconeClient } = require("@pinecone-database/pinecone");
 const { Configuration, OpenAIApi } = require("openai");
 
 const { printC } = require("../../../printModule");
+const { taskPlanning,findAvailTaskPineCone,userAnsweredOrGiveIdeas,updateExecutedTasks,edenReplyBasedTaskInfo } = require("../utils/aiModules");
 
 globalThis.fetch = fetch;
 
@@ -131,11 +134,7 @@ async function useGPTchat(
       },
     }
   );
-  // console.log("response = " , response)
-
-  // console.log("response.data = " , response.data)
-
-  // console.log("OPENAI_API_KEY = " , OPENAI_API_KEY)
+  
   return response.data.choices[0].message.content;
 }
 
@@ -193,10 +192,7 @@ async function useGPT4Simple(prompt, temperature = 0.7) {
 }
 
 async function findBestEmbedings(message, filter, topK = 3) {
-  //  filter: {
-  //   '_id': profileIDs[0]
-  //    'label': "long_term_memory",
-  // }
+
   const pinecone = new PineconeClient();
   await pinecone.init({
     environment: "us-east1-gcp",
@@ -1961,7 +1957,7 @@ module.exports = {
     }
   },
   edenGPTreplyChatAPI_V3: async (parent, args, context, info) => {
-    const { message } = args.fields;
+    const { message,previusTaskDoneID } = args.fields;
     let { conversation, executedTasks } = args.fields;
     console.log("Query > edenGPTreplyChatAPI_V3 > args.fields = ", args.fields);
     try {
@@ -1975,159 +1971,57 @@ module.exports = {
       }
 
       console.log("conversation = " , conversation)
-      // dsf00
-
-      // executedTasks is an array of objects with taskType and percentageCompleted, I want to translate it to a string in order to use it on GPT
-      let executedTasksString = "Executed Task percentage:\n"
-      executedTasks.forEach((task) => {
-        if ( task.percentageCompleted != 100){
-          executedTasksString = executedTasksString + task.taskType + " - " + task.percentageCompleted + "% \n"
-        } else {
-          executedTasksString = executedTasksString + task.taskType + " - DONE \n"
-
-        }
-      })
-
-      console.log(" executedTasksString = " , executedTasksString)
-
-      // promptToGPT = executedTasksString + `\n Define what is the highest priority task to execute next based on conversation and executed task percentage don't explain why (if you can't determine choose random)`
-
-      // promptToGPT += `\n\n ONLY GIVE ME NEXT TASK: \n`
-
-      // promptToGPT = executedTasksString + `\n Please provide me with only 1 next highest priority Task to execute based on the conversation and executed task percentage. If the priority cannot be determined, please provide a random task.`
-      // promptToGPT = executedTasksString + `\n Please provide me the next priority Task to execute based on the conversation and executed task percentage. If the priority cannot be determined, please provide a random task.`
-      // promptToGPT = executedTasksString + `\n Please provide me the next priority Task to execute based on the conversation and the available executed task percentage. If the priority cannot be determined, please provide a random task.`
-      promptToGPT = executedTasksString + `\n Please provide me the next priority Task to execute based on the conversation and the available executed task percentage. only choose from the ones available`
-
-      promptToGPT += `\n\n Provide the smallest sentence without explanation: \n`
-      // promptToGPT += `\n\n Provide the smallest sentence: \n`
 
 
-      keywordsGPTresult = await useGPTchat(
-        promptToGPT,
-        conversation,
-        ""
-      );
+      // -------------- taskPlanning -------------
+      let potentialTask = await taskPlanning(conversation, executedTasks,previusTaskDoneID);      
+      console.log("potentialTask = " , potentialTask)
+      // -------------- taskPlanning -------------
 
-      console.log("keywordsGPTresult = " , keywordsGPTresult)
 
-      // sdf002
 
 
 
       // -------------- Find best keywrods from embeding -------------
-      const filter = {
-        label: "instructions_edenAI",
-      };
-
-      bestKeywordsFromEmbed = await findBestEmbedings(
-        keywordsGPTresult,
-        filter,
-        (topK = 3)
-      );
-
+      bestKeywordsFromEmbed = await findAvailTaskPineCone(potentialTask)
       printC(bestKeywordsFromEmbed, "1", "bestKeywordsFromEmbed", "b");
-
-      // sdf13
       // -------------- Find best keywrods from embeding -------------
 
 
-       // -------------- GPT - Ask question OR Give Ideas -----------
-       prompt_T = `
-       based on the user reply
-
-        Decide if:
-        1) User is asking for ideas or doesn't have an answer
-        or
-        2) had an answer to the question from the assistant
-
-        Answer with only 1 word 
-        1) GIVE IDEAS
-        2) USER ANSWERED
-       `
-
-
-    //  conversation.pop()
-    //  conversation.shift()
-     
-     keywordsGPTresult = await useGPTchat(
-      prompt_T,
-      conversation,
-      "You are a recruiter, talking to a manager and collecting information about a new candidate that wants to find",
-      "",
-      0.7,
-      "API 2"
-    );
-    // sadf030
-
-     printC(keywordsGPTresult, "2", "keywordsGPTresult", "r");
-
-
-    //  sdf00
-      // -------------- GPT - Ask question OR Give Ideas -----------
+      // -------------- GPT - User Answered OR Give Ideas -----------
+      answeredOrIdeas = await userAnsweredOrGiveIdeas(conversation,potentialTask)
+      printC(answeredOrIdeas, "2", "answeredOrIdeas", "r");
+      // -------------- GPT - User Answered OR Give Ideas -----------
 
     
      
 
 
       // ---------- Update executedTasks ----------
-      updateTaskType = bestKeywordsFromEmbed[0].metadata.taskType
-
-      // find index of the taskTypeID in the executedTasks array that is equal to updateTaskType
-      let index = executedTasks.findIndex((task) => task.taskTypeID == updateTaskType);
-
-      if (updateTaskType == "skill_task") {
-
-        if (executedTasks[index].percentageCompleted < 50) {
-          executedTasks[index].percentageCompleted += 50
-        } else {
-          executedTasks[index].percentageCompleted = 100
-        }
-
-      } else if (updateTaskType == "insudtry_task") {
-
-        if (executedTasks[index].percentageCompleted < 50) {
-          executedTasks[index].percentageCompleted += 50
-        } else {
-          executedTasks[index].percentageCompleted = 100
-          
-        }
-      } else {
-        executedTasks[index].percentageCompleted = 100
-      }
-
+      executedTasks = await updateExecutedTasks(bestKeywordsFromEmbed,executedTasks)
+      printC(executedTasks, "5", "executedTasks", "g");
       // ---------- Update executedTasks ----------
 
 
-      systemPrompt = bestKeywordsFromEmbed[0].metadata.systemPrompt;
 
-      let userQuestion = ""
-
-      if (keywordsGPTresult.includes("GIVE IDEAS")) {
-        userQuestion = bestKeywordsFromEmbed[0].metadata.userPromptGiveIdeas;
-      } else if (keywordsGPTresult.includes("USER ANSWERED")) {
-        userQuestion = bestKeywordsFromEmbed[0].metadata.userPromptAskQuestion;
-      } else {
-        userQuestion = bestKeywordsFromEmbed[0].metadata.userPromptAskQuestion;
-      }
-
-      // conversation.pop()
-      // conversation.shift()
-
-      responseGPTchat = await useGPTchat(
-        userQuestion,
-        conversation,
-        systemPrompt
-      );
-
+      // ----------- edenReplyBasedTaskInfo ----------
+      responseGPTchat = await edenReplyBasedTaskInfo(conversation,bestKeywordsFromEmbed,answeredOrIdeas,potentialTask)
       printC(responseGPTchat, "3", "responseGPTchat", "r");
 
-      // SDF0342
+
+      let executeTaskType 
+      if (bestKeywordsFromEmbed.length > 0){
+        executeTaskType = bestKeywordsFromEmbed[0].metadata.taskType
+      } else {
+        executeTaskType = "end_task"
+      }
+      // ----------- edenReplyBasedTaskInfo ----------
+
 
       return {
         reply: responseGPTchat,
         executedTasks: executedTasks,
-        executeTaskType: bestKeywordsFromEmbed[0].metadata.taskType
+        executeTaskType: executeTaskType
 
       };
     } catch (err) {
