@@ -407,6 +407,7 @@ module.exports = {
             keywords {
               keyword
               confidence
+              nodeID
               node {
                 _id
                 name
@@ -419,6 +420,7 @@ module.exports = {
       const variables = {
         fields: {
           message: await responseFromGPT,
+          // message: message,
         },
       };
 
@@ -429,7 +431,7 @@ module.exports = {
       );
 
       // console.log("res = " , res)
-      console.log("res.messageMapKG_V2", res.messageMapKG_V2.keywords);
+      console.log("res.messageMapKG_V2", res.messageMapKG_V2);
       return res.messageMapKG_V2.keywords;
     };
     // if (!cvString) throw new ApolloError("The cvString is required");
@@ -444,6 +446,7 @@ module.exports = {
 
     try {
       return {
+        // keywords: await MessageMapKG_V2APICall,
         keywords: await MessageMapKG_V2APICall,
       };
     } catch (err) {
