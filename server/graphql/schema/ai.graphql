@@ -175,6 +175,7 @@ module.exports = `
         conversation: [messageChat]
         userID: ID
         executedTasks: [executedActionInput]
+        previusTaskDoneID: String 
     }
 
     input executedActionInput {

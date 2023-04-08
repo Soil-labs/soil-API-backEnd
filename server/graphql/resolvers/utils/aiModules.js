@@ -4,23 +4,129 @@ const { Node } = require("../../../models/nodeModal");
 const { Members } = require("../../../models/membersModel");
 
 const axios = require("axios");
+const { PineconeClient } = require("@pinecone-database/pinecone");
 
 
+async function createEmbedingsGPT(words_n) {
+    // words_n = ["node.js", "react", "angular"];
+    let OPENAI_API_KEY = chooseAPIkey();
+    response = await axios.post(
+      "https://api.openai.com/v1/embeddings",
+      {
+        input: words_n,
+        // model: "text-similarity-davinci-001",
+        model: "text-embedding-ada-002",
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+      }
+    );
+  
+    res = response.data.data.map((obj) => {
+      return obj.embedding;
+    });
+  
+    // console.log("res = ", res);
+    return res;
+  }
 
-function chooseAPIkey() {
+async function findBestEmbedings(message, filter, topK = 3) {
+  
+    const pinecone = new PineconeClient();
+    await pinecone.init({
+      environment: "us-east1-gcp",
+      apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+    });
+  
+    const index = await pinecone.Index("profile-eden-information");
+  
+    embed = await createEmbedingsGPT(message);
+  
+    let queryRequest = {
+      topK: topK,
+      vector: embed[0],
+      includeMetadata: true,
+    };
+  
+    if (filter != undefined) {
+      queryRequest = {
+        ...queryRequest,
+        filter: filter,
+      };
+    }
+  
+  
+    const queryResponse = await index.query({ queryRequest });
+  
+    return queryResponse.matches;
+  }
+
+function chooseAPIkey(chooseAPI="") {
     // openAI_keys = [
     //   "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",
     //   // "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",
     //   "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",
     //   "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",
     // ];
-    openAI_keys = ["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"];
+  
+    let openAI_keys = ["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"];
+   
+    if (chooseAPI == "API 2"){
+      openAI_keys = ["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"];
+    } else if (chooseAPI == "API 1"){
+      openAI_keys = ["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"];
+    }
   
     // randomly choose one of the keys
     let randomIndex = Math.floor(Math.random() * openAI_keys.length);
     let key = openAI_keys[randomIndex];
   
     return key;
+  }
+
+  async function useGPTchat(
+    userNewMessage,
+    discussionOld,
+    systemPrompt,
+    userQuestion = "",
+    temperature = 0.7,
+    chooseAPI = "API 1"
+  ) {
+  
+    let discussion = [...discussionOld]
+  
+    discussion.unshift({
+      role: "system",
+      content: systemPrompt,
+    });
+  
+    discussion.push({
+      role: "user",
+      content: userNewMessage + "\n" + userQuestion,
+    });
+  
+    console.log("discussion = ", discussion);
+  
+    let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
+    response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        messages: discussion,
+        model: "gpt-3.5-turbo",
+        temperature: temperature,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+      }
+    );
+    
+    return response.data.choices[0].message.content;
   }
   
   async function useGPTchatSimple(prompt,temperature=0.7) {
@@ -96,6 +202,10 @@ const totalScore_aiModule = async (memberObj,weightModulesObj,numberNodes) => {
 
     newMin_total = 20
     newMax_total = parseInt(nodeToMaxScore(numberNodes))
+
+    if (newMax_total>100){
+        newMax_total = 100
+    }
 
     
 
@@ -603,6 +713,174 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
 
 }
 
+async function taskPlanning(conversation,executedTasks,previusTaskDoneID) {
+
+    
+    
+    // -------- ExecutedTasks to Prompt + Find previus Task --------
+    endConversation = true // End the conversation if all tasks are done
+
+    availableTasks = []
+
+    let executedTasksString = "Executed Task percentage:\n"
+    for (let i = 0; i < executedTasks.length; i++) {
+        let task = executedTasks[i]
+        console.log("task = " , task)
+        if ( task.percentageCompleted != 100){
+            executedTasksString = executedTasksString + task.taskType + " - " + task.percentageCompleted + "% \n"
+            endConversation = false
+
+            if (task.taskTypeID == previusTaskDoneID){
+                return "Next priority task: " + task.taskType
+            }
+
+
+            availableTasks.push(task)
+        } else {
+            executedTasksString = executedTasksString + task.taskType + " - DONE \n"
+        }
+    }
+    console.log(" executedTasksString = " , executedTasksString)
+    // -------- ExecutedTasks to Prompt + Find previus Task --------
+
+
+    if (endConversation == true){
+        return "Next priority task: End Conversation"
+    }
+
+    
+    promptToGPT = executedTasksString + `\n Please provide me the next priority Task to execute based on the conversation and the available executed task percentage. only choose from the ones available`
+
+    promptToGPT += `\n\n Provide the smallest sentence without explanation: \n`
+
+
+    keywordsGPTresult = await useGPTchat(
+      promptToGPT,
+      conversation,
+      ""
+    );
+
+
+    return keywordsGPTresult
+}
+
+async function updateExecutedTasks(bestKeywordsFromEmbed,executedTasks) {
+
+    if (bestKeywordsFromEmbed.length == 0) return executedTasks
+
+    console.log("bestKeywordsFromEmbed = " , bestKeywordsFromEmbed)
+
+    updateTaskType = bestKeywordsFromEmbed[0].metadata.taskType
+
+    // find index of the taskTypeID in the executedTasks array that is equal to updateTaskType
+    let index = executedTasks.findIndex((task) => task.taskTypeID == updateTaskType);
+
+    if (updateTaskType == "skill_task") {
+
+      if (executedTasks[index].percentageCompleted < 50) {
+        executedTasks[index].percentageCompleted += 25
+      } else {
+        executedTasks[index].percentageCompleted = 100
+      }
+
+    } else if (updateTaskType == "insudtry_task") {
+
+      if (executedTasks[index].percentageCompleted < 50) {
+        executedTasks[index].percentageCompleted += 35
+      } else {
+        executedTasks[index].percentageCompleted = 100
+        
+      }
+    } else {
+      executedTasks[index].percentageCompleted = 100
+    }
+
+    return executedTasks
+}
+
+async function userAnsweredOrGiveIdeas(conversation,potentialTask) {
+
+    if (potentialTask.includes("End Conversation")) {
+        return ""
+    }
+
+    prompt_T = `
+        based on the user reply
+
+        Decide if:
+        1) User is asking for ideas or doesn't have an answer
+        or
+        2) had an answer to the question from the assistant
+
+        Answer with only 1 word 
+        1) GIVE IDEAS
+        2) USER ANSWERED
+    `
+
+  
+    resGPT = await useGPTchat(
+    prompt_T,
+    conversation.slice(-2),
+    "You are a recruiter, talking to a manager and collecting information about a new candidate that wants to find",
+    "",
+    0.7,
+    "API 2"
+    );
+
+    return resGPT
+}
+
+
+async function edenReplyBasedTaskInfo(conversation,bestKeywordsFromEmbed,answeredOrIdeas,potentialTask) {
+
+    if (potentialTask.includes("End Conversation") || bestKeywordsFromEmbed.length == 0) {
+        return "Thank you for the information, you can how look at your right and find the best talent for you"
+    }
+   
+    systemPrompt = bestKeywordsFromEmbed[0].metadata.systemPrompt;
+
+    let userQuestion = ""
+
+    if (answeredOrIdeas.includes("GIVE IDEAS")) {
+      userQuestion = bestKeywordsFromEmbed[0].metadata.userPromptGiveIdeas;
+    } else if (answeredOrIdeas.includes("USER ANSWERED")) {
+      userQuestion = bestKeywordsFromEmbed[0].metadata.userPromptAskQuestion;
+    } else {
+      userQuestion = bestKeywordsFromEmbed[0].metadata.userPromptAskQuestion;
+    }
+
+    // conversation.pop()
+    // conversation.shift()
+
+    edenReply = await useGPTchat(
+      userQuestion,
+      conversation,
+      systemPrompt
+    );
+
+    return edenReply
+}
+
+async function findAvailTaskPineCone(keywordsGPTresult,topK=3) {
+
+    if (keywordsGPTresult.includes("End Conversation")) {
+        return []
+    }
+
+    const filter = {
+        label: "instructions_edenAI",
+      };
+
+      bestKeywordsFromEmbed = await findBestEmbedings(
+        keywordsGPTresult,
+        filter,
+        (topK = topK)
+      );
+
+    return bestKeywordsFromEmbed
+}
+
+
 function mapValue(value, oldMin, oldMax, newMin, newMax) {
     var oldRange = oldMax - oldMin;
     if (oldRange == 0){
@@ -664,4 +942,9 @@ module.exports = {
     chooseAPIkey,
     useGPTchatSimple,
     arrayToObject,
+    taskPlanning,
+    findAvailTaskPineCone,
+    userAnsweredOrGiveIdeas,
+    updateExecutedTasks,
+    edenReplyBasedTaskInfo,
   };

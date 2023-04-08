@@ -970,11 +970,11 @@ module.exports = {
       console.log("res = ", res);
       // asdf0;
 
-      console.log("HEEEEEI = " )
+      // console.log("HEEEEEI = " )
       let { typesNodesReplace, typeNodeSearchAbove } =
         await readSettingsFindReplaceNodesMultiple(nodeSettings, edgeSettings);
 
-      console.log("HEEEEEI 2= " )
+      // console.log("HEEEEEI 2= " )
 
       let { nodesObj, edgesArr, nodesArrReplaceID, numberCoreTypeNodes } =
         await neo4jToNodeEdgeGraphSettings(
@@ -984,7 +984,7 @@ module.exports = {
           nodeDataObj
         );
 
-      console.log("HEEEEEI 3= " )
+      // console.log("HEEEEEI 3= " )
 
 
       // console.log("nodesObj = ", nodesObj);
