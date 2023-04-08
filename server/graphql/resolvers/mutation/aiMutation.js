@@ -12,6 +12,8 @@ const { IsAuthenticated } = require("../../../utils/authorization");
 const { PineconeClient } = require("@pinecone-database/pinecone");
 const fetch = require("node-fetch");
 
+const { request, gql } = require("graphql-request");
+
 globalThis.fetch = fetch;
 
 const configuration = new Configuration({
@@ -390,6 +392,62 @@ module.exports = {
     try {
       return {
         result: previousJobs,
+      };
+    } catch (err) {
+      throw new ApolloError(err.message);
+    }
+  },
+  cvMapKG: async (parent, args, context, info) => {
+    const { message } = args.fields;
+    console.log("hey 1");
+    const MessageMapKG_V2APICall = async (fields) => {
+      const query = gql`
+        query messageMapKG_V2($fields: messageMapKG_V2Input) {
+          messageMapKG_V2(fields: $fields) {
+            keywords {
+              keyword
+              confidence
+              nodeID
+              node {
+                _id
+                name
+              }
+            }
+          }
+        }
+      `;
+
+      const variables = {
+        fields: {
+          message: await responseFromGPT,
+          // message: message,
+        },
+      };
+
+      res = await request(
+        "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+        query,
+        variables
+      );
+
+      // console.log("res = " , res)
+      console.log("res.messageMapKG_V2", res.messageMapKG_V2);
+      return res.messageMapKG_V2.keywords;
+    };
+    // if (!cvString) throw new ApolloError("The cvString is required");
+
+    prompt =
+      "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentenses. Make it as dese as possible with just listing the skills \nExaple output: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
+      message;
+
+    responseFromGPT = await useGPT(prompt, 0.7);
+    // console.log("responseFromGPT", responseFromGPT);
+    console.log("MessageMapKG_V2APICall", MessageMapKG_V2APICall);
+
+    try {
+      return {
+        // keywords: await MessageMapKG_V2APICall,
+        keywords: await MessageMapKG_V2APICall,
       };
     } catch (err) {
       throw new ApolloError(err.message);

@@ -111,6 +111,8 @@ module.exports = `
         inputToGPT(fields: inputToGPTInput): inputToGPTOutput
         CVtoSummary(fields: CVtoSummaryInput): CVtoSummaryOutput
         CVtoJobs(fields: CVtoJobsInput): CVtoJobsOutput
+        cvMapKG(fields: cvMapKGInput): cvMapKGOutput
+
 
 
         # ------------- ERROR MUTATIONS ------------

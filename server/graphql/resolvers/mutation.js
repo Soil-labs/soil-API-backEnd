@@ -90,6 +90,7 @@ const {
   inputToGPT,
   CVtoSummary,
   CVtoJobs,
+  cvMapKG,
 } = require("./mutation/aiMutation");
 
 const { createError, deleteError } = require("./mutation/errorsMutation");
@@ -200,6 +201,7 @@ module.exports = {
     inputToGPT,
     CVtoSummary,
     CVtoJobs,
+    cvMapKG,
 
     // ------------- ERROR MUTATION -----------------
     createError,

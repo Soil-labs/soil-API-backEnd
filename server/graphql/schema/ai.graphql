@@ -275,6 +275,17 @@ module.exports = `
         result: String
     }
 
+    input cvMapKGInput {
+        message: String
+    }
+
+    type cvMapKGOutput {
+        keywords: [KeywordValue]
+    }
+
+
+    
+
     enum CategoryEnum {
         project
         skill
