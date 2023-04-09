@@ -1452,11 +1452,16 @@ module.exports = {
 
       filter = {}
 
-      if (budget) filter.budget = budget
+      if (budget && budget?.minPerHour>=0 && budget?.maxPerHour>=0)
+         filter.budget = budget
 
-      if (availability) filter.availability = availability
+      if (availability && availability?.minHourPerWeek>=0 && availability?.maxHourPerWeek>=0) 
+          filter.availability = availability
 
-      if (expirienceLevel) filter.expirienceLevel = expirienceLevel
+      if (expirienceLevel && expirienceLevel>0) filter.expirienceLevel = expirienceLevel
+
+      // console.log("filter = " , filter)
+      // sdf0
 
       memberObj = {}
 
@@ -1464,7 +1469,7 @@ module.exports = {
 
       memberObj = await totalScore_aiModule(memberObj,weightModulesObj,numberNodes)
 
-      // console.log("memberObj = " , memberObj)
+      console.log("memberObj = " , memberObj)
       // asdf2
 
       memberArray = await sortArray_aiModule(memberObj)
