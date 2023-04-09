@@ -198,6 +198,23 @@ module.exports = `
 
     }
 
+    input edenGPTCreateProfileExpirienceChatAPIInput {
+        message: String
+        conversation: [messageChat]
+        expirienceTypeID: expirienceTypeIDEnum
+    }
+
+    enum expirienceTypeIDEnum {
+        BACKGROUND
+        SKILLS_EXPIRIENCE
+        CAREER_GOALS_ASPIRATIONS
+        WORK_PREFERENCES
+    }
+
+    type edenGPTCreateProfileExpirienceChatAPIOutput {
+        reply: String
+    }
+
     input edenGPTEndorseChatAPIInput {
         message: String
         conversation: [messageChat]
