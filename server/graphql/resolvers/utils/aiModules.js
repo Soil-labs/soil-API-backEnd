@@ -246,9 +246,9 @@ const totalScore_aiModule = async (memberObj,weightModulesObj,numberNodes) => {
             // }
         }
 
-        if (member.expirience_total) {
+        if (member.distanceExpirienceLevelMap) {
             if (weightModulesObj["expirience_total"]) {
-                scoreOriginalTotal += member.expirience_total * (weightModulesObj["expirience_total"].weight*0.01);
+                scoreOriginalTotal += member.distanceExpirienceLevelMap * (weightModulesObj["expirience_total"].weight*0.01);
             } 
             // else {
             //     scoreOriginalTotal += member.expirience_total;
@@ -520,6 +520,10 @@ const distanceFromFilter = async (memberObj,filter) => {
             distance = Math.abs(member.budget.perHour - averageFilterBudgetPerHour);
             memberObj[memberID].distanceBudgetPerHour = distance;
 
+            // console.log("filter.budget.minPerHour, filter.budget.maxPerHour = " , filter.budget.minPerHour, filter.budget.maxPerHour,averageFilterBudgetPerHour)
+            // console.log("distance = " , distance, member.budget.perHour, averageFilterBudgetPerHour, memberID)
+            // console.log("change = ------" )
+
             if (distance < minDisBudgetPerHour) minDisBudgetPerHour = distance;
             if (distance > maxDisBudgetPerHour) maxDisBudgetPerHour = distance;
         }
@@ -542,19 +546,19 @@ const distanceFromFilter = async (memberObj,filter) => {
         memberObj[memberID].distanceBudgetPerHourMap = 0
         memberObj[memberID].distanceExpirienceLevelMap = 0
 
-        if (member.distanceHoursPerWeek){
-            let distanceHoursPerWeek = mapValue(member.distanceHoursPerWeek, minDisHoursPerWeek, maxDisHoursPerWeek, 0, 1);
+        if (member.distanceHoursPerWeek != undefined){
+            let distanceHoursPerWeek = mapValue(maxDisHoursPerWeek - member.distanceHoursPerWeek, minDisHoursPerWeek, maxDisHoursPerWeek, 0, 1);
             memberObj[memberID].distanceHoursPerWeekMap = distanceHoursPerWeek;
         }
 
-        if (member.distanceBudgetPerHour){
-            let distanceBudgetPerHour = mapValue(member.distanceBudgetPerHour, minDisBudgetPerHour, maxDisBudgetPerHour, 0, 1);
+        if (member.distanceBudgetPerHour != undefined){
+            let distanceBudgetPerHour = mapValue(maxDisBudgetPerHour - member.distanceBudgetPerHour, minDisBudgetPerHour, maxDisBudgetPerHour, 0, 1);
             memberObj[memberID].distanceBudgetPerHourMap = distanceBudgetPerHour;
         }
 
 
-        if (member.distanceExpirienceLevel){
-            let distanceExpirienceLevel = mapValue(member.distanceExpirienceLevel, minDisExpirienceLevel, maxDisExpirienceLevel, 0.3, 1);
+        if (member.distanceExpirienceLevel != undefined){
+            let distanceExpirienceLevel = mapValue(maxDisExpirienceLevel - member.distanceExpirienceLevel, minDisExpirienceLevel, maxDisExpirienceLevel, 0.3, 1);
             memberObj[memberID].distanceExpirienceLevelMap = distanceExpirienceLevel;
         }
 
@@ -562,6 +566,7 @@ const distanceFromFilter = async (memberObj,filter) => {
     }
 
     // console.log("memberObj = " , memberObj)
+    // asdf
 
 
     // sdf99
@@ -892,6 +897,22 @@ function mapValue(value, oldMin, oldMax, newMin, newMax) {
         return newValue;
     }
 }
+// function mapValue(value, oldMin, oldMax, newMin, newMax, reverse = false) {
+//     var oldRange = oldMax - oldMin;
+//     var newRange = newMax - newMin;
+    
+//     if (oldRange === 0) {
+//       return reverse ? newMin : newMax * 0.9;
+//     } else {
+//     //   var mappedValue = ((value - oldMin) * newRange / oldRange) + newMin;
+//     //   return reverse ? newMax - mappedValue + newMin : mappedValue;
+//         if (reverse) {
+//             return newMax - (((value - oldMin) * newRange / oldRange) + newMin) + newMin;
+//         } else {
+//             return ((value - oldMin) * newRange / oldRange) + newMin;
+//         }
+//     }
+//   }
 
 async function showArray(arr,name="arr") {
     console.log(" ------------------ " + name + " ------------------")
