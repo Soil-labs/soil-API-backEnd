@@ -3,7 +3,7 @@ const { Node } = require("../../../models/nodeModal");
 const { Review } = require("../../../models/reviewModel");
 
 
-const {sumReview} = require("../utils/reviewModules");
+const {sumReview,payEndorsers} = require("../utils/reviewModules");
 const {useGPTchatSimple} = require("../utils/aiModules");
 
 
@@ -14,7 +14,7 @@ const { ApolloError } = require("apollo-server-express");
 
 module.exports = {
   addReview: async (parent, args, context, info) => {
-    const { userSendID, userReceiveID, reviewMessage, discussion,stars,reviewNodes,income } = args.fields;
+    const { userSendID, userReceiveID, reviewMessage, discussion,stars,reviewNodes,income,payEndorsers } = args.fields;
     console.log("Mutation > addReview > args.fields = ", args.fields);
     // asdf34
 
@@ -31,12 +31,16 @@ module.exports = {
 
       //verify if the endorser and endorsee exist
       let [userSendData, userReceiveData] = await Promise.all([
-        Members.findOne({ _id: userSendID }).select('_id name reviewReceive reviewSend reviewSummary'),
-        Members.findOne({ _id: userReceiveID }).select('_id name reviewReceive reviewSend reviewSummary'),
+        Members.findOne({ _id: userSendID }).select('_id name reviewsReceive reviewsSend reviewSummary'),
+        Members.findOne({ _id: userReceiveID }).select('_id name reviewsReceive reviewsSend reviewSummary'),
       ]);
 
       if (!userReceiveData) throw new ApolloError("The endorsee record missing");
       if (!userSendData) throw new ApolloError("The endorser record missing");
+
+      if (payEndorsers == true && income && income != 0){
+
+      }
 
 
       let newReview = {
@@ -44,6 +48,7 @@ module.exports = {
         userReceive: userReceiveID,
         createdAt: new Date(),
       }
+
 
       
 
@@ -73,6 +78,8 @@ module.exports = {
 
         newReview.reviewMessage = summaryGPT
       }
+
+      console.log("change = 2" )
 
       if (reviewNodes) {
         // reviewNodes only take the nodeID and put them on mongoDB
@@ -104,6 +111,7 @@ module.exports = {
         newReview.reviewNodes = nodesSave
         newReview.discussion = discussion
       }
+      console.log("change = 3" )
 
       // console.log("newReview = " , newReview)
       // sadf32
@@ -129,8 +137,10 @@ module.exports = {
       // ----------- Save to Arweave ------------
 
       
+      console.log("change = 3.1" )
       
-      endorseUpdate = await sumReview(userReceiveData, newReview)
+      reviewUpdateSum = await sumReview(userReceiveData, newReview)
+      console.log("reviewUpdateSum = " , reviewUpdateSum)
       // sdf92
 
 
@@ -139,6 +149,8 @@ module.exports = {
       reviewData.save()
 
 
+      console.log("change = 3.2",userReceiveData )
+      console.log("change = 3.5",userSendData )
       // console.log("userReceiveData?.reviewsReceive = " , userReceiveData?.reviewsReceive)
 
       // console.log("change = " , change)
@@ -155,6 +167,8 @@ module.exports = {
         userSendData.reviewsSend = [reviewData._id];
       }
 
+      console.log("change = 4" )
+
 
 
       userReceiveData = await Members.findOneAndUpdate(
@@ -164,13 +178,15 @@ module.exports = {
         {
           $set: { 
             reviewsReceive: userReceiveData.reviewsReceive,
-            ...endorseUpdate
+            ...reviewUpdateSum
           },
         },
         {
           new: true,
         }
       );
+
+      console.log("change = 5" )
 
       userSendData = await Members.findOneAndUpdate(
         {
@@ -200,6 +216,9 @@ module.exports = {
     console.log("Mutation > findReviews > args.fields = ", args.fields);
 
     if (userSend && userReceive) throw new Error("Cannot search both userSend and userReceive")
+
+    // if (!reviewsID) throw new Error("Must have a reviewsID even as null")
+    
 
     try {
       let reviewsData = []

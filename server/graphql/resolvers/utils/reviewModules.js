@@ -17,7 +17,7 @@ const sumReview = async (userReceiveData,newReview) => {
         totalIncome: 0,
         numberUsersStar: 0,
         numberUsersStake: 0,
-        numberEndorsement: 0,
+        numberReview: 0,
         reviewers: [],
         mainNodesObj: {},
     }
@@ -33,25 +33,26 @@ const sumReview = async (userReceiveData,newReview) => {
     } 
     reviewSummaryNew.reviewers.push(newReview.userSend)
 
-    for (let j = 0; j < newReview.reviewNodes.length; j++) {
+    for (let j = 0; j < newReview?.reviewNodes?.length; j++) {
         let nodeIDnow = newReview.reviewNodes[j].nodeID
 
         if (!reviewSummaryNew.mainNodesObj[nodeIDnow]) {
             reviewSummaryNew.mainNodesObj[nodeIDnow] = {
                 nodeID: nodeIDnow,
-                numberEndorsement: 1
+                numberReview: 1
             }
         } else {
-            reviewSummaryNew.mainNodesObj[nodeIDnow].numberEndorsement += 1
+            reviewSummaryNew.mainNodesObj[nodeIDnow].numberReview += 1
         }
     }
     // ------------ add the newReview ------------
 
+    console.log("change = 3.3" )
 
     // ------------ collect info ------------
-    for (let i = 0; i < previousEndorsements.length; i++) {
+    for (let i = 0; i < previousEndorsements?.length; i++) {
 
-        reviewSummaryNew.numberEndorsement += 1
+        reviewSummaryNew.numberReview += 1
 
        if (previousEndorsements[i].stars) {
             reviewSummaryNew.totalStars += previousEndorsements[i].stars
@@ -69,10 +70,10 @@ const sumReview = async (userReceiveData,newReview) => {
             if (!reviewSummaryNew.mainNodesObj[nodeIDnow]) {
                 reviewSummaryNew.mainNodesObj[nodeIDnow] = {
                     nodeID: nodeIDnow,
-                    numberEndorsement: 1
+                    numberReview: 1
                 }
             } else {
-                reviewSummaryNew.mainNodesObj[nodeIDnow].numberEndorsement += 1
+                reviewSummaryNew.mainNodesObj[nodeIDnow].numberReview += 1
             }
         }
     }
@@ -85,7 +86,7 @@ const sumReview = async (userReceiveData,newReview) => {
         // mainNodesArray.push(reviewSummaryNew.mainNodesObj[key])
         mainNodesArray.push({
             nodeID: key,
-            confidence: reviewSummaryNew.mainNodesObj[key].numberEndorsement
+            confidence: reviewSummaryNew.mainNodesObj[key].numberReview
         })
         // console.log("reviewSummaryNew.mainNodesObj[key] = " , reviewSummaryNew.mainNodesObj[key])
     }
@@ -129,7 +130,7 @@ const sumReview = async (userReceiveData,newReview) => {
 
 
     reviewUpdate = {
-        endorseSummary: reviewSummaryNew
+        reviewSummary: reviewSummaryNew
     }
 
     console.log("reviewUpdate = " , reviewUpdate)
@@ -138,6 +139,14 @@ const sumReview = async (userReceiveData,newReview) => {
 }
 
 
+const payEndorsers = async (userReceiveData, income) => {
+
+    
+
+}
+
+
 module.exports = {
     sumReview,
+    payEndorsers,
   };

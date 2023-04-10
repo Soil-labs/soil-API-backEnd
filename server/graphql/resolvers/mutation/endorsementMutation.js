@@ -10,6 +10,7 @@ const {
   arrayToObj,
   checkEndorseNodes,
   addEndorsementAPIcall,
+  repurationCalculate,
 } = require("../utils/endorsementModules");
 const { useGPTchatSimple } = require("../utils/aiModules");
 const { updateNodeToMemberOnNeo4J } = require("../utils/nodeModules");
@@ -92,12 +93,12 @@ module.exports = {
           "\n\n" +
           "Summarize the endorsement in 2 sentenses given in this conversation in two sentences, Write it like the endorser is talking:";
         console.log("prompt_summary = ", prompt_summary);
-        // -------------- Prompt of the conversation ------------
         let summaryGPT = await useGPTchatSimple(prompt_summary);
 
         console.log("summaryGPT = ", summaryGPT);
 
         newEndorsement.endorsementMessage = summaryGPT;
+        // -------------- Prompt of the conversation ------------
       }
 
       newEndorsement = await checkEndorseNodes(
@@ -206,6 +207,13 @@ module.exports = {
         }
       }
       // ----------- Test if all endorsed Nodes exist on user nodes ------------
+
+      printC(userReceiveID, "1", "userReceiveID", "b");
+      printC(userSendID, "1", "userSendID", "g");
+      printC(userReceiveData.endorsementsReceive, "2", "endorsementsReceive", "g");
+      printC(endorseUpdate, "2", "endorseUpdate", "g");
+      // sdf9
+
 
       userReceiveData = await Members.findOneAndUpdate(
         {
@@ -420,6 +428,144 @@ module.exports = {
         err.message,
         err.extensions?.code || "createFakeEndorsement",
         { component: "endorsementMutation > createFakeEndorsement" }
+      );
+    }
+  },
+  calculateReputation: async (parent, args, context, info) => {
+    const { userID } = args.fields;
+    console.log("Mutation > calculateReputation > args.fields = ", args.fields);
+
+
+
+    if (!userID)
+      throw new Error("calculateReputation > userID is not defined");
+
+    try {
+
+
+      let userData = await Members.findOne({ _id: userID }).select('_id discordName endorsementsSend endorsementsSendStats');
+
+      if (!userData) throw new Error("calculateReputation > userData - can't find the user ");
+
+      console.log("userData = " , userData)
+
+      // find for every endorsement the receiver, and all the reviews of the receiver
+      let endorseData = await Endorsement.find({ _id: userData?.endorsementsSend }).select('_id userReceive');
+
+      printC(endorseData, "1", "endorseData", "b");
+
+
+      let endorseDataObj = await arrayToObj(endorseData,"userReceive")
+
+      printC(endorseDataObj, "7", "endorseDataObj", "y");
+
+      userReceiveEndorID = Object.keys(endorseDataObj)
+
+      printC(userReceiveEndorID, "8", "userReceiveEndorID", "b");
+
+      let userReceiveEndorData = await Members.find({ _id: userReceiveEndorID }).select('_id discordName reviewsReceive reviewSummary');
+
+      printC(userReceiveEndorData, "9", "userReceiveEndorData", "b");
+
+      // --------- add reviewSummary to endorseDataObj ---------
+      for (let i=0; i < userReceiveEndorData.length; i++) {
+        userReceiveEndorDataN = userReceiveEndorData[i]
+
+        console.log("userReceiveEndorDataN._id = " , userReceiveEndorDataN._id)
+        if (endorseDataObj[userReceiveEndorDataN._id]) {
+          console.log("userReceiveEndorDataN.reviewSummary = " , userReceiveEndorDataN.reviewSummary)
+          // endorseDataObj[userReceiveEndorDataN._id].reviewSummary = {...userReceiveEndorDataN.reviewSummary}
+          endorseDataObj[userReceiveEndorDataN._id] = {
+            ...endorseDataObj[userReceiveEndorDataN._id]._doc,
+            reviewSummary: userReceiveEndorDataN.reviewSummary
+          }
+        }
+      }
+      printC(endorseDataObj, "10", "endorseDataObj", "y");
+      // --------- add reviewSummary to endorseDataObj ---------
+
+
+
+      const reputation = await repurationCalculate(endorseDataObj)
+
+      printC(reputation, "11", "reputation", "b");
+
+
+      // update reputation of member
+      let updateReputation = await Members.findOneAndUpdate(
+        { _id: userID },
+        {
+          $set: {
+            endorsementsSendStats: {
+              ...userData?.endorsementsSendStats,
+              reputation: reputation
+              }
+          }
+        },
+        { new: true }
+      ).select('_id discordName endorsementsSend endorsementsSendStats');
+
+
+        printC(updateReputation, "12", "updateReputation", "b");
+      
+      return userData
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "calculateReputation",
+        { component: "endorsementMutation > calculateReputation" }
+      );
+    }
+  },
+  deleteAllEndorsements: async (parent, args, context, info) => {
+    const { deleteAll } = args.fields;
+    console.log("Mutation > deleteAllEndorsements > args.fields = ", args.fields);
+
+    if (deleteAll != true) throw new Error("deleteAllEndorsements > deleteAll != true");
+    
+    try {
+
+      // find all Members and delete their endorsementsSend and endorsementsReceive and endorseSummary and reviewSend and reviewReceive and reviewSummary and reputation totalNodeTrust and node trust 
+      let membersData = await Members.find({}).select('_id discordName endorsementsSend endorsementsReceive endorseSummary reviewSend reviewReceive reviewSummary endorsementsSendStats nodes totalNodeTrust');
+
+
+      for (let i = 0; i < membersData.length; i++) {
+        let memberData = membersData[i];
+
+        let nodes = memberData.nodes;
+
+        for (let j = 0; j < nodes.length; j++) {
+
+          nodes[j].trust = {};
+        }
+
+
+        memberDataNew = await Members.findOneAndUpdate( 
+          { _id: memberData._id },
+          {
+            $set: {
+              endorsementsSend: [],
+              endorsementsReceive: [],
+              endorseSummary: {},
+              reviewsSend: [],
+              reviewsReceive: [],
+              reviewSummary: {},
+              endorsementsSendStats: {},
+              nodes: nodes,
+              totalNodeTrust: {},
+            },
+          },
+          { new: true }
+        );
+      }
+
+      
+      return true
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "deleteAllEndorsements",
+        { component: "endorsementMutation > deleteAllEndorsements" }
       );
     }
   },

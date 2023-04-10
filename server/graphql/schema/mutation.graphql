@@ -21,6 +21,8 @@ module.exports = `
         #  ---------- ENDORSEMENT MUTATIONS -------
         addEndorsement(fields: addEndorsementInput ): Endorsement
         findEndorsements(fields: findEndorsementsInput ): [Endorsement]
+        deleteAllEndorsements(fields: deleteAllEndorsementsInput ): Boolean
+        calculateReputation(fields: calculateReputationInput ): Members
         createFakeEndorsement(fields: createFakeEndorsementInput ): Endorsement
         createEndorsementLink(fields: createEndorsementLinkInput ): EndorsementLink
 

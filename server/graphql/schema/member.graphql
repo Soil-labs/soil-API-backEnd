@@ -55,8 +55,9 @@ module.exports = `
 
         
         endorsementsSend: [Endorsement]
-        endorsementsReceive: [Endorsement]
+        endorsementsSendStats: endorsementsSendStatsType
 
+        endorsementsReceive: [Endorsement]
         endorseSummary: endorseSummaryType   
 
         reviewsSend: [Review],
@@ -66,6 +67,12 @@ module.exports = `
         reviewSummary: reviewSummaryType     
 
         preferences: preferencesType
+    }
+
+    type endorsementsSendStatsType {
+        unclaimedReward: Float,
+        totalReward: Float,
+        reputation: Float,
     }
 
     type expirienceLevelType {

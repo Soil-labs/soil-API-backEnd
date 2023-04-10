@@ -68,11 +68,27 @@ module.exports = {
     },
     endorsementsSend: async (parent, args, context, info) => {
       try {
-        const endorsementsReceiveID = parent.endorsementsReceive;
+        const endorsementsSendID = parent.endorsementsSend;
 
-        const endorsementData = await Endorsement.find({_id: endorsementsReceiveID,});
+        const endorsementData = await Endorsement.find({_id: endorsementsSendID,});
 
         return endorsementData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "bluepanda.xyz@gmail.com",
+          {
+            component: "userResolver > bluepanda.xyz@gmail.com",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    endorsementsSendStats: async (parent, args, context, info) => {
+      try {
+        const endorsementsSendStats = parent.endorsementsSendStats;
+
+        return endorsementsSendStats;
       } catch (err) {
         throw new ApolloError(
           err.message,
@@ -104,9 +120,9 @@ module.exports = {
     },
     reviewsSend: async (parent, args, context, info) => {
       try {
-        const reviewsReceiveID = parent.reviewsReceive;
+        const reviewsSendID = parent.reviewsSend;
 
-        const endorsementData = await Review.find({_id: reviewsReceiveID,});
+        const endorsementData = await Review.find({_id: reviewsSendID,});
 
         return endorsementData;
       } catch (err) {

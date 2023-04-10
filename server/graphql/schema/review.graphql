@@ -1,6 +1,7 @@
 module.exports = `
     
     type Review {
+        _id: ID
         userSend: Members, 
         userReceive: Members, 
         reviewMessage: String, 
@@ -26,6 +27,7 @@ module.exports = `
         stars: Int
         reviewNodes: [endorseNodeInput]
         income: Float,
+        payEndorsers: Boolean
     }
     
     input findReviewsInput {
