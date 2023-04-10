@@ -176,9 +176,14 @@ const memberSchema = mongoose.Schema({
   },
 
   endorsementsSend: [mongoose.Schema.ObjectId],
+  endorsementsSendStats: {
+    unclaimedReward: Number,
+    totalReward: Number,
+    reputation: Number,
+  },
+
+
   endorsementsReceive: [mongoose.Schema.ObjectId],
-
-
   endorseSummary: {
     averageStars: Number,
     averageStake: Number,

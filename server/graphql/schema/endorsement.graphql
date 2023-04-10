@@ -41,6 +41,14 @@ module.exports = `
         userReceive: ID
     }
 
+    input deleteAllEndorsementsInput {
+        deleteAll: Boolean
+    }
+
+    input calculateReputationInput {
+        userID: ID
+    }
+
     input createFakeEndorsementInput {
         userSendID: ID
         userReceiveID: ID

@@ -76,18 +76,93 @@ const addEndorsementAPIcall = async (fields) => {
 
 }
 
-const arrayToObj = async (arrT) => {
+const arrayToObj = async (arrT,key="") => {
 
     objT = {}
-    for (let i=0;i<arrT.length;i++){
-        const nodeN = arrT[i]
+    if (key==""){
+        for (let i=0;i<arrT.length;i++){
+            const nodeN = arrT[i]
 
-        if (!objT[nodeN._id]){
-            objT[nodeN._id] = nodeN
-        } 
+            if (!objT[nodeN._id]){
+                objT[nodeN._id] = nodeN
+            } 
+        }
+    } else {
+        for (let i=0;i<arrT.length;i++){
+            const nodeN = arrT[i]
+
+            if (!objT[nodeN[key]]){
+                objT[nodeN[key]] = nodeN
+            }
+        }
     }
 
     return objT
+
+}
+
+
+const repurationCalculate = async (endorseDataObj) => {
+
+    let reputation = 0
+
+    printC(endorseDataObj,"7","endorseDataObj","r")
+
+    // SOS -> This is super unoptimised, it should change with a centralised system that always keep the max income, or even better change completly the equaltio 
+    let allMembersData = await Members.find({}).select('_id reviewSummary');
+
+
+    maxTotalIncome = 0
+    for (let i=0;i<allMembersData.length;i++){
+        const memberN = allMembersData[i]
+
+
+        if (memberN?.reviewSummary?.totalIncome > 0){
+            if (memberN.reviewSummary.totalIncome > maxTotalIncome){
+                maxTotalIncome = memberN.reviewSummary.totalIncome
+            }
+        }
+    }
+
+    printC(maxTotalIncome,"9","maxTotalIncome","p")
+
+
+    // R = sum(Review * Income) / (maxIncome*N) // N = number of enorsments
+
+    // N number of endorsmentgs
+    const N = Object.keys(endorseDataObj).length
+
+    R = 0
+    for (let key in endorseDataObj) {
+        const endorsement = endorseDataObj[key];
+
+        let totalIncome = 0
+        if (endorsement?.reviewSummary?.totalIncome){
+            printC("sssssss")
+            totalIncome = endorsement.reviewSummary.totalIncome
+        }
+
+        let averageReview = 3
+        if (endorsement?.reviewSummary?.averageStars){
+            averageReview = endorsement.reviewSummary.averageStars
+        }
+
+        console.log("totalIncome = " , totalIncome)
+
+        printC(totalIncome,"9","totalIncome","g")
+        printC(averageReview,"9","averageReview","g")
+
+        R += ((averageReview/5) * totalIncome)
+    }
+    printC(R,"9","R","p")
+
+
+    if (maxTotalIncome > 0){
+        R = R / (maxTotalIncome * N)
+    } 
+
+    printC(R,"9","R","p")
+    return R
 
 }
 
@@ -363,4 +438,5 @@ module.exports = {
     arrayToObj,
     checkEndorseNodes,
     addEndorsementAPIcall,
+    repurationCalculate,
   };
