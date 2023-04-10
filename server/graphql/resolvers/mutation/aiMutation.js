@@ -437,7 +437,7 @@ module.exports = {
     // if (!cvString) throw new ApolloError("The cvString is required");
 
     prompt =
-      "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentenses. Make it as dese as possible with just listing the skills \nExaple output: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
+      "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentenses. Make it as dese as possible with just listing the skills.\nDo not have any other words except for skills. \n\nExaple output: Skills: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
       message;
 
     responseFromGPT = await useGPT(prompt, 0.7);
