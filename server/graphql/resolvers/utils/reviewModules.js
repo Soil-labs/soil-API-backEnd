@@ -280,11 +280,6 @@ const payEndorsersF = async (userReceiveData, income) => {
     printC(endorseDataObj,"12","endorseDataObj","r")
 
 
-
-
-    // sdf01
-
-
 }
 
 
@@ -342,8 +337,53 @@ const addReviewAPIcall = async (fields) => {
 
 }
 
+const createFakeReviewF = async (fields) => {
+
+    // printC(fields,"7","fields","r")
+    // sdf00
+
+
+    const query = gql`
+    mutation CreateFakeReview($fields: createFakeReviewInput) {
+        createFakeReview(fields: $fields) {
+            _id
+            userSend {
+                _id
+                discordName
+            }
+            userReceive {
+                _id
+                discordName
+            }
+            reviewMessage
+            stars
+            income
+            createdAt
+        }
+    }`;
+
+    const variables  = {
+        fields: {
+            userSendID: fields.userSendID,
+            userReceiveID: fields.userReceiveID,
+            payEndorsers: true
+        }
+    };
+
+    res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
+
+    // console.log("res = " , res)
+
+    printC(res.createFakeReview,"15","res REVIEW","p")
+    // sdf11
+
+    return res.createFakeReview
+
+}
+
 
 module.exports = {
     sumReview,
     payEndorsersF,addReviewAPIcall,
+    createFakeReviewF,
   };

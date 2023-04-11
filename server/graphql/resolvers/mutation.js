@@ -58,7 +58,7 @@ const {
 const { createProjectUpdate } = require("./mutation/projectUpdateMutation");
 const {
   addEndorsement,
-  findEndorsements,deleteAllEndorsements,calculateReputation,
+  findEndorsements,deleteAllEndorsements,calculateReputation,createMultipleFakeEndorsementAndReview,
   createFakeEndorsement,
   createEndorsementLink,
 } = require("./mutation/endorsementMutation");
@@ -168,7 +168,7 @@ module.exports = {
 
     // ------------- ENDORSEMENT MUTATION -----------------
     addEndorsement,
-    findEndorsements,deleteAllEndorsements,calculateReputation,
+    findEndorsements,deleteAllEndorsements,calculateReputation,createMultipleFakeEndorsementAndReview,
     createFakeEndorsement,
     createEndorsementLink,
 

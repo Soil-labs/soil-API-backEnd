@@ -76,6 +76,52 @@ const addEndorsementAPIcall = async (fields) => {
 
 }
 
+const createFakeEndorsementF = async (fields) => {
+
+    // printC(fields,"7","fields","r")
+    // sdf00
+
+
+    const query = gql`
+    mutation CreateFakeEndorsement($fields: createFakeEndorsementInput) {
+        createFakeEndorsement(fields: $fields) {
+            _id
+            userSend {
+                _id
+            }
+            userReceive {
+                _id
+            }
+            endorsementMessage
+            nodes {
+                node {
+                    _id
+                }
+            }
+            stars
+            createdAt
+            stake
+        }
+    }`;
+
+    const variables  = {
+        fields: {
+            userSendID: fields.userSendID,
+            userReceiveID: fields.userReceiveID,
+        }
+    };
+
+    res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
+
+    // console.log("res = " , res)
+
+    printC(res.createFakeEndorsement,"7","res ENDORSE","p")
+    // sdf11
+
+    return res.createFakeEndorsement
+
+}
+
 const arrayToObj = async (arrT,key="") => {
 
     objT = {}
@@ -439,4 +485,5 @@ module.exports = {
     checkEndorseNodes,
     addEndorsementAPIcall,
     repurationCalculate,
+    createFakeEndorsementF,
   };

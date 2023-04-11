@@ -33,6 +33,7 @@ module.exports = `
     input createFakeReviewInput {
         userSendID: ID
         userReceiveID: ID
+        payEndorsers: Boolean
     }
     
     input findReviewsInput {

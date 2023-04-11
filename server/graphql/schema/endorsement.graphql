@@ -46,7 +46,14 @@ module.exports = `
     }
 
     input calculateReputationInput {
-        userID: ID
+    userID: ID
+    }
+    
+    input createMultipleFakeEndorsementAndReviewInput {
+        numEnrosements: Int
+        numReviews: Int
+        numUserEndorse: Int
+        numUserReview: Int
     }
 
     input createFakeEndorsementInput {
