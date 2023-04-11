@@ -1,6 +1,8 @@
 
 const { Review } = require("../../../models/reviewModel");
 const { Endorsement } = require("../../../models/endorsementModel");
+const { Members } = require("../../../models/membersModel");
+
 
 const { Node } = require("../../../models/nodeModal");
 
@@ -185,6 +187,8 @@ const calcReputationUser = async (userID) => {
 
 const payEndorsersF = async (userReceiveData, income) => {
 
+    persentageOfIncome = 0.05
+
     printC(userReceiveData,"7","userReceiveData","r")
 
 
@@ -197,6 +201,12 @@ const payEndorsersF = async (userReceiveData, income) => {
 
     printC(endorseDataObj,"7","endorseDataObj","r")
 
+    
+
+    // sdf22
+
+
+    totalReputation = 0
     for (const key in endorseDataObj) {
         let reputation = await calcReputationUser(key)
 
@@ -206,17 +216,134 @@ const payEndorsersF = async (userReceiveData, income) => {
             reputation: reputation
         }
 
+        totalReputation += reputation
+
     }
 
     printC(endorseDataObj,"11","endorseDataObj","r")
 
-    sdf01
 
+    //  ------------ Members Data -----------
+    const membersID = Object.keys(endorseDataObj)
+
+    printC(membersID,"7","membersID","r")
+
+    let membersData = await Members.find({ _id: membersID }).select('_id endorsementsSendStats');
+
+    for (let i = 0; i < membersData.length; i++) {
+
+        let endorsementsSendStatsTemp = membersData[i].endorsementsSendStats
+
+        if (!endorsementsSendStatsTemp?.unclaimedReward) endorsementsSendStatsTemp.unclaimedReward = 0
+
+        if (!endorsementsSendStatsTemp?.totalReward) endorsementsSendStatsTemp.totalReward = 0
+
+        endorseDataObj[membersData[i]._id] = {
+            ...endorseDataObj[membersData[i]._id],
+            endorsementsSendStats : endorsementsSendStatsTemp
+        }
+    }
+
+    printC(endorseDataObj,"7","endorseDataObj","r")
+    // ------------ Members Data -----------
+
+    // PE = Pay Endorsers
+
+    for (const key in endorseDataObj) {
+
+        reputation = endorseDataObj[key].reputation
+        PE = (income*persentageOfIncome) * reputation/ (totalReputation)
+
+        endorseDataObj[key] = {
+            ...endorseDataObj[key],
+            PE: PE
+        }
+
+        printC(endorseDataObj,"12","endorseDataObj","g")
+        printC(endorseDataObj[key],"12","endorseDataObj[key]","r")
+
+        // update the user
+        memberDataNew = await Members.findOneAndUpdate(
+            { _id: key },
+            {
+                $set: {
+                    "endorsementsSendStats.unclaimedReward": endorseDataObj[key].endorsementsSendStats.unclaimedReward + PE,
+                    "endorsementsSendStats.totalReward": endorseDataObj[key].endorsementsSendStats.totalReward + PE,
+                }
+            }
+
+        )
+
+
+    }
+
+    printC(endorseDataObj,"12","endorseDataObj","r")
+
+
+
+
+    // sdf01
+
+
+}
+
+
+const addReviewAPIcall = async (fields) => {
+
+    printC(fields,"7","fields","r")
+
+
+    const query = gql`
+    mutation AddReview($fields: addReviewInput) {
+        addReview(fields: $fields) {
+            userSend {
+                _id
+                discordName
+            }
+            userReceive {
+                _id
+                discordName
+            }
+            
+            reviewMessage
+            nodes {
+                node {
+                    _id
+                    name
+                }
+                confidence
+            }
+            stars
+            income
+            createdAt
+        }
+    }`;
+
+    const variables  = {
+        fields: {
+            userSendID: fields.userSendID,
+            userReceiveID: fields.userReceiveID,
+            reviewMessage: fields.reviewMessage,
+            stars: fields.stars,
+            income: fields.income,
+            reviewNodes: fields.endorseNodes,
+        }
+    };
+
+    res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
+
+    // console.log("res = " , res)
+
+    printC(res.addReview,"7","res","r")
+
+    // df12
+
+    return res.addReview
 
 }
 
 
 module.exports = {
     sumReview,
-    payEndorsersF,
+    payEndorsersF,addReviewAPIcall,
   };

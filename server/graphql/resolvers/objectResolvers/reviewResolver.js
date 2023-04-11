@@ -43,7 +43,9 @@ module.exports = {
     nodes: async (parent, args, context, info) => {
       try {
 
-        return parent.reviewNodes
+        console.log("parent.reviewNodes = " , parent)
+
+        return parent.endorseNodes
       } catch (error) {
         throw new ApolloError(error);
       }

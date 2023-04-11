@@ -29,6 +29,11 @@ module.exports = `
         income: Float,
         payEndorsers: Boolean
     }
+
+    input createFakeReviewInput {
+        userSendID: ID
+        userReceiveID: ID
+    }
     
     input findReviewsInput {
         reviewsID: [ID]

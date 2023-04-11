@@ -28,6 +28,7 @@ module.exports = `
 
         #  ---------- REVIEW MUTATIONS -------
         addReview(fields: addReviewInput ): Review
+        createFakeReview(fields: createFakeReviewInput ): Review
         findReviews(fields: findReviewsInput ): [Review]
 
 
