@@ -23,6 +23,7 @@ module.exports = `
         findEndorsements(fields: findEndorsementsInput ): [Endorsement]
         deleteAllEndorsements(fields: deleteAllEndorsementsInput ): Boolean
         calculateReputation(fields: calculateReputationInput ): Members
+        createMultipleFakeEndorsementAndReview(fields: createMultipleFakeEndorsementAndReviewInput ): Boolean
         createFakeEndorsement(fields: createFakeEndorsementInput ): Endorsement
         createEndorsementLink(fields: createEndorsementLinkInput ): EndorsementLink
 

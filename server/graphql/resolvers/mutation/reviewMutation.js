@@ -217,7 +217,7 @@ module.exports = {
     }
   },
   createFakeReview: async (parent, args, context, info) => {
-    const { userSendID, userReceiveID } = args.fields;
+    const { userSendID, userReceiveID,payEndorsers } = args.fields;
     console.log(
       "Mutation > createFakeReview > args.fields = ",
       args.fields
@@ -285,6 +285,7 @@ module.exports = {
       } else {
         randomUserNodes = userReceiveData.nodes;
       }
+      console.log("change = start" , randomUserNodes )
 
       // choose random 1-2 nodes to use
       let randomNodes = Math.floor(Math.random() * 2) + 1;
@@ -293,7 +294,9 @@ module.exports = {
         let randomNodeIndex = Math.floor(
           Math.random() * randomUserNodes.length
         );
-        randomNodesArray.push(randomUserNodes[randomNodeIndex]._id);
+        if (randomUserNodes[randomNodeIndex]?._id){
+          randomNodesArray.push(randomUserNodes[randomNodeIndex]._id);
+        }
       }
 
       printC(randomNodesArray, "3", "randomNodesArray", "p");
@@ -347,6 +350,9 @@ module.exports = {
       let randomIncome = Math.floor(Math.random() * 3000) + 200;
       // -------- choose random stars and stake --------
 
+      let payEndorsersT = payEndorsers
+      if (!payEndorsers) payEndorsersT = false
+
       const fields = {
         userSendID: userSendData._id,
         userReceiveID: userReceiveData._id,
@@ -355,6 +361,7 @@ module.exports = {
         income: randomIncome,
         endorseNodes: endorseNodes,
         createdAt: new Date(),
+        payEndorsers: payEndorsers,
       };
 
       let newReview = await addReviewAPIcall(fields);

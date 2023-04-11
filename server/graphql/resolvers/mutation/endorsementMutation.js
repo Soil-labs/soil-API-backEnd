@@ -11,7 +11,13 @@ const {
   checkEndorseNodes,
   addEndorsementAPIcall,
   repurationCalculate,
+  createFakeEndorsementF,
 } = require("../utils/endorsementModules");
+
+const {
+  createFakeReviewF,
+} = require("../utils/reviewModules");
+
 const { useGPTchatSimple } = require("../utils/aiModules");
 const { updateNodeToMemberOnNeo4J } = require("../utils/nodeModules");
 
@@ -428,6 +434,135 @@ module.exports = {
         err.message,
         err.extensions?.code || "createFakeEndorsement",
         { component: "endorsementMutation > createFakeEndorsement" }
+      );
+    }
+  },
+  createMultipleFakeEndorsementAndReview: async (parent, args, context, info) => {
+    const { numEnrosements ,numReviews,numUserEndorse,numUserReview } = args.fields;
+    console.log(
+      "Mutation > createMultipleFakeEndorsementAndReview > args.fields = ",
+      args.fields
+    );
+
+    try {
+
+      // find all users that have not empty hoursPerWeek
+      let usersAll = await Members.find({ hoursPerWeek: { $ne: null } }).select(
+        "_id discordName hoursPerWeek"
+      );
+
+      printC(usersAll, "1", "usersAll", "b");
+
+      // choose random numUserEndorse from theusers, and take them out of the list in order to not choose them again
+      let usersEndorse = [];
+      for (let i = 0; i < numUserEndorse; i++) {
+        let randomUserIndex = Math.floor(Math.random() * usersAll.length);
+        usersEndorse.push(usersAll[randomUserIndex]);
+        usersAll.splice(randomUserIndex, 1);
+      }
+
+      printC(usersEndorse, "2", "usersEndorse", "g");
+      // printC(usersAll, "3", "usersAll", "b");
+
+
+      // choose random numUserReview from theusers, and take them out of the list in order to not choose them again
+      let usersReview = [];
+      for (let i = 0; i < numUserReview; i++) {
+        let randomUserIndex = Math.floor(Math.random() * usersAll.length);
+        usersReview.push(usersAll[randomUserIndex]);
+        usersAll.splice(randomUserIndex, 1);
+      }
+
+      printC(usersReview, "4", "usersReview", "g");
+
+
+      // add random endorsements
+      allUsersReceiveEndorse = [...usersEndorse]
+      allUsersSendEndorse = [...usersEndorse]
+      for (let i = 0; i < numEnrosements; i++) {
+        let randomUserSendIndex = Math.floor(Math.random() * allUsersSendEndorse.length);
+
+        let randomUserReceiveIndex = Math.floor(Math.random() * allUsersReceiveEndorse.length);
+
+        if (randomUserSendIndex == randomUserReceiveIndex) {
+          randomUserReceiveIndex = (randomUserReceiveIndex + 1) % allUsersReceiveEndorse.length;
+        }
+
+        if (randomUserSendIndex != randomUserReceiveIndex) {
+
+          let userSendIDN = allUsersSendEndorse[randomUserSendIndex]._id;
+          allUsersSendEndorse.splice(randomUserSendIndex, 1);
+          
+          let userReceiveIDN = allUsersReceiveEndorse[randomUserReceiveIndex]._id;
+          allUsersReceiveEndorse.splice(randomUserReceiveIndex, 1);
+          
+
+          let fields = {
+            userSendID: userSendIDN,
+            userReceiveID: userReceiveIDN,
+          };
+
+          printC(fields, "5", "fields ENDORSE", "b");
+
+          try {
+            await createFakeEndorsementF(fields);
+          } catch (err) {
+            printC(err, "-1", "err ENDORSE", "r");
+          }
+        }
+
+      }
+
+      console.log("change = " )
+
+
+      // add random reviews
+      allUsersReceiveReview = [...usersEndorse]
+      allUsersSendReview = [...usersReview]
+      for (let i = 0; i < numReviews; i++) {
+        let randomUserSendIndex = Math.floor(Math.random() * allUsersSendReview.length);
+
+        let randomUserReceiveIndex = Math.floor(Math.random() * allUsersReceiveReview.length);
+
+        if (randomUserSendIndex == randomUserReceiveIndex) {
+          randomUserReceiveIndex = (randomUserReceiveIndex + 1) % allUsersReceiveReview.length;
+        }
+
+        if (randomUserSendIndex != randomUserReceiveIndex) {
+
+          let userSendIDN = allUsersSendReview[randomUserSendIndex]._id;
+          allUsersSendReview.splice(randomUserSendIndex, 1);
+
+          let userReceiveIDN = allUsersReceiveReview[randomUserReceiveIndex]._id;
+          allUsersReceiveReview.splice(randomUserReceiveIndex, 1);
+
+          let fields = {
+            userSendID: userSendIDN,
+            userReceiveID: userReceiveIDN,
+          };
+
+          printC(fields, "6", "fields REVIEW", "b");
+
+          try {
+            await createFakeReviewF(fields);
+          } catch (err) {
+            printC(err, "-2", "err REVIEW", "r");
+          }
+
+        }
+
+      }
+
+
+
+
+      return true
+    
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "createMultipleFakeEndorsementAndReview",
+        { component: "endorsementMutation > createMultipleFakeEndorsementAndReview" }
       );
     }
   },
