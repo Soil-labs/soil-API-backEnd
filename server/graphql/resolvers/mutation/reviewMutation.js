@@ -3,7 +3,7 @@ const { Node } = require("../../../models/nodeModal");
 const { Review } = require("../../../models/reviewModel");
 
 
-const {sumReview,payEndorsers} = require("../utils/reviewModules");
+const {sumReview,payEndorsersF} = require("../utils/reviewModules");
 const {useGPTchatSimple} = require("../utils/aiModules");
 
 
@@ -32,14 +32,15 @@ module.exports = {
       //verify if the endorser and endorsee exist
       let [userSendData, userReceiveData] = await Promise.all([
         Members.findOne({ _id: userSendID }).select('_id name reviewsReceive reviewsSend reviewSummary'),
-        Members.findOne({ _id: userReceiveID }).select('_id name reviewsReceive reviewsSend reviewSummary'),
+        Members.findOne({ _id: userReceiveID }).select('_id name reviewsReceive reviewsSend endorsementsReceive reviewSummary'),
       ]);
 
       if (!userReceiveData) throw new ApolloError("The endorsee record missing");
       if (!userSendData) throw new ApolloError("The endorser record missing");
 
       if (payEndorsers == true && income && income != 0){
-
+        await payEndorsersF(userReceiveData, income)
+        sdf11
       }
 
 

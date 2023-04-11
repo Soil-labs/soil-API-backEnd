@@ -1,9 +1,19 @@
 
 const { Review } = require("../../../models/reviewModel");
+const { Endorsement } = require("../../../models/endorsementModel");
 
 const { Node } = require("../../../models/nodeModal");
 
 const {useGPTchatSimple} = require("./aiModules");
+
+const { printC } = require("../../../printModule");
+
+const { request, gql} = require('graphql-request');
+
+
+const {
+    arrayToObj,
+  } = require("../utils/endorsementModules");
 
 
 const sumReview = async (userReceiveData,newReview) => {
@@ -139,14 +149,74 @@ const sumReview = async (userReceiveData,newReview) => {
 }
 
 
-const payEndorsers = async (userReceiveData, income) => {
+const calcReputationUser = async (userID) => {
 
+
+    const query = gql`
+    mutation CalculateReputation($fields: calculateReputationInput) {
+        calculateReputation(fields: $fields) {
+            _id
     
+            endorsementsSendStats {
+            unclaimedReward
+            totalReward
+            reputation
+            }
+        }
+    }`;
+
+    const variables  = {
+        fields: {
+            userID: userID
+        }
+    };
+
+    res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
+
+    // console.log("res = " , res)
+
+    printC(res.calculateReputation,"10","res","b")
+    // sdf00
+
+    return res?.calculateReputation?.endorsementsSendStats?.reputation
+
+}
+
+
+const payEndorsersF = async (userReceiveData, income) => {
+
+    printC(userReceiveData,"7","userReceiveData","r")
+
+
+    let endorseData = await Endorsement.find({ _id: userReceiveData?.endorsementsReceive }).select('_id userSend');
+
+    printC(endorseData,"7","endorseData","r")
+
+
+    let endorseDataObj = await arrayToObj(endorseData,"userSend")
+
+    printC(endorseDataObj,"7","endorseDataObj","r")
+
+    for (const key in endorseDataObj) {
+        let reputation = await calcReputationUser(key)
+
+        // endorseDataObj[key].reputation = reputation
+        endorseDataObj[key] = {
+            ...endorseDataObj[key]._doc,
+            reputation: reputation
+        }
+
+    }
+
+    printC(endorseDataObj,"11","endorseDataObj","r")
+
+    sdf01
+
 
 }
 
 
 module.exports = {
     sumReview,
-    payEndorsers,
+    payEndorsersF,
   };
