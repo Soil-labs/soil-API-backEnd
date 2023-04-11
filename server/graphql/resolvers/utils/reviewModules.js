@@ -322,6 +322,7 @@ const addReviewAPIcall = async (fields) => {
             stars: fields.stars,
             income: fields.income,
             reviewNodes: fields.endorseNodes,
+            payEndorsers: fields.payEndorsers
         }
     };
 
