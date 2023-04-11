@@ -62,7 +62,7 @@ const {
   createFakeEndorsement,
   createEndorsementLink,
 } = require("./mutation/endorsementMutation");
-const { addReview, findReviews } = require("./mutation/reviewMutation");
+const { addReview,createFakeReview, findReviews } = require("./mutation/reviewMutation");
 const {
   createRoom,
   enterRoom,
@@ -174,7 +174,7 @@ module.exports = {
     createEndorsementLink,
 
     // ------------- REVIEW MUTATION -----------------
-    addReview,
+    addReview,createFakeReview,
     findReviews,
 
     //---------------ROOM MUTATION --------------------
