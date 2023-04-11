@@ -508,7 +508,7 @@ module.exports = {
 
         printC(updateReputation, "12", "updateReputation", "b");
       
-      return userData
+      return updateReputation
     } catch (err) {
       throw new ApolloError(
         err.message,
