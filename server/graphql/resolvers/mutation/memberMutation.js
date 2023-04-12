@@ -310,6 +310,8 @@ module.exports = {
         serverID,
         onbording,
         memberRole,
+        experienceLevel,
+        location,
       } = args.fields;
 
       let { skills } = args.fields;
@@ -338,8 +340,31 @@ module.exports = {
       if (content) fields = { ...fields, content };
       if (memberRole) fields = { ...fields, memberRole };
 
+      
+      if (location) fields = { ...fields, location };
+
       let membersData = await Members.findOne({ _id: fields._id });
       let membersDataOriginal = membersData;
+
+
+      if (experienceLevel) {
+       
+        if (experienceLevel!= 3 && experienceLevel!= 6 && experienceLevel!=9){
+          throw new ApolloError("Experience Level must be 3, 6 or 9");
+        } else {
+          fields = { 
+            ...fields,
+            experienceLevel: {
+              ...membersData.experienceLevel,
+              total: experienceLevel,
+            }
+          
+          };
+        }
+      }
+        
+        
+        // fields = { ...fields, experienceLevel };
 
       // console.log("memberRole = " , memberRole)
       // console.log("skills = " , skills)

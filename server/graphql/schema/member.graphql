@@ -488,7 +488,14 @@ module.exports = `
 
         links: [linkInput],
 
+        experienceLevel: Int,
+        location: String
+
+
+
     }
+
+
 
     input onboardingInput {
         signup: Boolean
