@@ -246,12 +246,12 @@ const totalScore_aiModule = async (memberObj,weightModulesObj,numberNodes) => {
             // }
         }
 
-        if (member.distanceExpirienceLevelMap) {
-            if (weightModulesObj["expirience_total"]) {
-                scoreOriginalTotal += member.distanceExpirienceLevelMap * (weightModulesObj["expirience_total"].weight*0.01);
+        if (member.distanceExperienceLevelMap) {
+            if (weightModulesObj["experience_total"]) {
+                scoreOriginalTotal += member.distanceExperienceLevelMap * (weightModulesObj["experience_total"].weight*0.01);
             } 
             // else {
-            //     scoreOriginalTotal += member.expirience_total;
+            //     scoreOriginalTotal += member.experience_total;
             // }
         }
 
@@ -449,7 +449,7 @@ const passFilterTestMember = async (memberData) => {
 
 
 
-    if (!memberData?.expirienceLevel?.total) return false;
+    if (!memberData?.experienceLevel?.total) return false;
 
     return true
 
@@ -462,7 +462,7 @@ const findMemberAndFilter = async (memberObj) => {
     memberIDs = Object.keys(memberObj);
 
     // search on the mongo for all the members
-    let membersData = await Members.find({ _id: memberIDs }).select('_id hoursPerWeek totalNodeTrust expirienceLevel budget');
+    let membersData = await Members.find({ _id: memberIDs }).select('_id hoursPerWeek totalNodeTrust experienceLevel budget');
 
     // console.log("membersData = " , membersData)
 
@@ -497,8 +497,8 @@ const distanceFromFilter = async (memberObj,filter) => {
     minDisHoursPerWeek = 100000000
     maxDisHoursPerWeek = -1
 
-    minDisExpirienceLevel = 100000000
-    maxDisExpirienceLevel = -1
+    minDisExperienceLevel = 100000000
+    maxDisExperienceLevel = -1
 
     for (const [memberID, member] of Object.entries(memberObj)) {
         let distance = 0;
@@ -528,13 +528,13 @@ const distanceFromFilter = async (memberObj,filter) => {
             if (distance > maxDisBudgetPerHour) maxDisBudgetPerHour = distance;
         }
 
-        // ---------------------- expirienceLevel
-        if (filter?.expirienceLevel){
-            distance = Math.abs(member.expirienceLevel.total - filter.expirienceLevel);
-            memberObj[memberID].distanceExpirienceLevel = distance;
+        // ---------------------- experienceLevel
+        if (filter?.experienceLevel){
+            distance = Math.abs(member.experienceLevel.total - filter.experienceLevel);
+            memberObj[memberID].distanceExperienceLevel = distance;
 
-            if (distance < minDisExpirienceLevel) minDisExpirienceLevel = distance;
-            if (distance > maxDisExpirienceLevel) maxDisExpirienceLevel = distance;
+            if (distance < minDisExperienceLevel) minDisExperienceLevel = distance;
+            if (distance > maxDisExperienceLevel) maxDisExperienceLevel = distance;
         }
     }
 
@@ -544,7 +544,7 @@ const distanceFromFilter = async (memberObj,filter) => {
 
         memberObj[memberID].distanceHoursPerWeekMap = 0
         memberObj[memberID].distanceBudgetPerHourMap = 0
-        memberObj[memberID].distanceExpirienceLevelMap = 0
+        memberObj[memberID].distanceExperienceLevelMap = 0
 
         if (member.distanceHoursPerWeek != undefined){
             let distanceHoursPerWeek = mapValue(maxDisHoursPerWeek - member.distanceHoursPerWeek, minDisHoursPerWeek, maxDisHoursPerWeek, 0, 1);
@@ -557,9 +557,9 @@ const distanceFromFilter = async (memberObj,filter) => {
         }
 
 
-        if (member.distanceExpirienceLevel != undefined){
-            let distanceExpirienceLevel = mapValue(maxDisExpirienceLevel - member.distanceExpirienceLevel, minDisExpirienceLevel, maxDisExpirienceLevel, 0.3, 1);
-            memberObj[memberID].distanceExpirienceLevelMap = distanceExpirienceLevel;
+        if (member.distanceExperienceLevel != undefined){
+            let distanceExperienceLevel = mapValue(maxDisExperienceLevel - member.distanceExperienceLevel, minDisExperienceLevel, maxDisExperienceLevel, 0.3, 1);
+            memberObj[memberID].distanceExperienceLevelMap = distanceExperienceLevel;
         }
 
 
