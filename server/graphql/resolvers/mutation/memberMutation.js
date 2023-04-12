@@ -2363,11 +2363,11 @@ module.exports = {
       // --------- create hourse per week, timezone, location, totalIncome, completedOpportunities -------
 
 
-      // --------- Create Expirience Level -------
+      // --------- Create Experience Level -------
       if (!userData?.experienceLevel?.total){
-        // random expirience level it can be 3,6 or 9
-        const expirienceLevel = [3,6,9,9]
-        userData.expirienceLevel.total = expirienceLevel[Math.floor(Math.random() * expirienceLevel.length)]
+        // random experience level it can be 3,6 or 9
+        const experienceLevel = [3,6,9,9]
+        userData.experienceLevel.total = experienceLevel[Math.floor(Math.random() * experienceLevel.length)]
       }
 
 
@@ -2375,11 +2375,11 @@ module.exports = {
         // random yars which is a multiplier of the total years, but it is a random multiplier from 1 to 3
         const multiplier = Math.floor(Math.random() * 3) + 1
 
-        userData.expirienceLevel.years = userData.expirienceLevel.total * multiplier
+        userData.experienceLevel.years = userData.experienceLevel.total * multiplier
       }
 
 
-      // --------- Create Expirience Level -------
+      // --------- Create Experience Level -------
 
 
       // --------- Create Role and add to User -------

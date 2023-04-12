@@ -1429,7 +1429,7 @@ module.exports = {
     return val;
   },
   matchNodesToMembers_AI4: async (parent, args, context, info) => {
-    const { nodesID, weightModules,budget,availability,expirienceLevel } =
+    const { nodesID, weightModules,budget,availability,experienceLevel } =
       args.fields;
     let { page, limit } = args.fields;
     console.log("Query > matchNodesToMembers_AI4 > args.fields = ", args.fields);
@@ -1458,7 +1458,7 @@ module.exports = {
       if (availability && availability?.minHourPerWeek>=0 && availability?.maxHourPerWeek>=0) 
           filter.availability = availability
 
-      if (expirienceLevel && expirienceLevel>0) filter.expirienceLevel = expirienceLevel
+      if (experienceLevel && experienceLevel>0) filter.experienceLevel = experienceLevel
 
       // console.log("filter = " , filter)
       // sdf0

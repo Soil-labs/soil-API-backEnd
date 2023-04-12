@@ -48,7 +48,7 @@ module.exports = `
 
         budget: budgetMemberType,
 
-        expirienceLevel: expirienceLevelType,
+        experienceLevel: experienceLevelType,
 
         memberRole: RoleTemplate
         chat: chatResponse
@@ -75,7 +75,7 @@ module.exports = `
         reputation: Float,
     }
 
-    type expirienceLevelType {
+    type experienceLevelType {
         total: Int,
         years: Int, 
     }
@@ -412,7 +412,7 @@ module.exports = `
     input matchNodesToMembers_AI4Input {
         nodesID: [ID]
         budget: budgetInputT
-        expirienceLevel: Int
+        experienceLevel: Int
         availability: availabilityInput
         weightModules: [weightModulesInput]
         page: Int

@@ -532,15 +532,15 @@ module.exports = {
       );
     }
   },
-  edenGPTCreateProfileExpirienceChatAPI: async (parent, args, context, info) => {
-    const { message, conversation, expirienceTypeID,userID } = args.fields;
-    console.log("Query > edenGPTCreateProfileExpirienceChatAPI > args.fields = ", args.fields);
+  edenGPTCreateProfileExperienceChatAPI: async (parent, args, context, info) => {
+    const { message, conversation, experienceTypeID,userID } = args.fields;
+    console.log("Query > edenGPTCreateProfileExperienceChatAPI > args.fields = ", args.fields);
 
-    let expiriencePrompts = {
+    let experiencePrompts = {
       "BACKGROUND": {
         "prompt": "You are an assistant tasked with understanding a candidate's personal background to help match them with suitable job opportunities. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their educational background, work experience, and relevant certifications. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
       },
-      "SKILLS_EXPIRIENCE": {
+      "SKILLS_EXPERIENCE": {
         "prompt": "You are an assistant tasked with evaluating a candidate's skills and expertise to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to understand their technical and soft skills, strengths, and areas of improvement. Make sure your questions are relevant and progressively focus on the candidate's skill set. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
       },
       "CAREER_GOALS_ASPIRATIONS": {
@@ -551,20 +551,20 @@ module.exports = {
       }
     }
 
-    // create a string of all the keys from the expiriencePrompts object
-    let expirienceTypeIDs = Object.keys(expiriencePrompts).join(", ");
+    // create a string of all the keys from the experiencePrompts object
+    let experienceTypeIDs = Object.keys(experiencePrompts).join(", ");
 
-    if (expirienceTypeID == undefined) {
+    if (experienceTypeID == undefined) {
       throw new ApolloError(
-        "Invalid expirienceTypeID - must be one of: " + expirienceTypeIDs,
+        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs,
       );
     }
 
-    let systemPrompt = expiriencePrompts[expirienceTypeID]?.prompt;
+    let systemPrompt = experiencePrompts[experienceTypeID]?.prompt;
 
     if (systemPrompt == undefined) {
       throw new ApolloError(
-        "Invalid expirienceTypeID - must be one of: " + expirienceTypeIDs,
+        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs,
       );
     }
 
@@ -582,9 +582,9 @@ module.exports = {
     } catch (err) {
       throw new ApolloError(
         err.message,
-        err.extensions?.code || "edenGPTCreateProfileExpirienceChatAPI",
+        err.extensions?.code || "edenGPTCreateProfileExperienceChatAPI",
         {
-          component: "aiQuery > edenGPTCreateProfileExpirienceChatAPI",
+          component: "aiQuery > edenGPTCreateProfileExperienceChatAPI",
         }
       );
     }
