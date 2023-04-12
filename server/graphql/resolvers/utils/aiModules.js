@@ -171,16 +171,27 @@ const nodes_aiModule = async (nodesID,weightModulesObj,memberObj,filter) => {
 
     memberObj = await nodesFindMembers(nodeData,memberObj)
 
+    console.log("memberObj = " , memberObj)
+    // sdf0
+
+
     // console.log("memberObj = " , memberObj)
-    for (const [memberID, member] of Object.entries(memberObj)) {
-        console.log("member.nodes = " , memberID,member.nodes)
-    }
+    // for (const [memberID, member] of Object.entries(memberObj)) {
+    //     console.log("member.nodes = " , memberID,member.nodes)
+    // }
     // sdf00
 
     memberObj = await findMemberAndFilter(memberObj)
 
+    // console.log("memberObj = " , memberObj)
+    // sdf2
+
+    
 
     memberObj = await distanceFromFilter(memberObj,filter)
+
+    console.log("memberObj = " , memberObj)
+
 
     memberObj = await membersScoreMap(memberObj,weightModulesObj)
 
@@ -449,7 +460,7 @@ const passFilterTestMember = async (memberData) => {
 
 
 
-    if (!memberData?.experienceLevel?.total) return false;
+    // if (!memberData?.experienceLevel?.total) return false;
 
     return true
 
@@ -591,7 +602,8 @@ const nodesFindMembers = async (nodeData,memberObj) => {
 
     }
 
-    // console.log(" = --->> tora 3" )
+    console.log(" = --->> tora 3",memberObj )
+    // sdf
     
 
 
