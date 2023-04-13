@@ -110,6 +110,7 @@ module.exports = `
           edenGPTReviewChatAPI(fields: edenGPTReviewChatAPIInput): edenGPTReviewChatAPIOutput
           edenGPTsearchProfiles(fields: edenGPTsearchProfilesInput): edenGPTsearchProfilesOutput
           edenGPTsummaryProfile(fields: edenGPTsummaryProfileInput): edenGPTsummaryProfileOutput
+          conversationToSummaryGPT(fields: conversationToSummaryGPTInput): conversationToSummaryGPTOutput
 
           # ---------- GRAPH VISUAL QUERY -------------
           findMemberGraph(fields: findMemberGraphInput): Graph

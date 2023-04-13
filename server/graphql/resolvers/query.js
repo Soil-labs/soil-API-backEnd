@@ -79,7 +79,7 @@ const {
   edenGPTreplyChatAPI,
   edenGPTreplyChatAPI_V2,edenGPTreplyChatAPI_V3,
   edenGPTsearchProfiles,
-  edenGPTsummaryProfile,
+  edenGPTsummaryProfile,conversationToSummaryGPT,
   edenGPTEndorseChatAPI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,
   edenGPTReviewChatAPI,
 } = require("./query/aiQuery");
@@ -200,7 +200,7 @@ module.exports = {
     edenGPTreplyChatAPI,
     edenGPTreplyChatAPI_V2,edenGPTreplyChatAPI_V3,
     edenGPTsearchProfiles,
-    edenGPTsummaryProfile,
+    edenGPTsummaryProfile,conversationToSummaryGPT,
     edenGPTEndorseChatAPI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,
     edenGPTReviewChatAPI,
 

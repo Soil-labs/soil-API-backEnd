@@ -2371,6 +2371,34 @@ module.exports = {
       );
     }
   },
+  conversationToSummaryGPT: async (parent, args, context, info) => {
+    const { conversation } = args.fields;
+    console.log(
+      "Query > conversationToSummaryGPT 22> args.fields = ",
+      args.fields
+    );
+    try {
+     
+
+
+      reply = await useGPTchat("As a recruiter, I recently had a conversation with a potential candidate and I would like to summarize the key points of our discussion in the candidate's bio. only give true information, and make a small and consise summary.  Summary:", conversation,"",0.1);
+
+      console.log("reply chatGPT -------= ", reply);
+      // ------------ Sumary of Profile for the conversation -------------
+
+      return {
+        reply: reply,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "conversationToSummaryGPT",
+        {
+          component: "aiQuery > conversationToSummaryGPT",
+        }
+      );
+    }
+  },
   edenGPTsearchProfiles: async (parent, args, context, info) => {
     const { message, profileIDs } = args.fields;
     console.log(
