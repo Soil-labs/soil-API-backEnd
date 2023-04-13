@@ -76,9 +76,15 @@ module.exports = `
     }
     input edenGPTsummaryProfileInput {
         conversation: [messageChat]
-        memberID: ID
     }
     type edenGPTsummaryProfileOutput {
+        reply: String
+    }
+    input conversationToSummaryGPTInput {
+        conversation: [messageChat]
+        memberID: ID
+    }
+    type conversationToSummaryGPTOutput {
         reply: String
     }
     type edenGPTsearchProfilesOutput {
