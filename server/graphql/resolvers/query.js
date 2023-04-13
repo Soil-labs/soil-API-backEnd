@@ -80,7 +80,7 @@ const {
   edenGPTreplyChatAPI_V2,edenGPTreplyChatAPI_V3,
   edenGPTsearchProfiles,
   edenGPTsummaryProfile,
-  edenGPTEndorseChatAPI,edenGPTCreateProfileExperienceChatAPI,
+  edenGPTEndorseChatAPI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,
   edenGPTReviewChatAPI,
 } = require("./query/aiQuery");
 
@@ -201,7 +201,7 @@ module.exports = {
     edenGPTreplyChatAPI_V2,edenGPTreplyChatAPI_V3,
     edenGPTsearchProfiles,
     edenGPTsummaryProfile,
-    edenGPTEndorseChatAPI,edenGPTCreateProfileExperienceChatAPI,
+    edenGPTEndorseChatAPI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,
     edenGPTReviewChatAPI,
 
     //----------- GRAPH VISUAL QUERY ------------------

@@ -215,6 +215,22 @@ module.exports = `
         reply: String
     }
 
+    input edenAITalSearchExpirienceInput {
+        message: String
+        conversation: [messageChat]
+        experienceTypeID: experienceTalSearchTypeIDEnum
+    }
+
+    enum experienceTalSearchTypeIDEnum {
+        SKILLS_EXPERIENCE
+        INDUSTRIES
+        CULTURE_FIT
+    }
+
+    type edenAITalSearchExpirienceOutput {
+        reply: String
+    }
+
     input edenGPTEndorseChatAPIInput {
         message: String
         conversation: [messageChat]

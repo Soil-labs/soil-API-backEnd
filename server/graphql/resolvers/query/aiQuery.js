@@ -589,6 +589,60 @@ module.exports = {
       );
     }
   },
+  edenAITalSearchExpirience: async (parent, args, context, info) => {
+    const { message, conversation, experienceTypeID,userID } = args.fields;
+    console.log("Query > edenAITalSearchExpirience > args.fields = ", args.fields);
+
+    let experiencePrompts = {
+      "SKILLS_EXPERIENCE": {
+        "prompt": "As an assistant, your task is to communicate with a manager to understand the ideal background of a candidate, so that you can effectively match them with suitable job opportunities. Conduct a short conversation with the manager, asking 2-5 questions to gather information about the candidate's skills and work experience. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the manager for their time.",
+      },
+      "INDUSTRIES": {
+        "prompt": "As an assistant, your task is to communicate with a manager to understand the ideal background of a candidate, so that you can effectively match them with suitable job opportunities. Conduct a short conversation with the manager, asking 2-5 questions to gather information about the candidate's experience in different industries. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the manager for their time.",
+      },
+      "CULTURE_FIT": {
+        "prompt": "As an assistant, your task is to communicate with a manager to understand the ideal soft skills and culture of a candidate, so that you can effectively match them with suitable job opportunities. Conduct a short conversation with the manager, asking 2-5 questions to gather information about the candidate's personality and work style. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the manager for their time.",
+      }
+    }
+
+    // create a string of all the keys from the experiencePrompts object
+    let experienceTypeIDs = Object.keys(experiencePrompts).join(", ");
+
+    if (experienceTypeID == undefined) {
+      throw new ApolloError(
+        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs,
+      );
+    }
+
+    let systemPrompt = experiencePrompts[experienceTypeID]?.prompt;
+
+    if (systemPrompt == undefined) {
+      throw new ApolloError(
+        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs,
+      );
+    }
+
+
+    try {
+      responseGPTchat = await useGPTchat(
+        message,
+        conversation,
+        systemPrompt
+      );
+
+      return {
+        reply: responseGPTchat,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "edenAITalSearchExpirience",
+        {
+          component: "aiQuery > edenAITalSearchExpirience",
+        }
+      );
+    }
+  },
   edenGPTEndorseChatAPI: async (parent, args, context, info) => {
     const { message, conversation, userID } = args.fields;
     console.log("Query > edenGPTEndorseChatAPI > args.fields = ", args.fields);
