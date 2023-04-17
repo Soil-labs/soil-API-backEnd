@@ -2001,93 +2001,93 @@ module.exports = {
     const { message, memorySort, userID } = args.fields;
     console.log("Query > edenGPTreplyMemory > args.fields = ", args.fields);
     try {
-      const filter = {
-        label: "long_term_memory",
-      };
-      if (userID) {
-        filter._id = userID;
-      }
+      // const filter = {
+      //   label: "long_term_memory",
+      // };
+      // if (userID) {
+      //   filter._id = userID;
+      // }
 
-      longTermMemories = await findBestEmbedings(message, filter, (topK = 3));
+      // longTermMemories = await findBestEmbedings(message, filter, (topK = 3));
 
-      // console.log("longTermMemories = " , longTermMemories)
-      // ads
+      // // console.log("longTermMemories = " , longTermMemories)
+      // // ads
 
-      let prompt_longTermMemory = "Long Term Memory:";
-      for (let i = 0; i < longTermMemories.length; i++) {
-        prompt_longTermMemory =
-          prompt_longTermMemory + "\n" + longTermMemories[i].metadata.text;
-      }
+      // let prompt_longTermMemory = "Long Term Memory:";
+      // for (let i = 0; i < longTermMemories.length; i++) {
+      //   prompt_longTermMemory =
+      //     prompt_longTermMemory + "\n" + longTermMemories[i].metadata.text;
+      // }
 
-      console.log("prompt_longTermMemory = ", prompt_longTermMemory);
-      // asdf
+      // console.log("prompt_longTermMemory = ", prompt_longTermMemory);
+      // // asdf
 
-      prompot_General = `
-      You are playing the role of Eden
-      - Eden is an recruiter that match projects to people, so it tries to find the best person for the job
+      // prompot_General = `
+      // You are playing the role of Eden
+      // - Eden is an recruiter that match projects to people, so it tries to find the best person for the job
 
-      - Eden is an expert recruiter that knows exactly the role that the manager is looking for so it can ask really insightful quesitons in order to uderstand the skills and expertise that the candidate should have
+      // - Eden is an expert recruiter that knows exactly the role that the manager is looking for so it can ask really insightful quesitons in order to uderstand the skills and expertise that the candidate should have
 
-      - Eden only ask one quesiton at a time
-      - ask questions back to uderstand in detail the skills and expertise that the candidate should have!!
-      `;
+      // - Eden only ask one quesiton at a time
+      // - ask questions back to uderstand in detail the skills and expertise that the candidate should have!!
+      // `;
 
-      prompot_General = prompot_General + "\n" + prompt_longTermMemory;
+      // prompot_General = prompot_General + "\n" + prompt_longTermMemory;
 
-      // console.log("prompot_General = 1" , prompot_General)
+      // // console.log("prompot_General = 1" , prompot_General)
 
-      if (memorySort) {
-        prompot_General =
-          prompot_General + "\n\n\n" + "Conversation so far: " + memorySort;
-      }
+      // if (memorySort) {
+      //   prompot_General =
+      //     prompot_General + "\n\n\n" + "Conversation so far: " + memorySort;
+      // }
 
-      // console.log("prompot_General = 2" , prompot_General)
+      // // console.log("prompot_General = 2" , prompot_General)
 
-      prompot_General =
-        prompot_General +
-        "\n\n\n" +
-        "Question from user: " +
-        "\n" +
-        message +
-        "\n" +
-        "Reply:";
+      // prompot_General =
+      //   prompot_General +
+      //   "\n\n\n" +
+      //   "Question from user: " +
+      //   "\n" +
+      //   message +
+      //   "\n" +
+      //   "Reply:";
 
-      // console.log("prompot_General = 3" , prompot_General)
-      // asdf
+      // // console.log("prompot_General = 3" , prompot_General)
+      // // asdf
 
-      reply = useGPT(prompot_General);
+      // reply = useGPT(prompot_General);
 
-      // // -------------- Find Keywords -------------
-      // const configuration = new Configuration({
-      //   apiKey: "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",
-      // });
-      // const openai = new OpenAIApi(configuration);
-      // // let keywordsEdenArray = [];
-      // const response_keywords = await openai.createCompletion({
-      //   model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
-      //   prompt: message + "\nKeywords:",
-      //   temperature: 0.7,
-      //   stop: ["==END=="],
-      //   max_tokens: 300,
-      //   // top_p: 1,
-      //   // frequency_penalty: 0,
-      //   // presence_penalty: 0,
-      // });
+      // // // -------------- Find Keywords -------------
+      // // const configuration = new Configuration({
+      // //   apiKey: "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",
+      // // });
+      // // const openai = new OpenAIApi(configuration);
+      // // // let keywordsEdenArray = [];
+      // // const response_keywords = await openai.createCompletion({
+      // //   model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
+      // //   prompt: message + "\nKeywords:",
+      // //   temperature: 0.7,
+      // //   stop: ["==END=="],
+      // //   max_tokens: 300,
+      // //   // top_p: 1,
+      // //   // frequency_penalty: 0,
+      // //   // presence_penalty: 0,
+      // // });
 
-      // let keywordsEden = response_keywords.data.choices[0].text;
-      // // console.log("keywordsEden = " , keywordsEden)
+      // // let keywordsEden = response_keywords.data.choices[0].text;
+      // // // console.log("keywordsEden = " , keywordsEden)
 
-      // var keywordsEdenArray = keywordsEden.split(',');
+      // // var keywordsEdenArray = keywordsEden.split(',');
 
-      // // delete any empty string
-      // keywordsEdenArray = keywordsEdenArray.filter(function (el) {
-      //   return el != "";
-      // });
+      // // // delete any empty string
+      // // keywordsEdenArray = keywordsEdenArray.filter(function (el) {
+      // //   return el != "";
+      // // });
 
-      // // -------------- Find Keywords -------------
+      // // // -------------- Find Keywords -------------
 
       return {
-        reply: reply,
+        reply: message,
         // keywords: keywordsEdenArray
       };
     } catch (err) {

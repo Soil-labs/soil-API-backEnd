@@ -148,6 +148,12 @@ module.exports = `
         userID: ID
     }
 
+     input edenGPTreplyCVmemoryInput {
+        message: String
+        memorySort: String
+        userID: ID
+     }
+
     type KeywordValue {
         keyword: String
         confidence: Int
@@ -157,6 +163,10 @@ module.exports = `
     type edenGPTreplyMemoryOutput {
         reply: String
         # keywords: [String]
+    }
+
+    type edenGPTreplyCVmemoryOutput {
+        reply: String
     }
 
     input messageChat {
