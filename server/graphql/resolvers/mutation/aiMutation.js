@@ -178,6 +178,72 @@ module.exports = {
       );
     }
   },
+  storeLongTermMemorySummary: async (parent, args, context, info) => {
+    const { message, userID } = args.fields;
+    console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
+    try {
+      prompt =
+        'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
+        message;
+
+      summaryBulletPoints = await useGPT(prompt, 0.7);
+
+      jobsArr = summaryBulletPoints
+        .replace(/\n/g, "")
+        .split("•")
+        .filter((item) => item.trim() !== "");
+
+      const getUpserts = async () => {
+        for (let i = 0; i < jobsArr.length; i++) {
+          let embeddings = await createEmbedingsGPT(jobsArr[i]);
+          console.log("embeddings", embeddings); //
+          upsertSum = await upsertEmbedingPineCone({
+            text: jobsArr[i],
+            embedding: embeddings[0],
+            _id: userID,
+            label: "CV_user_memory",
+          });
+          console.log("upsertSum=", upsertSum);
+        }
+      };
+
+      getUpserts();
+      // embed_summary = await createEmbedingsGPT(summary);
+
+      // let result = [];
+
+      // previousJobs = () => {
+      //   for (let i = 0; i < jobsArr.length; i += 2) {
+      //     result.push({
+      //       job: jobs Arr[i],
+      //       description: jobsArr[i + 1],
+      //     });
+      //   }
+      //   return JSON.stringify(result);
+      // };
+      // upsertDoc = await upsertEmbedingPineCone({
+      //   text: summary,
+      //   embedding: embed_summary[0],
+      //   _id: userID,
+      //   label: "long_term_memory",
+      // });
+
+      // console.log("upsertDoc = ", upsertDoc);
+
+      return {
+        message: summaryBulletPoints,
+        success: true,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "storeLongTermMemory",
+        {
+          component: "aiMutation > storeLongTermMemory",
+        }
+      );
+    }
+  },
   messageToGPT: combineResolvers(
     IsAuthenticated,
     async (parent, args, context, info) => {

@@ -43,6 +43,18 @@ module.exports = `
         success: Boolean
     }
 
+    input storeLongTermMemorySummaryInput {
+        message: String
+        userID: ID
+
+    }
+
+    type storeLongTermMemorySummaryOutput {
+        success: Boolean
+        message: String
+
+    }
+
     input addMessagesInput {
         data: [addMessageInput]
     }
