@@ -2,8 +2,6 @@ const { AI } = require("../../../models/aiModel");
 const { Node } = require("../../../models/nodeModal");
 const { Members } = require("../../../models/membersModel");
 
-
-
 const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
 const axios = require("axios");
@@ -15,11 +13,17 @@ const { PineconeClient } = require("@pinecone-database/pinecone");
 const { Configuration, OpenAIApi } = require("openai");
 
 const { printC } = require("../../../printModule");
-const { taskPlanning,findAvailTaskPineCone,userAnsweredOrGiveIdeas,updateExecutedTasks,edenReplyBasedTaskInfo } = require("../utils/aiModules");
+const {
+  taskPlanning,
+  findAvailTaskPineCone,
+  userAnsweredOrGiveIdeas,
+  updateExecutedTasks,
+  edenReplyBasedTaskInfo,
+} = require("../utils/aiModules");
 
 globalThis.fetch = fetch;
 
-function chooseAPIkey(chooseAPI="") {
+function chooseAPIkey(chooseAPI = "") {
   // openAI_keys = [
   //   "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",
   //   // "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",
@@ -28,10 +32,10 @@ function chooseAPIkey(chooseAPI="") {
   // ];
 
   let openAI_keys = ["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"];
- 
-  if (chooseAPI == "API 2"){
+
+  if (chooseAPI == "API 2") {
     openAI_keys = ["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"];
-  } else if (chooseAPI == "API 1"){
+  } else if (chooseAPI == "API 1") {
     openAI_keys = ["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"];
   }
 
@@ -104,8 +108,7 @@ async function useGPTchat(
   temperature = 0.7,
   chooseAPI = "API 1"
 ) {
-
-  let discussion = [...discussionOld]
+  let discussion = [...discussionOld];
 
   discussion.unshift({
     role: "system",
@@ -134,7 +137,7 @@ async function useGPTchat(
       },
     }
   );
-  
+
   return response.data.choices[0].message.content;
 }
 
@@ -192,7 +195,6 @@ async function useGPT4Simple(prompt, temperature = 0.7) {
 }
 
 async function findBestEmbedings(message, filter, topK = 3) {
-
   const pinecone = new PineconeClient();
   await pinecone.init({
     environment: "us-east1-gcp",
@@ -532,31 +534,43 @@ module.exports = {
       );
     }
   },
-  edenGPTCreateProfileExperienceChatAPI: async (parent, args, context, info) => {
-    const { message, conversation, experienceTypeID,userID } = args.fields;
-    console.log("Query > edenGPTCreateProfileExperienceChatAPI > args.fields = ", args.fields);
+  edenGPTCreateProfileExperienceChatAPI: async (
+    parent,
+    args,
+    context,
+    info
+  ) => {
+    const { message, conversation, experienceTypeID, userID } = args.fields;
+    console.log(
+      "Query > edenGPTCreateProfileExperienceChatAPI > args.fields = ",
+      args.fields
+    );
 
     let experiencePrompts = {
-      "BACKGROUND": {
-        "prompt": "You are an assistant tasked with understanding a candidate's personal background to help match them with suitable job opportunities. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their educational background, work experience, and relevant certifications. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+      BACKGROUND: {
+        prompt:
+          "You are an assistant tasked with understanding a candidate's personal background to help match them with suitable job opportunities. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their educational background, work experience, and relevant certifications. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
       },
-      "SKILLS_EXPERIENCE": {
-        "prompt": "You are an assistant tasked with evaluating a candidate's skills and expertise to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to understand their technical and soft skills, strengths, and areas of improvement. Make sure your questions are relevant and progressively focus on the candidate's skill set. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+      SKILLS_EXPERIENCE: {
+        prompt:
+          "You are an assistant tasked with evaluating a candidate's skills and expertise to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to understand their technical and soft skills, strengths, and areas of improvement. Make sure your questions are relevant and progressively focus on the candidate's skill set. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
       },
-      "CAREER_GOALS_ASPIRATIONS": {
-        "prompt": "You are an assistant tasked with understanding a candidate's career goals and aspirations to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to learn about their short-term and long-term career goals, ideal work environment, and any specific industries or positions they are targeting. Make sure your questions are relevant and progressively focus on the candidate's aspirations. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+      CAREER_GOALS_ASPIRATIONS: {
+        prompt:
+          "You are an assistant tasked with understanding a candidate's career goals and aspirations to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to learn about their short-term and long-term career goals, ideal work environment, and any specific industries or positions they are targeting. Make sure your questions are relevant and progressively focus on the candidate's aspirations. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
       },
-      "WORK_PREFERENCES": {
-        "prompt": "You are an assistant tasked with understanding a candidate's work preferences to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their preferred work culture, work-life balance, and any remote or flexible work options they might be interested in. Make sure your questions are relevant and progressively focus on the candidate's preferences. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
-      }
-    }
+      WORK_PREFERENCES: {
+        prompt:
+          "You are an assistant tasked with understanding a candidate's work preferences to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their preferred work culture, work-life balance, and any remote or flexible work options they might be interested in. Make sure your questions are relevant and progressively focus on the candidate's preferences. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+      },
+    };
 
     // create a string of all the keys from the experiencePrompts object
     let experienceTypeIDs = Object.keys(experiencePrompts).join(", ");
 
     if (experienceTypeID == undefined) {
       throw new ApolloError(
-        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs,
+        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs
       );
     }
 
@@ -564,17 +578,12 @@ module.exports = {
 
     if (systemPrompt == undefined) {
       throw new ApolloError(
-        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs,
+        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs
       );
     }
 
-
     try {
-      responseGPTchat = await useGPTchat(
-        message,
-        conversation,
-        systemPrompt
-      );
+      responseGPTchat = await useGPTchat(message, conversation, systemPrompt);
 
       return {
         reply: responseGPTchat,
@@ -590,27 +599,33 @@ module.exports = {
     }
   },
   edenAITalSearchExpirience: async (parent, args, context, info) => {
-    const { message, conversation, experienceTypeID,userID } = args.fields;
-    console.log("Query > edenAITalSearchExpirience > args.fields = ", args.fields);
+    const { message, conversation, experienceTypeID, userID } = args.fields;
+    console.log(
+      "Query > edenAITalSearchExpirience > args.fields = ",
+      args.fields
+    );
 
     let experiencePrompts = {
-      "SKILLS_EXPERIENCE": {
-        "prompt": "As an assistant, your task is to communicate with a manager to understand the ideal background of a candidate, so that you can effectively match them with suitable job opportunities. Conduct a short conversation with the manager, asking 2-5 questions to gather information about the candidate's skills and work experience. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the manager for their time.",
+      SKILLS_EXPERIENCE: {
+        prompt:
+          "As an assistant, your task is to communicate with a manager to understand the ideal background of a candidate, so that you can effectively match them with suitable job opportunities. Conduct a short conversation with the manager, asking 2-5 questions to gather information about the candidate's skills and work experience. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the manager for their time.",
       },
-      "INDUSTRIES": {
-        "prompt": "As an assistant, your task is to communicate with a manager to understand the ideal background of a candidate, so that you can effectively match them with suitable job opportunities. Conduct a short conversation with the manager, asking 2-5 questions to gather information about the candidate's experience in different industries. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the manager for their time.",
+      INDUSTRIES: {
+        prompt:
+          "As an assistant, your task is to communicate with a manager to understand the ideal background of a candidate, so that you can effectively match them with suitable job opportunities. Conduct a short conversation with the manager, asking 2-5 questions to gather information about the candidate's experience in different industries. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the manager for their time.",
       },
-      "CULTURE_FIT": {
-        "prompt": "As an assistant, your task is to communicate with a manager to understand the ideal soft skills and culture of a candidate, so that you can effectively match them with suitable job opportunities. Conduct a short conversation with the manager, asking 2-5 questions to gather information about the candidate's personality and work style. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the manager for their time.",
-      }
-    }
+      CULTURE_FIT: {
+        prompt:
+          "As an assistant, your task is to communicate with a manager to understand the ideal soft skills and culture of a candidate, so that you can effectively match them with suitable job opportunities. Conduct a short conversation with the manager, asking 2-5 questions to gather information about the candidate's personality and work style. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the manager for their time.",
+      },
+    };
 
     // create a string of all the keys from the experiencePrompts object
     let experienceTypeIDs = Object.keys(experiencePrompts).join(", ");
 
     if (experienceTypeID == undefined) {
       throw new ApolloError(
-        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs,
+        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs
       );
     }
 
@@ -618,17 +633,12 @@ module.exports = {
 
     if (systemPrompt == undefined) {
       throw new ApolloError(
-        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs,
+        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs
       );
     }
 
-
     try {
-      responseGPTchat = await useGPTchat(
-        message,
-        conversation,
-        systemPrompt
-      );
+      responseGPTchat = await useGPTchat(message, conversation, systemPrompt);
 
       return {
         reply: responseGPTchat,
@@ -676,14 +686,12 @@ module.exports = {
     }
   },
   messageMapKG_V3: async (parent, args, context, info) => {
-    const { message,assistantMessage } = args.fields;
+    const { message, assistantMessage } = args.fields;
     console.log("Query > messageMapKG_V3 > args.fields = ", args.fields);
     try {
-
       // // -------------- find keywords with GPT -------------
       //   prompt_general = "paragraph: " + message + "\n\n"
 
-      
       //   prompt_general += "Find the minimum Keywords of the paragraph\n\n"
 
       //   prompt_general += "Keywords separated by comma:"
@@ -692,200 +700,185 @@ module.exports = {
       //   console.log("keywordsGPTresult ChatGPT= " , keywordsGPTresult)
       //   // -------------- find keywords with GPT -------------
 
-        // -------------- find keywords with GPT V2-------------
-        conversation =  [
-          {"role": "assistant", "content": "Assistant: " + assistantMessage},
-          {"role": "user", "content": "Last Message: " + message},
-        ]
+      // -------------- find keywords with GPT V2-------------
+      conversation = [
+        { role: "assistant", content: "Assistant: " + assistantMessage },
+        { role: "user", content: "Last Message: " + message },
+      ];
 
-
-        
-        keywordsGPTresult = await useGPTchat(
-          "Find the minimum Skills based on the conversation \n Result, skills/keywords separated by comma:",
-          conversation,
-          "Your task is to take a 2 message conversation and find the skills based on the context"
-        );
-        console.log("keywordsGPTresult ChatGPT= " , keywordsGPTresult)
-        if (keywordsGPTresult.includes("cannot find") || keywordsGPTresult.includes("cannot provide") || keywordsGPTresult.includes("I'm sorry")|| keywordsGPTresult.includes("cannot determine")
-        || keywordsGPTresult.includes("unable to")|| keywordsGPTresult.includes("don't have access")){
-          return [{}]
-        }
+      keywordsGPTresult = await useGPTchat(
+        "Find the minimum Skills based on the conversation \n Result, skills/keywords separated by comma:",
+        conversation,
+        "Your task is to take a 2 message conversation and find the skills based on the context"
+      );
+      console.log("keywordsGPTresult ChatGPT= ", keywordsGPTresult);
+      if (
+        keywordsGPTresult.includes("cannot find") ||
+        keywordsGPTresult.includes("cannot provide") ||
+        keywordsGPTresult.includes("I'm sorry") ||
+        keywordsGPTresult.includes("cannot determine") ||
+        keywordsGPTresult.includes("unable to") ||
+        keywordsGPTresult.includes("don't have access")
+      ) {
+        return [{}];
+      }
       // -------------- find keywords with GPT V2-------------
 
+      keywordsGPTresult = keywordsGPTresult.replace(/[\d.]/g, "");
 
-    
-        
-        keywordsGPTresult = keywordsGPTresult.replace(/[\d.]/g, '');
+      console.log("keywordsGPTresult = ", keywordsGPTresult);
 
-        console.log("keywordsGPTresult = " , keywordsGPTresult)
+      let GPTkeywords = keywordsGPTresult.split(/[,|]\s*/);
 
-        let GPTkeywords = keywordsGPTresult.split(/[,|]\s*/);
-        
-        console.log("GPTkeywords = " , GPTkeywords)
-        // asdf9
-
-
+      console.log("GPTkeywords = ", GPTkeywords);
+      // asdf9
 
       // -------------- Find best keywrods from embeding per keyword -------------
       let filter = {
         label: "AI_KG4_Context",
-      }
+      };
 
-
-      console.log("change = 1")
+      console.log("change = 1");
 
       // sdf4
 
-      let resT = await findBestEmbedingsArray(GPTkeywords,filter ,topK = 1)
-      console.log("change = 2")
+      let resT = await findBestEmbedingsArray(GPTkeywords, filter, (topK = 1));
+      console.log("change = 2");
 
+      bestKeywordsFromEmbed = resT.matchesRes;
+      let keywordEmbedObj = resT.matchesObj;
 
-      bestKeywordsFromEmbed = resT.matchesRes
-      let keywordEmbedObj = resT.matchesObj
+      console.log("keywordEmbedObj = ", keywordEmbedObj);
 
-
-      console.log("keywordEmbedObj = " , keywordEmbedObj)
-     
-
-      finalKeywords = []
-      testKeywords = []
-
+      finalKeywords = [];
+      testKeywords = [];
 
       // --------------- prepare prompt keyword -----------
-      keywords_str = ""
-      numKeywords = 0
+      keywords_str = "";
+      numKeywords = 0;
       for (let i = 0; i < bestKeywordsFromEmbed.length; i++) {
         const element = bestKeywordsFromEmbed[i];
 
-        console.log("element = " , element)
+        console.log("element = ", element);
 
-        if (element.score >= 0.96){
+        if (element.score >= 0.96) {
           finalKeywords.push({
             keyword: element.metaData.keyword,
-            confidence: parseInt(element.score*10),
-          })
+            confidence: parseInt(element.score * 10),
+          });
           continue;
         }
 
-        if (element.exactMatch == false && element.score >= 0.74){
-          keywords_str +=  element.metaData.keyword + "\n "
+        if (element.exactMatch == false && element.score >= 0.74) {
+          keywords_str += element.metaData.keyword + "\n ";
 
-          numKeywords += 1
+          numKeywords += 1;
 
           // testKeywords.push(element.metaData.keyword)
           testKeywords.push({
             keyword: element.metaData.keyword,
             confidence: element.score,
-          })
+          });
         }
 
-        if (element.exactMatch == true && element.score >= 0.92){
+        if (element.exactMatch == true && element.score >= 0.92) {
           // keywords_str +=  element.metaData.keyword + " - "+element.originalKeywordMatch +"\n "
-          keywords_str +=  element.metaData.keyword + "\n "
+          keywords_str += element.metaData.keyword + "\n ";
 
-          numKeywords += 1
+          numKeywords += 1;
 
           // testKeywords.push(element.metaData.keyword)
           testKeywords.push({
             keyword: element.metaData.keyword,
             confidence: element.score,
-          })
-
+          });
         }
       }
-      
-      keywords_str += "ReactJS" +"\n "
-      keywords_str += "Angular" +"\n "
-      keywords_str += "C++" +"\n "
 
-      console.log("keywords_str = " , keywords_str)
-      console.log(" " )
+      keywords_str += "ReactJS" + "\n ";
+      keywords_str += "Angular" + "\n ";
+      keywords_str += "C++" + "\n ";
+
+      console.log("keywords_str = ", keywords_str);
+      console.log(" ");
       // adf
       // --------------- prepare prompt keyword -----------
-
 
       //   // -------------- Find best keywrods from prompt engineering -------------
       //   prompt_general = "Given a paragraph, determine if the skills provided as input exist within it.  \n\n"
       //   prompt_general += "Paragraph: " + message + "\n\n"
       //   prompt_general += "Skills: " + keywords_str + "\n\n"
       //   prompt_general += "Answers for every skill only TRUE or FALSE : \n"
-        
 
       //   console.log("prompt_general = " , prompt_general)
-
 
       //   // res_gpt = await useGPT(prompt_general,0.7,"text-davinci-003")
       //   res_gpt = await useGPTchatSimple(prompt_general)
       //   console.log("res_gpt davinci= " , res_gpt)
       // // -------------- Find best keywrods from prompt engineering -------------
 
-
       // -------------- Find best keywrods from prompt engineering V2-------------
-       conversation =  [
-        {"role": "assistant", "content": "Assistant: " + assistantMessage},
-        {"role": "user", "content": "Last Message: " + message},
-      ]
+      conversation = [
+        { role: "assistant", content: "Assistant: " + assistantMessage },
+        { role: "user", content: "Last Message: " + message },
+      ];
 
-
-      
       res_gpt = await useGPTchat(
         "Determine if the skills provided as input exist within the conversation \n Answers for every skill only TRUE or FALSE: ",
         conversation
       );
-      console.log("res_gpt ChatGPT= " , res_gpt)
+      console.log("res_gpt ChatGPT= ", res_gpt);
       // -------------- Find best keywrods from prompt engineering V2-------------
 
+      const trueFalseArr = res_gpt.split("\n").reduce((acc, str) => {
+        const match = str.match(/(TRUE|FALSE)/);
 
-
-
-
-
-        const trueFalseArr = res_gpt.split('\n').reduce((acc, str) => {
-          const match = str.match(/(TRUE|FALSE)/);
-          
-          if (match) {
-            acc.push(match[1]);
-          }
-          return acc;
-        }, []);
-        
-        console.log("trueFalseArr = ",trueFalseArr);
-        // sadf3
-
-        console.log("-------------- " , "testKeywords[i]", "-------------")
-        for (let i = 0; i < trueFalseArr.length; i++) {
-          console.log("testKeywords[i] = " , testKeywords[i])
-          if (trueFalseArr[i] == "TRUE" && testKeywords[i]?.keyword && testKeywords[i]?.confidence){
-            finalKeywords.push({
-              keyword: testKeywords[i].keyword,
-              confidence: parseInt(testKeywords[i].confidence*10),
-            })
-          }
+        if (match) {
+          acc.push(match[1]);
         }
-        
+        return acc;
+      }, []);
 
-        let nodeData = await Node.find({name: finalKeywords.map(value => value.keyword)}).select("_id name");
+      console.log("trueFalseArr = ", trueFalseArr);
+      // sadf3
 
-        nodeDataObj = {}
-        nodeData.forEach((node) => {
-          nodeDataObj[node.name] = node._id
-        })
+      console.log("-------------- ", "testKeywords[i]", "-------------");
+      for (let i = 0; i < trueFalseArr.length; i++) {
+        console.log("testKeywords[i] = ", testKeywords[i]);
+        if (
+          trueFalseArr[i] == "TRUE" &&
+          testKeywords[i]?.keyword &&
+          testKeywords[i]?.confidence
+        ) {
+          finalKeywords.push({
+            keyword: testKeywords[i].keyword,
+            confidence: parseInt(testKeywords[i].confidence * 10),
+          });
+        }
+      }
 
-        finalKeywords = finalKeywords.map((value) => {
-          return {
-            ...value,
-            nodeID: nodeDataObj[value.keyword]
-          }
-        })
-        
-      // sort an keywordsValues based on object value confidence 
-      finalKeywords.sort((a, b) => (a.confidence > b.confidence) ? -1 : 1)
+      let nodeData = await Node.find({
+        name: finalKeywords.map((value) => value.keyword),
+      }).select("_id name");
+
+      nodeDataObj = {};
+      nodeData.forEach((node) => {
+        nodeDataObj[node.name] = node._id;
+      });
+
+      finalKeywords = finalKeywords.map((value) => {
+        return {
+          ...value,
+          nodeID: nodeDataObj[value.keyword],
+        };
+      });
+
+      // sort an keywordsValues based on object value confidence
+      finalKeywords.sort((a, b) => (a.confidence > b.confidence ? -1 : 1));
 
       return {
         keywords: finalKeywords,
-
-      }
-
+      };
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -897,164 +890,146 @@ module.exports = {
     }
   },
   messageMapKG_V4: async (parent, args, context, info) => {
-    const { message,assistantMessage } = args.fields;
+    const { message, assistantMessage } = args.fields;
     console.log("Query > messageMapKG_V4 > args.fields = ", args.fields);
     try {
+      // -------------- find keywords with GPT V2-------------
+      conversation = [
+        { role: "assistant", content: "ASSISTANT: " + assistantMessage },
+        { role: "user", content: "USER: " + message },
+      ];
 
-        // -------------- find keywords with GPT V2-------------
-        conversation =  [
-          {"role": "assistant", "content": "ASSISTANT: " + assistantMessage},
-          {"role": "user", "content": "USER: " + message},
-        ]
-
-
-        
-        // keywordsGPTresult = await useGPTchat(
-        //   "Find the skills/industries that the USER needs \n\n Result, show SKILLS separated by a comma \n skills:",
-        //   conversation,
-        //   ""
-        // );
-        keywordsGPTresult = await useGPTchat(
-          "Find the minimum keywords that the USER needs from the context \n\n Be extremly critical and harsh only give skills that were mentioned \n\n The result, show SKILLS separated by a comma:",
-          conversation,
-          ""
-        );
-        console.log("keywordsGPTresult ChatGPT= " , keywordsGPTresult)
-        if (keywordsGPTresult.includes("cannot find") || keywordsGPTresult.includes("cannot provide") || keywordsGPTresult.includes("I'm sorry")|| keywordsGPTresult.includes("cannot determine")
-        || keywordsGPTresult.includes("unable to")|| keywordsGPTresult.includes("don't have access")){
-          return {}
-        }
-        // asdf0
+      // keywordsGPTresult = await useGPTchat(
+      //   "Find the skills/industries that the USER needs \n\n Result, show SKILLS separated by a comma \n skills:",
+      //   conversation,
+      //   ""
+      // );
+      keywordsGPTresult = await useGPTchat(
+        "Find the minimum keywords that the USER needs from the context \n\n Be extremly critical and harsh only give skills that were mentioned \n\n The result, show SKILLS separated by a comma:",
+        conversation,
+        ""
+      );
+      console.log("keywordsGPTresult ChatGPT= ", keywordsGPTresult);
+      if (
+        keywordsGPTresult.includes("cannot find") ||
+        keywordsGPTresult.includes("cannot provide") ||
+        keywordsGPTresult.includes("I'm sorry") ||
+        keywordsGPTresult.includes("cannot determine") ||
+        keywordsGPTresult.includes("unable to") ||
+        keywordsGPTresult.includes("don't have access")
+      ) {
+        return {};
+      }
+      // asdf0
       // -------------- find keywords with GPT V2-------------
 
+      keywordsGPTresult = keywordsGPTresult.replace(/[\d.]/g, "");
 
-    
-        
-        keywordsGPTresult = keywordsGPTresult.replace(/[\d.]/g, '');
+      console.log("keywordsGPTresult = ", keywordsGPTresult);
 
-        console.log("keywordsGPTresult = " , keywordsGPTresult)
+      let GPTkeywords = keywordsGPTresult.split(/[,|]\s*/);
 
-        let GPTkeywords = keywordsGPTresult.split(/[,|]\s*/);
-        
-        console.log("GPTkeywords = " , GPTkeywords)
-        // asdf9
-
-
+      console.log("GPTkeywords = ", GPTkeywords);
+      // asdf9
 
       // -------------- Find best keywrods from embeding per keyword -------------
       let filter = {
         label: "AI_KG4_Context",
-      }
-
+      };
 
       // console.log("change = 1")
 
       // sdf4
 
-      let resT = await findBestEmbedingsArray(GPTkeywords,filter ,topK = 1)
+      let resT = await findBestEmbedingsArray(GPTkeywords, filter, (topK = 1));
       // console.log("change = 2")
 
-
-      bestKeywordsFromEmbed = resT.matchesRes
-      let keywordEmbedObj = resT.matchesObj
-
+      bestKeywordsFromEmbed = resT.matchesRes;
+      let keywordEmbedObj = resT.matchesObj;
 
       // console.log("keywordEmbedObj = " , keywordEmbedObj)
 
       // sdf10
-     
 
-      finalKeywords = []
-      testKeywords = []
-
+      finalKeywords = [];
+      testKeywords = [];
 
       // --------------- prepare prompt keyword -----------
-      keywords_str = ""
-      numKeywords = 0
+      keywords_str = "";
+      numKeywords = 0;
       for (let i = 0; i < bestKeywordsFromEmbed.length; i++) {
         const element = bestKeywordsFromEmbed[i];
 
-        console.log("element = " , element)
+        console.log("element = ", element);
 
-        if (element.score >= 0.96){
+        if (element.score >= 0.96) {
           finalKeywords.push({
             keyword: element.metaData.keyword,
-            confidence: parseInt(element.score*10),
-          })
+            confidence: parseInt(element.score * 10),
+          });
           continue;
         }
 
-        if (element.exactMatch == false && element.score >= 0.74){
-          keywords_str +=  element.metaData.keyword + "\n "
+        if (element.exactMatch == false && element.score >= 0.74) {
+          keywords_str += element.metaData.keyword + "\n ";
 
-          numKeywords += 1
+          numKeywords += 1;
 
           // testKeywords.push(element.metaData.keyword)
           testKeywords.push({
             keyword: element.metaData.keyword,
             confidence: element.score,
-          })
+          });
         }
 
-        if (element.exactMatch == true && element.score >= 0.92){
+        if (element.exactMatch == true && element.score >= 0.92) {
           // keywords_str +=  element.metaData.keyword + " - "+element.originalKeywordMatch +"\n "
-          keywords_str +=  element.metaData.keyword + "\n "
+          keywords_str += element.metaData.keyword + "\n ";
 
-          numKeywords += 1
+          numKeywords += 1;
 
           // testKeywords.push(element.metaData.keyword)
           testKeywords.push({
             keyword: element.metaData.keyword,
             confidence: element.score,
-          })
-
+          });
         }
       }
-      
+
       // keywords_str += "ReactJS" +"\n "
       // keywords_str += "Angular" +"\n "
       // keywords_str += "C++" +"\n "
 
-      console.log("keywords_str = " , keywords_str)
-      
+      console.log("keywords_str = ", keywords_str);
+
       // adf14
       // --------------- prepare prompt keyword -----------
-
 
       //   // -------------- Find best keywrods from prompt engineering -------------
       //   prompt_general = "Given a paragraph, determine if the skills provided as input exist within it.  \n\n"
       //   prompt_general += "Paragraph: " + message + "\n\n"
       //   prompt_general += "Skills: " + keywords_str + "\n\n"
       //   prompt_general += "Answers for every skill only TRUE or FALSE : \n"
-        
 
       //   console.log("prompt_general = " , prompt_general)
-
 
       //   // res_gpt = await useGPT(prompt_general,0.7,"text-davinci-003")
       //   res_gpt = await useGPTchatSimple(prompt_general)
       //   console.log("res_gpt davinci= " , res_gpt)
       // // -------------- Find best keywrods from prompt engineering -------------
 
-
       // -------------- Find best keywrods from prompt engineering V2-------------
 
-        contextPrompt = `
+      contextPrompt = `
         ASSISTANT: ${assistantMessage}
 
         USER: ${message}
 
         SKILLS: ${keywords_str}
-        `
+        `;
 
+      conversation = [{ role: "user", content: contextPrompt }];
 
-
-       conversation =  [
-        {"role": "user", "content": contextPrompt},
-      ]
-
-
-      
       res_gpt = await useGPTchat(
         "Determine if the SKILLS provided are the skills that the USER wants \n Be extremly critical and harsh its way better to say FALSE than TRUE \n\n Answers for every SKILL only TRUE or FALSE:",
         conversation,
@@ -1063,61 +1038,59 @@ module.exports = {
         0.7,
         "API 2"
       );
-      console.log("res_gpt ChatGPT= \n" , res_gpt)
+      console.log("res_gpt ChatGPT= \n", res_gpt);
       // sdf00
       // -------------- Find best keywrods from prompt engineering V2-------------
 
+      const trueFalseArr = res_gpt.split("\n").reduce((acc, str) => {
+        const match = str.match(/(TRUE|FALSE)/);
 
-
-
-
-
-        const trueFalseArr = res_gpt.split('\n').reduce((acc, str) => {
-          const match = str.match(/(TRUE|FALSE)/);
-          
-          if (match) {
-            acc.push(match[1]);
-          }
-          return acc;
-        }, []);
-        
-        console.log("trueFalseArr = ",trueFalseArr);
-        // sadf3
-
-        console.log("-------------- " , "testKeywords[i]", "-------------")
-        for (let i = 0; i < trueFalseArr.length; i++) {
-          console.log("testKeywords[i] = " , testKeywords[i])
-          if (trueFalseArr[i] == "TRUE" && testKeywords[i]?.keyword && testKeywords[i]?.confidence){
-            finalKeywords.push({
-              keyword: testKeywords[i].keyword,
-              confidence: parseInt(testKeywords[i].confidence*10),
-            })
-          }
+        if (match) {
+          acc.push(match[1]);
         }
-        
+        return acc;
+      }, []);
 
-        let nodeData = await Node.find({name: finalKeywords.map(value => value.keyword)}).select("_id name");
+      console.log("trueFalseArr = ", trueFalseArr);
+      // sadf3
 
-        nodeDataObj = {}
-        nodeData.forEach((node) => {
-          nodeDataObj[node.name] = node._id
-        })
+      console.log("-------------- ", "testKeywords[i]", "-------------");
+      for (let i = 0; i < trueFalseArr.length; i++) {
+        console.log("testKeywords[i] = ", testKeywords[i]);
+        if (
+          trueFalseArr[i] == "TRUE" &&
+          testKeywords[i]?.keyword &&
+          testKeywords[i]?.confidence
+        ) {
+          finalKeywords.push({
+            keyword: testKeywords[i].keyword,
+            confidence: parseInt(testKeywords[i].confidence * 10),
+          });
+        }
+      }
 
-        finalKeywords = finalKeywords.map((value) => {
-          return {
-            ...value,
-            nodeID: nodeDataObj[value.keyword]
-          }
-        })
-        
-      // sort an keywordsValues based on object value confidence 
-      finalKeywords.sort((a, b) => (a.confidence > b.confidence) ? -1 : 1)
+      let nodeData = await Node.find({
+        name: finalKeywords.map((value) => value.keyword),
+      }).select("_id name");
+
+      nodeDataObj = {};
+      nodeData.forEach((node) => {
+        nodeDataObj[node.name] = node._id;
+      });
+
+      finalKeywords = finalKeywords.map((value) => {
+        return {
+          ...value,
+          nodeID: nodeDataObj[value.keyword],
+        };
+      });
+
+      // sort an keywordsValues based on object value confidence
+      finalKeywords.sort((a, b) => (a.confidence > b.confidence ? -1 : 1));
 
       return {
         keywords: finalKeywords,
-
-      }
-
+      };
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -2024,6 +1997,109 @@ module.exports = {
       );
     }
   },
+  edenGPTreplyCVmemory: async (parent, args, context, info) => {
+    const { message, memorySort, userID } = args.fields;
+    console.log("Query > edenGPTreplyMemory > args.fields = ", args.fields);
+    try {
+      const filter = {
+        label: "long_term_memory",
+      };
+      if (userID) {
+        filter._id = userID;
+      }
+
+      longTermMemories = await findBestEmbedings(message, filter, (topK = 3));
+
+      // console.log("longTermMemories = " , longTermMemories)
+      // ads
+
+      let prompt_longTermMemory = "Long Term Memory:";
+      for (let i = 0; i < longTermMemories.length; i++) {
+        prompt_longTermMemory =
+          prompt_longTermMemory + "\n" + longTermMemories[i].metadata.text;
+      }
+
+      console.log("prompt_longTermMemory = ", prompt_longTermMemory);
+      // asdf
+
+      prompot_General = `
+      You are playing the role of Eden
+      - Eden is an recruiter that match projects to people, so it tries to find the best person for the job
+
+      - Eden is an expert recruiter that knows exactly the role that the manager is looking for so it can ask really insightful quesitons in order to uderstand the skills and expertise that the candidate should have
+
+      - Eden only ask one quesiton at a time
+      - ask questions back to uderstand in detail the skills and expertise that the candidate should have!!
+      `;
+
+      prompot_General = prompot_General + "\n" + prompt_longTermMemory;
+
+      // console.log("prompot_General = 1" , prompot_General)
+
+      if (memorySort) {
+        prompot_General =
+          prompot_General + "\n\n\n" + "Conversation so far: " + memorySort;
+      }
+
+      // console.log("prompot_General = 2" , prompot_General)
+
+      prompot_General =
+        prompot_General +
+        "\n\n\n" +
+        "Question from user: " +
+        "\n" +
+        message +
+        "\n" +
+        "Reply:";
+
+      // console.log("prompot_General = 3" , prompot_General)
+      // asdf
+
+      reply = useGPT(prompot_General);
+
+      // // -------------- Find Keywords -------------
+      // const configuration = new Configuration({
+      //   apiKey: "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",
+      // });
+      // const openai = new OpenAIApi(configuration);
+      // // let keywordsEdenArray = [];
+      // const response_keywords = await openai.createCompletion({
+      //   model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
+      //   prompt: message + "\nKeywords:",
+      //   temperature: 0.7,
+      //   stop: ["==END=="],
+      //   max_tokens: 300,
+      //   // top_p: 1,
+      //   // frequency_penalty: 0,
+      //   // presence_penalty: 0,
+      // });
+
+      // let keywordsEden = response_keywords.data.choices[0].text;
+      // // console.log("keywordsEden = " , keywordsEden)
+
+      // var keywordsEdenArray = keywordsEden.split(',');
+
+      // // delete any empty string
+      // keywordsEdenArray = keywordsEdenArray.filter(function (el) {
+      //   return el != "";
+      // });
+
+      // // -------------- Find Keywords -------------
+
+      return {
+        reply: reply,
+        // keywords: keywordsEdenArray
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "edenGPTreplyMemory",
+        {
+          component: "aiQuery > edenGPTreplyMemory",
+        }
+      );
+    }
+  },
   edenGPTreplyChatAPI: async (parent, args, context, info) => {
     const { message, conversation, userID } = args.fields;
     console.log("Query > edenGPTreplyChatAPI > args.fields = ", args.fields);
@@ -2068,7 +2144,7 @@ module.exports = {
     }
   },
   edenGPTreplyChatAPI_V3: async (parent, args, context, info) => {
-    const { message,previusTaskDoneID } = args.fields;
+    const { message, previusTaskDoneID } = args.fields;
     let { conversation, executedTasks } = args.fields;
     console.log("Query > edenGPTreplyChatAPI_V3 > args.fields = ", args.fields);
     try {
@@ -2078,62 +2154,62 @@ module.exports = {
         conversation.push({
           role: "user",
           content: message,
-        })
+        });
       }
 
-      console.log("conversation = " , conversation)
-
+      console.log("conversation = ", conversation);
 
       // -------------- taskPlanning -------------
-      let potentialTask = await taskPlanning(conversation, executedTasks,previusTaskDoneID);      
-      console.log("potentialTask = " , potentialTask)
+      let potentialTask = await taskPlanning(
+        conversation,
+        executedTasks,
+        previusTaskDoneID
+      );
+      console.log("potentialTask = ", potentialTask);
       // -------------- taskPlanning -------------
-
-
-
-
 
       // -------------- Find best keywrods from embeding -------------
-      bestKeywordsFromEmbed = await findAvailTaskPineCone(potentialTask)
+      bestKeywordsFromEmbed = await findAvailTaskPineCone(potentialTask);
       printC(bestKeywordsFromEmbed, "1", "bestKeywordsFromEmbed", "b");
       // -------------- Find best keywrods from embeding -------------
 
-
       // -------------- GPT - User Answered OR Give Ideas -----------
-      answeredOrIdeas = await userAnsweredOrGiveIdeas(conversation,potentialTask)
+      answeredOrIdeas = await userAnsweredOrGiveIdeas(
+        conversation,
+        potentialTask
+      );
       printC(answeredOrIdeas, "2", "answeredOrIdeas", "r");
       // -------------- GPT - User Answered OR Give Ideas -----------
 
-    
-     
-
-
       // ---------- Update executedTasks ----------
-      executedTasks = await updateExecutedTasks(bestKeywordsFromEmbed,executedTasks)
+      executedTasks = await updateExecutedTasks(
+        bestKeywordsFromEmbed,
+        executedTasks
+      );
       printC(executedTasks, "5", "executedTasks", "g");
       // ---------- Update executedTasks ----------
 
-
-
       // ----------- edenReplyBasedTaskInfo ----------
-      responseGPTchat = await edenReplyBasedTaskInfo(conversation,bestKeywordsFromEmbed,answeredOrIdeas,potentialTask)
+      responseGPTchat = await edenReplyBasedTaskInfo(
+        conversation,
+        bestKeywordsFromEmbed,
+        answeredOrIdeas,
+        potentialTask
+      );
       printC(responseGPTchat, "3", "responseGPTchat", "r");
 
-
-      let executeTaskType 
-      if (bestKeywordsFromEmbed.length > 0){
-        executeTaskType = bestKeywordsFromEmbed[0].metadata.taskType
+      let executeTaskType;
+      if (bestKeywordsFromEmbed.length > 0) {
+        executeTaskType = bestKeywordsFromEmbed[0].metadata.taskType;
       } else {
-        executeTaskType = "end_task"
+        executeTaskType = "end_task";
       }
       // ----------- edenReplyBasedTaskInfo ----------
-
 
       return {
         reply: responseGPTchat,
         executedTasks: executedTasks,
-        executeTaskType: executeTaskType
-
+        executeTaskType: executeTaskType,
       };
     } catch (err) {
       throw new ApolloError(
@@ -2217,8 +2293,10 @@ module.exports = {
         systemPrompt = bestKeywordsFromEmbed[2].metadata.systemPrompt;
         userQuestion = bestKeywordsFromEmbed[2].metadata.userPrompt;
       } else {
-        systemPrompt = "You are a recruiter, The only think that you do is ask only 1 questions at a time to understand the skills that the candidate should have. You give as consise as small answeres as possible"
-        userQuestion = "ask me only 1 questino what other skills candidate should have based on the context that you have"
+        systemPrompt =
+          "You are a recruiter, The only think that you do is ask only 1 questions at a time to understand the skills that the candidate should have. You give as consise as small answeres as possible";
+        userQuestion =
+          "ask me only 1 questino what other skills candidate should have based on the context that you have";
         // return {
         //   reply: "I don't understand what you mean",
         // }
@@ -2378,10 +2456,12 @@ module.exports = {
       args.fields
     );
     try {
-     
-
-
-      reply = await useGPTchat("As a recruiter, I recently had a conversation with a potential candidate and I would like to summarize the key points of our discussion in the candidate's bio. only give true information, and make a small and consise summary.  Summary:", conversation,"",0.1);
+      reply = await useGPTchat(
+        "As a recruiter, I recently had a conversation with a potential candidate and I would like to summarize the key points of our discussion in the candidate's bio. only give true information, and make a small and consise summary.  Summary:",
+        conversation,
+        "",
+        0.1
+      );
 
       console.log("reply chatGPT -------= ", reply);
       // ------------ Sumary of Profile for the conversation -------------
