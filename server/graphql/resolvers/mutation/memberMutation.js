@@ -346,8 +346,16 @@ module.exports = {
       let membersData = await Members.findOne({ _id: fields._id });
       let membersDataOriginal = membersData;
 
+      
 
       if (experienceLevel) {
+
+        fields = {
+          ...fields,
+          experienceLevel: {
+            ...membersData.experienceLevel,
+          }
+        }
 
         if (experienceLevel.total) {
           if (experienceLevel.total!= 3 && experienceLevel.total!= 6 && experienceLevel.total!=9){
@@ -356,7 +364,7 @@ module.exports = {
             fields = { 
               ...fields,
               experienceLevel: {
-                ...membersData.experienceLevel,
+                ...fields.experienceLevel,
                 total: experienceLevel.total,
               }
             
@@ -368,7 +376,7 @@ module.exports = {
           fields = {
             ...fields,
             experienceLevel: {
-              ...membersData.experienceLevel,
+              ...fields.experienceLevel,
               years: experienceLevel.years,
             }
           }
