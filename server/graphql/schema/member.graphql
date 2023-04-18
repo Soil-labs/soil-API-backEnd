@@ -488,13 +488,14 @@ module.exports = `
 
         links: [linkInput],
 
-        experienceLevel: Int,
+        experienceLevel: experienceLevelInput,
         location: String
-
-
-
     }
 
+    input experienceLevelInput {
+        total: Int,
+        years: Int, 
+    }
 
 
     input onboardingInput {
