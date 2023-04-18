@@ -45,7 +45,6 @@ module.exports = {
           existingConversation.conversation = conversation;
           existingConversation.updatedAt = Date.now();
           existingConversation.summaryReady = false;
-          existingConversation.summary = [];
 
           resultConv = await existingConversation.save();
 
@@ -115,8 +114,17 @@ module.exports = {
 
           console.log("minutesSinceLastUpdate = " , minutesSinceLastUpdate)
 
-          if (minutesSinceLastUpdate > 10) {
+          if (minutesSinceLastUpdate > 0.5) { // SOS 🆘 change back to 10
 
+            
+            // ------------ Delete old summaries from pinecone ---------
+            deletePineIDs = convDataNow.summary.map(obj => obj.pineConeID)
+
+            await deletePineCone(deletePineIDs)
+            // ------------ Delete old summaries from pinecone ---------
+
+
+            // ----------- GPT find new Summary ----------
             const summaryGPT = await useGPTchat(
               "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation.",
               convDataNow.conversation.map(({ role, content }) => ({ role, content })),
@@ -131,16 +139,13 @@ module.exports = {
 
             console.log("splitSummary = " , splitSummary)
 
+            let summaryArr = []
+            // ----------- GPT find new Summary ----------
 
 
             for (let j = 0; j < splitSummary.length; j++) {
               splitSumNow = splitSummary[j];
 
-              await deletePineCone({
-                "convKey": {"$eq": convDataNow.convKey},
-              })
-
-              sdf1
 
               upsertDoc = await upsertEmbedingPineCone({
                 text: splitSumNow,
@@ -149,17 +154,25 @@ module.exports = {
                 convKey: convDataNow.convKey,
               });
 
-              console.log("upsertDoc = " , upsertDoc)
+              // console.log("upsertDoc = " , upsertDoc)
 
 
-              sdf0
+              // sdf0
+
+              summaryArr.push({
+                pineConeID: upsertDoc.pineConeID,
+                content: upsertDoc.text,
+              })
 
             }
 
-            // convDataNow.summary = splitSummary;
-            // convDataNow.summaryReady = true;
+            console.log("summaryArr = " , summaryArr)
+            // sdf99
 
-            // await convDataNow.save();
+            convDataNow.summary = summaryArr;
+            convDataNow.summaryReady = true;
+
+            await convDataNow.save();
 
           }
         }

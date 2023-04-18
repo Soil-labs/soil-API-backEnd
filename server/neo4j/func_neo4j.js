@@ -185,13 +185,13 @@ module.exports = {
   makeConnection_neo4j: async (req, res) => {
     const { node, id, connection, weight = undefined } = req;
 
-    console.log(
-      "change -------------makeConnection_neo4j---------= ",
-      node,
-      id,
-      connection,
-      weight
-    );
+    // console.log(
+    //   "change -------------makeConnection_neo4j---------= ",
+    //   node,
+    //   id,
+    //   connection,
+    //   weight
+    // );
     const session = driver.session({ database: "neo4j" });
 
     fun = "";

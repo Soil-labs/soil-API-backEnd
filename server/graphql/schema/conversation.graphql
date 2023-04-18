@@ -10,9 +10,14 @@ module.exports = `
 
         summaryReady: Boolean,
 
-        summary: [String],
+        summary: [summaryType],
         
         updatedAt: Date,
+    }
+
+    type summaryType {
+        pineConeID: String,
+        content: String,
     }
 
 

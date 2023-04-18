@@ -903,224 +903,262 @@ module.exports = {
           "_id name node match_v2_update"
         );
 
-        console.log("nodesData = ", nodesData);
+        // console.log("nodesData = ", nodesData);
         // sdf;
 
         // ---------- All nodes should be equal to nodeType or else throw error -----------
         nodesID_array = [];
+        nodeTypeObj = {}
         nodesData.forEach((node) => {
           nodesID_array.push(node._id.toString());
-          if (node.node != nodeType) {
-            throw new ApolloError(
-              "All nodes should be equal to nodeType, problem on nodeID = " +
-                node._id +
-                " with name = " +
-                node.name +
-                " and node = " +
-                node.node +
-                ""
-            );
+
+          if (nodeTypeObj[node.node] == undefined) {
+            nodeTypeObj[node.node] = [node];
+          } else {
+            nodeTypeObj[node.node].push(node);
           }
+          // if (node.node != nodeType) {
+            // throw new ApolloError(
+            //   "All nodes should be equal to nodeType, problem on nodeID = " +
+            //     node._id +
+            //     " with name = " +
+            //     node.name +
+            //     " and node = " +
+            //     node.node +
+            //     ""
+            // );
+          // }
         });
         // ---------- All nodes should be equal to nodeType or else throw error -----------
 
-        let memberData = await Members.findOne({ _id: user._id }).select(
-          "_id nodes"
-        );
 
-        let nodes_member_obj = {};
-        for (let i = 0; i < memberData.nodes.length; i++) {
-          let item = memberData.nodes[i];
-          nodes_member_obj[item._id] = item;
-        }
-        console.log("nodes_member_obj = ", nodes_member_obj);
 
-        // check if the nodes are already in the member (memberData.nodes)
-        let nodesID_member = memberData.nodes.map(function (item) {
-          return item._id.toString();
-        });
+        
 
-        // --------- Separate all the Nodes, and the nodeTypes ----------------
-        let nodeData_member_all = await Node.find({
-          _id: nodesID_member,
-        }).select("_id name node");
+        // loop throw the object nodeTypeObj and take the nodesID_array as the nodes of this object
+        nodesID_array = [];
 
-        // console.log("nodeData_member_all = ", nodeData_member_all);
-        // // sdf;
+        for (let key in nodeTypeObj) { // This is for the different nodeTypes to do them separately 
+          nodeType = key;
 
-        nodeData_member_type = [];
-        nodeID_member_type = [];
-        nodeID_member_all = [];
-        nodeData_member_all.forEach((node, idx) => {
-          nodeID_member_all.push(node._id.toString());
-          // console.log(
-          //   "change = ",
-          //   nodes_member_obj[node._id.toString()].level,
-          //   nodesID_level_obj[node._id.toString()].level
-          // );
+          nodesID_array = nodeTypeObj[key].map(item => item._id)
 
-          if (nodes_member_obj[node._id] && nodesID_level_obj[node._id]) {
-            if (
-              nodes_member_obj[node._id].level ==
-                nodesID_level_obj[node._id].level &&
-              nodes_member_obj[node._id].orderIndex ==
-                nodesID_level_obj[node._id].orderIndex
-            ) {
+
+
+          //  ---------------- Member Node Data ----------------
+          let memberData = await Members.findOne({ _id: user._id }).select(
+            "_id nodes"
+          );
+  
+          let nodes_member_obj = {};
+          for (let i = 0; i < memberData.nodes.length; i++) {
+            let item = memberData.nodes[i];
+            nodes_member_obj[item._id] = item;
+          }
+          // console.log("nodes_member_obj = ", nodes_member_obj);
+          // sadf9
+  
+          // check if the nodes are already in the member (memberData.nodes)
+          let nodesID_member = memberData.nodes.map(function (item) {
+            return item._id.toString();
+          });
+  
+          // --------- Separate all the Nodes, and the nodeTypes ----------------
+          let nodeData_member_all = await Node.find({
+            _id: nodesID_member,
+          }).select("_id name node");
+          //  ---------------- Member Node Data ----------------
+
+
+
+          nodeData_member_type = [];
+          nodeID_member_type = [];
+          nodeID_member_all = [];
+          nodeData_member_all.forEach((node, idx) => {
+            nodeID_member_all.push(node._id.toString());
+            // console.log(
+            //   "change = ",
+            //   nodes_member_obj[node._id.toString()].level,
+            //   nodesID_level_obj[node._id.toString()].level
+            // );
+
+            if (nodes_member_obj[node._id] && nodesID_level_obj[node._id]) {
+              if (
+                nodes_member_obj[node._id].level ==
+                  nodesID_level_obj[node._id].level &&
+                nodes_member_obj[node._id].orderIndex ==
+                  nodesID_level_obj[node._id].orderIndex
+              ) {
+                if (node.node == nodeType) {
+                  nodeData_member_type.push(node);
+                  nodeID_member_type.push(node._id.toString());
+                }
+              }
+            } else {
               if (node.node == nodeType) {
                 nodeData_member_type.push(node);
                 nodeID_member_type.push(node._id.toString());
               }
             }
-          } else {
-            if (node.node == nodeType) {
-              nodeData_member_type.push(node);
-              nodeID_member_type.push(node._id.toString());
+
+            // console.log("nodes_member_obj = " , nodes_member_obj)
+
+            // console.log("node._id = " , node._id)
+
+
+            if (node._id && nodes_member_obj[node._id.toString()]){
+              nodeData_member_all[idx] = {
+                ...nodeData_member_all[idx]._doc,
+                ...nodes_member_obj[node._id.toString()]._doc,
+              };
             }
-          }
 
-          nodeData_member_all[idx] = {
-            ...nodeData_member_all[idx]._doc,
-            ...nodes_member_obj[node._id.toString()]._doc,
-            ...nodesID_level_obj[node._id.toString()],
-          };
-        });
-
-        // asfd;
-
-        console.log("nodesID_array = ", nodesID_array);
-        console.log("nodeID_member_type = ", nodeID_member_type);
-
-        console.log("nodeData_member_all = ", nodeData_member_all);
-        // asdf;
-
-        // --------- Separate all the Nodes, and the nodeTypes ----------------
-
-        // asdf;
-
-        /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
-        let differenceNodes = nodesID_array.filter(
-          (x) => !nodeID_member_type.includes(x)
-        );
-        console.log("differenceNodes = ", differenceNodes);
-
-        // asf;
-        if (differenceNodes.length > 0) {
-          let nodesDataNew = [];
-          for (let i = 0; i < differenceNodes.length; i++) {
-            let nodeID = differenceNodes[i];
-            let nodeData = nodesData.find(
-              (x) => x._id.toString() == nodeID.toString()
-            );
-
-            if (nodesID_level != undefined) {
-              // caluclate the skill level and add it to the nodes for the next phase
-              let nodeNow_weight = await calculate_skill_level(
-                nodesID_level_obj[nodeID]
-              );
-
-              // console.log("nodeNow_weight = ", nodeNow_weight);
-              // sadf;
-
-              nodesDataNew.push({
-                ...nodeData._doc,
-                weight: nodeNow_weight.weight_total,
-              });
-              nodeData_member_all.push({
-                _id: nodeID,
-                orderIndex: nodeNow_weight.orderIndex,
-                level: nodeNow_weight.level,
-                weight: nodeNow_weight.weight_total,
-                aboveNodes: nodesID_level_obj[nodeID].aboveNodes,
-              });
-            } else {
-              nodesDataNew.push(nodeData);
-              nodeData_member_all.push({ _id: nodeID });
+            if (node._id && nodesID_level_obj[node._id.toString()]){
+              nodeData_member_all[idx] = {
+                ...nodeData_member_all[idx]._doc,
+                ...nodesID_level_obj[node._id.toString()]._doc,
+              };
             }
-            // nodesDataNew.push(nodeData);
-            // nodeData_member_all.push({ _id: nodeID });
-          }
 
-          // console.log("nodesDataNew = ", nodesDataNew);
+          });
+
+          // asfd;
+
+          // console.log("nodesID_array = ", nodesID_array);
+          // console.log("nodeID_member_type = ", nodeID_member_type);
+
+          // console.log("nodeData_member_all = ", nodeData_member_all);
+          // asdf;
+
+          // --------- Separate all the Nodes, and the nodeTypes ----------------
 
           // asdf;
 
-          // add only the new ones as relationship on Neo4j
-          for (let i = 0; i < nodesDataNew.length; i++) {
-            let nodeNow = nodesDataNew[i];
+          /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
+          let differenceNodes = nodesID_array.filter(
+            (x) => !nodeID_member_type.includes(x)
+          );
+          // console.log("differenceNodes = ", differenceNodes);
 
-            if (nodeNow.weight != undefined) {
-              makeConnection_neo4j({
-                node: [nodeNow.node, "Member"],
-                id: [nodeNow._id, memberData._id],
-                connection: "connection",
-                weight: nodeNow.weight.toFixed(3),
-              });
-            } else {
-              makeConnection_neo4j({
-                node: [nodeNow.node, "Member"],
-                id: [nodeNow._id, memberData._id],
-                connection: "connection",
-              });
+          // asf;
+          if (differenceNodes.length > 0) {
+            let nodesDataNew = [];
+            for (let i = 0; i < differenceNodes.length; i++) {
+              let nodeID = differenceNodes[i];
+              let nodeData = nodesData.find(
+                (x) => x._id.toString() == nodeID.toString()
+              );
+
+              if (nodesID_level != undefined) {
+                // caluclate the skill level and add it to the nodes for the next phase
+                let nodeNow_weight = await calculate_skill_level(
+                  nodesID_level_obj[nodeID]
+                );
+
+                // console.log("nodeNow_weight = ", nodeNow_weight);
+                // sadf;
+
+                nodesDataNew.push({
+                  ...nodeData._doc,
+                  weight: nodeNow_weight.weight_total,
+                });
+                nodeData_member_all.push({
+                  _id: nodeID,
+                  orderIndex: nodeNow_weight.orderIndex,
+                  level: nodeNow_weight.level,
+                  weight: nodeNow_weight.weight_total,
+                  aboveNodes: nodesID_level_obj[nodeID].aboveNodes,
+                });
+              } else {
+                nodesDataNew.push(nodeData);
+                nodeData_member_all.push({ _id: nodeID });
+              }
+              // nodesDataNew.push(nodeData);
+              // nodeData_member_all.push({ _id: nodeID });
             }
 
-            changeMatchByServer(nodeNow, memberData);
+            // console.log("nodesDataNew = ", nodesDataNew);
+
+            // asdf;
+
+            // add only the new ones as relationship on Neo4j
+            for (let i = 0; i < nodesDataNew.length; i++) {
+              let nodeNow = nodesDataNew[i];
+
+              if (nodeNow.weight != undefined) {
+                makeConnection_neo4j({
+                  node: [nodeNow.node, "Member"],
+                  id: [nodeNow._id, memberData._id],
+                  connection: "connection",
+                  weight: nodeNow.weight.toFixed(3),
+                });
+              } else {
+                makeConnection_neo4j({
+                  node: [nodeNow.node, "Member"],
+                  id: [nodeNow._id, memberData._id],
+                  connection: "connection",
+                });
+              }
+
+              changeMatchByServer(nodeNow, memberData);
+            }
           }
-        }
-        /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
+          /// --------------- Add Nodes that Don't exist already on the member for this specific type of node ----------------
 
-        // -------------- Remove the Nodes that are not in the nodesID_array ----------------
-        let nodesExistMemberAndNode = nodeID_member_type.filter((x) =>
-          nodesID_array.includes(x)
-        );
-        console.log("nodesExistMemberAndNode = ", nodesExistMemberAndNode);
-
-        let nodeExistOnlyMember = nodeID_member_type.filter(
-          (x) => !nodesID_array.includes(x)
-        );
-        console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
-        console.log("nodeID_member_type = ", nodeID_member_type);
-        console.log("nodesID_array = ", nodesID_array);
-        // asd;
-
-        // console.log("change = " , change)
-
-        if (nodeExistOnlyMember.length > 0) {
-          nodeData_member_all = nodeData_member_all.filter(
-            (element) => !nodeExistOnlyMember.includes(element._id.toString())
+          // -------------- Remove the Nodes that are not in the nodesID_array ----------------
+          let nodesExistMemberAndNode = nodeID_member_type.filter((x) =>
+            nodesID_array.includes(x)
           );
+          // console.log("nodesExistMemberAndNode = ", nodesExistMemberAndNode);
 
-          console.log("nodeData_member_all = ", nodeData_member_all);
+          let nodeExistOnlyMember = nodeID_member_type.filter(
+            (x) => !nodesID_array.includes(x)
+          );
+          // console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
+          // console.log("nodeID_member_type = ", nodeID_member_type);
+          // console.log("nodesID_array = ", nodesID_array);
+          // asd;
 
-          console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
+          // console.log("change = " , change)
 
-          // add only the new ones as relationship on Neo4j
-          for (let i = 0; i < nodeExistOnlyMember.length; i++) {
-            let nodeNow = { _id: nodeExistOnlyMember[i] };
-            deleteConnectionANYBetweenNodes_neo4j({
-              nodeID_1: memberData._id,
-              nodeID_2: nodeNow._id,
-            });
+          if (nodeExistOnlyMember.length > 0) {
+            nodeData_member_all = nodeData_member_all.filter(
+              (element) => !nodeExistOnlyMember.includes(element._id.toString())
+            );
 
-            changeMatchByServer(nodeNow, memberData);
+            // console.log("nodeData_member_all = ", nodeData_member_all);
+
+            // console.log("nodeExistOnlyMember = ", nodeExistOnlyMember);
+
+            // add only the new ones as relationship on Neo4j
+            for (let i = 0; i < nodeExistOnlyMember.length; i++) {
+              let nodeNow = { _id: nodeExistOnlyMember[i] };
+              deleteConnectionANYBetweenNodes_neo4j({
+                nodeID_1: memberData._id,
+                nodeID_2: nodeNow._id,
+              });
+
+              changeMatchByServer(nodeNow, memberData);
+            }
           }
-        }
-        // -------------- Remove the Nodes that are not in the nodesID_array ----------------
+          // -------------- Remove the Nodes that are not in the nodesID_array ----------------
 
-        console.log("nodeData_member_all = ", nodeData_member_all);
-        // asdf;
+          console.log("nodeData_member_all ---------------------= ", nodeData_member_all);
+          // asdf;
 
-        memberData2 = await Members.findOneAndUpdate(
-          { _id: user._id },
-          {
-            $set: {
-              nodes: nodeData_member_all,
+          memberData2 = await Members.findOneAndUpdate(
+            { _id: user._id },
+            {
+              $set: {
+                nodes: nodeData_member_all,
+              },
             },
-          },
-          { new: true }
-        );
-        pubsub.publish(memberData2._id, {
-          memberUpdated: memberData2,
-        });
+            { new: true }
+          );
+          await pubsub.publish(memberData2._id, {
+            memberUpdated: memberData2,
+          });
+        }
 
         return memberData2;
       } catch (err) {
