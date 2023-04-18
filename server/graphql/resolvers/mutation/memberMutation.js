@@ -348,19 +348,33 @@ module.exports = {
 
 
       if (experienceLevel) {
-       
-        if (experienceLevel!= 3 && experienceLevel!= 6 && experienceLevel!=9){
-          throw new ApolloError("Experience Level must be 3, 6 or 9");
-        } else {
-          fields = { 
+
+        if (experienceLevel.total) {
+          if (experienceLevel.total!= 3 && experienceLevel.total!= 6 && experienceLevel.total!=9){
+            throw new ApolloError("Experience Level must be 3, 6 or 9");
+          } else {
+            fields = { 
+              ...fields,
+              experienceLevel: {
+                ...membersData.experienceLevel,
+                total: experienceLevel.total,
+              }
+            
+            };
+          }
+        } 
+
+        if (experienceLevel.years){
+          fields = {
             ...fields,
             experienceLevel: {
               ...membersData.experienceLevel,
-              total: experienceLevel,
+              years: experienceLevel.years,
             }
-          
-          };
+          }
         }
+       
+        
       }
         
         

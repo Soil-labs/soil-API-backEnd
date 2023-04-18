@@ -66,6 +66,12 @@ module.exports = `
         createNodeCategoryGroup(fields:createNodeCategoryGroupInput): Node
 
 
+        # ------------- CONVERSATION MUTATION -----------------
+        updateConversation(fields:updateConversationInput): Conversation
+        updateConvSummaries(fields:updateConvSummariesInput): [Conversation]
+
+
+
         #  ---------- ROLE MUTATIONS -------
         updateRoleTemplate(fields:createRoleInput): RoleTemplate
 

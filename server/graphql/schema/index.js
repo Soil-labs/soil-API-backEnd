@@ -9,6 +9,7 @@ const projectType = require("./project.graphql");
 const projectUpdateType = require("./projectUpdate.graphql");
 const skillsType = require("./skills.graphql");
 const nodeType = require("./node.graphql");
+const conversationType = require("./conversation.graphql");
 const SkillCategoryType = require("./skillCategory.graphql");
 const SkillSubCategoryType = require("./skillSubCategory.graphql");
 const roleTemplateType = require("./roleTemplate.graphql");
@@ -28,6 +29,7 @@ const typeDefs = gql`
   ${userType}
   ${skillsType}
   ${nodeType}
+  ${conversationType}
   ${memberType}
   ${endorsementType}
   ${reviewType}

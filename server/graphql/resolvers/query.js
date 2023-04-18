@@ -38,6 +38,10 @@ const {
 } = require("./query/nodeQuery");
 
 const {
+  findConversation,findConversations,
+} = require("./query/conversationQuery");
+
+const {
   findProject,
   findProjects,
   findProjects_RequireSkill,
@@ -160,6 +164,9 @@ module.exports = {
     findNodes,
     nodes_autocomplete,
     treeOfRelatedNodes,
+
+    // ------------- CONVERSATION QUERY -----------------
+    findConversation,findConversations,
 
     // ------------- ROLE TEMPLATE QUERY -----------------
     findRoleTemplate,

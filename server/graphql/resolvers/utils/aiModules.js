@@ -33,6 +33,120 @@ async function createEmbedingsGPT(words_n) {
     return res;
   }
 
+// Generates a random 6-digit ID
+async function generateRandomID(numDigit = 8) {
+    // Define a string of possible characters to choose from
+    const possibleChars = "0123456789abcdefghijklmnopqrstuvwxyz";
+    // Initialize an empty string to hold the ID
+    let id = "";
+  
+    // Loop 6 times to generate each digit of the ID
+    for (let i = 0; i < numDigit; i++) {
+      // Generate a random index into the possibleChars string
+      const randomIndex = Math.floor(Math.random() * possibleChars.length);
+      // Get the character at the random index and add it to the ID
+      id += possibleChars.charAt(randomIndex);
+    }
+  
+    // Return the generated ID
+    return id;
+  }
+  
+async function deletePineCone(filter){
+
+    const pinecone = new PineconeClient();
+    await pinecone.init({
+      environment: "us-east1-gcp",
+      apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+    });
+  
+    const index = await pinecone.Index("profile-eden-information");
+
+    console.log("index = " , index)
+     try{
+    // // await index.delete({
+    //     await index._deleteRaw({
+    //         // await index.delete1({
+    //     // await index._delete({
+    //     filter: {
+    //         // convKey: "hey!_Can_yI_did_my_P",
+    //         convKey: { $eq: "hey!_Can_yI_did_my_P" },
+    //     },
+    //   });
+    // await index.delete1({
+    //     filter: {
+    //       genre: { $eq: "documentary" },
+    //       year: 2019,
+    //     },
+    //   });
+    // let queryRequest = {
+    //     filter: {
+    //       label: "AI_KG4_Context23",
+    //     },
+    //   };
+    // let queryResponse = await index._deleteRaw({ queryRequest });
+    await index.delete1({
+        ids: ["tcdzfhp6"],
+        // namespace: "example-namespace",
+      });
+
+
+    }catch (err){
+    console.log("err = ", err);
+    }
+
+      ff0
+    
+    // await index.delete1(filter=filter)
+    // index.delete(
+    // filter={
+    //     "label": {"$eq": label},
+    // })
+}
+
+async function upsertEmbedingPineCone(data) {
+    const pinecone = new PineconeClient();
+    await pinecone.init({
+      environment: "us-east1-gcp",
+      apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+    });
+  
+    const index = await pinecone.Index("profile-eden-information");
+  
+    id_message = await generateRandomID(8);
+
+    const embed = await createEmbedingsGPT(data.text);
+
+    let metadata = {
+        text: data.text,
+        _id: data._id,
+        label: data.label,
+    }
+
+    if (data.convKey) {
+        metadata = {
+            ...metadata,
+            convKey: data.convKey,
+        }
+    }
+  
+    const upsertRequest = {
+      vectors: [
+        {
+          id: id_message,
+          values: embed[0],
+          metadata: metadata,
+        },
+      ],
+    };
+
+    console.log("id_message = " , id_message)
+  
+    const upsertResponse = await index.upsert({ upsertRequest });
+  
+    return upsertResponse;
+}
+
 async function findBestEmbedings(message, filter, topK = 3) {
   
     const pinecone = new PineconeClient();
@@ -972,7 +1086,10 @@ module.exports = {
     totalScore_aiModule,
     showObject,
     sortArray_aiModule,
+    upsertEmbedingPineCone,
+    deletePineCone,
     chooseAPIkey,
+    useGPTchat,
     useGPTchatSimple,
     arrayToObject,
     taskPlanning,

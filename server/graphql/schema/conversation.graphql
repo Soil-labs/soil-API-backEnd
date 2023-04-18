@@ -1,0 +1,51 @@
+module.exports = `
+    
+    type Conversation {
+        _id: ID
+        userID: String, 
+        convKey: String, 
+
+        #  conv: [messageChat],
+        conversation: [conversationType],
+
+        summaryReady: Boolean,
+
+        summary: [String],
+        
+        updatedAt: Date,
+    }
+
+
+    type conversationType {
+        role: String
+        content: String
+    }
+
+    input updateConversationInput {
+        userID: String,  
+        conversation: [conversationInput],
+    }
+
+    input updateConvSummariesInput {
+        _id: ID
+        convKey: String,
+    }
+
+    input conversationInput {
+        role: String
+        content: String
+    }
+
+    input findConversationInput {
+        _id: ID
+    }
+
+    input findConversationsInput {
+        _id: [ID]
+        userID: [String]
+        convKey: [String]
+
+        summaryReady: Boolean,
+    }
+
+`
