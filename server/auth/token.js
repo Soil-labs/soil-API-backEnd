@@ -24,6 +24,7 @@ const token = async ({ body }, res) => {
 
     let { user } = authResponse?.data;
 
+
     // Find if user is in database
     let dbUser = await Members.findOne({ _id: user.id });
     // console.log("user", user);
