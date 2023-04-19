@@ -572,6 +572,13 @@ module.exports = `
         
     }
 
+    input updateNodesToMemberMultiTypeNodeInput {
+        # memberID: ID
+        nodesID: [String]
+        nodeType: String
+        
+    }
+
     input deleteNodesFromMemberInput {
         memberID: ID
         nodesID: [String]

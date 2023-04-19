@@ -3,6 +3,9 @@ const { Endorsement } = require("../../../models/endorsementModel");
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
 
+const { request, gql} = require('graphql-request');
+
+
 const {
     makeConnection_neo4j,
     findAllNodesDistanceRfromNode_neo4j,
@@ -29,6 +32,47 @@ const updateNodeToMemberOnNeo4J = async (nodeNow,memberID) => {
     }
 
     changeMatchByServer(nodeNow);
+}
+
+const updateNodesToMember = async (fields) => {
+
+
+  console.log(" fields.nodesID = " ,  fields.nodesID)
+
+  const query = gql`
+    mutation UpdateNodesToMember($fields: updateNodesToMemberInput!) {
+        updateNodesToMember(fields: $fields) {
+          _id
+          nodes {
+            nodeData {
+              _id
+              name
+            }
+          }
+        }
+      }`;
+
+    const variables  = {
+        fields: {
+            nodesID: fields.nodesID,
+            nodeType: fields.nodeType,
+        }
+    };
+
+    const headers = {
+      authorization: `Bearer ${fields.Authorization}`,
+      // 'X-Custom-Header': 'CustomValue'
+    }
+
+    res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables,headers)
+
+    // console.log("res = " , res)
+
+
+    console.log("res.updateNodesToMember = " , res.updateNodesToMember)
+
+    return res.updateNodesToMember
+
 }
 
 
@@ -72,4 +116,5 @@ const changeMatchByServer = async (nodeNow) => {
 module.exports = {
     changeMatchByServer,
     updateNodeToMemberOnNeo4J,
+    updateNodesToMember,
   };

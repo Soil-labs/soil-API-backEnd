@@ -9,7 +9,7 @@ const {
 } = require("../neo4j/func_neo4j");
 const { saveDailyLogin } = require("../utils/saveLoginData");
 
-const login = async ({ body }, res) => {
+const login = async ({ body }, res,req) => {
   try {
     const { code, redirect_uri } = body;
 
@@ -59,6 +59,8 @@ const login = async ({ body }, res) => {
 
     //save the daily login detail🧷 
     saveDailyLogin(dbUser._id, new Date())
+
+    
     // Return user and token
     res.json({ discord_user: user, eden_user: dbUser, token });
   } catch (error) {
