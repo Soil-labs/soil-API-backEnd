@@ -598,6 +598,70 @@ module.exports = {
       );
     }
   },
+  edenGPTCreateProfileExperienceCVMemoryChatAPI: async (
+    parent,
+    args,
+    context,
+    info
+  ) => {
+    const { message, conversation, experienceTypeID, userID } = args.fields;
+    // console.log(
+    //   "Query > edenGPTCreateProfileExperienceChatAPI > args.fields = ",
+    //   args.fields
+    // );
+
+    // let experiencePrompts = {
+    //   BACKGROUND: {
+    //     prompt:
+    //       "You are an assistant tasked with understanding a candidate's personal background to help match them with suitable job opportunities. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their educational background, work experience, and relevant certifications. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+    //   },
+    //   SKILLS_EXPERIENCE: {
+    //     prompt:
+    //       "You are an assistant tasked with evaluating a candidate's skills and expertise to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to understand their technical and soft skills, strengths, and areas of improvement. Make sure your questions are relevant and progressively focus on the candidate's skill set. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+    //   },
+    //   CAREER_GOALS_ASPIRATIONS: {
+    //     prompt:
+    //       "You are an assistant tasked with understanding a candidate's career goals and aspirations to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to learn about their short-term and long-term career goals, ideal work environment, and any specific industries or positions they are targeting. Make sure your questions are relevant and progressively focus on the candidate's aspirations. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+    //   },
+    //   WORK_PREFERENCES: {
+    //     prompt:
+    //       "You are an assistant tasked with understanding a candidate's work preferences to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their preferred work culture, work-life balance, and any remote or flexible work options they might be interested in. Make sure your questions are relevant and progressively focus on the candidate's preferences. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+    //   },
+    // };
+
+    // // create a string of all the keys from the experiencePrompts object
+    // let experienceTypeIDs = Object.keys(experiencePrompts).join(", ");
+
+    // if (experienceTypeID == undefined) {
+    //   throw new ApolloError(
+    //     "Invalid experienceTypeID - must be one of: " + experienceTypeIDs
+    //   );
+    // }
+
+    // let systemPrompt = experiencePrompts[experienceTypeID]?.prompt;
+
+    // if (systemPrompt == undefined) {
+    //   throw new ApolloError(
+    //     "Invalid experienceTypeID - must be one of: " + experienceTypeIDs
+    //   );
+    // }
+
+    try {
+      // responseGPTchat = await useGPTchat(message, conversation, systemPrompt);
+
+      return {
+        reply: message,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "edenGPTCreateProfileExperienceChatAPI",
+        {
+          component: "aiQuery > edenGPTCreateProfileExperienceChatAPI",
+        }
+      );
+    }
+  },
   edenAITalSearchExpirience: async (parent, args, context, info) => {
     const { message, conversation, experienceTypeID, userID } = args.fields;
     console.log(

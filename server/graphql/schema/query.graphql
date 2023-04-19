@@ -108,6 +108,7 @@ module.exports = `
           edenGPTreplyChatAPI_V3(fields: edenGPTreplyChatAPI_V3Input): edenGPTreplyChatAPI_V3Output
           edenGPTEndorseChatAPI(fields: edenGPTEndorseChatAPIInput): edenGPTEndorseChatAPIOutput
           edenGPTCreateProfileExperienceChatAPI(fields: edenGPTCreateProfileExperienceChatAPIInput): edenGPTCreateProfileExperienceChatAPIOutput
+          edenGPTCreateProfileExperienceCVMemoryChatAPI(fields: edenGPTCreateProfileExperienceCVMemoryChatAPIInput): edenGPTCreateProfileExperienceCVMemoryChatAPIOutput
           edenAITalSearchExpirience(fields: edenAITalSearchExpirienceInput): edenAITalSearchExpirienceOutput
           edenGPTReviewChatAPI(fields: edenGPTReviewChatAPIInput): edenGPTReviewChatAPIOutput
           edenGPTsearchProfiles(fields: edenGPTsearchProfilesInput): edenGPTsearchProfilesOutput

@@ -232,6 +232,12 @@ module.exports = `
         experienceTypeID: experienceTypeIDEnum
     }
 
+    input edenGPTCreateProfileExperienceCVMemoryChatAPIInput {
+        message: String
+        conversation: [messageChat]
+        experienceTypeID: experienceTypeIDEnum
+    }
+
     enum experienceTypeIDEnum {
         BACKGROUND
         SKILLS_EXPERIENCE
@@ -240,6 +246,10 @@ module.exports = `
     }
 
     type edenGPTCreateProfileExperienceChatAPIOutput {
+        reply: String
+    }
+
+   type  edenGPTCreateProfileExperienceCVMemoryChatAPIOutput {
         reply: String
     }
 
