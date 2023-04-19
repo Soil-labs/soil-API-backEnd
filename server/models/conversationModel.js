@@ -14,6 +14,10 @@ const conversationSchema = mongoose.Schema({
   summaryReady: Boolean,
 
   summary: [String],
+  summary: [{
+    pineConeID: String,
+    content: String,
+  }],
   
   updatedAt: Date,
 });

@@ -309,6 +309,7 @@ module.exports = {
         timeZone,
         level,
         links,
+        budget,
         content,
         serverID,
         onbording,
@@ -349,7 +350,52 @@ module.exports = {
       let membersData = await Members.findOne({ _id: fields._id });
       let membersDataOriginal = membersData;
 
-      
+      if (budget != undefined) {
+        fields = { 
+          ...fields, 
+          budget: membersData.budget 
+        };
+
+        if (budget.totalBudget) {
+          fields = { 
+            ...fields,
+            budget: {
+              ...fields.budget,
+              totalBudget: budget.totalBudget,
+            }
+          };
+        }
+
+        if (budget.perHour) {
+          fields = { 
+            ...fields,
+            budget: {
+              ...fields.budget,
+              perHour: budget.perHour,
+            }
+          };
+        }
+        if (budget.perMonth) {
+          fields = { 
+            ...fields,
+            budget: {
+              ...fields.budget,
+              perMonth: budget.perMonth,
+            }
+          };
+        }
+
+        if (budget.token) {
+          fields = { 
+            ...fields,
+            budget: {
+              ...fields.budget,
+              token: budget.token,
+            }
+          };
+        }
+
+      }
 
       if (experienceLevel) {
 

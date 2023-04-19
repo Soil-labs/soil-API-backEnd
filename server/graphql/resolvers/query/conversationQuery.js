@@ -43,9 +43,9 @@ module.exports = {
     }
     if (userID) {
       searchQuery_and.push({ userID: userID });
-    } else if (convKey){
+    } else if (convKey != undefined){
       searchQuery_and.push({ convKey: convKey });
-    } else if (summaryReady) {
+    } else if (summaryReady != undefined) {
       searchQuery_and.push({ summaryReady: summaryReady });
     }
 
