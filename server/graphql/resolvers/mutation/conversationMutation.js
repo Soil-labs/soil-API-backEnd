@@ -45,7 +45,6 @@ module.exports = {
           existingConversation.conversation = conversation;
           existingConversation.updatedAt = Date.now();
           existingConversation.summaryReady = false;
-          existingConversation.summary = [];
 
           resultConv = await existingConversation.save();
 
@@ -115,10 +114,22 @@ module.exports = {
 
           console.log("minutesSinceLastUpdate = " , minutesSinceLastUpdate)
 
-          if (minutesSinceLastUpdate > 10) {
+          if (minutesSinceLastUpdate > 0.5) {
 
+            // ------------------ Delete old summaries from pinecone ------------------
+            deletePineIDs = convDataNow.summary.map(obj => obj.pineConeID)
+            await deletePineCone(deletePineIDs)
+            // ------------------ Delete old summaries from pinecone ------------------
+              
+            // console.log("deletePineIDs = " , deletePineIDs)
+
+            // asdf99
+
+            // ---------------- GPT find new Summary ------------
             const summaryGPT = await useGPTchat(
-              "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation.",
+              // "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation. reasult:",
+              // "Please summarize the conversation using bullet points. Focuse on creating consise bullet points. Try to incorporate the keywords that were used during the conversation. reasult:",
+              "Please provide a concise summary of the conversation using bullet points. Incorporate keywords used in the conversation. The focus should be on creating clear and easily understandable bullet points. Your result should effectively communicate the main points discussed",
               convDataNow.conversation.map(({ role, content }) => ({ role, content })),
               ""
             )
@@ -130,17 +141,19 @@ module.exports = {
             splitSummary.shift();
 
             console.log("splitSummary = " , splitSummary)
+            // ---------------- GPT find new Summary ------------
 
 
+            let summaryArr = [];
 
             for (let j = 0; j < splitSummary.length; j++) {
               splitSumNow = splitSummary[j];
 
-              await deletePineCone({
-                "convKey": {"$eq": convDataNow.convKey},
-              })
+              // await deletePineCone({
+              //   "convKey": {"$eq": convDataNow.convKey},
+              // })
 
-              sdf1
+              // sdf1
 
               upsertDoc = await upsertEmbedingPineCone({
                 text: splitSumNow,
@@ -152,14 +165,19 @@ module.exports = {
               console.log("upsertDoc = " , upsertDoc)
 
 
-              sdf0
+              // sdf0
+
+              summaryArr.push({
+                pineConeID: upsertDoc.pineConeID,
+                content: splitSumNow,
+              })
 
             }
 
-            // convDataNow.summary = splitSummary;
-            // convDataNow.summaryReady = true;
+            convDataNow.summary = summaryArr;
+            convDataNow.summaryReady = true;
 
-            // await convDataNow.save();
+            await convDataNow.save();
 
           }
         }

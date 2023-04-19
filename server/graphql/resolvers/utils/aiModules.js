@@ -62,46 +62,13 @@ async function deletePineCone(filter){
   
     const index = await pinecone.Index("profile-eden-information");
 
-    console.log("index = " , index)
-     try{
-    // // await index.delete({
-    //     await index._deleteRaw({
-    //         // await index.delete1({
-    //     // await index._delete({
-    //     filter: {
-    //         // convKey: "hey!_Can_yI_did_my_P",
-    //         convKey: { $eq: "hey!_Can_yI_did_my_P" },
-    //     },
-    //   });
-    // await index.delete1({
-    //     filter: {
-    //       genre: { $eq: "documentary" },
-    //       year: 2019,
-    //     },
-    //   });
-    // let queryRequest = {
-    //     filter: {
-    //       label: "AI_KG4_Context23",
-    //     },
-    //   };
-    // let queryResponse = await index._deleteRaw({ queryRequest });
-    await index.delete1({
-        ids: ["tcdzfhp6"],
-        // namespace: "example-namespace",
-      });
-
-
-    }catch (err){
-    console.log("err = ", err);
-    }
-
-      ff0
     
-    // await index.delete1(filter=filter)
-    // index.delete(
-    // filter={
-    //     "label": {"$eq": label},
-    // })
+    try{   
+        res = await index.delete1({ ids: deletePineIDs });
+        // console.log("res = " , res)
+    }catch (err){
+        console.log("err = ", err);
+    }
 }
 
 async function upsertEmbedingPineCone(data) {
@@ -142,7 +109,12 @@ async function upsertEmbedingPineCone(data) {
 
     console.log("id_message = " , id_message)
   
-    const upsertResponse = await index.upsert({ upsertRequest });
+    let upsertResponse = await index.upsert({ upsertRequest });
+
+    upsertResponse = {
+        ...upsertResponse,
+        pineConeID: id_message,
+    }
   
     return upsertResponse;
 }

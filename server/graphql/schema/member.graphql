@@ -482,6 +482,8 @@ module.exports = `
         
         memberRole: ID
 
+        budget: budgetInputTk
+
         hoursPerWeek: Float,
 
         previousProjects: [previousProjectsInput],
@@ -490,6 +492,13 @@ module.exports = `
 
         experienceLevel: experienceLevelInput,
         location: String
+    }
+
+    input budgetInputTk {
+        totalBudget: Float,
+        token: String,
+        perHour: Float,
+        perMonth: Float,
     }
 
     input experienceLevelInput {
