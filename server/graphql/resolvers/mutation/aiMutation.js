@@ -181,6 +181,10 @@ module.exports = {
   storeLongTermMemorySummary: async (parent, args, context, info) => {
     const { message, userID } = args.fields;
     console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
+
+    if (!userID) {
+      throw new ApolloError("userID is required");
+    }
     try {
       prompt =
         'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +

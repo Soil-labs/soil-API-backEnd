@@ -2001,16 +2001,21 @@ module.exports = {
     const { message, memorySort, userID } = args.fields;
     console.log("Query > edenGPTreplyMemory > args.fields = ", args.fields);
     try {
-      // const filter = {
-      //   label: "long_term_memory",
-      // };
-      // if (userID) {
-      //   filter._id = userID;
-      // }
+      const filter = {
+        label: "CV_user_memory",
+      };
+      if (userID) {
+        filter._id = userID;
+      }
 
-      // longTermMemories = await findBestEmbedings(message, filter, (topK = 3));
+      longTermMemories = await findBestEmbedings(message, filter, (topK = 3));
 
-      // // console.log("longTermMemories = " , longTermMemories)
+      // console.log("longTermMemories = ", longTermMemories);
+
+      for (let i = 0; i < longTermMemories.length; i++) {
+        console.log(longTermMemories[i].metadata.text);
+      }
+
       // // ads
 
       // let prompt_longTermMemory = "Long Term Memory:";
