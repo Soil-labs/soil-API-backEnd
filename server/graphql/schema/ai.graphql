@@ -208,6 +208,7 @@ module.exports = `
         message: String
         conversation: [messageChat]
         experienceTypeID: experienceTypeIDEnum
+        userID: ID
     }
 
     enum experienceTypeIDEnum {
