@@ -6,6 +6,9 @@ const { Members } = require("../../../models/membersModel");
 const axios = require("axios");
 const { PineconeClient } = require("@pinecone-database/pinecone");
 
+const { request, gql} = require('graphql-request');
+
+
 
 async function createEmbedingsGPT(words_n) {
     // words_n = ["node.js", "react", "angular"];
@@ -69,6 +72,46 @@ async function deletePineCone(filter){
     }catch (err){
         console.log("err = ", err);
     }
+}
+
+const updateConversation = async (fields) => {
+
+    console.log("fields = " , fields)
+    // asdf1
+
+    const query = gql`
+    mutation UpdateConversation($fields: updateConversationInput) {
+        updateConversation(fields: $fields) {
+            _id
+            userID
+            convKey
+            conversation {
+                role
+                content
+            }
+            summaryReady
+            summary {
+                pineConeID
+                content
+            }
+            updatedAt
+        }
+    }`;
+
+    const variables  = {
+        fields: {
+            userID: fields.userID,
+            conversation: fields.conversation,
+        }
+    };
+
+    res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
+
+
+    console.log("res.updateConversation = " , res.updateConversation)
+
+    return res.updateConversation
+
 }
 
 async function upsertEmbedingPineCone(data) {
@@ -1069,4 +1112,5 @@ module.exports = {
     userAnsweredOrGiveIdeas,
     updateExecutedTasks,
     edenReplyBasedTaskInfo,
+    updateConversation,
   };

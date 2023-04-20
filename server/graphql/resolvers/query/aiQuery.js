@@ -15,7 +15,7 @@ const { PineconeClient } = require("@pinecone-database/pinecone");
 const { Configuration, OpenAIApi } = require("openai");
 
 const { printC } = require("../../../printModule");
-const { taskPlanning,findAvailTaskPineCone,userAnsweredOrGiveIdeas,updateExecutedTasks,edenReplyBasedTaskInfo } = require("../utils/aiModules");
+const { taskPlanning,findAvailTaskPineCone,userAnsweredOrGiveIdeas,updateExecutedTasks,edenReplyBasedTaskInfo,updateConversation } = require("../utils/aiModules");
 
 globalThis.fetch = fetch;
 
@@ -564,17 +564,40 @@ module.exports = {
 
     if (systemPrompt == undefined) {
       throw new ApolloError(
-        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs,
+        "Invalid experienceTypeID - Didn't find any prompt for this expirience - Expirience must be one of: " + experienceTypeIDs,
       );
     }
 
 
+    
+
     try {
+
+
       responseGPTchat = await useGPTchat(
         message,
         conversation,
         systemPrompt
       );
+
+
+      // ------------------ Save the conversation to the DB ------------------
+      if (userID != undefined) {
+        conversationTotal = [...conversation, {
+          role: "user",
+          content: message,
+        }]
+        fieldsConvo = {
+          userID: userID,
+          conversation: conversationTotal,
+        }
+
+        updateConversation(fieldsConvo);
+        // asdf2
+      }
+      // ------------------ Save the conversation to the DB ------------------
+
+
 
       return {
         reply: responseGPTchat,
