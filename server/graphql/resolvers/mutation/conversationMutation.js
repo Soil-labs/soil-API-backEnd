@@ -91,7 +91,7 @@ module.exports = {
       } else if (convKey) {
         searchQuery_and.push({ convKey: convKey });
       } else {
-        searchQuery_and.push({ summaryReady: true })
+        searchQuery_and.push({ summaryReady: false })
       }
       if (searchQuery_and.length > 0) {
         searchQuery = {
