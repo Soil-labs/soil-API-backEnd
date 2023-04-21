@@ -533,21 +533,41 @@ module.exports = {
     }
   },
   edenGPTCreateProfileExperienceChatAPI: async (parent, args, context, info) => {
-    const { message, conversation, experienceTypeID,userID } = args.fields;
+    const { message, conversation, experienceTypeID,userID,useMemory } = args.fields;
     console.log("Query > edenGPTCreateProfileExperienceChatAPI > args.fields = ", args.fields);
 
+    // V1
+    // let experiencePrompts = {
+    //   "BACKGROUND": {
+    //     "prompt": "You are an assistant tasked with understanding a candidate's personal background to help match them with suitable job opportunities. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their educational background, work experience, and relevant certifications. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+    //   },
+    //   "SKILLS_EXPERIENCE": {
+    //     "prompt": "You are an assistant tasked with evaluating a candidate's skills and expertise to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to understand their technical and soft skills, strengths, and areas of improvement. Make sure your questions are relevant and progressively focus on the candidate's skill set. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+    //   },
+    //   "CAREER_GOALS_ASPIRATIONS": {
+    //     "prompt": "You are an assistant tasked with understanding a candidate's career goals and aspirations to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to learn about their short-term and long-term career goals, ideal work environment, and any specific industries or positions they are targeting. Make sure your questions are relevant and progressively focus on the candidate's aspirations. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+    //   },
+    //   "WORK_PREFERENCES": {
+    //     "prompt": "You are an assistant tasked with understanding a candidate's work preferences to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their preferred work culture, work-life balance, and any remote or flexible work options they might be interested in. Make sure your questions are relevant and progressively focus on the candidate's preferences. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+    //   }
+    // }
+
+    //V2
     let experiencePrompts = {
       "BACKGROUND": {
-        "prompt": "You are an assistant tasked with understanding a candidate's personal background to help match them with suitable job opportunities. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their educational background, work experience, and relevant certifications. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+        "prompt": "You are an assistant tasked with understanding a candidate's personal background to help match them with suitable job opportunities. Conduct a short conversation with the candidate, asking 2-4 questions to gather information about their educational background, work experience, and relevant certifications. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.  Don't repeat the candidate answer, just ask the next question.",
       },
       "SKILLS_EXPERIENCE": {
-        "prompt": "You are an assistant tasked with evaluating a candidate's skills and expertise to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to understand their technical and soft skills, strengths, and areas of improvement. Make sure your questions are relevant and progressively focus on the candidate's skill set. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+        "prompt": "You are an assistant tasked with evaluating a candidate's skills and expertise to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-4 questions to understand their technical skills. Make sure your questions are relevant and progressively focus on the candidate's skill set. Remember to ask only one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time. Don't repeat the candidate answer, just ask the next question.",
       },
       "CAREER_GOALS_ASPIRATIONS": {
-        "prompt": "You are an assistant tasked with understanding a candidate's career goals and aspirations to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to learn about their short-term and long-term career goals, ideal work environment, and any specific industries or positions they are targeting. Make sure your questions are relevant and progressively focus on the candidate's aspirations. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+        "prompt": "You are an assistant tasked with understanding a candidate's career goals and aspirations to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-4 questions to learn about their short-term and long-term career goals, ideal work environment, and any specific industries or positions they are targeting. Make sure your questions are relevant and progressively focus on the candidate's aspirations. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.  Don't repeat the candidate answer, just ask the next question.",
       },
       "WORK_PREFERENCES": {
-        "prompt": "You are an assistant tasked with understanding a candidate's work preferences to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their preferred work culture, work-life balance, and any remote or flexible work options they might be interested in. Make sure your questions are relevant and progressively focus on the candidate's preferences. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+        "prompt": "You are an assistant tasked with understanding a candidate's work preferences to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-4 questions to gather information about their preferred work culture, work-life balance, and any remote or flexible work options they might be interested in. Make sure your questions are relevant and progressively focus on the candidate's preferences. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.  Don't repeat the candidate answer, just ask the next question.",
+      },
+      "GENERAL_CONVERSATION": {
+        "prompt": "You are an assistant tasked with making general conversation. Make sure your questions are relevant. Remember to ask one question at a time. .  Don't repeat the candidate answer, be really consise in your answeres.",
       }
     }
 
@@ -573,12 +593,49 @@ module.exports = {
 
     try {
 
+      if (useMemory == true) {
 
-      responseGPTchat = await useGPTchat(
-        message,
-        conversation,
-        systemPrompt
-      );
+        const filter = {
+          label: "conv_with_user_memory",
+          _id: userID,
+        };
+
+        // take the message, and the last message from the conversaiton and combine them togehter on one string 
+        let messageWithLastMessage = message + " " + conversation[conversation.length - 1].content;
+  
+        bestKeywordsFromEmbed = await findBestEmbedings(
+          messageWithLastMessage,
+          filter,
+          (topK = 3)
+        );
+
+        console.log("bestKeywordsFromEmbed = " , bestKeywordsFromEmbed)
+
+        // bestKeywordsFromEmbed this is an array of objeect with text inside, take all the text and make them into a string
+
+        bestKeywordsFromEmbedString = "MEMORY: \n"
+
+        bestKeywordsFromEmbedString += bestKeywordsFromEmbed.map((item) => "- " + item.metadata.text).join(" \n ");
+
+        
+        bestKeywordsFromEmbedString += "\n You can use the MEMORY to reply if something applies \n\n Reply:"
+        console.log("bestKeywordsFromEmbedString = " , bestKeywordsFromEmbedString)
+
+        responseGPTchat = await useGPTchat(
+          message,
+          conversation,
+          systemPrompt,
+          bestKeywordsFromEmbedString,
+        );
+
+      } else {
+        responseGPTchat = await useGPTchat(
+          message,
+          conversation,
+          systemPrompt,
+        );
+      }
+
 
 
       // ------------------ Save the conversation to the DB ------------------
@@ -596,6 +653,9 @@ module.exports = {
         // asdf2
       }
       // ------------------ Save the conversation to the DB ------------------
+
+
+
 
 
 

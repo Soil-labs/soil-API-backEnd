@@ -209,6 +209,7 @@ module.exports = `
         conversation: [messageChat]
         experienceTypeID: experienceTypeIDEnum
         userID: ID
+        useMemory: Boolean
     }
 
     enum experienceTypeIDEnum {
@@ -216,6 +217,7 @@ module.exports = `
         SKILLS_EXPERIENCE
         CAREER_GOALS_ASPIRATIONS
         WORK_PREFERENCES
+        GENERAL_CONVERSATION
     }
 
     type edenGPTCreateProfileExperienceChatAPIOutput {
