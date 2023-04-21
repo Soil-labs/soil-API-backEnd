@@ -105,15 +105,12 @@ module.exports = `
           messageMapKG_V2(fields: messageMapKG_V2Input): messageMapKG_V2Output
           messageMapKG_V3(fields: messageMapKG_V3Input): messageMapKG_V3Output
           messageMapKG_V4(fields: messageMapKG_V4Input): messageMapKG_V4Output
-          
           edenGPTreplyMemory(fields: edenGPTreplyMemoryInput): edenGPTreplyMemoryOutput
-          edenGPTreplyCVmemory(fields: edenGPTreplyCVmemoryInput): edenGPTreplyCVmemoryOutput
           edenGPTreplyChatAPI(fields: edenGPTreplyChatAPIInput): edenGPTreplyChatAPIOutput
           edenGPTreplyChatAPI_V2(fields: edenGPTreplyChatAPI_V2Input): edenGPTreplyChatAPI_V2Output
           edenGPTreplyChatAPI_V3(fields: edenGPTreplyChatAPI_V3Input): edenGPTreplyChatAPI_V3Output
           edenGPTEndorseChatAPI(fields: edenGPTEndorseChatAPIInput): edenGPTEndorseChatAPIOutput
           edenGPTCreateProfileExperienceChatAPI(fields: edenGPTCreateProfileExperienceChatAPIInput): edenGPTCreateProfileExperienceChatAPIOutput
-          createProfileExperienceWithChatCVMemory(fields: createProfileExperienceWithChatCVMemoryInput): createProfileExperienceWithChatCVMemoryOutput
           edenAITalSearchExpirience(fields: edenAITalSearchExpirienceInput): edenAITalSearchExpirienceOutput
           edenGPTReviewChatAPI(fields: edenGPTReviewChatAPIInput): edenGPTReviewChatAPIOutput
           edenGPTsearchProfiles(fields: edenGPTsearchProfilesInput): edenGPTsearchProfilesOutput

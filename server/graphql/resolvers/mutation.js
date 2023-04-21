@@ -62,18 +62,11 @@ const {
 const { createProjectUpdate } = require("./mutation/projectUpdateMutation");
 const {
   addEndorsement,
-  findEndorsements,
-  deleteAllEndorsements,
-  calculateReputation,
-  createMultipleFakeEndorsementAndReview,
+  findEndorsements,deleteAllEndorsements,calculateReputation,createMultipleFakeEndorsementAndReview,
   createFakeEndorsement,
   createEndorsementLink,
 } = require("./mutation/endorsementMutation");
-const {
-  addReview,
-  createFakeReview,
-  findReviews,
-} = require("./mutation/reviewMutation");
+const { addReview,createFakeReview, findReviews } = require("./mutation/reviewMutation");
 const {
   createRoom,
   enterRoom,
@@ -94,7 +87,6 @@ const {
 const {
   addMessage,
   storeLongTermMemory,
-  storeLongTermMemorySummary,
   addMessages,
   updateMessage,
   useAI_OnMessage,
@@ -184,16 +176,12 @@ module.exports = {
 
     // ------------- ENDORSEMENT MUTATION -----------------
     addEndorsement,
-    findEndorsements,
-    deleteAllEndorsements,
-    calculateReputation,
-    createMultipleFakeEndorsementAndReview,
+    findEndorsements,deleteAllEndorsements,calculateReputation,createMultipleFakeEndorsementAndReview,
     createFakeEndorsement,
     createEndorsementLink,
 
     // ------------- REVIEW MUTATION -----------------
-    addReview,
-    createFakeReview,
+    addReview,createFakeReview,
     findReviews,
 
     //---------------ROOM MUTATION --------------------
@@ -213,7 +201,6 @@ module.exports = {
     // --------------- AI MUTATION -----------------
     addMessage,
     storeLongTermMemory,
-    storeLongTermMemorySummary,
     addMessages,
     updateMessage,
     useAI_OnMessage,
