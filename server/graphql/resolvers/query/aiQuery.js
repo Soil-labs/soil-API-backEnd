@@ -598,59 +598,90 @@ module.exports = {
       );
     }
   },
-  edenGPTCreateProfileExperienceCVMemoryChatAPI: async (
+  createProfileExperienceWithChatCVMemory: async (
     parent,
     args,
     context,
     info
   ) => {
     const { message, conversation, experienceTypeID, userID } = args.fields;
-    // console.log(
-    //   "Query > edenGPTCreateProfileExperienceChatAPI > args.fields = ",
-    //   args.fields
-    // );
+    console.log(
+      "Query > edenGPTCreateProfileExperienceChatAPI > args.fields = ",
+      args.fields
+    );
 
-    // let experiencePrompts = {
-    //   BACKGROUND: {
-    //     prompt:
-    //       "You are an assistant tasked with understanding a candidate's personal background to help match them with suitable job opportunities. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their educational background, work experience, and relevant certifications. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
-    //   },
-    //   SKILLS_EXPERIENCE: {
-    //     prompt:
-    //       "You are an assistant tasked with evaluating a candidate's skills and expertise to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to understand their technical and soft skills, strengths, and areas of improvement. Make sure your questions are relevant and progressively focus on the candidate's skill set. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
-    //   },
-    //   CAREER_GOALS_ASPIRATIONS: {
-    //     prompt:
-    //       "You are an assistant tasked with understanding a candidate's career goals and aspirations to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to learn about their short-term and long-term career goals, ideal work environment, and any specific industries or positions they are targeting. Make sure your questions are relevant and progressively focus on the candidate's aspirations. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
-    //   },
-    //   WORK_PREFERENCES: {
-    //     prompt:
-    //       "You are an assistant tasked with understanding a candidate's work preferences to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their preferred work culture, work-life balance, and any remote or flexible work options they might be interested in. Make sure your questions are relevant and progressively focus on the candidate's preferences. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
-    //   },
-    // };
+    let experiencePrompts = {
+      BACKGROUND: {
+        prompt:
+          "You are an assistant tasked with understanding a candidate's personal background to help match them with suitable job opportunities. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their educational background, work experience, and relevant certifications. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+      },
+      SKILLS_EXPERIENCE: {
+        prompt:
+          "You are an assistant tasked with evaluating a candidate's skills and expertise to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to understand their technical and soft skills, strengths, and areas of improvement. Make sure your questions are relevant and progressively focus on the candidate's skill set. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+      },
+      CAREER_GOALS_ASPIRATIONS: {
+        prompt:
+          "You are an assistant tasked with understanding a candidate's career goals and aspirations to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to learn about their short-term and long-term career goals, ideal work environment, and any specific industries or positions they are targeting. Make sure your questions are relevant and progressively focus on the candidate's aspirations. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+      },
+      WORK_PREFERENCES: {
+        prompt:
+          "You are an assistant tasked with understanding a candidate's work preferences to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their preferred work culture, work-life balance, and any remote or flexible work options they might be interested in. Make sure your questions are relevant and progressively focus on the candidate's preferences. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+      },
+    };
 
-    // // create a string of all the keys from the experiencePrompts object
-    // let experienceTypeIDs = Object.keys(experiencePrompts).join(", ");
+    // create a string of all the keys from the experiencePrompts object
+    let experienceTypeIDs = Object.keys(experiencePrompts).join(", ");
 
-    // if (experienceTypeID == undefined) {
-    //   throw new ApolloError(
-    //     "Invalid experienceTypeID - must be one of: " + experienceTypeIDs
-    //   );
-    // }
+    if (experienceTypeID == undefined) {
+      throw new ApolloError(
+        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs
+      );
+    }
 
-    // let systemPrompt = experiencePrompts[experienceTypeID]?.prompt;
+    let systemPrompt = experiencePrompts[experienceTypeID]?.prompt;
 
-    // if (systemPrompt == undefined) {
-    //   throw new ApolloError(
-    //     "Invalid experienceTypeID - must be one of: " + experienceTypeIDs
-    //   );
-    // }
+    if (systemPrompt == undefined) {
+      throw new ApolloError(
+        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs
+      );
+    }
+
+    // console.log("longTermMemories = ", longTermMemories);
 
     try {
-      // responseGPTchat = await useGPTchat(message, conversation, systemPrompt);
+      const filter = {
+        label: "CV_user_memory",
+      };
+      if (userID) {
+        filter._id = userID;
+      }
+
+      longTermMemories = await findBestEmbedings(message, filter, (topK = 3));
+
+      console.log("longTermMemories", longTermMemories);
+
+      function getAllText() {
+        return longTermMemories.map((memory) => memory.metadata.text).join("•");
+      }
+
+      console.log("getAllText", getAllText);
+
+      messageMemory =
+        message +
+        "MEMORY: " +
+        getAllText() +
+        "only give a reply based on conversation and if anything apply from MEMORY:";
+
+      console.log("messageMemory", messageMemory);
+
+      responseGPTchat = await useGPTchat(
+        messageMemory,
+        conversation,
+        systemPrompt
+      );
 
       return {
-        reply: message,
+        reply: responseGPTchat,
       };
     } catch (err) {
       throw new ApolloError(
@@ -2076,88 +2107,12 @@ module.exports = {
 
       // console.log("longTermMemories = ", longTermMemories);
 
-      for (let i = 0; i < longTermMemories.length; i++) {
-        console.log(longTermMemories[i].metadata.text);
+      function getAllText() {
+        return longTermMemories.map((memory) => memory.metadata.text).join("•");
       }
 
-      // // ads
-
-      // let prompt_longTermMemory = "Long Term Memory:";
-      // for (let i = 0; i < longTermMemories.length; i++) {
-      //   prompt_longTermMemory =
-      //     prompt_longTermMemory + "\n" + longTermMemories[i].metadata.text;
-      // }
-
-      // console.log("prompt_longTermMemory = ", prompt_longTermMemory);
-      // // asdf
-
-      // prompot_General = `
-      // You are playing the role of Eden
-      // - Eden is an recruiter that match projects to people, so it tries to find the best person for the job
-
-      // - Eden is an expert recruiter that knows exactly the role that the manager is looking for so it can ask really insightful quesitons in order to uderstand the skills and expertise that the candidate should have
-
-      // - Eden only ask one quesiton at a time
-      // - ask questions back to uderstand in detail the skills and expertise that the candidate should have!!
-      // `;
-
-      // prompot_General = prompot_General + "\n" + prompt_longTermMemory;
-
-      // // console.log("prompot_General = 1" , prompot_General)
-
-      // if (memorySort) {
-      //   prompot_General =
-      //     prompot_General + "\n\n\n" + "Conversation so far: " + memorySort;
-      // }
-
-      // // console.log("prompot_General = 2" , prompot_General)
-
-      // prompot_General =
-      //   prompot_General +
-      //   "\n\n\n" +
-      //   "Question from user: " +
-      //   "\n" +
-      //   message +
-      //   "\n" +
-      //   "Reply:";
-
-      // // console.log("prompot_General = 3" , prompot_General)
-      // // asdf
-
-      // reply = useGPT(prompot_General);
-
-      // // // -------------- Find Keywords -------------
-      // // const configuration = new Configuration({
-      // //   apiKey: "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",
-      // // });
-      // // const openai = new OpenAIApi(configuration);
-      // // // let keywordsEdenArray = [];
-      // // const response_keywords = await openai.createCompletion({
-      // //   model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
-      // //   prompt: message + "\nKeywords:",
-      // //   temperature: 0.7,
-      // //   stop: ["==END=="],
-      // //   max_tokens: 300,
-      // //   // top_p: 1,
-      // //   // frequency_penalty: 0,
-      // //   // presence_penalty: 0,
-      // // });
-
-      // // let keywordsEden = response_keywords.data.choices[0].text;
-      // // // console.log("keywordsEden = " , keywordsEden)
-
-      // // var keywordsEdenArray = keywordsEden.split(',');
-
-      // // // delete any empty string
-      // // keywordsEdenArray = keywordsEdenArray.filter(function (el) {
-      // //   return el != "";
-      // // });
-
-      // // // -------------- Find Keywords -------------
-
       return {
-        reply: message,
-        // keywords: keywordsEdenArray
+        reply: getAllText(),
       };
     } catch (err) {
       throw new ApolloError(

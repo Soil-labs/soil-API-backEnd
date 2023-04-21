@@ -87,7 +87,7 @@ const {
   conversationToSummaryGPT,
   edenGPTEndorseChatAPI,
   edenGPTCreateProfileExperienceChatAPI,
-  edenGPTCreateProfileExperienceCVMemoryChatAPI,
+  createProfileExperienceWithChatCVMemory,
   edenAITalSearchExpirience,
   edenGPTReviewChatAPI,
 } = require("./query/aiQuery");
@@ -216,7 +216,7 @@ module.exports = {
     conversationToSummaryGPT,
     edenGPTEndorseChatAPI,
     edenGPTCreateProfileExperienceChatAPI,
-    edenGPTCreateProfileExperienceCVMemoryChatAPI,
+    createProfileExperienceWithChatCVMemory,
     edenAITalSearchExpirience,
     edenGPTReviewChatAPI,
 

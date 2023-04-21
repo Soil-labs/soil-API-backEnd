@@ -232,7 +232,7 @@ module.exports = `
         experienceTypeID: experienceTypeIDEnum
     }
 
-    input edenGPTCreateProfileExperienceCVMemoryChatAPIInput {
+    input createProfileExperienceWithChatCVMemoryInput {
         message: String
         conversation: [messageChat]
         experienceTypeID: experienceTypeIDEnum
@@ -249,7 +249,7 @@ module.exports = `
         reply: String
     }
 
-   type  edenGPTCreateProfileExperienceCVMemoryChatAPIOutput {
+   type  createProfileExperienceWithChatCVMemoryOutput {
         reply: String
     }
 
