@@ -482,19 +482,29 @@ module.exports = `
         
         memberRole: ID
 
+        budget: budgetInputTk
+
         hoursPerWeek: Float,
 
         previousProjects: [previousProjectsInput],
 
         links: [linkInput],
 
-        experienceLevel: Int,
+        experienceLevel: experienceLevelInput,
         location: String
-
-
-
     }
 
+    input budgetInputTk {
+        totalBudget: Float,
+        token: String,
+        perHour: Float,
+        perMonth: Float,
+    }
+
+    input experienceLevelInput {
+        total: Int,
+        years: Int, 
+    }
 
 
     input onboardingInput {
@@ -568,6 +578,13 @@ module.exports = `
         nodesID: [String]
         nodeType: String
         nodesID_level: [nodesID_levelInput]
+        
+    }
+
+    input updateNodesToMemberMultiTypeNodeInput {
+        # memberID: ID
+        nodesID: [String]
+        nodeType: String
         
     }
 

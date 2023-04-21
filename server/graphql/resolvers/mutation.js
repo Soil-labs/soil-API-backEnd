@@ -2,7 +2,7 @@ const {
   addNewMember,
   updateMember,
   addNodesToMember,
-  updateNodesToMember,
+  updateNodesToMember,updateNodesToMemberMultiTypeNode,
   deleteNodesFromMember,
   deleteMember,
   addFavoriteProject,
@@ -43,6 +43,10 @@ const {
   relatedNode_name,
   createNodeCategoryGroup,
 } = require("./mutation/nodeMutation");
+
+const {
+  updateConversation,updateConvSummaries,
+} = require("./mutation/conversationMutation");
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
 const { updateServer } = require("./mutation/serverMutation");
 const {
@@ -115,7 +119,7 @@ module.exports = {
     addNewMember,
     updateMember,
     addNodesToMember,
-    updateNodesToMember,
+    updateNodesToMember,updateNodesToMemberMultiTypeNode,
     deleteNodesFromMember,
     deleteMember,
     endorseAttribute,
@@ -153,6 +157,9 @@ module.exports = {
     relatedNode,
     relatedNode_name,
     createNodeCategoryGroup,
+
+    // ------------- CONVERSATION MUTATION -----------------
+    updateConversation,updateConvSummaries,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,

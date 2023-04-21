@@ -6,6 +6,9 @@ const { Members } = require("../../../models/membersModel");
 const axios = require("axios");
 const { PineconeClient } = require("@pinecone-database/pinecone");
 
+const { request, gql} = require('graphql-request');
+
+
 
 async function createEmbedingsGPT(words_n) {
     // words_n = ["node.js", "react", "angular"];
@@ -32,6 +35,132 @@ async function createEmbedingsGPT(words_n) {
     // console.log("res = ", res);
     return res;
   }
+
+// Generates a random 6-digit ID
+async function generateRandomID(numDigit = 8) {
+    // Define a string of possible characters to choose from
+    const possibleChars = "0123456789abcdefghijklmnopqrstuvwxyz";
+    // Initialize an empty string to hold the ID
+    let id = "";
+  
+    // Loop 6 times to generate each digit of the ID
+    for (let i = 0; i < numDigit; i++) {
+      // Generate a random index into the possibleChars string
+      const randomIndex = Math.floor(Math.random() * possibleChars.length);
+      // Get the character at the random index and add it to the ID
+      id += possibleChars.charAt(randomIndex);
+    }
+  
+    // Return the generated ID
+    return id;
+  }
+  
+async function deletePineCone(filter){
+
+    const pinecone = new PineconeClient();
+    await pinecone.init({
+      environment: "us-east1-gcp",
+      apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+    });
+  
+    const index = await pinecone.Index("profile-eden-information");
+
+    
+    try{   
+        res = await index.delete1({ ids: deletePineIDs });
+        // console.log("res = " , res)
+    }catch (err){
+        console.log("err = ", err);
+    }
+}
+
+const updateConversation = async (fields) => {
+
+    console.log("fields = " , fields)
+    // asdf1
+
+    const query = gql`
+    mutation UpdateConversation($fields: updateConversationInput) {
+        updateConversation(fields: $fields) {
+            _id
+            userID
+            convKey
+            conversation {
+                role
+                content
+            }
+            summaryReady
+            summary {
+                pineConeID
+                content
+            }
+            updatedAt
+        }
+    }`;
+
+    const variables  = {
+        fields: {
+            userID: fields.userID,
+            conversation: fields.conversation,
+        }
+    };
+
+    res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables)
+
+
+    console.log("res.updateConversation = " , res.updateConversation)
+
+    return res.updateConversation
+
+}
+
+async function upsertEmbedingPineCone(data) {
+    const pinecone = new PineconeClient();
+    await pinecone.init({
+      environment: "us-east1-gcp",
+      apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+    });
+  
+    const index = await pinecone.Index("profile-eden-information");
+  
+    id_message = await generateRandomID(8);
+
+    const embed = await createEmbedingsGPT(data.text);
+
+    let metadata = {
+        text: data.text,
+        _id: data._id,
+        label: data.label,
+    }
+
+    if (data.convKey) {
+        metadata = {
+            ...metadata,
+            convKey: data.convKey,
+        }
+    }
+  
+    const upsertRequest = {
+      vectors: [
+        {
+          id: id_message,
+          values: embed[0],
+          metadata: metadata,
+        },
+      ],
+    };
+
+    console.log("id_message = " , id_message)
+  
+    let upsertResponse = await index.upsert({ upsertRequest });
+
+    upsertResponse = {
+        ...upsertResponse,
+        pineConeID: id_message,
+    }
+  
+    return upsertResponse;
+}
 
 async function findBestEmbedings(message, filter, topK = 3) {
   
@@ -972,7 +1101,10 @@ module.exports = {
     totalScore_aiModule,
     showObject,
     sortArray_aiModule,
+    upsertEmbedingPineCone,
+    deletePineCone,
     chooseAPIkey,
+    useGPTchat,
     useGPTchatSimple,
     arrayToObject,
     taskPlanning,
@@ -980,4 +1112,5 @@ module.exports = {
     userAnsweredOrGiveIdeas,
     updateExecutedTasks,
     edenReplyBasedTaskInfo,
+    updateConversation,
   };

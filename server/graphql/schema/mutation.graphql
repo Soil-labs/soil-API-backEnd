@@ -10,6 +10,7 @@ module.exports = `
         addPreferencesToMember(fields:addPreferencesToMemberInput!): Members
         addNodesToMember(fields:addNodesToMemberInput!): Members
         updateNodesToMember(fields:updateNodesToMemberInput!): Members
+        updateNodesToMemberMultiTypeNode(fields:updateNodesToMemberMultiTypeNodeInput!): Members
         deleteNodesFromMember(fields:deleteNodesFromMemberInput!): Members
         deleteMember(fields:deleteMemberInput!): Members
         # addSkillToMember(fields:addSkillToMember_Input!):Members
@@ -64,6 +65,12 @@ module.exports = `
         relatedNode(fields:relatedNodeInput): Node
         relatedNode_name(fields:relatedNode_nameInput): Node
         createNodeCategoryGroup(fields:createNodeCategoryGroupInput): Node
+
+
+        # ------------- CONVERSATION MUTATION -----------------
+        updateConversation(fields:updateConversationInput): Conversation
+        updateConvSummaries(fields:updateConvSummariesInput): [Conversation]
+
 
 
         #  ---------- ROLE MUTATIONS -------

@@ -55,6 +55,11 @@ module.exports = `
             nodes_autocomplete(fields:nodes_autocompleteInput): [Node]
             treeOfRelatedNodes(fields:treeOfRelatedNodesInput): [Node]
 
+           #  ---------- CONVERSATION QUERY -------
+            findConversation(fields:findConversationInput): Conversation
+            findConversations(fields:findConversationsInput): [Conversation]
+
+
           #  ---------- QUERY TEMPLATE QUERY -------
             findRoleTemplate(fields:findRoleTemplateInput): RoleTemplate
             findRoleTemplates(fields:findRoleTemplatesInput): [RoleTemplate]

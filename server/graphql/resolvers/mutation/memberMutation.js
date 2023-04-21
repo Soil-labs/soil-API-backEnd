@@ -8,6 +8,9 @@ const axios = require("axios");
 
 const {printC} = require("../../../printModule")
 
+const { updateNodesToMember } = require("../utils/nodeModules");
+
+
 
 
 const {arrayToKeyObject,getRandomIDs,fetchRandomAvatar,randomPicture,useGPTchat,generateRandomID,addNewFakeUser,addNodesToFakeMember} = require("../utils/helperFunc");
@@ -306,6 +309,7 @@ module.exports = {
         timeZone,
         level,
         links,
+        budget,
         content,
         serverID,
         onbording,
@@ -346,21 +350,88 @@ module.exports = {
       let membersData = await Members.findOne({ _id: fields._id });
       let membersDataOriginal = membersData;
 
+      if (budget != undefined) {
+        fields = { 
+          ...fields, 
+          budget: membersData.budget 
+        };
 
-      if (experienceLevel) {
-       
-        if (experienceLevel!= 3 && experienceLevel!= 6 && experienceLevel!=9){
-          throw new ApolloError("Experience Level must be 3, 6 or 9");
-        } else {
+        if (budget.totalBudget) {
           fields = { 
             ...fields,
-            experienceLevel: {
-              ...membersData.experienceLevel,
-              total: experienceLevel,
+            budget: {
+              ...fields.budget,
+              totalBudget: budget.totalBudget,
             }
-          
           };
         }
+
+        if (budget.perHour) {
+          fields = { 
+            ...fields,
+            budget: {
+              ...fields.budget,
+              perHour: budget.perHour,
+            }
+          };
+        }
+        if (budget.perMonth) {
+          fields = { 
+            ...fields,
+            budget: {
+              ...fields.budget,
+              perMonth: budget.perMonth,
+            }
+          };
+        }
+
+        if (budget.token) {
+          fields = { 
+            ...fields,
+            budget: {
+              ...fields.budget,
+              token: budget.token,
+            }
+          };
+        }
+
+      }
+
+      if (experienceLevel) {
+
+        fields = {
+          ...fields,
+          experienceLevel: {
+            ...membersData.experienceLevel,
+          }
+        }
+
+        if (experienceLevel.total) {
+          if (experienceLevel.total!= 3 && experienceLevel.total!= 6 && experienceLevel.total!=9){
+            throw new ApolloError("Experience Level must be 3, 6 or 9");
+          } else {
+            fields = { 
+              ...fields,
+              experienceLevel: {
+                ...fields.experienceLevel,
+                total: experienceLevel.total,
+              }
+            
+            };
+          }
+        } 
+
+        if (experienceLevel.years){
+          fields = {
+            ...fields,
+            experienceLevel: {
+              ...fields.experienceLevel,
+              years: experienceLevel.years,
+            }
+          }
+        }
+       
+        
       }
         
         
@@ -848,7 +919,112 @@ module.exports = {
       }
     }
   ),
+  updateNodesToMemberMultiTypeNode: combineResolvers(
+    IsAuthenticated,
+    async (parent, args, req, info) => {
+      let { nodesID, nodeType } = args.fields;
 
+      let nodesID_level = undefined // it existed vefore, so I bring it again here to not have any errors, later we will fix it completly
+
+      console.log(
+        "Mutation > updateNodesToMemberMultiTypeNode > args.fields = ",
+        args.fields
+      );
+
+
+      if (!(nodesID == undefined || nodesID_level == undefined))
+        throw new ApolloError(
+          "you need to use nodesID or nodesID_level, you cant use both"
+        );
+
+      try {
+        let nodesID_level_obj = {};
+        if (nodesID == undefined) {
+          nodesID = nodesID_level.map((item) => item.nodeID);
+
+          // change nodesID_level from array of objects to an object
+          for (let i = 0; i < nodesID_level.length; i++) {
+            let item = nodesID_level[i];
+            nodesID_level_obj[item.nodeID] = item;
+          }
+        }
+        console.log("nodesID_level_obj = ", nodesID_level_obj);
+
+        let nodesData = await Node.find({ _id: nodesID }).select(
+          "_id name node match_v2_update"
+        );
+
+        console.log("nodesData = ", nodesData);
+        // sdf;
+
+        // ---------- All nodes should be equal to nodeType or else throw error -----------
+        nodesID_array = [];
+
+        let nodeTypeObj = {}
+
+        nodesData.forEach((node) => {
+          nodesID_array.push(node._id.toString());
+
+          if (nodeTypeObj[node.node] == undefined) {
+            nodeTypeObj[node.node] = [node]
+          } else {
+            nodeTypeObj[node.node].push(node)
+          }
+          // if (node.node != nodeType) {
+          //   throw new ApolloError(
+          //     "All nodes should be equal to nodeType, problem on nodeID = " +
+          //       node._id +
+          //       " with name = " +
+          //       node.name +
+          //       " and node = " +
+          //       node.node +
+          //       ""
+          //   );
+          // }
+        });
+        // ---------- All nodes should be equal to nodeType or else throw error -----------
+
+        // loop throw the nodeTypeObj and pass the different nodeType and the nodeIDs
+        for (const [key, value] of Object.entries(nodeTypeObj)) {
+          nodeType = key
+
+          let nodesID = value.map((item) => item._id)
+
+          console.log("nodesID = " , nodesID)
+          console.log("nodeType = " , nodeType)
+
+          let fields = {}
+
+          fields.nodesID = nodesID
+          fields.nodeType = nodeType
+          fields.Authorization = req.headers.authorization
+
+          // console.log("fields = " , fields)
+          // sdf19
+
+          userData = await updateNodesToMember(fields)
+  
+          // sdf99
+
+        }
+
+        // console.log("user = " , user)
+        // sdf9
+
+        // find the user and return 
+        let memberData = await Members.findOne({ _id: userData._id })
+        
+        return memberData
+        
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "updateNodesToMemberMultiTypeNode",
+          { component: "memberMutation > updateNodesToMemberMultiTypeNode" }
+        );
+      }
+    }
+  ),
   updateNodesToMember: combineResolvers(
     IsAuthenticated,
     async (parent, args, { user }, info) => {
