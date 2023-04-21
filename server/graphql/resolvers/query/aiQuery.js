@@ -117,7 +117,7 @@ async function useGPTchat(
     content: userNewMessage + "\n" + userQuestion,
   });
 
-  console.log("discussion = ", discussion);
+  // console.log("discussion = ", discussion);
 
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
   response = await axios.post(
@@ -370,7 +370,7 @@ async function findBestEmbedingsArray(arr, filter, topK = 3) {
   }
   // sdf
 
-  console.log("keywordsObj = ", keywordsObj);
+  // console.log("keywordsObj = ", keywordsObj);
 
   // asdf
 
@@ -1207,6 +1207,332 @@ module.exports = {
         err.extensions?.code || "messageMapKG_V4",
         {
           component: "aiQuery > messageMapKG_V4",
+        }
+      );
+    }
+  },
+  messageMapKG_V5: async (parent, args, context, info) => {
+    const { message,assistantMessage } = args.fields;
+    console.log("Query > messageMapKG_V5 > args.fields = ", args.fields);
+    try {
+
+      // -------------- Sumarise the conversation -------------
+      console.time('summary');
+      conversation =  [
+        {"role": "assistant", "content": "Assistant: " + assistantMessage},
+        {"role": "user", "content":"User: " + message},
+      ]
+
+      let paragraphSummary = await useGPTchat(
+        // "Create a really small 2 sentense summary of the most important parts of the conversation \n\n Summary:",
+        // "Create the smallest possible 1-2 sentense summary of the most important skills, industries that the User is interested \n\n Summary:",
+        // "Create the smallest possible summary of the most important skills, industries that the User is interested \n\n Summary:",
+        "Create the smallest possible 1-2 sentense summary for what the User is interested \n\n Summary:",
+        conversation,
+        ""
+      )
+
+      // let prompt_general = "Assistant: " + assistantMessage + "\n\n"
+
+      // prompt_general += "User: " + message + "\n\n"
+
+      // prompt_general += " Create the smallest possible 1-2 sentense summary of the most important skills, industries that the User is interested \n\n Summary: \n\n"
+
+      // paragraphSummary = await useGPT(prompt_general,0.7,"text-ada-001")
+      // console.log("paragraphSummary ada= " , paragraphSummary)
+
+      // paragraphSummary = await useGPT(prompt_general,0.7,"text-babbage-001")
+      // console.log("paragraphSummary babbage= " , paragraphSummary)
+
+      // paragraphSummary = await useGPT(prompt_general,0.7,"text-curie-001")
+      // console.log("paragraphSummary curie= " , paragraphSummary)
+
+      // sdf25
+
+      // console.log("paragraphSummary = " , paragraphSummary)
+      // sdf9
+
+
+      // split the paragraphSummary stting in two equal parts and put them on an array of strings
+      let GPTkeywords = []
+      let halfLength = Math.ceil(paragraphSummary.length / 2); // get half length of paragraph summary rounded up
+      GPTkeywords.push(paragraphSummary.substr(0, halfLength)); // add first half to summaryArray
+      GPTkeywords.push(paragraphSummary.substr(halfLength)); // add second half to summaryArray
+
+      console.log("GPTkeywords = " , GPTkeywords)
+      
+      console.timeEnd('summary');
+      // asdf9
+
+      // -------------- Sumarise the conversation -------------
+
+
+      //   // -------------- find keywords with GPT V2-------------
+      //   conversation =  [
+      //     {"role": "assistant", "content": "ASSISTANT: " + assistantMessage},
+      //     {"role": "user", "content": "USER: " + message},
+      //   ]
+
+
+        
+      //   // keywordsGPTresult = await useGPTchat(
+      //   //   "Find the skills/industries that the USER needs \n\n Result, show SKILLS separated by a comma \n skills:",
+      //   //   conversation,
+      //   //   ""
+      //   // );
+      //   keywordsGPTresult = await useGPTchat(
+      //     "Find the minimum keywords that the USER needs from the context \n\n Be extremly critical and harsh only give skills that were mentioned \n\n The result, show SKILLS separated by a comma:",
+      //     conversation,
+      //     ""
+      //   );
+      //   console.log("keywordsGPTresult ChatGPT= " , keywordsGPTresult)
+      //   if (keywordsGPTresult.includes("cannot find") || keywordsGPTresult.includes("cannot provide") || keywordsGPTresult.includes("I'm sorry")|| keywordsGPTresult.includes("cannot determine")
+      //   || keywordsGPTresult.includes("unable to")|| keywordsGPTresult.includes("don't have access")){
+      //     return {}
+      //   }
+      //   // asdf0
+
+      //   keywordsGPTresult = keywordsGPTresult.replace(/[\d.]/g, '');
+
+      //   console.log("keywordsGPTresult = " , keywordsGPTresult)
+
+      //   let GPTkeywords = keywordsGPTresult.split(/[,|]\s*/);
+        
+      //   console.log("GPTkeywords = " , GPTkeywords)
+      //   asdf9
+      // // -------------- find keywords with GPT V2-------------
+
+
+    
+        
+       
+
+
+
+      // -------------- Find best keywrods from embeding per keyword -------------
+      console.time('embeddingPineCone');
+
+      let filter = {
+        label: "AI_KG4_Context",
+      }
+
+
+      // console.log("change = 1")
+
+      // sdf4
+
+      let resT = await findBestEmbedingsArray(GPTkeywords,filter ,topK = 2)
+      // let resT = await findBestEmbedingsArray(GPTkeywords,filter ,topK = 1)
+      // console.log("change = 2")
+
+      console.timeEnd('embeddingPineCone');
+
+      console.time('embeddingPineCone2');
+
+
+
+
+      bestKeywordsFromEmbed = resT.matchesRes
+      let keywordEmbedObj = resT.matchesObj
+
+
+      // console.log("keywordEmbedObj = " , keywordEmbedObj)
+
+      // sdf10
+     
+
+      finalKeywords = []
+      testKeywords = []
+
+
+      // --------------- prepare prompt keyword -----------
+      keywords_str = ""
+      numKeywords = 0
+      for (let i = 0; i < bestKeywordsFromEmbed.length; i++) {
+        const element = bestKeywordsFromEmbed[i];
+
+        // console.log("element = " , element)
+
+        if (element.score >= 0.96){
+          finalKeywords.push({
+            keyword: element.metaData.keyword,
+            confidence: parseInt(element.score*10),
+          })
+          continue;
+        }
+
+        if (element.exactMatch == false && element.score >= 0.74){
+          keywords_str +=  element.metaData.keyword + "\n "
+
+          numKeywords += 1
+
+          // testKeywords.push(element.metaData.keyword)
+          testKeywords.push({
+            keyword: element.metaData.keyword,
+            confidence: element.score,
+          })
+        }
+
+        if (element.exactMatch == true && element.score >= 0.92){
+          // keywords_str +=  element.metaData.keyword + " - "+element.originalKeywordMatch +"\n "
+          keywords_str +=  element.metaData.keyword + "\n "
+
+          numKeywords += 1
+
+          // testKeywords.push(element.metaData.keyword)
+          testKeywords.push({
+            keyword: element.metaData.keyword,
+            confidence: element.score,
+          })
+
+        }
+      }
+      
+      // keywords_str += "ReactJS" +"\n "
+      // keywords_str += "Angular" +"\n "
+      // keywords_str += "C++" +"\n "
+
+      console.log("keywords_str = " , keywords_str)
+      console.timeEnd('embeddingPineCone2');
+
+
+      // adf14
+      // --------------- prepare prompt keyword -----------
+
+
+      //   // -------------- Find best keywrods from prompt engineering -------------
+      //   prompt_general = "Given a paragraph, determine if the skills provided as input exist within it.  \n\n"
+      //   prompt_general += "Paragraph: " + message + "\n\n"
+      //   prompt_general += "Skills: " + keywords_str + "\n\n"
+      //   prompt_general += "Answers for every skill only TRUE or FALSE : \n"
+        
+
+      //   console.log("prompt_general = " , prompt_general)
+
+
+      //   // res_gpt = await useGPT(prompt_general,0.7,"text-davinci-003")
+      //   res_gpt = await useGPTchatSimple(prompt_general)
+      //   console.log("res_gpt davinci= " , res_gpt)
+      // // -------------- Find best keywrods from prompt engineering -------------
+
+
+      // -------------- Find best keywrods from prompt engineering V2-------------
+
+      console.time('Critic');
+
+      contextPrompt = `
+        ${paragraphSummary}
+
+        SKILLS: ${keywords_str}
+        `
+
+        // contextPrompt = `
+        // ASSISTANT: ${assistantMessage}
+
+        // USER: ${message}
+
+        // SKILLS: ${keywords_str}
+        // `
+
+
+
+       conversation =  [
+        {"role": "user", "content": contextPrompt},
+      ]
+
+
+      
+      res_gpt = await useGPTchat(
+        "Determine if the SKILLS provided exist on paragraph \n Be extremly critical and harsh its way better to say FALSE than TRUE \n\n Answers for every SKILL only the word TRUE or FALSE:",
+        conversation,
+        "",
+        "",
+        0.7,
+        "API 2"
+      );
+      console.log("res_gpt ChatGPT= \n" , res_gpt)
+      // sdf00
+      console.timeEnd('Critic');
+
+      // -------------- Find best keywrods from prompt engineering V2-------------
+
+
+
+
+
+      console.time('endingPart');
+
+
+        const trueFalseArr = res_gpt.split('\n').reduce((acc, str) => {
+          const match = str.match(/(TRUE|FALSE)/);
+          
+          if (match) {
+            acc.push(match[1]);
+          }
+          return acc;
+        }, []);
+        
+        // console.log("trueFalseArr = ",trueFalseArr);
+        // sadf3
+
+        console.log("-------------- " , "testKeywords[i]", "-------------")
+        for (let i = 0; i < trueFalseArr.length; i++) {
+          // console.log("testKeywords[i] = " , testKeywords[i])
+          if (trueFalseArr[i] == "TRUE" && testKeywords[i]?.keyword && testKeywords[i]?.confidence){
+            finalKeywords.push({
+              keyword: testKeywords[i].keyword,
+              confidence: parseInt(testKeywords[i].confidence*10),
+            })
+          }
+        }
+      console.timeEnd('endingPart');
+      console.time('endingPart2');
+
+
+        
+
+        let nodeData = await Node.find({name: finalKeywords.map(value => value.keyword)}).select("_id name");
+
+        nodeDataObj = {}
+        nodeData.forEach((node) => {
+          nodeDataObj[node.name] = node._id
+        })
+
+      console.timeEnd('endingPart2');
+      console.time('endingPart3');
+
+
+
+        finalKeywords = finalKeywords.map((value) => {
+          return {
+            ...value,
+            nodeID: nodeDataObj[value.keyword]
+          }
+        })
+      console.timeEnd('endingPart3');
+      console.time('endingPart4');
+
+
+        
+      // sort an keywordsValues based on object value confidence 
+      finalKeywords.sort((a, b) => (a.confidence > b.confidence) ? -1 : 1)
+
+
+      console.timeEnd('endingPart4');
+
+
+
+      return {
+        keywords: finalKeywords,
+
+      }
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "messageMapKG_V5",
+        {
+          component: "aiQuery > messageMapKG_V5",
         }
       );
     }
