@@ -1213,23 +1213,29 @@ module.exports = {
   },
   messageMapKG_V5: async (parent, args, context, info) => {
     const { message,assistantMessage } = args.fields;
+    let { conversation } = args.fields;
     console.log("Query > messageMapKG_V5 > args.fields = ", args.fields);
     try {
 
       // -------------- Sumarise the conversation -------------
       console.time('summary');
-      conversation =  [
-        {"role": "assistant", "content": "Assistant: " + assistantMessage},
-        {"role": "user", "content":"User: " + message},
-      ]
+
+      if (conversation && conversation.length > 0){
+        conversation =  [
+          {"role": "user", "content": "User: Yes, cloud experience is a plus. The ideal candidate should also have a strong understanding of RESTful API design and development."}, // SOS 🆘 DELETE -> only for test 
+          {"role": "assistant", "content": "Assistant: " + assistantMessage},
+          {"role": "user", "content":"User: " + message},
+        ]
+      }
 
       let paragraphSummary = await useGPTchat(
         // "Create a really small 2 sentense summary of the most important parts of the conversation \n\n Summary:",
         // "Create the smallest possible 1-2 sentense summary of the most important skills, industries that the User is interested \n\n Summary:",
         // "Create the smallest possible summary of the most important skills, industries that the User is interested \n\n Summary:",
-        "Create the smallest possible 1-2 sentense summary for what the User is interested \n\n Summary:",
+        "Create a relatively small 1-3 sentence summary by keeping important keywords for what the User is interested, focus on keeping the important keywords that the User needs  \n\n Summary:",
         conversation,
-        ""
+        "",
+        0.05,
       )
 
       // let prompt_general = "Assistant: " + assistantMessage + "\n\n"
@@ -1249,58 +1255,66 @@ module.exports = {
 
       // sdf25
 
-      // console.log("paragraphSummary = " , paragraphSummary)
       // sdf9
-
-
-      // split the paragraphSummary stting in two equal parts and put them on an array of strings
-      let GPTkeywords = []
-      let halfLength = Math.ceil(paragraphSummary.length / 2); // get half length of paragraph summary rounded up
-      GPTkeywords.push(paragraphSummary.substr(0, halfLength)); // add first half to summaryArray
-      GPTkeywords.push(paragraphSummary.substr(halfLength)); // add second half to summaryArray
-
-      console.log("GPTkeywords = " , GPTkeywords)
       
+      
+      // // split the paragraphSummary stting in two equal parts and put them on an array of strings
+      // let GPTkeywords = []
+      // let halfLength = Math.ceil(paragraphSummary.length / 2); // get half length of paragraph summary rounded up
+      // GPTkeywords.push(paragraphSummary.substr(0, halfLength)); // add first half to summaryArray
+      // GPTkeywords.push(paragraphSummary.substr(halfLength)); // add second half to summaryArray
+      
+      // console.log("GPTkeywords = " , GPTkeywords)
+      
+      console.log("paragraphSummary = " , paragraphSummary)
       console.timeEnd('summary');
-      // asdf9
+      // // asdf9
 
       // -------------- Sumarise the conversation -------------
 
 
-      //   // -------------- find keywords with GPT V2-------------
-      //   conversation =  [
-      //     {"role": "assistant", "content": "ASSISTANT: " + assistantMessage},
-      //     {"role": "user", "content": "USER: " + message},
-      //   ]
+        // -------------- find keywords with GPT V2-------------
+        console.time('findKeywords');
+
+        // conversation =  [
+        //   {"role": "assistant", "content": "ASSISTANT: " + assistantMessage},
+        //   {"role": "user", "content": "USER: " + message},
+        // ]
 
 
         
-      //   // keywordsGPTresult = await useGPTchat(
-      //   //   "Find the skills/industries that the USER needs \n\n Result, show SKILLS separated by a comma \n skills:",
-      //   //   conversation,
-      //   //   ""
-      //   // );
-      //   keywordsGPTresult = await useGPTchat(
-      //     "Find the minimum keywords that the USER needs from the context \n\n Be extremly critical and harsh only give skills that were mentioned \n\n The result, show SKILLS separated by a comma:",
-      //     conversation,
-      //     ""
-      //   );
-      //   console.log("keywordsGPTresult ChatGPT= " , keywordsGPTresult)
-      //   if (keywordsGPTresult.includes("cannot find") || keywordsGPTresult.includes("cannot provide") || keywordsGPTresult.includes("I'm sorry")|| keywordsGPTresult.includes("cannot determine")
-      //   || keywordsGPTresult.includes("unable to")|| keywordsGPTresult.includes("don't have access")){
-      //     return {}
-      //   }
-      //   // asdf0
+        // keywordsGPTresult = await useGPTchat(
+        //   "Find the skills/industries that the USER needs \n\n Result, show SKILLS separated by a comma \n skills:",
+        //   conversation,
+        //   ""
+        // );
+        // keywordsGPTresult = await useGPTchat(
+        //   "Find the minimum keywords that the USER needs from the context \n\n Be extremly critical and harsh only give skills that were mentioned \n\n The result, show SKILLS separated by a comma:",
+        //   conversation,
+        //   ""
+        // );
+        keywordsGPTresult = await useGPTchatSimple(
+          // paragraphSummary + "Find the minimum keywords that the USER needs from the context. \n The result format should be (Skill - Reason for skill) separated by a comma. \n Result separated by comma:",
+          paragraphSummary + "Find the minimum keywords/skills/industries that the USER needs to describe the whole paragraph. \n The result format should be (Skill - Reason for skill) separated by a comma \n\n Result separated by a comma:",
+        );
+        // console.log("keywordsGPTresult ChatGPT= " , keywordsGPTresult)
+        if (keywordsGPTresult.includes("cannot find") || keywordsGPTresult.includes("cannot provide") || keywordsGPTresult.includes("I'm sorry")|| keywordsGPTresult.includes("cannot determine")
+        || keywordsGPTresult.includes("unable to")|| keywordsGPTresult.includes("don't have access")){
+          return {}
+        }
+        // asdf0
 
-      //   keywordsGPTresult = keywordsGPTresult.replace(/[\d.]/g, '');
+        keywordsGPTresult = keywordsGPTresult.replace(/[\d.]/g, '');
 
-      //   console.log("keywordsGPTresult = " , keywordsGPTresult)
+        // console.log("keywordsGPTresult = " , keywordsGPTresult)
 
-      //   let GPTkeywords = keywordsGPTresult.split(/[,|]\s*/);
+        let GPTkeywords = keywordsGPTresult.split(/[,|]\s*/);
         
-      //   console.log("GPTkeywords = " , GPTkeywords)
-      //   asdf9
-      // // -------------- find keywords with GPT V2-------------
+        console.log("GPTkeywords = " , GPTkeywords)
+        console.timeEnd('findKeywords');
+        // asdf9
+
+      // -------------- find keywords with GPT V2-------------
 
 
     
@@ -1336,9 +1350,9 @@ module.exports = {
       let keywordEmbedObj = resT.matchesObj
 
 
-      // console.log("keywordEmbedObj = " , keywordEmbedObj)
+      // console.log("resT = " , resT)
 
-      // sdf10
+
      
 
       finalKeywords = []
@@ -1351,7 +1365,7 @@ module.exports = {
       for (let i = 0; i < bestKeywordsFromEmbed.length; i++) {
         const element = bestKeywordsFromEmbed[i];
 
-        // console.log("element = " , element)
+        console.log("element = " , element)
 
         if (element.score >= 0.96){
           finalKeywords.push({
@@ -1362,7 +1376,19 @@ module.exports = {
         }
 
         if (element.exactMatch == false && element.score >= 0.74){
-          keywords_str +=  element.metaData.keyword + "\n "
+
+          // keywords_str +=  element.metaData.keyword + "\n "
+          keywords_str +=  element.metaData.keyword
+
+          if (element.metaData.category){
+            if (element.metaData.category!="NA") keywords_str +=  " < "+element.metaData.category + " "
+            else {
+              if (element.metaData.group && element.metaData.group!="NA") keywords_str +=  " < "+element.metaData.group + " "
+              }
+          } else if (element.metaData.industry && element.metaData.industry!="NA") keywords_str +=  " < "+element.metaData.industry + " "
+
+          keywords_str +=  "\n "
+
 
           numKeywords += 1
 
@@ -1374,8 +1400,18 @@ module.exports = {
         }
 
         if (element.exactMatch == true && element.score >= 0.92){
-          // keywords_str +=  element.metaData.keyword + " - "+element.originalKeywordMatch +"\n "
-          keywords_str +=  element.metaData.keyword + "\n "
+          // keywords_str +=  element.metaData.keyword + " - "+element.orteiginalKeywordMatch +"\n "
+          // keywords_str +=  element.metaData.keyword + "\n "
+          keywords_str +=  element.metaData.keyword
+
+          if (element.metaData.category){
+            if (element.metaData.category!="NA") keywords_str +=  " < "+element.metaData.category + " "
+            else {
+              if (element.metaData.group && element.metaData.group!="NA") keywords_str +=  " < "+element.metaData.group + " "
+              }
+          } else if (element.metaData.industry && element.metaData.industry!="NA") keywords_str +=  " < "+element.metaData.industry + " "
+
+          keywords_str +=  "\n "
 
           numKeywords += 1
 
@@ -1387,6 +1423,7 @@ module.exports = {
 
         }
       }
+
       
       // keywords_str += "ReactJS" +"\n "
       // keywords_str += "Angular" +"\n "
