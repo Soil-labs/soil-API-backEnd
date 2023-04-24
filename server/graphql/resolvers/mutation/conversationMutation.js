@@ -91,7 +91,7 @@ module.exports = {
       } else if (convKey) {
         searchQuery_and.push({ convKey: convKey });
       } else {
-        searchQuery_and.push({ summaryReady: false })
+        searchQuery_and.push({ summaryReady: false }) // SOS 🆘 change always to false
       }
       if (searchQuery_and.length > 0) {
         searchQuery = {
@@ -143,7 +143,7 @@ module.exports = {
               // "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation. reasult:",
               // "Please summarize the conversation using bullet points. Focuse on creating consise bullet points. Try to incorporate the keywords that were used during the conversation. reasult:",
               "Create a summary of the important parts of the conversation \n\n Summary:",
-              convDataNow.conversation.map(({ role, content }) => ({ role, content })),
+              convDataNow.conversation.map(({ role, content }) => ({ role, content })), // clean up from any _id etc
               ""
             )
 

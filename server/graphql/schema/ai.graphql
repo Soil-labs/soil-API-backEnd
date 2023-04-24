@@ -129,6 +129,16 @@ module.exports = `
         keywords: [KeywordValue]
     }
 
+    input messageMapKG_V5Input {
+        message: String
+        assistantMessage: String
+        conversation: [messageChat]
+    }
+
+    type messageMapKG_V5Output {
+        keywords: [KeywordValue]
+    }
+
 
     input edenGPTreplyMemoryInput {
         message: String
