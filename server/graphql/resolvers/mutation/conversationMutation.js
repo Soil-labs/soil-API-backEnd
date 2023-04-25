@@ -3,7 +3,7 @@ const { ApolloError } = require("apollo-server-express");
 
 const { concatenateFirstTwoMessages } = require("../utils/conversationModules");
 
-const { useGPTchat,upsertEmbedingPineCone,deletePineCone } = require("../utils/aiModules");
+const { useGPTchat,useGPTchatSimple,upsertEmbedingPineCone,deletePineCone } = require("../utils/aiModules");
 
 
 module.exports = {
@@ -82,15 +82,16 @@ module.exports = {
   
       let searchQuery_and = [];
       let searchQuery = {};
+
+      
   
   
       if (_id) {
         searchQuery_and.push({ _id: _id });
-      }
-      if (convKey) {
+      } else if (convKey) {
         searchQuery_and.push({ convKey: convKey });
       } else {
-        searchQuery_and.push({ summaryReady: false })
+        searchQuery_and.push({ summaryReady: false }) // SOS 🆘 change always to false
       }
       if (searchQuery_and.length > 0) {
         searchQuery = {
@@ -99,10 +100,14 @@ module.exports = {
       } else {
         searchQuery = {};
       }
+
+      // console.log("searchQuery = " , searchQuery)
   
       try {
   
         let convData = await Conversation.find(searchQuery);
+
+        // console.log("convData = " , convData)
 
         for (let i = 0; i < convData.length; i++) {
           convDataNow = convData[i];
@@ -114,7 +119,7 @@ module.exports = {
 
           console.log("minutesSinceLastUpdate = " , minutesSinceLastUpdate)
 
-          if (minutesSinceLastUpdate > 0.5) {
+          if (minutesSinceLastUpdate > 5) {
 
             // ------------------ Delete old summaries from pinecone ------------------
             deletePineIDs = convDataNow.summary.map(obj => obj.pineConeID)
@@ -126,17 +131,35 @@ module.exports = {
             // asdf99
 
             // ---------------- GPT find new Summary ------------
-            const summaryGPT = await useGPTchat(
+            // const bulletSummary = await useGPTchat(
+            //   // "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation. reasult:",
+            //   // "Please summarize the conversation using bullet points. Focuse on creating consise bullet points. Try to incorporate the keywords that were used during the conversation. reasult:",
+            //   "Please provide a concise summary of the conversation using bullet points. Incorporate keywords used in the conversation. The focus should be on creating clear and easily understandable bullet points. Your result should effectively communicate the main points discussed. Only keep the important parts of the conversation such as, skills, industries, and anything related to the expertise of a person.",
+            //   convDataNow.conversation.map(({ role, content }) => ({ role, content })),
+            //   ""
+            // )
+
+            let paragraphSummary = await useGPTchat(
               // "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation. reasult:",
               // "Please summarize the conversation using bullet points. Focuse on creating consise bullet points. Try to incorporate the keywords that were used during the conversation. reasult:",
-              "Please provide a concise summary of the conversation using bullet points. Incorporate keywords used in the conversation. The focus should be on creating clear and easily understandable bullet points. Your result should effectively communicate the main points discussed",
-              convDataNow.conversation.map(({ role, content }) => ({ role, content })),
+              "Create a summary of the important parts of the conversation \n\n Summary:",
+              convDataNow.conversation.map(({ role, content }) => ({ role, content })), // clean up from any _id etc
               ""
             )
 
-            console.log("summaryGPT = " , summaryGPT) 
 
-            let splitSummary = summaryGPT.split("- ");
+            const promptForBulletS = paragraphSummary + "\n - Focus on Creating the smallest possible number of bullet points \n - Bullet point should exist only if it adds new important information \n\n Create Bullet point Summary:"
+
+            const bulletSummary = await useGPTchatSimple(promptForBulletS)
+
+
+
+            // console.log("bulletSummary = " , bulletSummary) 
+
+            let splitSummary = bulletSummary.split("- ");
+
+            // console.log("splitSummary = " , splitSummary)
+            // sdf02
 
             splitSummary.shift();
 

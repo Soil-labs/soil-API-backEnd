@@ -1113,4 +1113,5 @@ module.exports = {
     updateExecutedTasks,
     edenReplyBasedTaskInfo,
     updateConversation,
+    findBestEmbedings,
   };

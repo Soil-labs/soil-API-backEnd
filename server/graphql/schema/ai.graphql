@@ -43,18 +43,6 @@ module.exports = `
         success: Boolean
     }
 
-    input storeLongTermMemorySummaryInput {
-        message: String
-        userID: ID
-
-    }
-
-    type storeLongTermMemorySummaryOutput {
-        success: Boolean
-        message: String
-
-    }
-
     input addMessagesInput {
         data: [addMessageInput]
     }
@@ -141,18 +129,22 @@ module.exports = `
         keywords: [KeywordValue]
     }
 
+    input messageMapKG_V5Input {
+        message: String
+        assistantMessage: String
+        conversation: [messageChat]
+    }
+
+    type messageMapKG_V5Output {
+        keywords: [KeywordValue]
+    }
+
 
     input edenGPTreplyMemoryInput {
         message: String
         memorySort: String
         userID: ID
     }
-
-     input edenGPTreplyCVmemoryInput {
-        message: String
-        memorySort: String
-        userID: ID
-     }
 
     type KeywordValue {
         keyword: String
@@ -163,10 +155,6 @@ module.exports = `
     type edenGPTreplyMemoryOutput {
         reply: String
         # keywords: [String]
-    }
-
-    type edenGPTreplyCVmemoryOutput {
-        reply: String
     }
 
     input messageChat {
@@ -231,12 +219,7 @@ module.exports = `
         conversation: [messageChat]
         experienceTypeID: experienceTypeIDEnum
         userID: ID
-    }
-
-    input createProfileExperienceWithChatCVMemoryInput {
-        message: String
-        conversation: [messageChat]
-        experienceTypeID: experienceTypeIDEnum
+        useMemory: Boolean
     }
 
     enum experienceTypeIDEnum {
@@ -244,13 +227,10 @@ module.exports = `
         SKILLS_EXPERIENCE
         CAREER_GOALS_ASPIRATIONS
         WORK_PREFERENCES
+        GENERAL_CONVERSATION
     }
 
     type edenGPTCreateProfileExperienceChatAPIOutput {
-        reply: String
-    }
-
-   type  createProfileExperienceWithChatCVMemoryOutput {
         reply: String
     }
 
