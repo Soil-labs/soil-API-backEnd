@@ -15,7 +15,15 @@ const { PineconeClient } = require("@pinecone-database/pinecone");
 const { Configuration, OpenAIApi } = require("openai");
 
 const { printC } = require("../../../printModule");
-const { taskPlanning,findAvailTaskPineCone,userAnsweredOrGiveIdeas,updateExecutedTasks,edenReplyBasedTaskInfo,updateConversation } = require("../utils/aiModules");
+
+const {
+  taskPlanning,
+  findAvailTaskPineCone,
+  userAnsweredOrGiveIdeas,
+  updateExecutedTasks,
+  edenReplyBasedTaskInfo,
+  updateConversation,
+} = require("../utils/aiModules");
 
 globalThis.fetch = fetch;
 
