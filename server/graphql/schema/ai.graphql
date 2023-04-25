@@ -250,6 +250,16 @@ module.exports = `
         reply: String
     }
 
+    input createProfileExperienceWithChatCVMemoryInput {
+        message: String
+        conversation: [messageChat]
+        experienceTypeID: experienceTypeIDEnum
+    }
+
+    type createProfileExperienceWithChatCVMemoryOutput {
+        reply: String
+    }
+
     input edenGPTEndorseChatAPIInput {
         message: String
         conversation: [messageChat]
