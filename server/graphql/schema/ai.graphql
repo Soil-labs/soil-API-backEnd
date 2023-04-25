@@ -234,6 +234,7 @@ module.exports = `
         reply: String
     }
 
+    
     input edenAITalSearchExpirienceInput {
         message: String
         conversation: [messageChat]
@@ -246,6 +247,18 @@ module.exports = `
         CULTURE_FIT
     }
 
+    input interviewEdenAIInput {
+        conversation: [messageChat]
+        unansweredQuestions: [String]
+        questionAskingNow: String
+    }
+    type interviewEdenAIOutput {
+        reply: String
+        questionAskingNow: String
+        unansweredQuestions: [String]
+    }
+
+    
     type edenAITalSearchExpirienceOutput {
         reply: String
     }

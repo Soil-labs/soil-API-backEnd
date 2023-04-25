@@ -726,6 +726,112 @@ module.exports = {
       );
     }
   },
+  interviewEdenAI: async (parent, args, context, info) => {
+    const { conversation,unansweredQuestions,questionAskingNow } = args.fields;
+    console.log("Query > interviewEdenAI > args.fields = ", args.fields);
+
+    let nextQuestion
+    let questionAskingNowA
+
+    try {
+
+      // -------------- Prompt of the conversation ------------
+      let prompt_conversation = "Conversation:";
+      let roleN;
+      for (let i = 0; i < conversation.length; i++) {
+        roleN = "Person";
+        if (conversation[i].role == "assistant") roleN = "Interviewer";
+        prompt_conversation =
+          prompt_conversation + "\n\n" + roleN + ": " + conversation[i].content;
+      }
+      console.log("prompt_conversation = \n", prompt_conversation);
+      // adsf
+      // -------------- Prompt of the conversation ------------
+
+      if (questionAskingNow != undefined && questionAskingNow != "") {
+
+        // -------------- Ask GPT what to do  ------------
+        promptAskQuestion = `
+        For the Conversation, the question that the Interviewer asked is: Can you tell me about a project that you worked on that you are particularly proud of?
+
+          Is the User 
+          1) YES answer the question, move to next question 
+          2) NO didn't answer the question 
+
+          you can only answer (YES, NO, DETAILS) and explain your answer
+
+          answer: 
+        `
+
+        responseGPTchat = await useGPTchatSimple(
+          prompt_conversation + "\n\n" + promptAskQuestion,
+          );
+
+        console.log("responseGPTchat = " , responseGPTchat)
+
+        // if statment if on the responseGPTchat there is the word YES or NO put true or false
+        let moveNextQuestionGPT = true;
+        if (responseGPTchat.includes("YES")) moveNextQuestionGPT = true;
+        if (responseGPTchat.includes("NO")) moveNextQuestionGPT = false;
+
+        if (moveNextQuestionGPT == false) {
+          if (conversation.length >=6){ // if you are talking for too long for this quesiton, just move on
+            moveNextQuestionGPT = true
+          }
+        }
+        // -------------- Ask GPT what to do  ------------
+
+        //  -------------- Move to next question ------------
+        
+        if (moveNextQuestionGPT == true) {
+
+          if (unansweredQuestions.length == 0){
+            nextQuestion = "Next task: Finish the conversation"
+            questionAskingNowA = "Finish the conversation"
+          } else {
+            questionAskingNowA = unansweredQuestions.shift()
+            nextQuestion = "Next Question to Answer: " + questionAskingNowA
+          }
+        } else {
+          nextQuestion = "Ask again the question: " + questionAskingNow
+        }
+    } else {
+      questionAskingNowA = unansweredQuestions.shift()
+      nextQuestion = "Next Question to Answer: " + questionAskingNowA
+
+    }
+
+    let askGPT = prompt_conversation + "\n\n" + nextQuestion + "\n\n"
+
+    askGPT += "You are an Interviewer, you need to reply to the candidate with a small and consise way"
+
+
+    askGPT += "\n\n Reply:"
+
+    console.log("askGPT = " , askGPT)
+
+    const reply = await useGPTchatSimple(askGPT);
+
+      console.log("reply = " , reply)
+    //  -------------- Move to next question ------------
+
+
+    
+      return {
+        reply: reply,
+        questionAskingNow: questionAskingNowA,
+        unansweredQuestions: unansweredQuestions,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "interviewEdenAI",
+        {
+          component: "aiQuery > interviewEdenAI",
+        }
+      );
+    }
+  },
   edenGPTEndorseChatAPI: async (parent, args, context, info) => {
     const { message, conversation, userID } = args.fields;
     console.log("Query > edenGPTEndorseChatAPI > args.fields = ", args.fields);

@@ -113,6 +113,7 @@ module.exports = `
           edenGPTEndorseChatAPI(fields: edenGPTEndorseChatAPIInput): edenGPTEndorseChatAPIOutput
           edenGPTCreateProfileExperienceChatAPI(fields: edenGPTCreateProfileExperienceChatAPIInput): edenGPTCreateProfileExperienceChatAPIOutput
           edenAITalSearchExpirience(fields: edenAITalSearchExpirienceInput): edenAITalSearchExpirienceOutput
+          interviewEdenAI(fields: interviewEdenAIInput): interviewEdenAIOutput
           edenGPTReviewChatAPI(fields: edenGPTReviewChatAPIInput): edenGPTReviewChatAPIOutput
           edenGPTsearchProfiles(fields: edenGPTsearchProfilesInput): edenGPTsearchProfilesOutput
           edenGPTsummaryProfile(fields: edenGPTsummaryProfileInput): edenGPTsummaryProfileOutput
