@@ -232,6 +232,7 @@ module.exports = `
         conversation: [messageChat]
         experienceTypeID: experienceTypeIDEnum
         userID: ID
+        useMemory: Boolean
     }
 
     enum experienceTypeIDEnum {
@@ -267,7 +268,6 @@ module.exports = `
         conversation: [messageChat]
         experienceTypeID: experienceTypeIDEnum
         userID: ID
-        useMemory: Boolean
     }
 
     type createProfileExperienceWithChatCVMemoryOutput {
