@@ -1,14 +1,16 @@
 const { Conversation } = require("../../../models/conversationModel");
+const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
+
 const { ApolloError } = require("apollo-server-express");
 
-const { concatenateFirstTwoMessages } = require("../utils/conversationModules");
+const { concatenateFirstTwoMessages,updateQuestionAskedConvoID,findAndUpdateConversationFunc,updateAnsweredQuestionFunc } = require("../utils/conversationModules");
 
 const { useGPTchat,useGPTchatSimple,upsertEmbedingPineCone,deletePineCone } = require("../utils/aiModules");
 
 
 module.exports = {
   updateConversation: async (parent, args, context, info) => {
-      const { userID,conversation } = args.fields;
+      const { userID,conversation,questionAskingNow,questionAskingID,timesAsked } = args.fields;
       console.log("Mutation > updateConversation > args.fields = ", args.fields);
 
       if (!conversation || conversation.length <2) {
@@ -29,41 +31,50 @@ module.exports = {
 
       try {
 
-        convKey = await concatenateFirstTwoMessages(conversation);
+        // convKey = await concatenateFirstTwoMessages(conversation);
 
-        // check if already exist using userID and convKey
+        // // check if already exist using userID and convKey
 
-        const existingConversation = await Conversation.findOne({
-          userID,
-          convKey,
-        });
+        // const existingConversation = await Conversation.findOne({
+        //   userID,
+        //   convKey,
+        // });
 
-        let resultConv;
+        // let resultConv;
 
-        if (existingConversation) {
-          // update the conversation
-          existingConversation.conversation = conversation;
-          existingConversation.updatedAt = Date.now();
-          existingConversation.summaryReady = false;
+        // if (existingConversation) {
+        //   // update the conversation
+        //   existingConversation.conversation = conversation;
+        //   existingConversation.updatedAt = Date.now();
+        //   existingConversation.summaryReady = false;
 
-          resultConv = await existingConversation.save();
+        //   resultConv = await existingConversation.save();
 
 
-        } else {
+        // } else {
 
-          const newConversation = new Conversation({
-            convKey,
-            userID,
-            conversation,
-            summaryReady: false,
-            summary: [],
-            updatedAt: Date.now(),
-          });
+        //   const newConversation = await new Conversation({
+        //     convKey,
+        //     userID,
+        //     conversation,
+        //     summaryReady: false,
+        //     summary: [],
+        //     updatedAt: Date.now(),
+        //   });
   
-          resultConv = await newConversation.save();
+        //   resultConv = await newConversation.save();
   
           
-        }
+        // }
+
+        // console.log("resultConv = " , resultConv)
+
+        resultConv = await findAndUpdateConversationFunc(userID,conversation)
+
+        //  ------------- Update the Answered Question ----------------
+        resultConv = await updateAnsweredQuestionFunc(resultConv,conversation,questionAskingNow,questionAskingID,timesAsked)
+        //  ------------- Update the Answered Question ----------------
+
         
         return resultConv
         

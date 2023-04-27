@@ -72,6 +72,17 @@ module.exports = `
         updateConvSummaries(fields:updateConvSummariesInput): [Conversation]
 
 
+        # ------------- QUESTION EDENAI MUTATION -----------------
+        addQuestionToEdenAI(fields:addQuestionToEdenAIInput): addQuestionToEdenAIOutput
+
+
+        # ------------- COMPANY MUTATION -----------------
+        updateCompany(fields:updateCompanyInput): Company
+        addEmployeesCompany(fields:addEmployeesCompanyInput): Company
+        addQuestionsToAskCompany(fields:addQuestionsToAskCompanyInput): Company
+        addCandidatesCompany(fields:addCandidatesCompanyInput): Company
+
+
 
         #  ---------- ROLE MUTATIONS -------
         updateRoleTemplate(fields:createRoleInput): RoleTemplate

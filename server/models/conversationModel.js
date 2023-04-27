@@ -18,6 +18,16 @@ const conversationSchema = mongoose.Schema({
     pineConeID: String,
     content: String,
   }],
+
+  questionsAnswered: [{
+    questionID: mongoose.Schema.ObjectId,
+    questionContent: String,
+    subConversationAnswer: [{
+      role: String, // user or bot
+      content: String,
+    }],
+    summaryOfAnswer: String,
+  }],
   
   updatedAt: Date,
 });

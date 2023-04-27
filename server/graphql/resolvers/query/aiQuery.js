@@ -15,7 +15,10 @@ const { PineconeClient } = require("@pinecone-database/pinecone");
 const { Configuration, OpenAIApi } = require("openai");
 
 const { printC } = require("../../../printModule");
-const { taskPlanning,findAvailTaskPineCone,userAnsweredOrGiveIdeas,updateExecutedTasks,edenReplyBasedTaskInfo,updateConversation } = require("../utils/aiModules");
+const { taskPlanning,findAvailTaskPineCone,userAnsweredOrGiveIdeas,updateExecutedTasks,edenReplyBasedTaskInfo,updateConversation,evaluateAnswerEdenAIFunc } = require("../utils/aiModules");
+
+const { updateAnsweredQuestionFunc,findAndUpdateConversationFunc } = require("../utils/conversationModules");
+
 
 globalThis.fetch = fetch;
 
@@ -727,24 +730,37 @@ module.exports = {
     }
   },
   interviewEdenAI: async (parent, args, context, info) => {
-    const { conversation,unansweredQuestions,questionAskingNow } = args.fields;
+    const { userID,conversation,unansweredQuestions,questionAskingNow,questionAskingID } = args.fields;
+    let {timesAsked} = args.fields;
     console.log("Query > interviewEdenAI > args.fields = ", args.fields);
+
+
 
     let nextQuestion
     let questionAskingNowA
+
+    if (timesAsked == undefined) {
+      timesAsked = 1
+    }
+
+    const originalTimesAsked = timesAsked
+
 
     try {
 
       // -------------- Prompt of the conversation ------------
       let prompt_conversation = "Conversation:";
       let roleN;
-      for (let i = 0; i < conversation.length; i++) {
+      // for loop only take the last two ellements of conversation
+      for (let i = conversation.length - timesAsked*2; i < conversation.length; i++) { // only take the part of the conversaiton that is about this quesoitn 
+      // for (let i = 0; i < conversation.length; i++) {
         roleN = "Person";
         if (conversation[i].role == "assistant") roleN = "Interviewer";
         prompt_conversation =
           prompt_conversation + "\n\n" + roleN + ": " + conversation[i].content;
       }
-      console.log("prompt_conversation = \n", prompt_conversation);
+      // console.log("prompt_conversation = \n", prompt_conversation);
+      printC(prompt_conversation, "1", "prompt_conversation", "r")
       // adsf
       // -------------- Prompt of the conversation ------------
 
@@ -758,7 +774,7 @@ module.exports = {
           1) YES answer the question, move to next question 
           2) NO didn't answer the question 
 
-          you can only answer (YES, NO, DETAILS) and explain your answer
+          you can only answer (YES, NO)
 
           answer: 
         `
@@ -767,7 +783,12 @@ module.exports = {
           prompt_conversation + "\n\n" + promptAskQuestion,
           );
 
-        console.log("responseGPTchat = " , responseGPTchat)
+        console.log("")
+        console.log("")
+        printC(responseGPTchat, "1", "responseGPTchat", "b");
+
+        console.log("")
+        console.log("-------------------------")
 
         // if statment if on the responseGPTchat there is the word YES or NO put true or false
         let moveNextQuestionGPT = true;
@@ -775,10 +796,12 @@ module.exports = {
         if (responseGPTchat.includes("NO")) moveNextQuestionGPT = false;
 
         if (moveNextQuestionGPT == false) {
-          if (conversation.length >=6){ // if you are talking for too long for this quesiton, just move on
+          if (timesAsked >=3){ // if you are talking for too long for this quesiton, just move on
             moveNextQuestionGPT = true
           }
         }
+
+        console.log("moveNextQuestionGPT = " , moveNextQuestionGPT)
         // -------------- Ask GPT what to do  ------------
 
         //  -------------- Move to next question ------------
@@ -786,20 +809,31 @@ module.exports = {
         if (moveNextQuestionGPT == true) {
 
           if (unansweredQuestions.length == 0){
-            nextQuestion = "Next task: Finish the conversation"
+            nextQuestion = "Next task: Finish the conversation, close it by saying thank you and that they finish the interview"
             questionAskingNowA = "Finish the conversation"
           } else {
             questionAskingNowA = unansweredQuestions.shift()
             nextQuestion = "Next Question to Answer: " + questionAskingNowA
           }
+          timesAsked = 1
         } else {
           nextQuestion = "Ask again the question: " + questionAskingNow
+          questionAskingNowA = questionAskingNow
+          
+
+          timesAsked = timesAsked + 1
         }
+        
     } else {
       questionAskingNowA = unansweredQuestions.shift()
       nextQuestion = "Next Question to Answer: " + questionAskingNowA
+      
+      timesAsked = timesAsked + 1
+        
 
     }
+
+    printC(timesAsked, "2", "timesAsked", "g");
 
     let askGPT = prompt_conversation + "\n\n" + nextQuestion + "\n\n"
 
@@ -809,6 +843,7 @@ module.exports = {
     askGPT += "\n\n Reply:"
 
     console.log("askGPT = " , askGPT)
+    printC(askGPT, "4", "askGPT", "r")
 
     const reply = await useGPTchatSimple(askGPT);
 
@@ -816,11 +851,27 @@ module.exports = {
     //  -------------- Move to next question ------------
 
 
+    if (conversation.length >=2){
+
+      // ------------- Update the Conversation MEMORY ----------------
+      resultConv = await findAndUpdateConversationFunc(userID,conversation)
+      // ------------- Update the Conversation MEMORY ----------------
+
+
+
+      //  ------------- Update the Answered Questions ----------------
+      resultConv = await updateAnsweredQuestionFunc(resultConv,conversation,questionAskingNow,questionAskingID,originalTimesAsked)
+      //  ------------- Update the Answered Questions ----------------
+
+    }
+
+
     
       return {
         reply: reply,
         questionAskingNow: questionAskingNowA,
         unansweredQuestions: unansweredQuestions,
+        timesAsked: timesAsked,
       };
     } catch (err) {
       throw new ApolloError(
@@ -828,6 +879,31 @@ module.exports = {
         err.extensions?.code || "interviewEdenAI",
         {
           component: "aiQuery > interviewEdenAI",
+        }
+      );
+    }
+  },
+  evaluateAnswerEdenAI: async (parent, args, context, info) => {
+    const { question,answer,bestAnswer ,findReason } = args.fields;
+    console.log("Query > evaluateAnswerEdenAI > args.fields = ", args.fields);
+
+    
+    try {
+      res = await evaluateAnswerEdenAIFunc(question,answer,bestAnswer,findReason)
+
+
+      // sdf8
+    
+      return {
+        score: res.score,
+        reason: res.reason,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "evaluateAnswerEdenAI",
+        {
+          component: "aiQuery > evaluateAnswerEdenAI",
         }
       );
     }

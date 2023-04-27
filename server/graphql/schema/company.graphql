@@ -1,0 +1,76 @@
+module.exports = `
+    
+    type Company {
+        _id: ID
+        name: String
+        employees: [EmployeeType]
+        questionsToAsk: [QuestionType]
+        candidates: [CandidateType]
+    }
+
+    type EmployeeType {
+        typeT: String
+        userID: String
+    }
+
+    type QuestionType {
+        questionID: ID
+        bestAnswer: String
+    }
+
+    type CandidateType {
+        userID: ID,
+        overallScore: Float,
+        acceptedOrRejected: Boolean,
+        summaryQuestions: [SummaryQuestionType]
+    }
+
+    type SummaryQuestionType {
+        questionID: ID,
+        content: String,
+        score: Float,
+        }
+
+    input updateCompanyInput {
+        _id: ID
+        name: String
+    }
+
+    input EmployeeTypeInput {
+        typeT: String
+        userID: String
+    }
+
+    input QuestionTypeInput {
+        questionID: ID
+        bestAnswer: String
+    }
+
+    input CandidateTypeInput {
+        userID: ID,
+    }
+
+    input addEmployeesCompanyInput {
+        companyID: ID
+        employees: [EmployeeTypeInput]
+    }
+
+    input addQuestionsToAskCompanyInput {
+        companyID: ID
+        questionsToAsk: [QuestionTypeInput]
+    }
+
+    input candidatesInput {
+        userID: ID,
+        overallScore: Float,
+        acceptedOrRejected: Boolean,
+    }
+
+    input addCandidatesCompanyInput {
+        companyID: ID
+        candidates: [candidatesInput]
+    }
+
+    
+
+`

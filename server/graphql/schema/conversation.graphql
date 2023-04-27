@@ -11,8 +11,17 @@ module.exports = `
         summaryReady: Boolean,
 
         summary: [summaryType],
+
+        questionsAnswered: [questionAnsweredType],
         
         updatedAt: Date,
+    }
+
+    type questionAnsweredType {
+        questionID: ID,
+        questionContent: String,
+        subConversationAnswer: [conversationType],
+        summaryOfAnswer: String,
     }
 
     type summaryType {
@@ -27,6 +36,9 @@ module.exports = `
     input updateConversationInput {
         userID: String,  
         conversation: [conversationInput],
+        questionAskingNow: String,
+        questionAskingID: ID,
+        timesAsked: Int,
     }
 
     input updateConvSummariesInput {
