@@ -60,6 +60,10 @@ module.exports = `
             findConversations(fields:findConversationsInput): [Conversation]
 
 
+           #  ---------- QUESTIONS EDENAI QUERY -------
+            findQuestionEdenAI(fields:findQuestionEdenAIInput): QuestionsEdenAI
+
+
           #  ---------- QUERY TEMPLATE QUERY -------
             findRoleTemplate(fields:findRoleTemplateInput): RoleTemplate
             findRoleTemplates(fields:findRoleTemplatesInput): [RoleTemplate]
@@ -111,8 +115,10 @@ module.exports = `
           edenGPTreplyChatAPI_V2(fields: edenGPTreplyChatAPI_V2Input): edenGPTreplyChatAPI_V2Output
           edenGPTreplyChatAPI_V3(fields: edenGPTreplyChatAPI_V3Input): edenGPTreplyChatAPI_V3Output
           edenGPTEndorseChatAPI(fields: edenGPTEndorseChatAPIInput): edenGPTEndorseChatAPIOutput
+          evaluateAnswerEdenAI(fields: evaluateAnswerEdenAIInput): evaluateAnswerEdenAIOutput
           edenGPTCreateProfileExperienceChatAPI(fields: edenGPTCreateProfileExperienceChatAPIInput): edenGPTCreateProfileExperienceChatAPIOutput
           edenAITalSearchExpirience(fields: edenAITalSearchExpirienceInput): edenAITalSearchExpirienceOutput
+          interviewEdenAI(fields: interviewEdenAIInput): interviewEdenAIOutput
           createProfileExperienceWithChatCVMemory(fields: createProfileExperienceWithChatCVMemoryInput): createProfileExperienceWithChatCVMemoryOutput
           edenGPTReviewChatAPI(fields: edenGPTReviewChatAPIInput): edenGPTReviewChatAPIOutput
           edenGPTsearchProfiles(fields: edenGPTsearchProfilesInput): edenGPTsearchProfilesOutput

@@ -1,0 +1,24 @@
+module.exports = `
+    
+    type QuestionsEdenAI {
+        _id: ID,
+        content: String,
+        answeredQuestionByUsers: [ID],
+        questionOwnedByCompanies: [ID],
+    }
+
+
+    input addQuestionToEdenAIInput {
+        content: ID
+    }
+
+    type addQuestionToEdenAIOutput {
+        _id: ID
+        content: String
+    }
+
+    input findQuestionEdenAIInput {
+        _id: ID
+    }
+
+`

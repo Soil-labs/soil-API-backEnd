@@ -127,10 +127,17 @@ async function upsertEmbedingPineCone(data) {
 
     const embed = await createEmbedingsGPT(data.text);
 
+    
     let metadata = {
         text: data.text,
-        _id: data._id,
         label: data.label,
+    }
+
+    if (data._id){
+        metadata = {
+            ...metadata,
+            _id: data._id,
+        }
     }
 
     if (data.convKey) {
@@ -1007,6 +1014,51 @@ async function edenReplyBasedTaskInfo(conversation,bestKeywordsFromEmbed,answere
     return edenReply
 }
 
+async function evaluateAnswerEdenAIFunc(question,answer,bestAnswer ,findReason) {
+
+    let  score, reason
+
+    let promptT = "QUESTION: " + question
+
+    promptT += "\n\n BEST DESIRED answer: " + bestAnswer
+
+    promptT += "\n\n USER answer: " + answer
+
+    promptT += `\n\n 
+    How much you will rate the USER VS the BEST DESIRED answer,  1 to 10
+    
+    First, give only a number from 1 to 10, then give the reason:
+    
+    Example 
+    Evaluate: 6
+    Reason: the reason is this...`
+
+
+    resGPT = await useGPTchat(
+        promptT,
+        [],
+        "You are an interviewer, your job is to score the candidate answer VS the optimal answer that comes from the comapny",
+    )
+
+    console.log("resGPT = " , resGPT)
+
+    // resGPT = " evaluate: 4 reason: While the user's answer indicates a preference for working from the office, their focus on having"
+
+    let re = /evaluate:\s*(\d+)\s*reason:\s*(.*)/i;
+    let matches = resGPT.match(re);
+    score = matches[1];
+    reason = matches[2];
+    console.log(score); // output: 4
+    console.log(reason); // output: The user's answer indicates
+
+    
+
+    return {
+        score,
+        reason
+    }
+}
+
 async function findAvailTaskPineCone(keywordsGPTresult,topK=3) {
 
     if (keywordsGPTresult.includes("End Conversation")) {
@@ -1114,4 +1166,5 @@ module.exports = {
     edenReplyBasedTaskInfo,
     updateConversation,
     findBestEmbedings,
+    evaluateAnswerEdenAIFunc,
   };

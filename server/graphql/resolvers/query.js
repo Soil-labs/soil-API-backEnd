@@ -42,6 +42,10 @@ const {
 } = require("./query/conversationQuery");
 
 const {
+  findQuestionEdenAI,
+} = require("./query/questionsEdenAIQuery");
+
+const {
   findProject,
   findProjects,
   findProjects_RequireSkill,
@@ -84,7 +88,7 @@ const {
   edenGPTreplyChatAPI_V2,edenGPTreplyChatAPI_V3,
   edenGPTsearchProfiles,
   edenGPTsummaryProfile,conversationToSummaryGPT,
-  edenGPTEndorseChatAPI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,createProfileExperienceWithChatCVMemory,
+  edenGPTEndorseChatAPI,evaluateAnswerEdenAI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,interviewEdenAI,createProfileExperienceWithChatCVMemory,
   edenGPTReviewChatAPI,
 } = require("./query/aiQuery");
 
@@ -168,6 +172,9 @@ module.exports = {
     // ------------- CONVERSATION QUERY -----------------
     findConversation,findConversations,
 
+    // ------------- QUESTIONS EDEN AI QUERY -----------------
+    findQuestionEdenAI,
+
     // ------------- ROLE TEMPLATE QUERY -----------------
     findRoleTemplate,
     findRoleTemplates,
@@ -208,7 +215,7 @@ module.exports = {
     edenGPTreplyChatAPI_V2,edenGPTreplyChatAPI_V3,
     edenGPTsearchProfiles,
     edenGPTsummaryProfile,conversationToSummaryGPT,
-    edenGPTEndorseChatAPI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,createProfileExperienceWithChatCVMemory,
+    edenGPTEndorseChatAPI,evaluateAnswerEdenAI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,createProfileExperienceWithChatCVMemory,interviewEdenAI,
     edenGPTReviewChatAPI,
 
     //----------- GRAPH VISUAL QUERY ------------------

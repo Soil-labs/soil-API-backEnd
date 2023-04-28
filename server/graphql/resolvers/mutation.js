@@ -47,6 +47,15 @@ const {
 const {
   updateConversation,updateConvSummaries,
 } = require("./mutation/conversationMutation");
+
+const {
+  addQuestionToEdenAI,
+} = require("./mutation/questionsEdenAIMutation");
+
+const {
+  updateCompany,addEmployeesCompany,addQuestionsToAskCompany,addCandidatesCompany,
+} = require("./mutation/companyMutation");
+
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
 const { updateServer } = require("./mutation/serverMutation");
 const {
@@ -153,6 +162,12 @@ module.exports = {
 
     // ------------- CONVERSATION MUTATION -----------------
     updateConversation,updateConvSummaries,
+
+    // ------------- QUESTION EDEN AI MUTATION -----------------
+    addQuestionToEdenAI,
+
+    // ------------- COMPANY MUTATION -----------------
+    updateCompany,addEmployeesCompany,addQuestionsToAskCompany,addCandidatesCompany,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,

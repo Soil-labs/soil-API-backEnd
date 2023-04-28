@@ -247,6 +247,7 @@ module.exports = `
         reply: String
     }
 
+    
     input edenAITalSearchExpirienceInput {
         message: String
         conversation: [messageChat]
@@ -259,6 +260,23 @@ module.exports = `
         CULTURE_FIT
     }
 
+    input interviewEdenAIInput {
+        userID: ID
+        companyID: ID
+        conversation: [messageChat]
+        unansweredQuestions: [String]
+        questionAskingNow: String
+        questionAskingID: ID
+        timesAsked: Int
+    }
+    type interviewEdenAIOutput {
+        reply: String
+        questionAskingNow: String
+        unansweredQuestions: [String]
+        timesAsked: Int
+    }
+
+    
     type edenAITalSearchExpirienceOutput {
         reply: String
     }
@@ -283,6 +301,18 @@ module.exports = `
     type edenGPTEndorseChatAPIOutput {
         reply: String
         # keywords: [String]
+    }
+
+    input evaluateAnswerEdenAIInput {
+        question: String
+        answer: String
+        bestAnswer: String
+        findReason: Boolean
+    }
+
+    type evaluateAnswerEdenAIOutput {
+        score: Float
+        reason: String
     }
 
     input edenGPTReviewChatAPIInput {

@@ -30,6 +30,13 @@ const memberSchema = mongoose.Schema({
     },
   },
 
+  companiesApplied: [{
+    companyID: mongoose.Schema.ObjectId,
+  }],
+
+  
+  
+
   content: {
     interest: String,
     mostProud: String,
