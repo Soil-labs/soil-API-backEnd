@@ -15,7 +15,15 @@ const { PineconeClient } = require("@pinecone-database/pinecone");
 const { Configuration, OpenAIApi } = require("openai");
 
 const { printC } = require("../../../printModule");
-const { taskPlanning,findAvailTaskPineCone,userAnsweredOrGiveIdeas,updateExecutedTasks,edenReplyBasedTaskInfo,updateConversation,evaluateAnswerEdenAIFunc } = require("../utils/aiModules");
+
+const {
+  taskPlanning,
+  findAvailTaskPineCone,
+  userAnsweredOrGiveIdeas,
+  updateExecutedTasks,
+  edenReplyBasedTaskInfo,
+  updateConversation,evaluateAnswerEdenAIFunc,
+} = require("../utils/aiModules");
 
 const { updateAnsweredQuestionFunc,findAndUpdateConversationFunc } = require("../utils/conversationModules");
 
@@ -661,6 +669,120 @@ module.exports = {
 
 
 
+
+      return {
+        reply: responseGPTchat,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "edenGPTCreateProfileExperienceChatAPI",
+        {
+          component: "aiQuery > edenGPTCreateProfileExperienceChatAPI",
+        }
+      );
+    }
+  },
+  createProfileExperienceWithChatCVMemory: async (
+    parent,
+    args,
+    context,
+    info
+  ) => {
+    const { message, conversation, experienceTypeID, userID } = args.fields;
+    console.log(
+      "Query > edenGPTCreateProfileExperienceChatAPI > args.fields = ",
+      args.fields
+    );
+
+    let experiencePrompts = {
+      BACKGROUND: {
+        prompt:
+          "You are an assistant tasked with understanding a candidate's personal background to help match them with suitable job opportunities. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their educational background, work experience, and relevant certifications. Make sure your questions are relevant and progressively focus on the candidate's qualifications. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+      },
+      SKILLS_EXPERIENCE: {
+        prompt:
+          "You are an assistant tasked with evaluating a candidate's skills and expertise to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to understand their technical and soft skills, strengths, and areas of improvement. Make sure your questions are relevant and progressively focus on the candidate's skill set. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+      },
+      CAREER_GOALS_ASPIRATIONS: {
+        prompt:
+          "You are an assistant tasked with understanding a candidate's career goals and aspirations to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to learn about their short-term and long-term career goals, ideal work environment, and any specific industries or positions they are targeting. Make sure your questions are relevant and progressively focus on the candidate's aspirations. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+      },
+      WORK_PREFERENCES: {
+        prompt:
+          "You are an assistant tasked with understanding a candidate's work preferences to help find the right job match for them. Conduct a short conversation with the candidate, asking 2-5 questions to gather information about their preferred work culture, work-life balance, and any remote or flexible work options they might be interested in. Make sure your questions are relevant and progressively focus on the candidate's preferences. Remember to ask one question at a time. After gathering sufficient information, conclude the conversation by thanking the candidate for their time.",
+      },
+    };
+
+    // create a string of all the keys from the experiencePrompts object
+    let experienceTypeIDs = Object.keys(experiencePrompts).join(", ");
+
+    if (experienceTypeID == undefined) {
+      throw new ApolloError(
+        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs
+      );
+    }
+
+    let systemPrompt = experiencePrompts[experienceTypeID]?.prompt;
+
+    if (systemPrompt == undefined) {
+      throw new ApolloError(
+        "Invalid experienceTypeID - must be one of: " + experienceTypeIDs
+      );
+    }
+
+    // console.log("longTermMemories = ", longTermMemories);
+
+    try {
+      const filter = {
+        label: "CV_user_memory",
+      };
+      if (userID) {
+        filter._id = userID;
+      }
+
+      longTermMemories = await findBestEmbedings(message, filter, (topK = 3));
+
+      console.log("longTermMemories", longTermMemories);
+
+      function getAllText() {
+        return longTermMemories.map((memory) => memory.metadata.text).join("•");
+      }
+
+      console.log("getAllText", getAllText);
+
+      messageMemory =
+        message +
+        "MEMORY: " +
+        getAllText() +
+        "only give a reply based on conversation and if anything apply from MEMORY:";
+
+      console.log("messageMemory", messageMemory);
+
+      responseGPTchat = await useGPTchat(
+        messageMemory,
+        conversation,
+        systemPrompt
+      );
+
+      // ------------------ Save the conversation to the DB ------------------
+      if (userID != undefined) {
+        conversationTotal = [
+          ...conversation,
+          {
+            role: "user",
+            content: message,
+          },
+        ];
+        fieldsConvo = {
+          userID: userID,
+          conversation: conversationTotal,
+        };
+
+        updateConversation(fieldsConvo);
+        // asdf2
+      }
+      // ------------------ Save the conversation to the DB ------------------
 
       return {
         reply: responseGPTchat,

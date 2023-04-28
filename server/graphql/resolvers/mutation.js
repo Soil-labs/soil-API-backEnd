@@ -96,6 +96,7 @@ const {
 const {
   addMessage,
   storeLongTermMemory,
+  storeLongTermMemorySummary,
   addMessages,
   updateMessage,
   useAI_OnMessage,
@@ -216,6 +217,7 @@ module.exports = {
     // --------------- AI MUTATION -----------------
     addMessage,
     storeLongTermMemory,
+    storeLongTermMemorySummary,
     addMessages,
     updateMessage,
     useAI_OnMessage,
