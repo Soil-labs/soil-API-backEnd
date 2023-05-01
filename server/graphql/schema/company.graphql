@@ -10,16 +10,16 @@ module.exports = `
 
     type EmployeeType {
         typeT: String
-        userID: String
+        user: Members
     }
 
     type QuestionType {
-        questionID: ID
+        question: QuestionsEdenAI
         bestAnswer: String
     }
 
     type CandidateType {
-        userID: ID,
+        user: Members,
         overallScore: Float,
         acceptedOrRejected: Boolean,
         summaryQuestions: [SummaryQuestionType]
@@ -43,11 +43,20 @@ module.exports = `
 
     input QuestionTypeInput {
         questionID: ID
+        questionContent: String
         bestAnswer: String
     }
 
     input CandidateTypeInput {
         userID: ID,
+    }
+
+    input findCompanyInput {
+        _id: [ID],
+    }
+
+    input findCompaniesInput {
+        _id: ID,
     }
 
     input addEmployeesCompanyInput {

@@ -5,6 +5,9 @@ const { Company } = require("../../../models/companyModel");
 
 // const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
+const { addMultipleQuestionsToEdenAIFunc } = require("../utils/questionsEdenAIModules");
+
+
 
 module.exports = {
   updateCompany: async (parent, args, context, info) => {
@@ -84,7 +87,8 @@ module.exports = {
       }
     },
     addQuestionsToAskCompany: async (parent, args, context, info) => {
-      const { companyID,questionsToAsk } = args.fields;
+      const { companyID } = args.fields;
+      let {questionsToAsk} = args.fields;
       console.log("Mutation > addQuestionsToAskCompany > args.fields = ", args.fields);
 
       if (!questionsToAsk) throw new ApolloError("Employees is required", "addQuestionsToAskCompany", { component: "companyMutation > addQuestionsToAskCompany" });
@@ -98,6 +102,11 @@ module.exports = {
  
 
       try {
+
+        questionsToAsk = await addMultipleQuestionsToEdenAIFunc(questionsToAsk)
+
+        console.log("questionsToAsk = " , questionsToAsk)
+        // asdf12
 
 
         let questionsToAskN = await updateEmployees(companyData.questionsToAsk, questionsToAsk,"questionID");
@@ -166,7 +175,13 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
 
   // arr1New = [...arr1]
   arr2.forEach(employee2 => {
-    const index = arr1.findIndex(employee1 => employee1[compareKey] === employee2[compareKey]);
+    const index = arr1.findIndex(employee1 => {
+
+      
+      if (employee1[compareKey] && employee2[compareKey]) return (employee1[compareKey].toString() == employee2[compareKey].toString())
+      else return -1
+      
+    });
     if (index !== -1) {
       arr1[index] = employee2;
     } else {

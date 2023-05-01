@@ -60,6 +60,12 @@ module.exports = `
             findConversations(fields:findConversationsInput): [Conversation]
 
 
+           #  ---------- COMPANY QUERY -------
+            findCompany(fields:findCompanyInput): Company
+            findCompanies(fields:findCompaniesInput): [Company]
+
+
+
            #  ---------- QUESTIONS EDENAI QUERY -------
             findQuestionEdenAI(fields:findQuestionEdenAIInput): QuestionsEdenAI
 

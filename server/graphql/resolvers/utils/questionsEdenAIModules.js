@@ -110,9 +110,42 @@ async function addQuestionToEdenAIFunc(content) {
 }
   
   
+async function addMultipleQuestionsToEdenAIFunc(questionsToAsk) {
 
+    for (let i = 0; i < questionsToAsk.length; i++) {
+        const question = questionsToAsk[i];
+
+
+        if (!question.questionID) { // it doesn't have a questionID
+          if (question.questionContent) { 
+            console.log("question.questionContent = " , question.questionContent)
+            res = await addQuestionToEdenAIFunc(question.questionContent);
+
+            // update questionsToAsk
+            questionsToAsk[i].questionID = res._id;
+
+            console.log("res = " , res)
+
+          }
+
+
+        } else if (!question.questionContent) {
+            // it has a questionID and a questionContent
+            // check if the questionContent is different from the one in the DB
+            const questionData = await QuestionsEdenAI.findOne({
+                _id: question.questionID,
+            });
+
+            questionsToAsk[i].questionContent = questionData.content
+            
+        }
+      }
+      
+    return questionsToAsk
+}
 
 
 module.exports = {
     addQuestionToEdenAIFunc,
+    addMultipleQuestionsToEdenAIFunc,
 };

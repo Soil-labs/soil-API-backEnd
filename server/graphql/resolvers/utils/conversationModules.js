@@ -28,8 +28,8 @@ async function updateAnsweredQuestionFunc(resultConv,conversation,questionAsking
         updateAnsweredQuestionFlag = true;
     }
 
-    console.log("updateAnsweredQuestionFlag = " , updateAnsweredQuestionFlag)
-    console.log("questionData = " , questionData)
+    // console.log("updateAnsweredQuestionFlag = " , updateAnsweredQuestionFlag)
+    // console.log("questionData = " , questionData)
 
     let questionAnsweredUpdate
 
@@ -37,18 +37,22 @@ async function updateAnsweredQuestionFunc(resultConv,conversation,questionAsking
         questionAnsweredSoFar = resultConv.questionsAnswered
         if (questionData._id) {
 
-        infoAddQuestion = {
-            questionID: questionData._id,
-            content: questionData.content,
-            timesAsked: timesAsked,
-            conversation: conversation,
-        }
+            infoAddQuestion = {
+                questionID: questionData._id,
+                content: questionData.content,
+                timesAsked: timesAsked,
+                conversation: conversation,
+            }
+            console.log("change = 1211122123" )
 
-        questionAnsweredUpdate = await updateQuestionAskedConvoID(questionAnsweredSoFar,questionData._id,infoAddQuestion)
 
-        resultConv.questionsAnswered = questionAnsweredUpdate;
+            questionAnsweredUpdate = await updateQuestionAskedConvoID(questionAnsweredSoFar,questionData._id,infoAddQuestion)
+            console.log("change = 1211122124" )
 
-        resultConv = await resultConv.save();
+
+            resultConv.questionsAnswered = questionAnsweredUpdate;
+
+            resultConv = await resultConv.save();
         } else {
             
             infoAddQuestion = {
@@ -64,13 +68,16 @@ async function updateAnsweredQuestionFunc(resultConv,conversation,questionAsking
             resultConv.questionsAnswered = questionAnsweredUpdate;
 
             resultConv = await resultConv.save();
+
+            console.log("change = 1211122125" )
+
         }
 
         
 
     }
 
-    console.log("questionAnsweredUpdate = " , questionAnsweredUpdate)
+    // console.log("questionAnsweredUpdate = " , questionAnsweredUpdate)
 
 
     return resultConv
@@ -116,7 +123,7 @@ async function findAndUpdateConversationFunc(userID,conversation) {
       
     }
 
-    console.log("resultConv = " , resultConv)
+    // console.log("resultConv = " , resultConv)
 
     return resultConv
 
@@ -128,7 +135,11 @@ async function updateQuestionAskedConvoID(arr1, ID,infoAddQuestion) {
 
     // const index = arr1.findIndex(question => question.questionID == ID);
 
+    console.log("arr1, ID,infoAddQuestion = " , arr1, ID,infoAddQuestion)
+
     if (infoAddQuestion.questionID){
+        // console.log("question.questionID.toString() = " , question.questionID.toString())
+        // console.log("ID.toString() = " , ID.toString())
         const index = arr1.findIndex(question => question.questionID.toString() == ID.toString());
 
 
@@ -169,6 +180,8 @@ async function updateQuestionAskedConvoID(arr1, ID,infoAddQuestion) {
         }
 
     }
+
+    console.log("change = 2099")
   
   
     return arr1;
