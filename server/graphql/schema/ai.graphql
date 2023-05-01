@@ -265,15 +265,29 @@ module.exports = `
         companyID: ID
         conversation: [messageChat]
         unansweredQuestions: [String]
+        unansweredQuestionsArr: [unansweredQuestionsInput]
         questionAskingNow: String
         questionAskingID: ID
         timesAsked: Int
     }
+
+    
     type interviewEdenAIOutput {
         reply: String
         questionAskingNow: String
         unansweredQuestions: [String]
+        unansweredQuestionsArr: [unansweredQuestionsType]
         timesAsked: Int
+    }
+
+    input unansweredQuestionsInput {
+        questionContent: String
+        questionID: ID
+    }
+
+    type unansweredQuestionsType {
+        questionContent: String
+        questionID: ID
     }
 
     

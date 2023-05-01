@@ -27,6 +27,8 @@ const {
 
 const { updateAnsweredQuestionFunc,findAndUpdateConversationFunc } = require("../utils/conversationModules");
 
+const { addMultipleQuestionsToEdenAIFunc } = require("../utils/questionsEdenAIModules");
+
 
 globalThis.fetch = fetch;
 
@@ -852,34 +854,57 @@ module.exports = {
     }
   },
   interviewEdenAI: async (parent, args, context, info) => {
-    const { userID,conversation,unansweredQuestions,questionAskingNow,questionAskingID } = args.fields;
-    let {timesAsked} = args.fields;
-    console.log("Query > interviewEdenAI > args.fields = ", args.fields);
+    const { userID,conversation,unansweredQuestions } = args.fields;
+    let {timesAsked,unansweredQuestionsArr,questionAskingNow,questionAskingID} = args.fields;
+    // console.log("Query > interviewEdenAI > args.fields = ", args.fields);
 
 
 
     let nextQuestion
     let questionAskingNowA
 
-    if (timesAsked == undefined) {
+    
+
+    if (timesAsked == undefined || timesAsked == 0) {
       timesAsked = 1
     }
 
     const originalTimesAsked = timesAsked
 
+    unansweredQuestionsArr = await addMultipleQuestionsToEdenAIFunc(unansweredQuestionsArr)
+
+    console.log("unansweredQuestionsArr = " , unansweredQuestionsArr)    
+
+
+    if (questionAskingNow == undefined && unansweredQuestionsArr.length > 0 ) {
+      questionAskingNow = unansweredQuestionsArr[0].questionContent
+    }
+
+    if (questionAskingID == undefined && unansweredQuestionsArr.length > 0 ) {
+      questionAskingID = unansweredQuestionsArr[0].questionID
+    }
+
+    console.log("questionAskingNow = " , questionAskingNow)
+    console.log("questionAskingID = " , questionAskingID)
+    
+    // asdf12
 
     try {
 
       // -------------- Prompt of the conversation ------------
       let prompt_conversation = "Conversation:";
       let roleN;
-      // for loop only take the last two ellements of conversation
-      for (let i = conversation.length - timesAsked*2; i < conversation.length; i++) { // only take the part of the conversaiton that is about this quesoitn 
+      let startP 
+      if (conversation.length - timesAsked*2>0)
+        startP = conversation.length - timesAsked*2
+      else 
+        startP = 0
+      for (let i = startP; i < conversation.length; i++) { // only take the part of the conversaiton that is about this quesoitn 
       // for (let i = 0; i < conversation.length; i++) {
         roleN = "Person";
         if (conversation[i].role == "assistant") roleN = "Interviewer";
         prompt_conversation =
-          prompt_conversation + "\n\n" + roleN + ": " + conversation[i].content;
+          prompt_conversation + "\n\n" + roleN + `: "` + conversation[i].content + `"`;
       }
       // console.log("prompt_conversation = \n", prompt_conversation);
       printC(prompt_conversation, "1", "prompt_conversation", "r")
@@ -927,40 +952,67 @@ module.exports = {
         // -------------- Ask GPT what to do  ------------
 
         //  -------------- Move to next question ------------
-        
         if (moveNextQuestionGPT == true) {
 
-          if (unansweredQuestions.length == 0){
-            nextQuestion = "Next task: Finish the conversation, close it by saying thank you and that they finish the interview"
+          if (unansweredQuestionsArr.length == 1){
+            nextQuestion = "NEXT TASK: Finish the conversation, close it by saying thank you and that they finish the interview"
             questionAskingNowA = "Finish the conversation"
+            resT = unansweredQuestionsArr.shift()
+
           } else {
-            questionAskingNowA = unansweredQuestions.shift()
-            nextQuestion = "Next Question to Answer: " + questionAskingNowA
+            // questionAskingNowA = unansweredQuestions.shift()
+            // nextQuestion = "Next Question to Answer: " + questionAskingNowA
+
+            resT = unansweredQuestionsArr.shift()
+            console.log("resT ---f-f-f-f-= " , resT) 
+            questionAskingNowA = unansweredQuestionsArr[0].questionContent
+            nextQuestion = `NEXT QUESTION ASK: "` + questionAskingNowA + `"`
           }
           timesAsked = 1
         } else {
-          nextQuestion = "Ask again the question: " + questionAskingNow
+          nextQuestion = "QUESTION ASK AGAIN: " + questionAskingNow + `"`
           questionAskingNowA = questionAskingNow
           
-
           timesAsked = timesAsked + 1
         }
         
     } else {
-      questionAskingNowA = unansweredQuestions.shift()
-      nextQuestion = "Next Question to Answer: " + questionAskingNowA
-      
-      timesAsked = timesAsked + 1
+      if (unansweredQuestionsArr.length == 1){
+        nextQuestion = "NEXT TASK: Finish the conversation, close it by saying thank you and that they finish the interview"
+        questionAskingNowA = "Finish the conversation"
+        resT = unansweredQuestionsArr.shift()
+
+      } else {
+        // questionAskingNowA = unansweredQuestions.shift()
+        // nextQuestion = "Next Question to Answer: " + questionAskingNowA
+
+        resT = unansweredQuestionsArr.shift()
+        console.log("resT --f-f-f-f-f-= " , resT)
+
+        questionAskingNowA = unansweredQuestionsArr[0].questionContent
+        nextQuestion = `NEXT QUESITON ASK: "` + questionAskingNowA + `"`
+
+        // unansweredQuestionsArr.shift()
+        
+        timesAsked = timesAsked + 1
+      }
         
 
     }
 
     printC(timesAsked, "2", "timesAsked", "g");
 
-    let askGPT = prompt_conversation + "\n\n" + nextQuestion + "\n\n"
 
-    askGPT += "You are an Interviewer, you need to reply to the candidate with a small and consise way"
+    let askGPT = `DIRECTION: You are an Interviewer, you need to reply to the candidate with a small and consise way 
+    
+    - if there is a NEXT QUESITON ASK always focus on asking the question
+    - if there is a QUESTION ASK AGAIN you can either ask question again or ask more details about it based on the context
+    `
 
+
+    askGPT += prompt_conversation + "\n\n" + nextQuestion + "\n\n"
+
+    askGPT += "\n\n Always ask the question that were requested above!"
 
     askGPT += "\n\n Reply:"
 
@@ -992,8 +1044,9 @@ module.exports = {
       return {
         reply: reply,
         questionAskingNow: questionAskingNowA,
-        unansweredQuestions: unansweredQuestions,
+        // unansweredQuestions: unansweredQuestions,
         timesAsked: timesAsked,
+        unansweredQuestionsArr: unansweredQuestionsArr,
       };
     } catch (err) {
       throw new ApolloError(
