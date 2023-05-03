@@ -81,6 +81,7 @@ module.exports = `
         addEmployeesCompany(fields:addEmployeesCompanyInput): Company
         addQuestionsToAskCompany(fields:addQuestionsToAskCompanyInput): Company
         addCandidatesCompany(fields:addCandidatesCompanyInput): Company
+        updateCompanyUserAnswers(fields:updateCompanyUserAnswersInput): [Company]
 
 
 

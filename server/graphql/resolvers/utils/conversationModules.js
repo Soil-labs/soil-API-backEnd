@@ -1,6 +1,10 @@
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { Conversation } = require("../../../models/conversationModel");
 
+const { printC } = require("../../../printModule");
+
+const { useGPTchatSimple} = require("./aiModules");
+
 
 
 function concatenateFirstTwoMessages(arr) {
@@ -129,6 +133,62 @@ async function findAndUpdateConversationFunc(userID,conversation) {
 
 
 }
+
+
+async function findSummaryOfAnswers(convDataNow) {
+
+
+    questionsAnswered = convDataNow.questionsAnswered
+
+    printC(questionsAnswered,"0","questionsAnswered","b")
+
+
+    for (let i = 0; i < questionsAnswered.length; i++) {
+
+        const subConversationAnswer = questionsAnswered[i].subConversationAnswer
+        const questionContent = questionsAnswered[i].questionContent
+
+
+        // from subConversationAnswer array of objects (role,content) create a string of the conversation for prompt
+        let conversationString = ""
+        for (let j = 0; j < subConversationAnswer.length; j++) {
+            conversationString = conversationString + subConversationAnswer[j].role + ": " + subConversationAnswer[j].content + "\n"
+        }
+
+
+        printC(conversationString,"1","conversationString","r")
+
+
+        let promptForSummaryAnswer = ""
+
+
+        promptForSummaryAnswer += `
+        QUESTION: <${questionContent}>
+
+        CONVERSATION: <${conversationString}>
+
+        - Create the SUMMARY that answers to the QUESTION, based on the CONVERSATION above
+        - If there is no answer you can create say, <User didn't answer the question>
+
+        SUMMARY:
+        `
+
+        printC(promptForSummaryAnswer,"2","promptForSummaryAnswer","p")
+
+        const summaryAnswer = await useGPTchatSimple(promptForSummaryAnswer)
+
+        printC(summaryAnswer,"2","summaryAnswer","g")
+
+        // questionsAnswered[i].summaryOfAnswer = summaryAnswer
+
+        convDataNow.questionsAnswered[i].summaryOfAnswer = summaryAnswer
+
+    }
+
+
+    return convDataNow
+}
+  
   
 
 async function updateQuestionAskedConvoID(arr1, ID,infoAddQuestion) {
@@ -195,4 +255,5 @@ module.exports = {
     updateQuestionAskedConvoID,
     updateAnsweredQuestionFunc,
     findAndUpdateConversationFunc,
+    findSummaryOfAnswers,
 };

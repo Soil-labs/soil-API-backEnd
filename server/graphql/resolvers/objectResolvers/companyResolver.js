@@ -9,7 +9,7 @@ const { ApolloError } = require('apollo-server-express');
 module.exports = {
    CandidateType: {
       user: async (parent, args, context, info) => {
-       console.log("parent = " , parent)
+      //  console.log("parent = " , parent)
 
          try {
             const userID = parent.userID;
@@ -41,7 +41,7 @@ module.exports = {
    },
    QuestionType: {
       question: async (parent, args, context, info) => {
-       console.log("parent = " , parent)
+      //  console.log("parent = " , parent)
 
          try {
             const questionID = parent.questionID;

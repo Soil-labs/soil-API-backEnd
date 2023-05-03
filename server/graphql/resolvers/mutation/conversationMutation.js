@@ -3,7 +3,7 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 const { ApolloError } = require("apollo-server-express");
 
-const { concatenateFirstTwoMessages,updateQuestionAskedConvoID,findAndUpdateConversationFunc,updateAnsweredQuestionFunc } = require("../utils/conversationModules");
+const { concatenateFirstTwoMessages,updateQuestionAskedConvoID,findSummaryOfAnswers,findAndUpdateConversationFunc,updateAnsweredQuestionFunc } = require("../utils/conversationModules");
 
 const { useGPTchat,useGPTchatSimple,upsertEmbedingPineCone,deletePineCone } = require("../utils/aiModules");
 
@@ -131,24 +131,13 @@ module.exports = {
           console.log("minutesSinceLastUpdate = " , minutesSinceLastUpdate)
 
           if (minutesSinceLastUpdate > 5) {
+            // if (true) { 
 
             // ------------------ Delete old summaries from pinecone ------------------
             deletePineIDs = convDataNow.summary.map(obj => obj.pineConeID)
             await deletePineCone(deletePineIDs)
             // ------------------ Delete old summaries from pinecone ------------------
-              
-            // console.log("deletePineIDs = " , deletePineIDs)
-
-            // asdf99
-
-            // ---------------- GPT find new Summary ------------
-            // const bulletSummary = await useGPTchat(
-            //   // "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation. reasult:",
-            //   // "Please summarize the conversation using bullet points. Focuse on creating consise bullet points. Try to incorporate the keywords that were used during the conversation. reasult:",
-            //   "Please provide a concise summary of the conversation using bullet points. Incorporate keywords used in the conversation. The focus should be on creating clear and easily understandable bullet points. Your result should effectively communicate the main points discussed. Only keep the important parts of the conversation such as, skills, industries, and anything related to the expertise of a person.",
-            //   convDataNow.conversation.map(({ role, content }) => ({ role, content })),
-            //   ""
-            // )
+ 
 
             let paragraphSummary = await useGPTchat(
               // "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation. reasult:",
@@ -169,8 +158,7 @@ module.exports = {
 
             let splitSummary = bulletSummary.split("- ");
 
-            // console.log("splitSummary = " , splitSummary)
-            // sdf02
+            
 
             splitSummary.shift();
 
@@ -183,11 +171,7 @@ module.exports = {
             for (let j = 0; j < splitSummary.length; j++) {
               splitSumNow = splitSummary[j];
 
-              // await deletePineCone({
-              //   "convKey": {"$eq": convDataNow.convKey},
-              // })
 
-              // sdf1
 
               upsertDoc = await upsertEmbedingPineCone({
                 text: splitSumNow,
@@ -199,8 +183,6 @@ module.exports = {
               console.log("upsertDoc = " , upsertDoc)
 
 
-              // sdf0
-
               summaryArr.push({
                 pineConeID: upsertDoc.pineConeID,
                 content: splitSumNow,
@@ -211,10 +193,22 @@ module.exports = {
             convDataNow.summary = summaryArr;
             convDataNow.summaryReady = true;
 
+
+
+            convDataNow = await findSummaryOfAnswers(convDataNow)
+
+            // asdf9
+
+
             await convDataNow.save();
+
+
 
           }
         }
+
+
+
   
         return convData;
       } catch (err) {
