@@ -22,6 +22,7 @@ const companyModel = mongoose.Schema({
       questionID: mongoose.Schema.ObjectId,
       questionContent: String,
       answerContent: String,
+      bestAnswerCompany: String,
       reason: String,
       score: Number,
     }]

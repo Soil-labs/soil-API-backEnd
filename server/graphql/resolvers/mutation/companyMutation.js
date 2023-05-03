@@ -249,7 +249,7 @@ module.exports = {
       if (companyIDs)
         companyData = await Company.find({ 
           _id: companyIDs,
-          candidatesReadyToDisplay: { $ne: true }
+          candidatesReadyToDisplay: { $ne: true } // SOS 🆘 uncoment
         });
       else 
         companyData = await Company.find({ candidatesReadyToDisplay: { $ne: true } });
@@ -342,14 +342,16 @@ module.exports = {
             if (questionInfo.bestAnswer == undefined) { // If we don't have a best answer for this quesiton
 
               for (userID in questionInfo.usersAnswers) {
+                qLen = questionInfo.usersAnswers[userID].length -1
+
                 if (candidateResult[userID] == undefined) {
                   // candidateResult[userID] // add on candidateResult[userID] the questionID questionID and the value questionInfo.usersAnswers[userID][0]
 
                   candidateResult[userID] = {
-                    [questionID]: questionInfo.usersAnswers[userID][0] // SOS 🆘 -> right now I only take the first answer, this need to cahnge! 
+                    [questionID]: questionInfo.usersAnswers[userID][qLen] // SOS 🆘 -> right now I only take the first answer, this need to cahnge! 
                   }
                 } else {
-                  candidateResult[userID][questionID] = questionInfo.usersAnswers[userID][0] // SOS 🆘 -> right now I only take the first answer, this need to cahnge! 
+                  candidateResult[userID][questionID] = questionInfo.usersAnswers[userID][qLen] // SOS 🆘 -> right now I only take the first answer, this need to cahnge! 
                 }
               }
 
@@ -371,8 +373,9 @@ module.exports = {
 
               for (userID in questionInfo.usersAnswers) {
 
+                qLen = questionInfo.usersAnswers[userID].length -1
 
-                const answerN = questionInfo.usersAnswers[userID][0].summaryOfAnswer.replace(/[<>]/g, "")
+                const answerN = questionInfo.usersAnswers[userID][qLen].summaryOfAnswer.replace(/[<>]/g, "")
 
                 printC(questionN,"5","questionN","y")
                 printC(bestAnswerN,"5","bestAnswerN","y")
@@ -420,21 +423,24 @@ module.exports = {
 
                 printC(evaluate,"5","evaluate","y")
                 printC(reason,"5","reason","y")
+                printC(questionInfo.usersAnswers[userID][qLen],"5","questionInfo.usersAnswers[userID][qLen]","y")
 
+
+                qLen = questionInfo.usersAnswers[userID].length -1
 
                 if (candidateResult[userID] == undefined) {
                   // candidateResult[userID] // add on candidateResult[userID] the questionID questionID and the value questionInfo.usersAnswers[userID][0]
 
                   candidateResult[userID] = {
                     [questionID]: {
-                      ...questionInfo.usersAnswers[userID][0]._doc, // SOS 🆘 -> right now I only take the first answer, this need to cahnge! 
+                      ...questionInfo.usersAnswers[userID][qLen]._doc, // SOS 🆘 -> right now I only take the first answer, this need to cahnge! 
                       score: evaluate,
                       reason: reason
                     }
                   }
                 } else {
                   candidateResult[userID][questionID] = {
-                    ...questionInfo.usersAnswers[userID][0]._doc, // SOS 🆘 -> right now I only take the first answer, this need to cahnge! 
+                    ...questionInfo.usersAnswers[userID][qLen]._doc, // SOS 🆘 -> right now I only take the first answer, this need to cahnge! 
                     score: evaluate,
                     reason: reason
                   }
