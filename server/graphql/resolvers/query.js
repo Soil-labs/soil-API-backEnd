@@ -88,7 +88,7 @@ const {
   edenGPTreplyChatAPI_V2,edenGPTreplyChatAPI_V3,
   edenGPTsearchProfiles,
   edenGPTsummaryProfile,conversationToSummaryGPT,
-  edenGPTEndorseChatAPI,evaluateAnswerEdenAI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,interviewEdenAI,createProfileExperienceWithChatCVMemory,
+  edenGPTEndorseChatAPI,evaluateAnswerEdenAI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,interviewEdenAI,interviewEdenAIMemory,createProfileExperienceWithChatCVMemory,
   edenGPTReviewChatAPI,
 } = require("./query/aiQuery");
 
@@ -215,7 +215,7 @@ module.exports = {
     edenGPTreplyChatAPI_V2,edenGPTreplyChatAPI_V3,
     edenGPTsearchProfiles,
     edenGPTsummaryProfile,conversationToSummaryGPT,
-    edenGPTEndorseChatAPI,evaluateAnswerEdenAI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,createProfileExperienceWithChatCVMemory,interviewEdenAI,
+    edenGPTEndorseChatAPI,evaluateAnswerEdenAI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,createProfileExperienceWithChatCVMemory,interviewEdenAI,interviewEdenAIMemory,
     edenGPTReviewChatAPI,
 
     //----------- GRAPH VISUAL QUERY ------------------

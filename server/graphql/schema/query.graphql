@@ -119,6 +119,7 @@ module.exports = `
           edenGPTCreateProfileExperienceChatAPI(fields: edenGPTCreateProfileExperienceChatAPIInput): edenGPTCreateProfileExperienceChatAPIOutput
           edenAITalSearchExpirience(fields: edenAITalSearchExpirienceInput): edenAITalSearchExpirienceOutput
           interviewEdenAI(fields: interviewEdenAIInput): interviewEdenAIOutput
+          interviewEdenAIMemory(fields: interviewEdenAIMemoryInput): interviewEdenAIMemoryOutput
           createProfileExperienceWithChatCVMemory(fields: createProfileExperienceWithChatCVMemoryInput): createProfileExperienceWithChatCVMemoryOutput
           edenGPTReviewChatAPI(fields: edenGPTReviewChatAPIInput): edenGPTReviewChatAPIOutput
           edenGPTsearchProfiles(fields: edenGPTsearchProfilesInput): edenGPTsearchProfilesOutput

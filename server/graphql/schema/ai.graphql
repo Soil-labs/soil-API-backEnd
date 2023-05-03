@@ -276,6 +276,22 @@ module.exports = `
         timesAsked: Int
     }
 
+    input interviewEdenAIMemoryInput {
+        userID: ID
+        companyID: ID
+        conversation: [messageChat]
+        unansweredQuestions: [String]
+        questionAskingNow: String
+        questionAskingID: ID
+        timesAsked: Int
+    }
+    type interviewEdenAIMemoryOutput {
+        reply: String
+        questionAskingNow: String
+        unansweredQuestions: [String]
+        timesAsked: Int
+    }
+
     
     type edenAITalSearchExpirienceOutput {
         reply: String
