@@ -3,6 +3,7 @@ module.exports = `
     type Company {
         _id: ID
         name: String
+        candidatesReadyToDisplay: Boolean
         employees: [EmployeeType]
         questionsToAsk: [QuestionType]
         candidates: [CandidateType]
@@ -22,14 +23,17 @@ module.exports = `
         user: Members,
         overallScore: Float,
         acceptedOrRejected: Boolean,
+        readyToDisplay: Boolean,
         summaryQuestions: [SummaryQuestionType]
     }
 
     type SummaryQuestionType {
         questionID: ID,
-        content: String,
+        questionContent: String,
+        answerContent: String,
+        reason: String,
         score: Float,
-        }
+    }
 
     input updateCompanyInput {
         _id: ID
@@ -78,6 +82,10 @@ module.exports = `
     input addCandidatesCompanyInput {
         companyID: ID
         candidates: [candidatesInput]
+    }
+
+    input updateCompanyUserAnswersInput {
+        companyIDs: [ID]
     }
 
     

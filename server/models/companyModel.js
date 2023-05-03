@@ -12,13 +12,17 @@ const companyModel = mongoose.Schema({
     questionID: mongoose.Schema.ObjectId,
     bestAnswer: String,
   }],
+  candidatesReadyToDisplay: Boolean,
   candidates: [{
     userID: String,
     overallScore: Number,
     acceptedOrRejected: Boolean,
+    readyToDisplay: Boolean,
     summaryQuestions: [{
       questionID: mongoose.Schema.ObjectId,
-      content: String,
+      questionContent: String,
+      answerContent: String,
+      reason: String,
       score: Number,
     }]
   }]
