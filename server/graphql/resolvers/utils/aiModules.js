@@ -8,6 +8,59 @@ const { PineconeClient } = require("@pinecone-database/pinecone");
 
 const { request, gql} = require('graphql-request');
 
+const { printC } = require("../../../printModule");
+
+
+async function getMemory(messageContent,filter) {
+
+    memories = await findBestEmbedings(messageContent, filter, (topK = 3));
+
+
+    const memoriesForPrompt = memories.map((memory) => memory.metadata.text).join("•");
+
+    return memoriesForPrompt
+}
+
+
+async function modifyQuestionFromCVMemory(messageQ,userID) {
+
+    // -------------- Connect Memory to question ------------
+    const filter = {
+        label: "CV_user_memory",
+      };
+      if (userID) {
+        filter._id = userID;
+      }
+
+      const memoriesPrompt = await getMemory(messageQ,filter)
+      printC(filter, "1", "filter", "p")
+      printC(memories, "1", "memories", "r")
+
+    //   ONLY IF IT MAKE SENSE Modify the questionAskingNow by using MEMORY and asking a more specific question based on that memory
+
+
+      const promptPlusMemoryV = `Question Asking now: ${messageQ}
+
+      ONLY IF IT MAKE SENSE Modify the questionAskingNow by using MEMORY and asking a more specific question based on that memory
+       
+       MEMORY(delimited by triple quotes): 
+
+       """ ${memoriesPrompt} """ 
+
+       Create a simple question for the candidate to answer
+       
+       `;
+
+       printC(promptPlusMemoryV, "1", "promptPlusMemoryV", "p")
+
+      const modifiedQuestion = await useGPChatSimple(promptPlusMemoryV);
+
+      printC(modifiedQuestion, "5", "modifiedQuestion", "g")
+
+    // -------------- Connect Memory to question ------------
+
+    return modifiedQuestion
+}
 
 
 async function createEmbedingsGPT(words_n) {
@@ -265,7 +318,7 @@ function chooseAPIkey(chooseAPI="") {
     return response.data.choices[0].message.content;
   }
   
-  async function useGPTchatSimple(prompt,temperature=0.7) {
+  async function useGPChatSimple(prompt,temperature=0.7) {
     
     discussion = [{
       "role": "user",
@@ -1157,7 +1210,7 @@ module.exports = {
     deletePineCone,
     chooseAPIkey,
     useGPTchat,
-    useGPTchatSimple,
+    useGPTchatSimple: useGPChatSimple,
     arrayToObject,
     taskPlanning,
     findAvailTaskPineCone,
@@ -1167,4 +1220,6 @@ module.exports = {
     updateConversation,
     findBestEmbedings,
     evaluateAnswerEdenAIFunc,
+    getMemory,
+    modifyQuestionFromCVMemory,
   };

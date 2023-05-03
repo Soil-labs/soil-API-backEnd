@@ -23,6 +23,7 @@ const {
   updateExecutedTasks,
   edenReplyBasedTaskInfo,
   updateConversation,evaluateAnswerEdenAIFunc,
+  modifyQuestionFromCVMemory,
 } = require("../utils/aiModules");
 
 const { updateAnsweredQuestionFunc,findAndUpdateConversationFunc } = require("../utils/conversationModules");
@@ -923,7 +924,7 @@ module.exports = {
 
         // -------------- Ask GPT what to do  ------------
         promptAskQuestion = `
-        For the Conversation, the question that the Interviewer asked is: Can you tell me about a project that you worked on that you are particularly proud of?
+        For the Conversation, the question that the Interviewer asked is: ${questionAskingNow}
 
           Is the User 
           1) YES answer the question, move to next question 
@@ -931,19 +932,28 @@ module.exports = {
 
           you can only answer (YES, NO)
 
-          answer: 
+          Result: 
         `
 
-        responseGPTchat = await useGPTchatSimple(
-          prompt_conversation + "\n\n" + promptAskQuestion,
-          );
+
+        promptQuestionAskedN = prompt_conversation + "\n\n" + promptAskQuestion,
+
 
         console.log("")
         console.log("")
-        printC(responseGPTchat, "1", "responseGPTchat", "b");
+        printC(promptQuestionAskedN, "1", "promptQuestionAskedN", "p");
+
+
+        responseGPTchat = await useGPTchatSimple(
+          promptQuestionAskedN,
+          );
+
+        
 
         console.log("")
         console.log("-------------------------")
+        printC(responseGPTchat, "1", "responseGPTchat", "r");
+
 
         // if statment if on the responseGPTchat there is the word YES or NO put true or false
         let moveNextQuestionGPT = true;
@@ -1018,28 +1028,37 @@ module.exports = {
 
     let reply
     if (timesAsked == 1){
-      
-      reply = questionAskingNowA
+
+      // reply = questionAskingNowA
+      reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID)
 
     } else {
 
       if (flagFirstTime == true){
-        reply = questionAskingNowA
+        // reply = questionAskingNowA
+        reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID)
       } else {
 
 
-        askGPT = `DIRECTION: You are an Interviewer, you need to reply to the candidate with a small and consise way 
+        // askGPT = `DIRECTION: You are an Interviewer, you need to reply to the candidate with a small and consise way 
       
-          - if there is a NEW QUESITON ASK always focus on asking the NEW QUESTION and nothing else!
-          - if there is a QUESTION ASK AGAIN you can either ask question again or ask more details about it based on the context
+        //   - if there is a NEW QUESITON ASK always focus on asking the NEW QUESTION and nothing else!
+        //   - if there is a QUESTION ASK AGAIN you can either ask question again or ask more details about it based on the context
+        //   `
+
+        askGPT = `You are an Interviewer, you need to reply to the candidate with a small and consise way 
+          - You have the Conversation between Interviewer and Candidate
+          - you also have the quesiton that you need to collect informaiton
+
+          - your goal is to collect the information from the candidate for this specific question
           `
 
         askGPT += prompt_conversation + "\n\n" + nextQuestion + "\n\n"
-        askGPT += "\n\n Always ask the question that were requested above!"
+        // askGPT += "\n\n Always ask the question that were requested above!"
         askGPT += "\n\n Reply:"
 
-        console.log("askGPT = " , askGPT)
-        printC(askGPT, "4", "askGPT", "r")
+        
+        printC(askGPT, "4", "askGPT", "p")
 
         reply = await useGPTchatSimple(askGPT);
       }
@@ -1050,6 +1069,7 @@ module.exports = {
     
 
       console.log("reply = " , reply)
+      printC(reply, "4", "reply", "r");
     //  -------------- Move to next question ------------
 
 
