@@ -863,9 +863,11 @@ module.exports = {
     let nextQuestion
     let questionAskingNowA
 
+    let flagFirstTime = false
     
 
     if (timesAsked == undefined || timesAsked == 0) {
+      flagFirstTime = true
       timesAsked = 1
     }
 
@@ -899,12 +901,18 @@ module.exports = {
         startP = conversation.length - timesAsked*2
       else 
         startP = 0
+
+      lastMessage = ""
       for (let i = startP; i < conversation.length; i++) { // only take the part of the conversaiton that is about this quesoitn 
       // for (let i = 0; i < conversation.length; i++) {
         roleN = "Person";
         if (conversation[i].role == "assistant") roleN = "Interviewer";
         prompt_conversation =
           prompt_conversation + "\n\n" + roleN + `: "` + conversation[i].content + `"`;
+
+        if (i == conversation.length - 1) {
+          lastMessage = roleN + `: "` + conversation[i].content + `"`;
+        }
       }
       // console.log("prompt_conversation = \n", prompt_conversation);
       printC(prompt_conversation, "1", "prompt_conversation", "r")
@@ -955,7 +963,7 @@ module.exports = {
         if (moveNextQuestionGPT == true) {
 
           if (unansweredQuestionsArr.length == 1){
-            nextQuestion = "NEXT TASK: Finish the conversation, close it by saying thank you and that they finish the interview"
+            nextQuestion = "NEW TASK: Finish the conversation, close it by saying thank you and that they finish the interview"
             questionAskingNowA = "Finish the conversation"
             resT = unansweredQuestionsArr.shift()
 
@@ -966,11 +974,15 @@ module.exports = {
             resT = unansweredQuestionsArr.shift()
             console.log("resT ---f-f-f-f-= " , resT) 
             questionAskingNowA = unansweredQuestionsArr[0].questionContent
-            nextQuestion = `NEXT QUESTION ASK: "` + questionAskingNowA + `"`
+            nextQuestion = `NEW QUESTION ASK: "` + questionAskingNowA + `"`
           }
           timesAsked = 1
         } else {
-          nextQuestion = "QUESTION ASK AGAIN: " + questionAskingNow + `"`
+          if (flagFirstTime == true){
+            nextQuestion = "QUESTION ASK: " + questionAskingNow + `"`
+          } else {
+            nextQuestion = "QUESTION ASK AGAIN: " + questionAskingNow + `"`
+          }
           questionAskingNowA = questionAskingNow
           
           timesAsked = timesAsked + 1
@@ -978,7 +990,7 @@ module.exports = {
         
     } else {
       if (unansweredQuestionsArr.length == 1){
-        nextQuestion = "NEXT TASK: Finish the conversation, close it by saying thank you and that they finish the interview"
+        nextQuestion = "NEW TASK: Finish the conversation, close it by saying thank you and that they finish the interview"
         questionAskingNowA = "Finish the conversation"
         resT = unansweredQuestionsArr.shift()
 
@@ -987,10 +999,9 @@ module.exports = {
         // nextQuestion = "Next Question to Answer: " + questionAskingNowA
 
         resT = unansweredQuestionsArr.shift()
-        console.log("resT --f-f-f-f-f-= " , resT)
 
         questionAskingNowA = unansweredQuestionsArr[0].questionContent
-        nextQuestion = `NEXT QUESITON ASK: "` + questionAskingNowA + `"`
+        nextQuestion = `NEW QUESITON ASK: "` + questionAskingNowA + `"`
 
         // unansweredQuestionsArr.shift()
         
@@ -1003,23 +1014,40 @@ module.exports = {
     printC(timesAsked, "2", "timesAsked", "g");
 
 
-    let askGPT = `DIRECTION: You are an Interviewer, you need to reply to the candidate with a small and consise way 
+    let askGPT = ""
+
+    let reply
+    if (timesAsked == 1){
+      
+      reply = questionAskingNowA
+
+    } else {
+
+      if (flagFirstTime == true){
+        reply = questionAskingNowA
+      } else {
+
+
+        askGPT = `DIRECTION: You are an Interviewer, you need to reply to the candidate with a small and consise way 
+      
+          - if there is a NEW QUESITON ASK always focus on asking the NEW QUESTION and nothing else!
+          - if there is a QUESTION ASK AGAIN you can either ask question again or ask more details about it based on the context
+          `
+
+        askGPT += prompt_conversation + "\n\n" + nextQuestion + "\n\n"
+        askGPT += "\n\n Always ask the question that were requested above!"
+        askGPT += "\n\n Reply:"
+
+        console.log("askGPT = " , askGPT)
+        printC(askGPT, "4", "askGPT", "r")
+
+        reply = await useGPTchatSimple(askGPT);
+      }
+    }
+
+
+
     
-    - if there is a NEXT QUESITON ASK always focus on asking the question
-    - if there is a QUESTION ASK AGAIN you can either ask question again or ask more details about it based on the context
-    `
-
-
-    askGPT += prompt_conversation + "\n\n" + nextQuestion + "\n\n"
-
-    askGPT += "\n\n Always ask the question that were requested above!"
-
-    askGPT += "\n\n Reply:"
-
-    console.log("askGPT = " , askGPT)
-    printC(askGPT, "4", "askGPT", "r")
-
-    const reply = await useGPTchatSimple(askGPT);
 
       console.log("reply = " , reply)
     //  -------------- Move to next question ------------

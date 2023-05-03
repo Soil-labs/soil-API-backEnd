@@ -72,6 +72,10 @@ module.exports = `
         companyID: ID
         questionsToAsk: [QuestionTypeInput]
     }
+    input deleteQuestionsToAskCompanyInput {
+        companyID: ID
+        questionID: ID
+    }
 
     input candidatesInput {
         userID: ID,

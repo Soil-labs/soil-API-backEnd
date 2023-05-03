@@ -144,6 +144,46 @@ module.exports = {
         );
       }
     },
+    deleteQuestionsToAskCompany: async (parent, args, context, info) => {
+      const { companyID,questionID } = args.fields;
+      console.log("Mutation > deleteQuestionsToAskCompany > args.fields = ", args.fields);
+
+      if (!companyID) throw new ApolloError("Company ID is required", "deleteQuestionsToAskCompany", { component: "companyMutation > deleteQuestionsToAskCompany" });
+
+      companyData = await Company.findOne({ _id: companyID });
+
+      if (!companyData) throw new ApolloError("Company not found", "deleteQuestionsToAskCompany", { component: "companyMutation > deleteQuestionsToAskCompany" });
+
+ 
+
+      try {
+
+        questionsToAsk = companyData.questionsToAsk
+
+        console.log("questionsToAsk = " , questionsToAsk)
+
+        // filter out the questionID
+        questionsToAsk = questionsToAsk.filter((question) => question.questionID.toString() != questionID.toString());
+
+        // save it to mongo
+        let companyDataN = await Company.findOneAndUpdate(
+          { _id: companyID },
+          { questionsToAsk },
+          { new: true }
+        );
+
+        
+        
+        return companyDataN
+        
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "deleteQuestionsToAskCompany",
+          { component: "companyMutation > deleteQuestionsToAskCompany" }
+        );
+      }
+    },
     addCandidatesCompany: async (parent, args, context, info) => {
       const { companyID,candidates } = args.fields;
       console.log("Mutation > addCandidatesCompany > args.fields = ", args.fields);
@@ -188,6 +228,7 @@ module.exports = {
         );
       }
     },
+    
     updateCompanyUserAnswers: async (parent, args, context, info) => {
       const { companyIDs} = args.fields;
       console.log("Mutation > updateCompanyUserAnswers > args.fields = ", args.fields);
@@ -420,6 +461,7 @@ module.exports = {
             userIDn = companyData[i].candidates[j].userID
 
             companyData[i].candidates[j].readyToDisplay = true
+            companyData[i].candidatesReadyToDisplay = true
             if (candidateResult[userIDn]) {
               console.log("candidateResult[userIDn] = " , candidateResult[userIDn])
 
@@ -445,20 +487,32 @@ module.exports = {
               }
 
               if (numberQ != 0) {
-                companyData[i].candidates[j].overallScore = (overallScore/numberQ)*100
+                companyData[i].candidates[j].overallScore = (overallScore/numberQ)*10
               }
 
               companyData[i].candidates[j].summaryQuestions = summaryQuestions
 
-              companyData[i].candidatesReadyToDisplay = true
-
+              
               
             }
           }
-
-          // SOS 🆘 you need to update the company in the DB
-
           // --------------- Return results on companyData ---------------
+
+
+
+          // ------------------ Update Company ----------------
+          companyNowD = await Company.findOneAndUpdate(
+            { _id: companyData[i]._id },
+            {
+              $set: {
+                candidates: companyData[i].candidates,
+                candidatesReadyToDisplay: companyData[i].candidatesReadyToDisplay
+              }
+            },
+            { new: true }
+          )
+          // ------------------ Update Company ----------------
+
 
 
         }
