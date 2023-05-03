@@ -80,6 +80,7 @@ module.exports = `
         updateCompany(fields:updateCompanyInput): Company
         addEmployeesCompany(fields:addEmployeesCompanyInput): Company
         addQuestionsToAskCompany(fields:addQuestionsToAskCompanyInput): Company
+        deleteQuestionsToAskCompany(fields:deleteQuestionsToAskCompanyInput): Company
         addCandidatesCompany(fields:addCandidatesCompanyInput): Company
         updateCompanyUserAnswers(fields:updateCompanyUserAnswersInput): [Company]
 
