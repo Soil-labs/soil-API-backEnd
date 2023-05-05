@@ -234,22 +234,10 @@ module.exports = {
       console.log("Mutation > updateCompanyUserAnswers > args.fields = ", args.fields);
 
 
-      // const input = "EVALUATE: 3 sdfjf9 . \n REASON: The USER answer did not provide specific details about the team projects they worked on and their role was limited to administrative tasks. The BEST DESIRED answer";
-      // const regex = /evaluate\s*:\s*(\d+)\s*.*?reason\s*:\s*(.*)/is;
-      // const result = regex.exec(input);
-
-      // const evaluate = result[1]; // "3"
-      // const reason = result[2].trim(); // "The USER answer did not provide specific details about the team projects they worked on and their role was limited to administrative tasks. The BEST DESIRED answer"
-
-      // printC(evaluate,"0","evaluate","g")
-      // printC(reason,"0","reason","g")
-      // sdf
-
-
       if (companyIDs)
         companyData = await Company.find({ 
           _id: companyIDs,
-          candidatesReadyToDisplay: { $ne: true } // SOS 🆘 uncoment
+          candidatesReadyToDisplay: { $ne: true } 
         });
       else 
         companyData = await Company.find({ candidatesReadyToDisplay: { $ne: true } });

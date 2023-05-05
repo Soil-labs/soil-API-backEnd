@@ -11,9 +11,9 @@ const { request, gql} = require('graphql-request');
 const { printC } = require("../../../printModule");
 
 
-async function getMemory(messageContent,filter) {
+async function getMemory(messageContent,filter,topK = 3) {
 
-    memories = await findBestEmbedings(messageContent, filter, (topK = 3));
+    memories = await findBestEmbedings(messageContent, filter, (topK = topK));
 
 
     const memoriesForPrompt = memories.map((memory) => memory.metadata.text).join("•");
@@ -21,8 +21,42 @@ async function getMemory(messageContent,filter) {
     return memoriesForPrompt
 }
 
+const MessageMapKG_V2APICallF = async (textToMap) => {
+    const query = gql`
+      query messageMapKG_V2($fields: messageMapKG_V2Input) {
+        messageMapKG_V2(fields: $fields) {
+          keywords {
+            keyword
+            confidence
+            nodeID
+            node {
+              _id
+              name
+            }
+          }
+        }
+      }
+    `;
 
-async function modifyQuestionFromCVMemory(messageQ,userID) {
+    const variables = {
+      fields: {
+        message: textToMap,
+      },
+    };
+
+    res = await request(
+      "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+      query,
+      variables
+    );
+
+    // console.log("res = " , res)
+    // console.log("res.messageMapKG_V2", res.messageMapKG_V2);
+    return res.messageMapKG_V2.keywords;
+  };
+
+
+async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3) {
 
     // -------------- Connect Memory to question ------------
     const filter = {
@@ -32,7 +66,7 @@ async function modifyQuestionFromCVMemory(messageQ,userID) {
         filter._id = userID;
       }
 
-      const memoriesPrompt = await getMemory(messageQ,filter)
+      const memoriesPrompt = await getMemory(messageQ,filter,topK)
       printC(filter, "1", "filter", "p")
       printC(memories, "1", "memories", "r")
 
@@ -41,7 +75,8 @@ async function modifyQuestionFromCVMemory(messageQ,userID) {
 
       const promptPlusMemoryV = `Question Asking now: ${messageQ}
 
-      ONLY IF IT MAKE SENSE Modify the questionAskingNow by using MEMORY and asking a more specific question based on that memory
+      - ONLY IF IT MAKE SENSE Modify the questionAskingNow by using MEMORY and asking a more specific question based on that memory
+      - it should still stay true the the original question
        
        MEMORY(delimited by triple quotes): 
 
@@ -63,7 +98,7 @@ async function modifyQuestionFromCVMemory(messageQ,userID) {
 }
 
 
-async function createEmbedingsGPT(words_n) {
+async function createEmbeddingsGPT(words_n) {
     // words_n = ["node.js", "react", "angular"];
     let OPENAI_API_KEY = chooseAPIkey();
     response = await axios.post(
@@ -108,7 +143,7 @@ async function generateRandomID(numDigit = 8) {
     return id;
   }
   
-async function deletePineCone(filter){
+async function deletePineCone(deletePineIDs){
 
     const pinecone = new PineconeClient();
     await pinecone.init({
@@ -178,7 +213,7 @@ async function upsertEmbedingPineCone(data) {
   
     id_message = await generateRandomID(8);
 
-    const embed = await createEmbedingsGPT(data.text);
+    const embed = await createEmbeddingsGPT(data.text);
 
     
     let metadata = {
@@ -232,7 +267,7 @@ async function findBestEmbedings(message, filter, topK = 3) {
   
     const index = await pinecone.Index("profile-eden-information");
   
-    embed = await createEmbedingsGPT(message);
+    embed = await createEmbeddingsGPT(message);
   
     let queryRequest = {
       topK: topK,
@@ -1222,4 +1257,5 @@ module.exports = {
     evaluateAnswerEdenAIFunc,
     getMemory,
     modifyQuestionFromCVMemory,
+    MessageMapKG_V2APICallF,
   };

@@ -58,7 +58,7 @@ function chooseAPIkey() {
   return key;
 }
 
-async function createEmbedingsGPT(words_n) {
+async function createEmbeddingsGPT(words_n) {
   // words_n = ["node.js", "react", "angular"];
   let OPENAI_API_KEY = chooseAPIkey();
   response = await axios.post(
@@ -132,7 +132,7 @@ async function generate12DigitID(inputString) {
 async function upsertEmbedingPineCone(data,ID = undefined) {
 
 
-  embedding = await createEmbedingsGPT(data.text)
+  embedding = await createEmbeddingsGPT(data.text)
 
   const pinecone = new PineconeClient();
   await pinecone.init({

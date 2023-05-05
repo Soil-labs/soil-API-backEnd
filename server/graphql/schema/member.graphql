@@ -12,6 +12,8 @@ module.exports = `
 
         onbording: onboardingType
 
+        cvInfo: cvInfoType
+
         content: contentType
         
         interest: String
@@ -24,6 +26,8 @@ module.exports = `
         completedOpportunities: Int
 
         serverID: [String],
+
+
 
 
         invitedBy: MembersSmallType
@@ -39,6 +43,8 @@ module.exports = `
         registeredAt: String,
 
         previousProjects: [previousProjectsType],
+
+        
 
         links: [linkType],
 
@@ -67,6 +73,21 @@ module.exports = `
         reviewSummary: reviewSummaryType     
 
         preferences: preferencesType
+    }
+
+    type cvInfoType {
+        cvContent: String
+        cvMemory: [cvMemoryType]
+        cvPreparationDone: Boolean,
+        cvPreparationBio: Boolean,
+        cvPreparationNodes: Boolean,
+        cvPreparationPreviousProjects: Boolean,
+        cvPreparationMemory: Boolean,
+    }
+
+    type cvMemoryType {
+        memoryContent: String,
+        pineConeID: String,
     }
 
     type endorsementsSendStatsType {

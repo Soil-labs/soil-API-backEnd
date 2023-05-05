@@ -1,4 +1,5 @@
 const { AI } = require("../../../models/aiModel");
+const { Members } = require("../../../models/membersModel");
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
 const { Configuration, OpenAIApi } = require("openai");
@@ -13,6 +14,11 @@ const { PineconeClient } = require("@pinecone-database/pinecone");
 const fetch = require("node-fetch");
 
 const { request, gql } = require("graphql-request");
+
+const { printC } = require("../../../printModule");
+const { useGPTchatSimple,MessageMapKG_V2APICallF,deletePineCone } = require("../utils/aiModules");
+
+
 
 globalThis.fetch = fetch;
 
@@ -153,7 +159,7 @@ module.exports = {
       summary = await useGPT(prompt, 0.7);
       // summary = "The conversation between the user and recruiter was about finding a Designer for the user's company. The desired skills for the designer were the ability to work well in a team, and proficiency in Figma and wireframe design. The user's company is working with a web3 NFT marketplace."
 
-      embed_summary = await createEmbedingsGPT(summary);
+      embed_summary = await createEmbeddingsGPT(summary);
 
       upsertDoc = await upsertEmbedingPineCone({
         text: summary,
@@ -199,7 +205,7 @@ module.exports = {
 
       const getUpserts = async () => {
         for (let i = 0; i < jobsArr.length; i++) {
-          let embeddings = await createEmbedingsGPT(jobsArr[i]);
+          let embeddings = await createEmbeddingsGPT(jobsArr[i]);
           console.log("embeddings", embeddings); //
           upsertSum = await upsertEmbedingPineCone({
             text: jobsArr[i],
@@ -212,7 +218,7 @@ module.exports = {
       };
 
       getUpserts();
-      // embed_summary = await createEmbedingsGPT(summary);
+      // embed_summary = await createEmbeddingsGPT(summary);
 
       // let result = [];
 
@@ -244,6 +250,264 @@ module.exports = {
         err.extensions?.code || "storeLongTermMemory",
         {
           component: "aiMutation > storeLongTermMemory",
+        }
+      );
+    }
+  },
+  saveCVtoUser: async (parent, args, context, info) => {
+    const { cvContent, userID } = args.fields;
+    console.log("Mutation > saveCVtoUser > args.fields = ", args.fields);
+
+    if (!userID) {
+      throw new ApolloError("userID is required");
+    }
+
+
+    let userData = await Members.findOne({ _id: userID });
+
+    if (!userData) {
+      throw new ApolloError("User not found");
+    }
+    try {
+
+
+      // save userData to DB
+      userData = await Members.findOneAndUpdate(
+        { _id: userID }, 
+        {
+          cvInfo: {
+            cvContent: cvContent,
+            cvPreparationDone: false
+          },
+        },
+         {new: true})
+
+
+
+      return {
+        success: true,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "saveCVtoUser",
+        {
+          component: "aiMutation > saveCVtoUser",
+        }
+      );
+    }
+  },
+  autoUpdateUserInfoFromCV: async (parent, args, context, info) => {
+    const { userIDs } = args.fields;
+    console.log("Mutation > autoUpdateUserInfoFromCV > args.fields = ", args.fields);
+
+
+    try {
+
+      if (userIDs)
+        usersData = await Members.find({ 
+          _id: userIDs,
+          "cvInfo.cvPreparationDone": { $ne: true },
+          "cvInfo.cvContent": { $ne: null },
+        });
+      else {
+        usersData = await Members.find({
+          "cvInfo.cvPreparationDone": { $ne: true },
+          "cvInfo.cvContent": { $ne: null }, 
+        });
+      }
+
+
+      for (let i=0;i<usersData.length;i++) {
+        let userData = usersData[i];
+        let cvContent = userData.cvInfo.cvContent;
+
+        // ------- Calculate Summary -------
+        if (userData.cvInfo.cvPreparationBio != true) {
+          promptSum =
+          'Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile. Give me that summary in a bullet point format,do not include the name in the summary. Keep the bullet points short. Only up to 5 bullet points are allowed. No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n' +
+          cvContent;
+
+          summaryOfCV = await useGPTchatSimple(promptSum);
+
+          printC(summaryOfCV,"0","summaryOfCV","b")
+
+          await Members.findOneAndUpdate(
+            { _id: userData._id },
+            {
+              bio: summaryOfCV,
+              cvInfo: {
+                ...userData.cvInfo,
+                cvPreparationBio: true,
+              },
+            },
+            { new: true }
+          );
+
+        }
+
+
+        // ------- Calculate Summary -------
+
+        // -------Calculate Previous Jobs -------
+        if (userData.cvInfo.cvPreparationPreviousProjects != true) {
+
+          promptJobs =
+          'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
+          cvContent;
+
+          responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
+
+          jobsArr = responseFromGPT
+            .replace(/\n/g, "")
+            .split("•")
+            .filter((item) => item.trim() !== "");
+
+          let result = [];
+
+          for (let i = 0; i < jobsArr.length; i += 2) {
+            result.push({
+              title: jobsArr[i],
+              description: jobsArr[i + 1],
+            });
+          }
+            // return JSON.stringify(result);
+
+          printC(result,"1","result","g")
+
+          await Members.findOneAndUpdate(
+            { _id: userData._id },
+            {
+              previousProjects: result,
+              cvInfo: {
+                ...userData.cvInfo,
+                cvPreparationPreviousProjects: true,
+              },
+            },
+            { new: true }
+          );
+
+        }
+        // -------Calculate Previous Jobs -------
+
+
+        // ----------- Calculate and Save Memory ------------
+        if (userData.cvInfo.cvPreparationMemory != true) {
+
+
+          // ------------ Delete previous memory ------------
+          if (userData.cvInfo?.cvMemory?.length >0) {
+            deletePineIDs = userData.cvInfo.cvMemory.map(obj => obj.pineConeID)
+            await deletePineCone(deletePineIDs)
+          }
+          // ------------ Delete previous memory ------------
+
+          promptMemory =
+          'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
+          cvContent;
+
+          summaryBulletPoints = await useGPTchatSimple(promptMemory, 0.7);
+
+          sumBulletSplit = summaryBulletPoints
+            .replace(/\n/g, "")
+            .split("•")
+            .filter((item) => item.trim() !== "");
+
+            
+          let cvMemory = [];
+
+          for (let i = 0; i < sumBulletSplit.length; i++) {
+
+            // -------------- Sent to PineCone --------------
+            let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
+            
+            upsertSum = await upsertEmbedingPineCone({
+              text: sumBulletSplit[i],
+              embedding: embeddings[0],
+              _id: userData._id,
+              label: "CV_user_memory",
+            });
+            printC(upsertSum,"2","upsertSum","y")
+            // -------------- Sent to PineCone --------------
+
+            cvMemory.push({
+              memoryContent: sumBulletSplit[i],
+              pineConeID: upsertSum.id_message,
+            })
+
+            printC(sumBulletSplit[i],"2","sumBulletSplit[i]","p")
+          }
+
+          // -------------- Sent to MongoDB -------------
+          await Members.findOneAndUpdate(
+            { _id: userData._id },
+            {
+              cvInfo: {
+                ...userData.cvInfo,
+                cvMemory: cvMemory,
+                cvPreparationMemory: true,
+              },
+            },
+            { new: true }
+          );
+          // -------------- Sent to MongoDB -------------
+        }
+        // ----------- Calculate and Save Memory ------------
+        
+        
+        // -------------- Map Nodes from CV--------------
+        if (userData.cvInfo.cvPreparationNodes != true) {
+
+          promptCVtoMap =
+          "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.\nDo not have any other words except for skills. \n\nExaple output: Skills: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
+          cvContent;
+
+          textForMapping = await useGPT(promptCVtoMap, 0.7);
+          let nodesN = await MessageMapKG_V2APICallF(textForMapping)
+
+          printC(nodesN,"3","nodesN","b")
+
+
+
+          nodeSave = nodesN.map(obj => {
+            return ({
+              _id: obj.nodeID
+            })
+          })
+
+          printC(nodeSave,"3","nodeIDs","r")
+
+          await Members.findOneAndUpdate(
+            { _id: userData._id },
+            {
+
+              cvInfo: {
+                ...userData.cvInfo,
+                cvPreparationNodes: true,
+              },
+              nodes: nodeSave
+
+            },
+            { new: true }
+          );
+
+
+        }
+        // -------------- Map Nodes from CV--------------
+
+      }
+
+
+
+      return {
+        users: usersData,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "autoUpdateUserInfoFromCV",
+        {
+          component: "aiMutation > autoUpdateUserInfoFromCV",
         }
       );
     }
@@ -574,7 +838,7 @@ module.exports = {
       if (fs.existsSync("keyword_embed.txt") && cash == true) {
         keyword_embed = await readData("keyword_embed.txt");
       } else {
-        keyword_embed = await createEmbedingsGPT(keywords_mes);
+        keyword_embed = await createEmbeddingsGPT(keywords_mes);
         await cashData("keyword_embed.txt", keyword_embed);
       }
 
@@ -891,7 +1155,7 @@ async function useGPT(prompt, temperature = 0.7) {
   return generatedText;
 }
 
-async function createEmbedingsGPT(words_n) {
+async function createEmbeddingsGPT(words_n) {
   // words_n = ["node.js", "react", "angular"];
   let OPENAI_API_KEY = chooseAPIkey();
   response = await axios.post(
@@ -992,7 +1256,10 @@ async function upsertEmbedingPineCone(data) {
 
   const upsertResponse = await index.upsert({ upsertRequest });
 
-  return upsertResponse;
+  return {
+    upsertResponse,
+    id_message
+  };
 }
 
 function chooseAPIkey() {
@@ -1145,7 +1412,7 @@ async function addKnowledgeGraph_embedings() {
     words_n_base_embed = [];
     for (let i = 0; i < words_n_base.length; i++) {
       let words_n = words_n_base[i];
-      let res_embed = await createEmbedingsGPT(words_n);
+      let res_embed = await createEmbeddingsGPT(words_n);
       // put them on an array
       words_n_base_embed.push(res_embed);
     }

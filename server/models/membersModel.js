@@ -35,6 +35,18 @@ const memberSchema = mongoose.Schema({
   }],
 
   
+  cvInfo: {
+    cvContent: String,
+    cvMemory: [{
+      memoryContent: String,
+      pineConeID: String,
+    }],
+    cvPreparationDone: Boolean,
+    cvPreparationBio: Boolean,
+    cvPreparationNodes: Boolean,
+    cvPreparationPreviousProjects: Boolean,
+    cvPreparationMemory: Boolean,
+  },
   
 
   content: {

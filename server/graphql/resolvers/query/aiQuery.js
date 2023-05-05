@@ -24,6 +24,7 @@ const {
   edenReplyBasedTaskInfo,
   updateConversation,evaluateAnswerEdenAIFunc,
   modifyQuestionFromCVMemory,
+  getMemory,
 } = require("../utils/aiModules");
 
 const { updateAnsweredQuestionFunc,findAndUpdateConversationFunc } = require("../utils/conversationModules");
@@ -215,7 +216,7 @@ async function findBestEmbedings(message, filter, topK = 3) {
 
   const index = await pinecone.Index("profile-eden-information");
 
-  embed = await createEmbedingsGPT(message);
+  embed = await createEmbeddingsGPT(message);
 
   // console.log("embed = " , embed)
 
@@ -259,7 +260,7 @@ async function findBestEmbedingsArray(arr, filter, topK = 3) {
 
   const index = await pinecone.Index("profile-eden-information");
 
-  embed = await createEmbedingsGPT(arr);
+  embed = await createEmbeddingsGPT(arr);
 
   // console.log("embed = ", embed);
 
@@ -401,7 +402,7 @@ async function findBestEmbedingsArray(arr, filter, topK = 3) {
   };
 }
 
-async function createEmbedingsGPT(words_n) {
+async function createEmbeddingsGPT(words_n) {
   // words_n = ["node.js", "react", "angular"];
   let OPENAI_API_KEY = chooseAPIkey();
   response = await axios.post(
@@ -1030,13 +1031,13 @@ module.exports = {
     if (timesAsked == 1){
 
       // reply = questionAskingNowA
-      reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID)
+      reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,1)
 
     } else {
 
       if (flagFirstTime == true){
         // reply = questionAskingNowA
-        reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID)
+        reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,1)
       } else {
 
 
@@ -1046,9 +1047,24 @@ module.exports = {
         //   - if there is a QUESTION ASK AGAIN you can either ask question again or ask more details about it based on the context
         //   `
 
+        let memoriesCVPrompt = ""
+        if (userID){
+          filter = {
+            label: "CV_user_memory",
+            _id: userID,
+          }
+
+          memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,1)
+        }
+
         askGPT = `You are an Interviewer, you need to reply to the candidate with a small and consise way 
           - You have the Conversation between Interviewer and Candidate
           - you also have the quesiton that you need to collect informaiton
+
+          ONLY IF IT MAKE SENSE Modify reply based on the memory from the CV of the candidate
+
+          MEMORY(delimited by triple quotes): 
+          """ ${memoriesCVPrompt} """ 
 
           - your goal is to collect the information from the candidate for this specific question
           `
@@ -1068,7 +1084,6 @@ module.exports = {
 
     
 
-      console.log("reply = " , reply)
       printC(reply, "4", "reply", "r");
     //  -------------- Move to next question ------------
 
@@ -3265,7 +3280,7 @@ module.exports = {
 
       const index = await pinecone.Index("profile-eden-information");
 
-      embed = await createEmbedingsGPT(message);
+      embed = await createEmbeddingsGPT(message);
 
       let queryRequest = {
         topK: 3,
