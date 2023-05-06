@@ -18,6 +18,8 @@ const { request, gql } = require("graphql-request");
 const { printC } = require("../../../printModule");
 const { useGPTchatSimple,MessageMapKG_V2APICallF,deletePineCone } = require("../utils/aiModules");
 
+const { addNodesToMemberFunc } = require("../utils/nodeModules");
+
 
 
 globalThis.fetch = fetch;
@@ -276,8 +278,13 @@ module.exports = {
         { _id: userID }, 
         {
           cvInfo: {
+            ...userData.cvInfo,
             cvContent: cvContent,
-            cvPreparationDone: false
+            cvPreparationDone: false,
+            cvPreparationBio: false,
+            cvPreparationNodes: false,
+            cvPreparationPreviousProjects: false,
+            cvPreparationMemory: false,
           },
         },
          {new: true})
@@ -322,137 +329,187 @@ module.exports = {
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
 
-        // ------- Calculate Summary -------
-        if (userData.cvInfo.cvPreparationBio != true) {
-          promptSum =
-          'Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile. Give me that summary in a bullet point format,do not include the name in the summary. Keep the bullet points short. Only up to 5 bullet points are allowed. No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n' +
-          cvContent;
 
-          summaryOfCV = await useGPTchatSimple(promptSum);
+        let filterUpdate = {}
 
-          printC(summaryOfCV,"0","summaryOfCV","b")
+        // // ------- Calculate Summary -------
+        // if (userData.cvInfo.cvPreparationBio != true) {
+        //   promptSum =
+        //   'Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile. Give me that summary in a bullet point format,do not include the name in the summary. Keep the bullet points short. Only up to 5 bullet points are allowed. No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n' +
+        //   cvContent;
 
-          await Members.findOneAndUpdate(
-            { _id: userData._id },
-            {
-              bio: summaryOfCV,
-              cvInfo: {
-                ...userData.cvInfo,
-                cvPreparationBio: true,
-              },
-            },
-            { new: true }
-          );
+        //   summaryOfCV = await useGPTchatSimple(promptSum);
 
-        }
+        //   printC(summaryOfCV,"0","summaryOfCV","b")
 
+        //   filterUpdate = {
+        //     ...filterUpdate,
+        //     bio: summaryOfCV,
+        //     cvInfo: {
+        //       ...userData.cvInfo,
+        //       ...filterUpdate.cvInfo,
+        //       cvPreparationBio: true,
+        //     },
+        //   }
 
-        // ------- Calculate Summary -------
+        //   userData.bio = summaryOfCV;
 
-        // -------Calculate Previous Jobs -------
-        if (userData.cvInfo.cvPreparationPreviousProjects != true) {
-
-          promptJobs =
-          'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
-          cvContent;
-
-          responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
-
-          jobsArr = responseFromGPT
-            .replace(/\n/g, "")
-            .split("•")
-            .filter((item) => item.trim() !== "");
-
-          let result = [];
-
-          for (let i = 0; i < jobsArr.length; i += 2) {
-            result.push({
-              title: jobsArr[i],
-              description: jobsArr[i + 1],
-            });
-          }
-            // return JSON.stringify(result);
-
-          printC(result,"1","result","g")
-
-          await Members.findOneAndUpdate(
-            { _id: userData._id },
-            {
-              previousProjects: result,
-              cvInfo: {
-                ...userData.cvInfo,
-                cvPreparationPreviousProjects: true,
-              },
-            },
-            { new: true }
-          );
-
-        }
-        // -------Calculate Previous Jobs -------
+        //   userData.cvInfo.cvPreparationBio = true;
 
 
-        // ----------- Calculate and Save Memory ------------
-        if (userData.cvInfo.cvPreparationMemory != true) {
+        //   // await Members.findOneAndUpdate(
+        //   //   { _id: userData._id },
+        //   //   {
+        //   //     // bio: summaryOfCV,
+        //   //     // cvInfo: {
+        //   //       // ...userData.cvInfo,
+        //   //     //   cvPreparationBio: true,
+        //   //     // },
+        //   //     filterUpdate,
+        //   //   },
+        //   //   { new: true }
+        //   // );
+
+        // }
 
 
-          // ------------ Delete previous memory ------------
-          if (userData.cvInfo?.cvMemory?.length >0) {
-            deletePineIDs = userData.cvInfo.cvMemory.map(obj => obj.pineConeID)
-            await deletePineCone(deletePineIDs)
-          }
-          // ------------ Delete previous memory ------------
+        // // ------- Calculate Summary -------
 
-          promptMemory =
-          'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
-          cvContent;
+        // // -------Calculate Previous Jobs -------
+        // if (userData.cvInfo.cvPreparationPreviousProjects != true) {
 
-          summaryBulletPoints = await useGPTchatSimple(promptMemory, 0.7);
+        //   promptJobs =
+        //   'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
+        //   cvContent;
 
-          sumBulletSplit = summaryBulletPoints
-            .replace(/\n/g, "")
-            .split("•")
-            .filter((item) => item.trim() !== "");
+        //   responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
+
+        //   jobsArr = responseFromGPT
+        //     .replace(/\n/g, "")
+        //     .split("•")
+        //     .filter((item) => item.trim() !== "");
+
+        //   let result = [];
+
+        //   for (let i = 0; i < jobsArr.length; i += 2) {
+        //     result.push({
+        //       title: jobsArr[i],
+        //       description: jobsArr[i + 1],
+        //     });
+        //   }
+        //     // return JSON.stringify(result);
+
+        //   printC(result,"1","result","g")
+
+        //   filterUpdate = {
+        //     ...filterUpdate,
+        //     previousProjects: result,
+        //     cvInfo: {
+        //       ...userData.cvInfo,
+        //       ...filterUpdate.cvInfo,
+        //       cvPreparationPreviousProjects: true,
+        //     },
+        //   }
+
+        //   userData.previousProjects = result;
+
+        //   userData.cvInfo.cvPreparationPreviousProjects = true;
+
+
+        //   // await Members.findOneAndUpdate(
+        //   //   { _id: userData._id },
+        //   //   {
+        //   //     filterUpdate,
+        //   //     // previousProjects: result,
+        //   //     // cvInfo: {
+        //   //     //   ...userData.cvInfo,
+        //   //     //   cvPreparationPreviousProjects: true,
+        //   //     // },
+        //   //   },
+        //   //   { new: true }
+        //   // );
+
+        // }
+        // // -------Calculate Previous Jobs -------
+
+
+        // // ----------- Calculate and Save Memory ------------
+        // if (userData.cvInfo.cvPreparationMemory != true) {
+
+
+        //   // ------------ Delete previous memory ------------
+        //   if (userData.cvInfo?.cvMemory?.length >0) {
+        //     deletePineIDs = userData.cvInfo.cvMemory.map(obj => obj.pineConeID)
+        //     await deletePineCone(deletePineIDs)
+        //   }
+        //   // ------------ Delete previous memory ------------
+
+        //   promptMemory =
+        //   'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
+        //   cvContent;
+
+        //   summaryBulletPoints = await useGPTchatSimple(promptMemory, 0.7);
+
+        //   sumBulletSplit = summaryBulletPoints
+        //     .replace(/\n/g, "")
+        //     .split("•")
+        //     .filter((item) => item.trim() !== "");
 
             
-          let cvMemory = [];
+        //   let cvMemory = [];
 
-          for (let i = 0; i < sumBulletSplit.length; i++) {
+        //   for (let i = 0; i < sumBulletSplit.length; i++) {
 
-            // -------------- Sent to PineCone --------------
-            let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
+        //     // -------------- Sent to PineCone --------------
+        //     let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
             
-            upsertSum = await upsertEmbedingPineCone({
-              text: sumBulletSplit[i],
-              embedding: embeddings[0],
-              _id: userData._id,
-              label: "CV_user_memory",
-            });
-            printC(upsertSum,"2","upsertSum","y")
-            // -------------- Sent to PineCone --------------
+        //     upsertSum = await upsertEmbedingPineCone({
+        //       text: sumBulletSplit[i],
+        //       embedding: embeddings[0],
+        //       _id: userData._id,
+        //       label: "CV_user_memory",
+        //     });
+        //     printC(upsertSum,"2","upsertSum","y")
+        //     // -------------- Sent to PineCone --------------
 
-            cvMemory.push({
-              memoryContent: sumBulletSplit[i],
-              pineConeID: upsertSum.id_message,
-            })
+        //     cvMemory.push({
+        //       memoryContent: sumBulletSplit[i],
+        //       pineConeID: upsertSum.id_message,
+        //     })
 
-            printC(sumBulletSplit[i],"2","sumBulletSplit[i]","p")
-          }
+        //     printC(sumBulletSplit[i],"2","sumBulletSplit[i]","p")
+        //   }
 
-          // -------------- Sent to MongoDB -------------
-          await Members.findOneAndUpdate(
-            { _id: userData._id },
-            {
-              cvInfo: {
-                ...userData.cvInfo,
-                cvMemory: cvMemory,
-                cvPreparationMemory: true,
-              },
-            },
-            { new: true }
-          );
-          // -------------- Sent to MongoDB -------------
-        }
-        // ----------- Calculate and Save Memory ------------
+        //   filterUpdate = {
+        //     ...filterUpdate,
+        //     cvInfo: {
+        //       ...userData.cvInfo,
+        //       ...filterUpdate.cvInfo,
+        //       cvMemory: cvMemory,
+        //       cvPreparationMemory: true,
+        //     },
+        //   }
+
+        //   userData.cvInfo.cvMemory = cvMemory;
+
+        //   userData.cvInfo.cvPreparationMemory = true;
+
+        //   // // -------------- Sent to MongoDB -------------
+        //   // await Members.findOneAndUpdate(
+        //   //   { _id: userData._id },
+        //   //   {
+        //   //     filterUpdate,
+        //   //     // cvInfo: {
+        //   //     //   ...userData.cvInfo,
+        //   //     //   cvMemory: cvMemory,
+        //   //     //   cvPreparationMemory: true,
+        //   //     // },
+        //   //   },
+        //   //   { new: true }
+        //   // );
+        //   // // -------------- Sent to MongoDB -------------
+        // }
+        // // ----------- Calculate and Save Memory ------------
         
         
         // -------------- Map Nodes from CV--------------
@@ -475,27 +532,78 @@ module.exports = {
             })
           })
 
-          printC(nodeSave,"3","nodeIDs","r")
+          nodeIDs = nodeSave.map(obj => obj._id)
 
-          await Members.findOneAndUpdate(
-            { _id: userData._id },
-            {
+          await addNodesToMemberFunc(userData._id, nodeIDs)
 
-              cvInfo: {
-                ...userData.cvInfo,
-                cvPreparationNodes: true,
-              },
-              nodes: nodeSave
 
+          printC(nodeSave,"3","nodeSave","r")
+
+          filterUpdate = {
+            ...filterUpdate,
+            nodes: nodeSave,
+            cvInfo: {
+              ...userData.cvInfo,
+              ...filterUpdate.cvInfo,
+              cvPreparationNodes: true,
             },
-            { new: true }
-          );
+          }
+
+          // userData.nodes = nodeSave;
+
+          userData.cvInfo.cvPreparationNodes = true;
+          
+
+          // await Members.findOneAndUpdate(
+          //   { _id: userData._id },
+          //   {
+
+          //     filterUpdate,
+          //     // cvInfo: {
+          //     //   ...userData.cvInfo,
+          //     //   cvPreparationNodes: true,
+          //     // },
+          //     // nodes: nodeSave
+
+          //   },
+          //   { new: true }
+          // );
 
 
         }
         // -------------- Map Nodes from CV--------------
 
+
+        // filterUpdate = {
+        //   ...filterUpdate,
+        //   cvInfo: {
+        //     ...filterUpdate.cvInfo,
+        //     cvPreparationDone: true,
+        //   },
+        // }
+
+        // printC(filterUpdate,"3","filterUpdate","r")
+        printC(userData,"3","userData","r")
+
+        userData.cvPreparationDone = true;
+
+
+        await userData.save()
+
+        // await addNodesToMemberFunc(userData._id, nodeIDs)
+
+
+        // await Members.findOneAndUpdate(
+        //   { _id: userData._id },
+        //   {
+        //     filterUpdate
+        //   },
+        //   { new: true }
+        // );
+
+
       }
+
 
 
 

@@ -692,9 +692,10 @@ module.exports = {
     }
   ),
 
-  addNodesToMember: combineResolvers(
-    IsAuthenticated,
-    IsOnlyOperator,
+  addNodesToMember: 
+  // combineResolvers(
+  //   IsAuthenticated,
+  //   IsOnlyOperator,
     async (parent, args, context, info) => {
       let { memberID, nodesID, nodesID_level } = args.fields;
 
@@ -818,8 +819,8 @@ module.exports = {
           { component: "tmemberQuery > findMember" }
         );
       }
-    }
-  ),
+    },
+  // ),
   deleteNodesFromMember: combineResolvers(
     IsAuthenticated,
     IsOnlyOperator,
