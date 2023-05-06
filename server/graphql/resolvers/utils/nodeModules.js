@@ -112,9 +112,43 @@ const changeMatchByServer = async (nodeNow) => {
     }
   };
 
+  const addNodesToMemberFunc = async (userID,nodesID) => {
+    const query = gql`
+      mutation addNodesToMember($fields: addNodesToMemberInput!) {
+        addNodesToMember(fields: $fields) {
+          _id
+          discordName
+          nodes {
+            nodeData {
+              _id
+              name
+            }
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      fields: {
+        memberID: userID,
+        nodesID: nodesID
+      },
+    };
+
+    res = await request(
+      "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+      query,
+      variables
+    );
+
+    
+    return res.addNodesToMember.nodes;
+  };
+
 
 module.exports = {
     changeMatchByServer,
     updateNodeToMemberOnNeo4J,
     updateNodesToMember,
+    addNodesToMemberFunc,
   };
