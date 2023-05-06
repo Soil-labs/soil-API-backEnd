@@ -325,195 +325,198 @@ module.exports = {
       }
 
 
-      for (let i=0;i<usersData.length;i++) {
+      // for (let i=0;i<usersData.length;i++) {
+      if (usersData.length > 0 ){ // SOS 🆘 delete - only test one user at a time
+        let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
 
 
         let filterUpdate = {}
 
-        // // ------- Calculate Summary -------
-        // if (userData.cvInfo.cvPreparationBio != true) {
-        //   promptSum =
-        //   'Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile. Give me that summary in a bullet point format,do not include the name in the summary. Keep the bullet points short. Only up to 5 bullet points are allowed. No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n' +
-        //   cvContent;
+        // ------- Calculate Summary -------
+        if (userData.cvInfo.cvPreparationBio != true) {
+          promptSum =
+          'Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile. Give me that summary in a bullet point format,do not include the name in the summary. Keep the bullet points short. Only up to 5 bullet points are allowed. No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n' +
+          cvContent;
 
-        //   summaryOfCV = await useGPTchatSimple(promptSum);
+          summaryOfCV = await useGPTchatSimple(promptSum);
 
-        //   printC(summaryOfCV,"0","summaryOfCV","b")
+          printC(summaryOfCV,"0","summaryOfCV","b")
 
-        //   filterUpdate = {
-        //     ...filterUpdate,
-        //     bio: summaryOfCV,
-        //     cvInfo: {
-        //       ...userData.cvInfo,
-        //       ...filterUpdate.cvInfo,
-        //       cvPreparationBio: true,
-        //     },
-        //   }
+          filterUpdate = {
+            ...filterUpdate,
+            bio: summaryOfCV,
+            cvInfo: {
+              ...userData.cvInfo,
+              ...filterUpdate.cvInfo,
+              cvPreparationBio: true,
+            },
+          }
 
-        //   userData.bio = summaryOfCV;
+          userData.bio = summaryOfCV;
 
-        //   userData.cvInfo.cvPreparationBio = true;
-
-
-        //   // await Members.findOneAndUpdate(
-        //   //   { _id: userData._id },
-        //   //   {
-        //   //     // bio: summaryOfCV,
-        //   //     // cvInfo: {
-        //   //       // ...userData.cvInfo,
-        //   //     //   cvPreparationBio: true,
-        //   //     // },
-        //   //     filterUpdate,
-        //   //   },
-        //   //   { new: true }
-        //   // );
-
-        // }
+          userData.cvInfo.cvPreparationBio = true;
 
 
-        // // ------- Calculate Summary -------
+          // await Members.findOneAndUpdate(
+          //   { _id: userData._id },
+          //   {
+          //     // bio: summaryOfCV,
+          //     // cvInfo: {
+          //       // ...userData.cvInfo,
+          //     //   cvPreparationBio: true,
+          //     // },
+          //     filterUpdate,
+          //   },
+          //   { new: true }
+          // );
 
-        // // -------Calculate Previous Jobs -------
-        // if (userData.cvInfo.cvPreparationPreviousProjects != true) {
-
-        //   promptJobs =
-        //   'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
-        //   cvContent;
-
-        //   responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
-
-        //   jobsArr = responseFromGPT
-        //     .replace(/\n/g, "")
-        //     .split("•")
-        //     .filter((item) => item.trim() !== "");
-
-        //   let result = [];
-
-        //   for (let i = 0; i < jobsArr.length; i += 2) {
-        //     result.push({
-        //       title: jobsArr[i],
-        //       description: jobsArr[i + 1],
-        //     });
-        //   }
-        //     // return JSON.stringify(result);
-
-        //   printC(result,"1","result","g")
-
-        //   filterUpdate = {
-        //     ...filterUpdate,
-        //     previousProjects: result,
-        //     cvInfo: {
-        //       ...userData.cvInfo,
-        //       ...filterUpdate.cvInfo,
-        //       cvPreparationPreviousProjects: true,
-        //     },
-        //   }
-
-        //   userData.previousProjects = result;
-
-        //   userData.cvInfo.cvPreparationPreviousProjects = true;
+        }
 
 
-        //   // await Members.findOneAndUpdate(
-        //   //   { _id: userData._id },
-        //   //   {
-        //   //     filterUpdate,
-        //   //     // previousProjects: result,
-        //   //     // cvInfo: {
-        //   //     //   ...userData.cvInfo,
-        //   //     //   cvPreparationPreviousProjects: true,
-        //   //     // },
-        //   //   },
-        //   //   { new: true }
-        //   // );
+        // ------- Calculate Summary -------
 
-        // }
-        // // -------Calculate Previous Jobs -------
+        // -------Calculate Previous Jobs -------
+        if (userData.cvInfo.cvPreparationPreviousProjects != true) {
+
+          promptJobs =
+          'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
+          cvContent;
+
+          responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
+
+          jobsArr = responseFromGPT
+            .replace(/\n/g, "")
+            .split("•")
+            .filter((item) => item.trim() !== "");
+
+          let result = [];
+
+          for (let i = 0; i < jobsArr.length; i += 2) {
+            result.push({
+              title: jobsArr[i],
+              description: jobsArr[i + 1],
+            });
+          }
+            // return JSON.stringify(result);
+
+          printC(result,"1","result","g")
+
+          filterUpdate = {
+            ...filterUpdate,
+            previousProjects: result,
+            cvInfo: {
+              ...userData.cvInfo,
+              ...filterUpdate.cvInfo,
+              cvPreparationPreviousProjects: true,
+            },
+          }
+
+          userData.previousProjects = result;
+
+          userData.cvInfo.cvPreparationPreviousProjects = true;
 
 
-        // // ----------- Calculate and Save Memory ------------
-        // if (userData.cvInfo.cvPreparationMemory != true) {
+          // await Members.findOneAndUpdate(
+          //   { _id: userData._id },
+          //   {
+          //     filterUpdate,
+          //     // previousProjects: result,
+          //     // cvInfo: {
+          //     //   ...userData.cvInfo,
+          //     //   cvPreparationPreviousProjects: true,
+          //     // },
+          //   },
+          //   { new: true }
+          // );
+
+        }
+        // -------Calculate Previous Jobs -------
 
 
-        //   // ------------ Delete previous memory ------------
-        //   if (userData.cvInfo?.cvMemory?.length >0) {
-        //     deletePineIDs = userData.cvInfo.cvMemory.map(obj => obj.pineConeID)
-        //     await deletePineCone(deletePineIDs)
-        //   }
-        //   // ------------ Delete previous memory ------------
+        // ----------- Calculate and Save Memory ------------
+        if (userData.cvInfo.cvPreparationMemory != true) {
 
-        //   promptMemory =
-        //   'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
-        //   cvContent;
 
-        //   summaryBulletPoints = await useGPTchatSimple(promptMemory, 0.7);
+          // ------------ Delete previous memory ------------
+          if (userData.cvInfo?.cvMemory?.length >0) {
+            deletePineIDs = userData.cvInfo.cvMemory.map(obj => obj.pineConeID)
+            await deletePineCone(deletePineIDs)
+          }
+          // ------------ Delete previous memory ------------
 
-        //   sumBulletSplit = summaryBulletPoints
-        //     .replace(/\n/g, "")
-        //     .split("•")
-        //     .filter((item) => item.trim() !== "");
+          promptMemory =
+          'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
+          cvContent;
+
+          summaryBulletPoints = await useGPTchatSimple(promptMemory, 0.7);
+
+          sumBulletSplit = summaryBulletPoints
+            .replace(/\n/g, "")
+            .split("•")
+            .filter((item) => item.trim() !== "");
 
             
-        //   let cvMemory = [];
+          let cvMemory = [];
 
-        //   for (let i = 0; i < sumBulletSplit.length; i++) {
+          for (let i = 0; i < sumBulletSplit.length; i++) {
 
-        //     // -------------- Sent to PineCone --------------
-        //     let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
+            // -------------- Sent to PineCone --------------
+            let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
             
-        //     upsertSum = await upsertEmbedingPineCone({
-        //       text: sumBulletSplit[i],
-        //       embedding: embeddings[0],
-        //       _id: userData._id,
-        //       label: "CV_user_memory",
-        //     });
-        //     printC(upsertSum,"2","upsertSum","y")
-        //     // -------------- Sent to PineCone --------------
+            upsertSum = await upsertEmbedingPineCone({
+              text: sumBulletSplit[i],
+              embedding: embeddings[0],
+              _id: userData._id,
+              label: "CV_user_memory",
+            });
+            printC(upsertSum,"2","upsertSum","y")
+            // -------------- Sent to PineCone --------------
 
-        //     cvMemory.push({
-        //       memoryContent: sumBulletSplit[i],
-        //       pineConeID: upsertSum.id_message,
-        //     })
+            cvMemory.push({
+              memoryContent: sumBulletSplit[i],
+              pineConeID: upsertSum.id_message,
+            })
 
-        //     printC(sumBulletSplit[i],"2","sumBulletSplit[i]","p")
-        //   }
+            printC(sumBulletSplit[i],"2","sumBulletSplit[i]","p")
+          }
 
-        //   filterUpdate = {
-        //     ...filterUpdate,
-        //     cvInfo: {
-        //       ...userData.cvInfo,
-        //       ...filterUpdate.cvInfo,
-        //       cvMemory: cvMemory,
-        //       cvPreparationMemory: true,
-        //     },
-        //   }
+          filterUpdate = {
+            ...filterUpdate,
+            cvInfo: {
+              ...userData.cvInfo,
+              ...filterUpdate.cvInfo,
+              cvMemory: cvMemory,
+              cvPreparationMemory: true,
+            },
+          }
 
-        //   userData.cvInfo.cvMemory = cvMemory;
+          userData.cvInfo.cvMemory = cvMemory;
 
-        //   userData.cvInfo.cvPreparationMemory = true;
+          userData.cvInfo.cvPreparationMemory = true;
 
-        //   // // -------------- Sent to MongoDB -------------
-        //   // await Members.findOneAndUpdate(
-        //   //   { _id: userData._id },
-        //   //   {
-        //   //     filterUpdate,
-        //   //     // cvInfo: {
-        //   //     //   ...userData.cvInfo,
-        //   //     //   cvMemory: cvMemory,
-        //   //     //   cvPreparationMemory: true,
-        //   //     // },
-        //   //   },
-        //   //   { new: true }
-        //   // );
-        //   // // -------------- Sent to MongoDB -------------
-        // }
-        // // ----------- Calculate and Save Memory ------------
+          // // -------------- Sent to MongoDB -------------
+          // await Members.findOneAndUpdate(
+          //   { _id: userData._id },
+          //   {
+          //     filterUpdate,
+          //     // cvInfo: {
+          //     //   ...userData.cvInfo,
+          //     //   cvMemory: cvMemory,
+          //     //   cvPreparationMemory: true,
+          //     // },
+          //   },
+          //   { new: true }
+          // );
+          // // -------------- Sent to MongoDB -------------
+        }
+        // ----------- Calculate and Save Memory ------------
         
         
         // -------------- Map Nodes from CV--------------
-        if (userData.cvInfo.cvPreparationNodes != true) {
+        // if (userData.cvInfo.cvPreparationNodes != true) {
+          if (true) {
 
           promptCVtoMap =
           "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.\nDo not have any other words except for skills. \n\nExaple output: Skills: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
@@ -583,12 +586,13 @@ module.exports = {
         // }
 
         // printC(filterUpdate,"3","filterUpdate","r")
-        printC(userData,"3","userData","r")
+        // printC(userData,"3","userData","r")
 
-        userData.cvPreparationDone = true;
+        userData.cvInfo.cvPreparationDone = true;
 
 
         await userData.save()
+        
 
         // await addNodesToMemberFunc(userData._id, nodeIDs)
 

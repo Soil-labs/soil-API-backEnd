@@ -821,9 +821,10 @@ module.exports = {
       }
     },
   // ),
-  deleteNodesFromMember: combineResolvers(
-    IsAuthenticated,
-    IsOnlyOperator,
+  deleteNodesFromMember: 
+  // combineResolvers(
+  //   IsAuthenticated,
+  //   IsOnlyOperator,
     async (parent, args, context, info) => {
       const { memberID, nodesID } = args.fields;
 
@@ -918,8 +919,8 @@ module.exports = {
           { component: "tmemberQuery > findMember" }
         );
       }
-    }
-  ),
+    },
+  // ),
   updateNodesToMemberMultiTypeNode: combineResolvers(
     IsAuthenticated,
     async (parent, args, req, info) => {
