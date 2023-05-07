@@ -74,6 +74,14 @@ module.exports = `
         users: [Members]
     }
 
+    input autoUpdateMemoryFromCVInput {
+        userIDs: [ID]
+    }
+
+    type autoUpdateMemoryFromCVOutput {
+        users: [Members]
+    }
+
     input addMessagesInput {
         data: [addMessageInput]
     }

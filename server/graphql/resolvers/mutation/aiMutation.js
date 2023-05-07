@@ -344,34 +344,9 @@ module.exports = {
 
           printC(summaryOfCV,"0","summaryOfCV","b")
 
-          filterUpdate = {
-            ...filterUpdate,
-            bio: summaryOfCV,
-            cvInfo: {
-              ...userData.cvInfo,
-              ...filterUpdate.cvInfo,
-              cvPreparationBio: true,
-            },
-          }
-
           userData.bio = summaryOfCV;
 
           userData.cvInfo.cvPreparationBio = true;
-
-
-          // await Members.findOneAndUpdate(
-          //   { _id: userData._id },
-          //   {
-          //     // bio: summaryOfCV,
-          //     // cvInfo: {
-          //       // ...userData.cvInfo,
-          //     //   cvPreparationBio: true,
-          //     // },
-          //     filterUpdate,
-          //   },
-          //   { new: true }
-          // );
-
         }
 
 
@@ -399,40 +374,164 @@ module.exports = {
               description: jobsArr[i + 1],
             });
           }
-            // return JSON.stringify(result);
-
           printC(result,"1","result","g")
-
-          filterUpdate = {
-            ...filterUpdate,
-            previousProjects: result,
-            cvInfo: {
-              ...userData.cvInfo,
-              ...filterUpdate.cvInfo,
-              cvPreparationPreviousProjects: true,
-            },
-          }
 
           userData.previousProjects = result;
 
           userData.cvInfo.cvPreparationPreviousProjects = true;
-
-
-          // await Members.findOneAndUpdate(
-          //   { _id: userData._id },
-          //   {
-          //     filterUpdate,
-          //     // previousProjects: result,
-          //     // cvInfo: {
-          //     //   ...userData.cvInfo,
-          //     //   cvPreparationPreviousProjects: true,
-          //     // },
-          //   },
-          //   { new: true }
-          // );
-
         }
         // -------Calculate Previous Jobs -------
+
+
+        // // ----------- Calculate and Save Memory ------------
+        // if (userData.cvInfo.cvPreparationMemory != true) {
+
+
+        //   // ------------ Delete previous memory ------------
+        //   if (userData.cvInfo?.cvMemory?.length >0) {
+        //     deletePineIDs = userData.cvInfo.cvMemory.map(obj => obj.pineConeID)
+        //     await deletePineCone(deletePineIDs)
+        //   }
+        //   // ------------ Delete previous memory ------------
+
+        //   promptMemory =
+        //   'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
+        //   cvContent;
+
+        //   summaryBulletPoints = await useGPTchatSimple(promptMemory, 0.7);
+
+        //   sumBulletSplit = summaryBulletPoints
+        //     .replace(/\n/g, "")
+        //     .split("•")
+        //     .filter((item) => item.trim() !== "");
+
+            
+        //   let cvMemory = [];
+
+        //   for (let i = 0; i < sumBulletSplit.length; i++) {
+
+        //     // -------------- Sent to PineCone --------------
+        //     let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
+            
+        //     upsertSum = await upsertEmbedingPineCone({
+        //       text: sumBulletSplit[i],
+        //       embedding: embeddings[0],
+        //       _id: userData._id,
+        //       label: "CV_user_memory",
+        //     });
+        //     printC(upsertSum,"2","upsertSum","y")
+        //     // -------------- Sent to PineCone --------------
+
+        //     cvMemory.push({
+        //       memoryContent: sumBulletSplit[i],
+        //       pineConeID: upsertSum.id_message,
+        //     })
+
+        //     printC(sumBulletSplit[i],"2","sumBulletSplit[i]","p")
+        //   }
+
+        //   filterUpdate = {
+        //     ...filterUpdate,
+        //     cvInfo: {
+        //       ...userData.cvInfo,
+        //       ...filterUpdate.cvInfo,
+        //       cvMemory: cvMemory,
+        //       cvPreparationMemory: true,
+        //     },
+        //   }
+
+        //   userData.cvInfo.cvMemory = cvMemory;
+
+        //   userData.cvInfo.cvPreparationMemory = true;
+
+        // // ----------- Calculate and Save Memory ------------
+        
+        
+        // -------------- Map Nodes from CV--------------
+        if (userData.cvInfo.cvPreparationNodes != true) {
+          // if (true) {
+
+          promptCVtoMap =
+          "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.\nDo not have any other words except for skills. \n\nExaple output: Skills: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
+          cvContent;
+
+          textForMapping = await useGPT(promptCVtoMap, 0.7);
+          let nodesN = await MessageMapKG_V2APICallF(textForMapping)
+
+          printC(nodesN,"3","nodesN","b")
+
+
+
+          nodeSave = nodesN.map(obj => {
+            return ({
+              _id: obj.nodeID
+            })
+          })
+
+          nodeIDs = nodeSave.map(obj => obj._id)
+
+          await addNodesToMemberFunc(userData._id, nodeIDs)
+
+
+          printC(nodeSave,"3","nodeSave","r")
+
+
+          userData.cvInfo.cvPreparationNodes = true;
+
+        }
+        // -------------- Map Nodes from CV--------------
+
+
+        userData.cvInfo.cvPreparationDone = true;
+
+
+        await userData.save()
+        
+
+      }
+
+
+
+
+      return {
+        users: usersData,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "autoUpdateUserInfoFromCV",
+        {
+          component: "aiMutation > autoUpdateUserInfoFromCV",
+        }
+      );
+    }
+  },
+  autoUpdateMemoryFromCV: async (parent, args, context, info) => {
+    const { userIDs } = args.fields;
+    console.log("Mutation > autoUpdateMemoryFromCV > args.fields = ", args.fields);
+
+
+    try {
+
+      if (userIDs)
+        usersData = await Members.find({ 
+          _id: userIDs,
+          "cvInfo.cvPreparationMemory": { $ne: true },
+          "cvInfo.cvContent": { $ne: null },
+        });
+      else {
+        usersData = await Members.find({
+          "cvInfo.cvPreparationMemory": { $ne: true },
+          "cvInfo.cvContent": { $ne: null }, 
+        });
+      }
+
+
+      // for (let i=0;i<usersData.length;i++) {
+      if (usersData.length > 0 ){ // SOS 🆘 delete - only test one user at a time
+        let i = 0; // SOS 🆘 delete
+        let userData = usersData[i];
+        let cvContent = userData.cvInfo.cvContent;
 
 
         // ----------- Calculate and Save Memory ------------
@@ -482,129 +581,15 @@ module.exports = {
             printC(sumBulletSplit[i],"2","sumBulletSplit[i]","p")
           }
 
-          filterUpdate = {
-            ...filterUpdate,
-            cvInfo: {
-              ...userData.cvInfo,
-              ...filterUpdate.cvInfo,
-              cvMemory: cvMemory,
-              cvPreparationMemory: true,
-            },
-          }
-
           userData.cvInfo.cvMemory = cvMemory;
 
           userData.cvInfo.cvPreparationMemory = true;
 
-          // // -------------- Sent to MongoDB -------------
-          // await Members.findOneAndUpdate(
-          //   { _id: userData._id },
-          //   {
-          //     filterUpdate,
-          //     // cvInfo: {
-          //     //   ...userData.cvInfo,
-          //     //   cvMemory: cvMemory,
-          //     //   cvPreparationMemory: true,
-          //     // },
-          //   },
-          //   { new: true }
-          // );
-          // // -------------- Sent to MongoDB -------------
         }
         // ----------- Calculate and Save Memory ------------
         
-        
-        // -------------- Map Nodes from CV--------------
-        // if (userData.cvInfo.cvPreparationNodes != true) {
-          if (true) {
-
-          promptCVtoMap =
-          "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.\nDo not have any other words except for skills. \n\nExaple output: Skills: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
-          cvContent;
-
-          textForMapping = await useGPT(promptCVtoMap, 0.7);
-          let nodesN = await MessageMapKG_V2APICallF(textForMapping)
-
-          printC(nodesN,"3","nodesN","b")
-
-
-
-          nodeSave = nodesN.map(obj => {
-            return ({
-              _id: obj.nodeID
-            })
-          })
-
-          nodeIDs = nodeSave.map(obj => obj._id)
-
-          await addNodesToMemberFunc(userData._id, nodeIDs)
-
-
-          printC(nodeSave,"3","nodeSave","r")
-
-          filterUpdate = {
-            ...filterUpdate,
-            nodes: nodeSave,
-            cvInfo: {
-              ...userData.cvInfo,
-              ...filterUpdate.cvInfo,
-              cvPreparationNodes: true,
-            },
-          }
-
-          // userData.nodes = nodeSave;
-
-          userData.cvInfo.cvPreparationNodes = true;
-          
-
-          // await Members.findOneAndUpdate(
-          //   { _id: userData._id },
-          //   {
-
-          //     filterUpdate,
-          //     // cvInfo: {
-          //     //   ...userData.cvInfo,
-          //     //   cvPreparationNodes: true,
-          //     // },
-          //     // nodes: nodeSave
-
-          //   },
-          //   { new: true }
-          // );
-
-
-        }
-        // -------------- Map Nodes from CV--------------
-
-
-        // filterUpdate = {
-        //   ...filterUpdate,
-        //   cvInfo: {
-        //     ...filterUpdate.cvInfo,
-        //     cvPreparationDone: true,
-        //   },
-        // }
-
-        // printC(filterUpdate,"3","filterUpdate","r")
-        // printC(userData,"3","userData","r")
-
-        userData.cvInfo.cvPreparationDone = true;
-
 
         await userData.save()
-        
-
-        // await addNodesToMemberFunc(userData._id, nodeIDs)
-
-
-        // await Members.findOneAndUpdate(
-        //   { _id: userData._id },
-        //   {
-        //     filterUpdate
-        //   },
-        //   { new: true }
-        // );
-
 
       }
 
@@ -617,9 +602,9 @@ module.exports = {
     } catch (err) {
       throw new ApolloError(
         err.message,
-        err.extensions?.code || "autoUpdateUserInfoFromCV",
+        err.extensions?.code || "autoUpdateMemoryFromCV",
         {
-          component: "aiMutation > autoUpdateUserInfoFromCV",
+          component: "aiMutation > autoUpdateMemoryFromCV",
         }
       );
     }

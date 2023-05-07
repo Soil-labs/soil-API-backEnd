@@ -131,6 +131,7 @@ module.exports = `
         storeLongTermMemorySummary(fields: storeLongTermMemorySummaryInput): storeLongTermMemorySummaryOutput
         saveCVtoUser(fields: saveCVtoUserInput): saveCVtoUserOutput
         autoUpdateUserInfoFromCV(fields: autoUpdateUserInfoFromCVInput): autoUpdateUserInfoFromCVOutput
+        autoUpdateMemoryFromCV(fields: autoUpdateMemoryFromCVInput): autoUpdateMemoryFromCVOutput
         addMessages(fields: addMessagesInput): [AI]
         updateMessage(fields: updateMessageInput): AI
         useAI_OnMessage(fields: useAI_OnMessageInput): useAI_OnMessageOutput
