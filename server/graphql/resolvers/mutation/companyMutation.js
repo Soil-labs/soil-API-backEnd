@@ -348,15 +348,15 @@ module.exports = {
 
               
               if (!questionInfo._doc) {
-                questionsToAskObj[questionID].questionContent =  questionContent.content
+                questionsToAskObj[questionID].questionContent =  questionContent?.content
               } else {
                 questionsToAskObj[questionID] = {
                   ...questionInfo._doc,
-                  questionContent: questionContent.content
+                  questionContent: questionContent?.content
                 }
               }
 
-              const questionN = questionContent.content
+              const questionN = questionContent?.content
               const bestAnswerN = questionInfo.bestAnswer
 
               for (userID in questionInfo.usersAnswers) {
