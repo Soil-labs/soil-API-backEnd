@@ -323,21 +323,34 @@ module.exports = {
 
           // loop throw the oboject questionsToAskObj
           for (let questionID in questionsToAskObj) {
-            const questionInfo = questionsToAskObj[questionID];
+            let questionInfo = questionsToAskObj[questionID];
 
             questionContent = await QuestionsEdenAI.findOne({ _id: questionInfo.questionID }).select('_id content contentSmall');
             questionContent = await updateQuestionSmall(questionContent)
 
+            // questionInfo.questionsToAskObj[questionID].questionContentSmall =  questionContent?.contentSmall
+
+
             if (!questionInfo._doc) {
               questionsToAskObj[questionID].questionContent =  questionContent?.content
               questionsToAskObj[questionID].questionContentSmall =  questionContent?.contentSmall
+
+              // questionInfo.questionsToAskObj[questionID].questionContent =  questionContent?.content
+              // questionInfo.questionsToAskObj[questionID].questionContentSmall =  questionContent?.contentSmall
             } else {
               questionsToAskObj[questionID] = {
                 ...questionInfo._doc,
                 questionContent: questionContent?.content,
                 questionContentSmall: questionContent?.contentSmall
               }
+              // questionInfo.questionsToAskObj[questionID] = {
+              //   ...questionInfo._doc,
+              //   questionContent: questionContent?.content,
+              //   questionContentSmall: questionContent?.contentSmall
+              // }
             }
+
+            questionInfo = questionsToAskObj[questionID];
 
             if (questionInfo.bestAnswer == undefined) { // If we don't have a best answer for this quesiton
 
@@ -470,7 +483,7 @@ module.exports = {
                 summaryQuestions.push({
                   questionID: questionID,
                   questionContent: candidateResult[userIDn][questionID].questionContent,
-                  questionContentSmall: candidateResult[userIDn][questionID]?.questionContentSmall,
+                  questionContentSmall: questionsToAskObj[questionID]?.questionContentSmall,
                   answerContent: candidateResult[userIDn][questionID].summaryOfAnswer.replace(/[<>]/g, ""),
                   answerContentSmall: candidateResult[userIDn][questionID].summaryOfAnswerSmall.replace(/[<>]/g, ""),
                   reason: candidateResult[userIDn][questionID].reason,
