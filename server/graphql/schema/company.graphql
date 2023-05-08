@@ -30,7 +30,9 @@ module.exports = `
     type SummaryQuestionType {
         questionID: ID,
         questionContent: String,
+        questionContentSmall: String,
         answerContent: String,
+        answerContentSmall: String,
         bestAnswerCompany: String,
         reason: String,
         score: Float,

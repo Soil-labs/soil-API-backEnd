@@ -924,14 +924,26 @@ module.exports = {
       if (questionAskingNow != undefined && questionAskingNow != "") {
 
         // -------------- Ask GPT what to do  ------------
+        // promptAskQuestion = `
+        // For the Conversation, the question that the Interviewer asked is: ${questionAskingNow}
+
+        //   Is the User 
+        //   1) YES answer the question
+        //   2) NO didn't answer the question 
+
+        //   you can only answer (YES, NO)
+
+        //   Result: 
+        // `
         promptAskQuestion = `
-        For the Conversation, the question that the Interviewer asked is: ${questionAskingNow}
+        Question: ${questionAskingNow}
 
-          Is the User 
-          1) YES answer the question, move to next question 
-          2) NO didn't answer the question 
+          Using the Conversation, is the Person answer the Question?
+          Is the Person answer the Question during the conversation?
+          - YES answer the question
+          - NO didn't answer the question 
 
-          you can only answer (YES, NO)
+          You can only answer (YES, NO)
 
           Result: 
         `
@@ -1031,7 +1043,12 @@ module.exports = {
     if (timesAsked == 1){
 
       // reply = questionAskingNowA
-      reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,1)
+
+      if (questionAskingNowA == "Finish the conversation"){
+        reply = "Thank you for taking time to talk to me, I will let you know with the results ASAP"
+      } else {
+        reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,1)
+      }
 
     } else {
 

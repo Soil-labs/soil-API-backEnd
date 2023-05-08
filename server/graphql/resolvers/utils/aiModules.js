@@ -72,6 +72,8 @@ async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3) {
 
     //   ONLY IF IT MAKE SENSE Modify the questionAskingNow by using MEMORY and asking a more specific question based on that memory
 
+    let modifiedQuestion = ""
+    if (memoriesPrompt != ""){
 
       const promptPlusMemoryV = `Question Asking now: ${messageQ}
 
@@ -88,9 +90,14 @@ async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3) {
 
        printC(promptPlusMemoryV, "1", "promptPlusMemoryV", "p")
 
-      const modifiedQuestion = await useGPChatSimple(promptPlusMemoryV);
+      modifiedQuestion = await useGPChatSimple(promptPlusMemoryV);
 
-      printC(modifiedQuestion, "5", "modifiedQuestion", "g")
+    } else {
+      modifiedQuestion = messageQ
+    }
+
+    printC(modifiedQuestion, "5", "modifiedQuestion", "g")
+
 
     // -------------- Connect Memory to question ------------
 

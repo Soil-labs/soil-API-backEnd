@@ -3,6 +3,7 @@ module.exports = `
     type QuestionsEdenAI {
         _id: ID,
         content: String,
+        contentSmall: String,
         answeredQuestionByUsers: [ID],
         questionOwnedByCompanies: [ID],
     }

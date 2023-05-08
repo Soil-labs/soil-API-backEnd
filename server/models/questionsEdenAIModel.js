@@ -4,6 +4,7 @@ require("dotenv").config();
 
 const questionsEdenAIModel = mongoose.Schema({
   content: String,
+  contentSmall: String,
   answeredQuestionByUsers: [String],
   questionOwnedByCompanies: [mongoose.Schema.ObjectId],
 });

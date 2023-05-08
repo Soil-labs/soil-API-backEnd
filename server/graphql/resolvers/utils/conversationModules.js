@@ -181,7 +181,21 @@ async function findSummaryOfAnswers(convDataNow) {
 
         // questionsAnswered[i].summaryOfAnswer = summaryAnswer
 
+        promptSummarySmall = `
+            CONTENT: <${summaryAnswer}>
+
+            - Create a SUMMARY of the CONTENT  with Maximum 3-5 words!!!
+
+            SUMMARY:
+        `
+
+        const summaryAnswerSmall = await useGPTchatSimple(promptSummarySmall)
+
+        printC(summaryAnswerSmall,"3","summaryAnswerSmall","g")
+
+
         convDataNow.questionsAnswered[i].summaryOfAnswer = summaryAnswer
+        convDataNow.questionsAnswered[i].summaryOfAnswerSmall = summaryAnswerSmall
 
     }
 

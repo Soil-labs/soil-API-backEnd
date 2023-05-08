@@ -31,44 +31,6 @@ module.exports = {
 
       try {
 
-        // convKey = await concatenateFirstTwoMessages(conversation);
-
-        // // check if already exist using userID and convKey
-
-        // const existingConversation = await Conversation.findOne({
-        //   userID,
-        //   convKey,
-        // });
-
-        // let resultConv;
-
-        // if (existingConversation) {
-        //   // update the conversation
-        //   existingConversation.conversation = conversation;
-        //   existingConversation.updatedAt = Date.now();
-        //   existingConversation.summaryReady = false;
-
-        //   resultConv = await existingConversation.save();
-
-
-        // } else {
-
-        //   const newConversation = await new Conversation({
-        //     convKey,
-        //     userID,
-        //     conversation,
-        //     summaryReady: false,
-        //     summary: [],
-        //     updatedAt: Date.now(),
-        //   });
-  
-        //   resultConv = await newConversation.save();
-  
-          
-        // }
-
-        // console.log("resultConv = " , resultConv)
-
         resultConv = await findAndUpdateConversationFunc(userID,conversation)
 
         //  ------------- Update the Answered Question ----------------
@@ -95,8 +57,7 @@ module.exports = {
       let searchQuery = {};
 
       
-  
-  
+
       if (_id) {
         searchQuery_and.push({ _id: _id });
       } else if (convKey) {
@@ -130,7 +91,7 @@ module.exports = {
 
           console.log("minutesSinceLastUpdate = " , minutesSinceLastUpdate)
 
-          if (minutesSinceLastUpdate > 5) {
+          if (minutesSinceLastUpdate > 2.5) {
             // if (true) { 
 
             // ------------------ Delete old summaries from pinecone ------------------

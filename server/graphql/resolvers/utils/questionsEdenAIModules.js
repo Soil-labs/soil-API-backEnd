@@ -145,7 +145,34 @@ async function addMultipleQuestionsToEdenAIFunc(questionsToAsk) {
 }
 
 
+async function updateQuestionSmall(questionContent) {
+
+
+
+  if (questionContent?.content && !questionContent?.contentSmall){
+    
+    promptQuestionSmall = `
+    CONTENT: <${questionContent.content}>
+
+    - Create a SUMMARY of the CONTENT  with Maximum 3-5 words!!!
+
+    SUMMARY:
+    `
+
+    const questionSmall = await useGPTchatSimple(promptQuestionSmall)
+
+    questionContent.contentSmall = questionSmall.replace(".","")
+
+    await questionContent.save()
+  }
+  
+    
+  return questionContent
+}
+
+
 module.exports = {
     addQuestionToEdenAIFunc,
     addMultipleQuestionsToEdenAIFunc,
+    updateQuestionSmall,
 };
