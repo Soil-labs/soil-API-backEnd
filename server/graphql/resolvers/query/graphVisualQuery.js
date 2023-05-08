@@ -1050,6 +1050,9 @@ module.exports = {
 
       let memberNodesdData = await Node.find({ _id: memberNodesID }).select("_id name node categoryNodes groupNodes"); 
 
+
+      memberNodesdData = memberNodesdData.slice(0,16) // SOS 🆘 - Delete that, it is only for a super quick clean up of the users that have more than 50 nodes! later we should hvae better way
+
       // console.log("nodesData = " , nodesData)
 
       // console.log("memberNodesdData = " , memberNodesdData)

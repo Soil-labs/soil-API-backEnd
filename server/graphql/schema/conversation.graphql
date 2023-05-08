@@ -22,6 +22,7 @@ module.exports = `
         questionContent: String,
         subConversationAnswer: [conversationType],
         summaryOfAnswer: String,
+        summaryOfAnswerSmall: String,
     }
 
     type summaryType {

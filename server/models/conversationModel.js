@@ -27,6 +27,7 @@ const conversationSchema = mongoose.Schema({
       content: String,
     }],
     summaryOfAnswer: String,
+    summaryOfAnswerSmall: String,
   }],
   
   updatedAt: Date,

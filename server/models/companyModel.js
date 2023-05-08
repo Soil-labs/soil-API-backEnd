@@ -21,7 +21,9 @@ const companyModel = mongoose.Schema({
     summaryQuestions: [{
       questionID: mongoose.Schema.ObjectId,
       questionContent: String,
+      questionContentSmall: String,
       answerContent: String,
+      answerContentSmall: String,
       bestAnswerCompany: String,
       reason: String,
       score: Number,
