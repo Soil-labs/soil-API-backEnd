@@ -328,6 +328,17 @@ module.exports = {
             questionContent = await QuestionsEdenAI.findOne({ _id: questionInfo.questionID }).select('_id content contentSmall');
             questionContent = await updateQuestionSmall(questionContent)
 
+            if (!questionInfo._doc) {
+              questionsToAskObj[questionID].questionContent =  questionContent?.content
+              questionsToAskObj[questionID].questionContentSmall =  questionContent?.contentSmall
+            } else {
+              questionsToAskObj[questionID] = {
+                ...questionInfo._doc,
+                questionContent: questionContent?.content,
+                questionContentSmall: questionContent?.contentSmall
+              }
+            }
+
             if (questionInfo.bestAnswer == undefined) { // If we don't have a best answer for this quesiton
 
               for (userID in questionInfo.usersAnswers) {
@@ -345,17 +356,6 @@ module.exports = {
               }
 
             }else {
-              
-              
-              if (!questionInfo._doc) {
-                questionsToAskObj[questionID].questionContent =  questionContent?.content
-              } else {
-                questionsToAskObj[questionID] = {
-                  ...questionInfo._doc,
-                  questionContent: questionContent?.content,
-                  questionContentSmall: questionContent?.contentSmall
-                }
-              }
 
               const questionN = questionContent?.content
               const bestAnswerN = questionInfo.bestAnswer
@@ -470,7 +470,7 @@ module.exports = {
                 summaryQuestions.push({
                   questionID: questionID,
                   questionContent: candidateResult[userIDn][questionID].questionContent,
-                  questionContent: candidateResult[userIDn][questionID].questionContentSmall,
+                  questionContentSmall: candidateResult[userIDn][questionID]?.questionContentSmall,
                   answerContent: candidateResult[userIDn][questionID].summaryOfAnswer.replace(/[<>]/g, ""),
                   answerContentSmall: candidateResult[userIDn][questionID].summaryOfAnswerSmall.replace(/[<>]/g, ""),
                   reason: candidateResult[userIDn][questionID].reason,
