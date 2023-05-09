@@ -40,7 +40,7 @@ const login = async ({ body }, res,req) => {
     let dbUser = await Members.findOne({ _id: userid });
     console.log("user", userid, email, name, picture);
 
-    // if user is not in database, save user to database
+    // if user is not in database, save user to database and save the node
     if (!dbUser) {
 
       // let fields = {
