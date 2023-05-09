@@ -28,6 +28,7 @@
     "express": "^4.17.1",
     "express-rate-limit": "^6.7.0",
     "fs": "^0.0.1-security",
+    "google-auth-library": "^8.8.0",
     "graphql": "^16.6.0",
     "graphql-request": "^5.2.0",
     "graphql-resolvers": "^0.4.2",

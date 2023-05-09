@@ -7,34 +7,48 @@ const {
 const { createNode_neo4j } = require("../neo4j/func_neo4j");
 const { ACCESS_LEVELS, OPERATORS } = require("./constants");
 
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 const token = async ({ body }, res) => {
   try {
     const { accessToken } = body;
 
+    // Verify the token from Google and extract user information
+    const ticket = await client.verifyIdToken({
+      idToken: accessToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
     if (!accessToken) throw new Error("Invalid Token supplied");
-    const authResponse = await axios
-      .get(`https://discord.com/api/oauth2/@me`, {
-        headers: {
-          authorization: `Bearer ${accessToken}`,
-        },
-      })
-      .catch((err) => {
-        throw new Error("Failed to get user");
-      });
+    // const authResponse = await axios
+    //   .get(`https://discord.com/api/oauth2/@me`, {
+    //     headers: {
+    //       authorization: `Bearer ${accessToken}`,
+    //     },
+    //   })
+    //   .catch((err) => {
+    //     throw new Error("Failed to get user");
+    //   });
 
-    let { user } = authResponse?.data;
+    //let { user } = authResponse?.data;
 
+    const payload = ticket.getPayload();
+    const userid = payload["sub"];
+    const email = payload["email"];
+    const name = payload["name"];
+    const picture = payload["picture"];
 
     // Find if user is in database
-    let dbUser = await Members.findOne({ _id: user.id });
+    let dbUser = await Members.findOne({ _id: userid });
     // console.log("user", user);
 
     // if user is not in database, save user to database
     if (!dbUser) {
       let fields = {
-        _id: user.id,
-        discordName: user.username,
-        discordAvatar: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`,
+        _id: userid,
+        discordName: name,
+        discordAvatar: picture,
         discriminator: user.discriminator,
         registeredAt: new Date(),
       };
@@ -49,20 +63,21 @@ const token = async ({ body }, res) => {
       });
     }
 
-    await retrieveAndMergeServersUserIsIn(accessToken, dbUser);
+    //await retrieveAndMergeServersUserIsIn(accessToken, dbUser);
 
     // Check if user is an operator
-    if (OPERATORS.includes(user.id)) {
-      user.accessLevel = ACCESS_LEVELS.OPERATOR_ACCESS;
+    let userAccess = null;
+    if (OPERATORS.includes(dbUser.id)) {
+      userAccess = ACCESS_LEVELS.OPERATOR_ACCESS;
     } else {
-      user.accessLevel = ACCESS_LEVELS.MEMBER_ACCESS;
+      userAccess = ACCESS_LEVELS.MEMBER_ACCESS;
     }
 
     const token = jwt.sign(
       {
-        _id: user.id,
-        discordName: user.username,
-        accessLevel: user.accessLevel,
+        _id: dbUser.id,
+        discordName: name,
+        accessLevel: userAccess,
       },
       process.env.JWT_SECRET || "",
       {
