@@ -1,5 +1,8 @@
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { Conversation } = require("../../../models/conversationModel");
+const { Members } = require("../../../models/membersModel");
+const { Company } = require("../../../models/companyModel");
+
 
 const { printC } = require("../../../printModule");
 
@@ -88,6 +91,73 @@ async function updateAnsweredQuestionFunc(resultConv,conversation,questionAsking
 
 
 }
+
+async function updateCompanyInterviewedOfUser(userID) {
+
+    console.log("userID = " , userID)
+
+
+    userData = await Members.findOne({ _id: userID }).select('_id discordName companiesApplied')
+
+    console.log("userData = " , userData)
+
+    companiesAppliedIDs = userData.companiesApplied.map(company => company.companyID)
+
+    console.log("companiesAppliedIDs = " , companiesAppliedIDs)
+
+    companiesT = await Company.find({ _id: { $in: companiesAppliedIDs } })
+
+    console.log("companiesT = " , companiesT)
+
+    
+    for (let i = 0; i < companiesT.length; i++) {
+        const companyData = companiesT[i];
+        
+        let candidatesN = await updateEmployees(companyData.candidates, [{userID: userID}],"userID");
+
+        let companyDataN = await Company.findOneAndUpdate(
+            { _id: companyData._id },
+            { 
+              candidates: candidatesN,
+              candidatesReadyToDisplay: false 
+            },
+            { new: true }
+          );
+
+
+    }
+
+}
+
+async function updateEmployees(arr1, arr2,compareKey = "userID") {
+
+    // arr1New = [...arr1]
+    arr2.forEach(employee2 => {
+      const index = arr1.findIndex(employee1 => {
+  
+        
+        if (employee1[compareKey] && employee2[compareKey]) return (employee1[compareKey].toString() == employee2[compareKey].toString())
+        else return -1
+        
+      });
+      if (index !== -1) {
+        arr1[index] = {
+          ...employee2,
+          readyToDisplay: false,
+        }
+      } else {
+        arr1.push({
+          ...employee2,
+          readyToDisplay: false,
+        });
+  
+      }
+    });
+  
+  
+    return arr1;
+  }
+
 
 async function findAndUpdateConversationFunc(userID,conversation) {
 
@@ -270,4 +340,5 @@ module.exports = {
     updateAnsweredQuestionFunc,
     findAndUpdateConversationFunc,
     findSummaryOfAnswers,
+    updateCompanyInterviewedOfUser,
 };

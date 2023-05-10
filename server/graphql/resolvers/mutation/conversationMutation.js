@@ -3,7 +3,7 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 const { ApolloError } = require("apollo-server-express");
 
-const { concatenateFirstTwoMessages,updateQuestionAskedConvoID,findSummaryOfAnswers,findAndUpdateConversationFunc,updateAnsweredQuestionFunc } = require("../utils/conversationModules");
+const { concatenateFirstTwoMessages,updateQuestionAskedConvoID,updateCompanyInterviewedOfUser,findSummaryOfAnswers,findAndUpdateConversationFunc,updateAnsweredQuestionFunc } = require("../utils/conversationModules");
 
 const { useGPTchat,useGPTchatSimple,upsertEmbedingPineCone,deletePineCone } = require("../utils/aiModules");
 
@@ -83,6 +83,13 @@ module.exports = {
 
         for (let i = 0; i < convData.length; i++) {
           convDataNow = convData[i];
+
+
+          console.log("convDataNow = " , convDataNow)
+
+          await updateCompanyInterviewedOfUser(convDataNow.userID)
+          // asdf9
+
 
           console.log("convDataNow. = " , convDataNow.updatedAt)
 
@@ -181,3 +188,4 @@ module.exports = {
       }
     },
 }
+

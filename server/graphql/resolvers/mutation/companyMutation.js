@@ -2,6 +2,8 @@
 const { ApolloError } = require("apollo-server-express");
 
 const { Company } = require("../../../models/companyModel");
+const { Members } = require("../../../models/membersModel");
+
 const { Conversation } = require("../../../models/conversationModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
@@ -9,7 +11,7 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 const { addMultipleQuestionsToEdenAIFunc ,updateQuestionSmall} = require("../utils/questionsEdenAIModules");
 
-const {  } = require("../utils/companyModules");
+const {checkAndAddCompanyToMember  } = require("../utils/companyModules");
 
 const { printC } = require("../../../printModule");
 
@@ -195,15 +197,20 @@ module.exports = {
       if (!companyData) throw new ApolloError("Company not found", "addCandidatesCompany", { component: "companyMutation > addCandidatesCompany" });
 
  
+      userIDs = candidates.map((candidate) => candidate.userID)
+      
+      usersData = await Members.find({ _id: { $in: userIDs } }).select("_id discordName companiesApplied");
+
+      
+ 
       try {
 
 
         let candidatesN = await updateEmployees(companyData.candidates, candidates,"userID");
 
 
-
-
-        console.log("candidatesN = " , candidatesN)
+        await checkAndAddCompanyToMember(usersData,companyID)
+        
 
 
         // find one and updates
@@ -522,7 +529,19 @@ module.exports = {
             },
             { new: true }
           )
+          if (company.candidates.length == 0){
+            companyNowD = await Company.findOneAndUpdate(
+              { _id: companyData[i]._id },
+              {
+                $set: {
+                  candidatesReadyToDisplay: true
+                }
+              },
+              { new: true }
+            )
+          }
           // ------------------ Update Company ----------------
+
 
 
 

@@ -145,7 +145,26 @@ async function addMultipleQuestionsToEdenAIFunc(questionsToAsk) {
 }
 
 
+
+async function checkAndAddCompanyToMember(usersData, companyID) {
+  // usersData.forEach(user => {
+    for (let i=0;i<usersData.length;i++){
+      const user = usersData[i];
+    if (!user.companiesApplied.some(obj => obj.companyID?.toString() == companyID.toString())) {
+      user.companiesApplied.push({
+        companyID: companyID,
+      });
+      // send updated user data to MongoDB
+
+      console.log("user = " , user)
+      await user.save();
+    }
+  };
+}
+
+
 module.exports = {
     addQuestionToEdenAIFunc,
     addMultipleQuestionsToEdenAIFunc,
+    checkAndAddCompanyToMember,
 };
