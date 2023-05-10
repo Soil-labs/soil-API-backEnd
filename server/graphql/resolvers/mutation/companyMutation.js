@@ -393,7 +393,7 @@ module.exports = {
 
                 How much you will rate the USER VS the BEST DESIRED answer,  1 to 10
 
-                First, give only a number from 1 to 10, then give the reason:
+                First, give only a number from 1 to 10, then give a really concise reason in bullet points:
 
                 Example 
                 EVALUATE: 6
@@ -497,7 +497,8 @@ module.exports = {
               }
 
               if (numberQ != 0) {
-                companyData[i].candidates[j].overallScore = (overallScore/numberQ)*10
+                const averageT = (overallScore/numberQ)*10
+                companyData[i].candidates[j].overallScore = Math.floor(averageT);
               }
 
               companyData[i].candidates[j].summaryQuestions = summaryQuestions
