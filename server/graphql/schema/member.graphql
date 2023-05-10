@@ -12,6 +12,8 @@ module.exports = `
 
         onbording: onboardingType
 
+        companiesApplied: [companiesAppliedType]
+
         cvInfo: cvInfoType
 
         content: contentType
@@ -73,6 +75,10 @@ module.exports = `
         reviewSummary: reviewSummaryType     
 
         preferences: preferencesType
+    }
+
+    type companiesAppliedType {
+        companyID: ID
     }
 
     type cvInfoType {
