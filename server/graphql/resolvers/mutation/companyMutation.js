@@ -400,7 +400,7 @@ module.exports = {
 
                 How much you will rate the USER VS the BEST DESIRED answer,  1 to 10
 
-                First, give only a number from 1 to 10, then give a really concise reason in bullet points:
+                First, give only a number from 1 to 10, then give a really concise reason in 3 bullet points, every bullet point can have maximum 6 words:
 
                 Example 
                 EVALUATE: 6
