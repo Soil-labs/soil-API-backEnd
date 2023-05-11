@@ -337,7 +337,7 @@ module.exports = {
         // ------- Calculate Summary -------
         if (userData.cvInfo.cvPreparationBio != true) {
           promptSum =
-          'Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile. Give me that summary in a bullet point format,do not include the name in the summary. Keep the bullet points short. Only up to 5 bullet points are allowed. No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n' +
+          `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent company in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present company that they work in and what they do there \n\n\n\n` +
           cvContent;
 
           summaryOfCV = await useGPTchatSimple(promptSum);
@@ -381,71 +381,6 @@ module.exports = {
           userData.cvInfo.cvPreparationPreviousProjects = true;
         }
         // -------Calculate Previous Jobs -------
-
-
-        // // ----------- Calculate and Save Memory ------------
-        // if (userData.cvInfo.cvPreparationMemory != true) {
-
-
-        //   // ------------ Delete previous memory ------------
-        //   if (userData.cvInfo?.cvMemory?.length >0) {
-        //     deletePineIDs = userData.cvInfo.cvMemory.map(obj => obj.pineConeID)
-        //     await deletePineCone(deletePineIDs)
-        //   }
-        //   // ------------ Delete previous memory ------------
-
-        //   promptMemory =
-        //   'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
-        //   cvContent;
-
-        //   summaryBulletPoints = await useGPTchatSimple(promptMemory, 0.7);
-
-        //   sumBulletSplit = summaryBulletPoints
-        //     .replace(/\n/g, "")
-        //     .split("•")
-        //     .filter((item) => item.trim() !== "");
-
-            
-        //   let cvMemory = [];
-
-        //   for (let i = 0; i < sumBulletSplit.length; i++) {
-
-        //     // -------------- Sent to PineCone --------------
-        //     let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
-            
-        //     upsertSum = await upsertEmbedingPineCone({
-        //       text: sumBulletSplit[i],
-        //       embedding: embeddings[0],
-        //       _id: userData._id,
-        //       label: "CV_user_memory",
-        //     });
-        //     printC(upsertSum,"2","upsertSum","y")
-        //     // -------------- Sent to PineCone --------------
-
-        //     cvMemory.push({
-        //       memoryContent: sumBulletSplit[i],
-        //       pineConeID: upsertSum.id_message,
-        //     })
-
-        //     printC(sumBulletSplit[i],"2","sumBulletSplit[i]","p")
-        //   }
-
-        //   filterUpdate = {
-        //     ...filterUpdate,
-        //     cvInfo: {
-        //       ...userData.cvInfo,
-        //       ...filterUpdate.cvInfo,
-        //       cvMemory: cvMemory,
-        //       cvPreparationMemory: true,
-        //     },
-        //   }
-
-        //   userData.cvInfo.cvMemory = cvMemory;
-
-        //   userData.cvInfo.cvPreparationMemory = true;
-
-        // // ----------- Calculate and Save Memory ------------
-        
         
         // -------------- Map Nodes from CV--------------
         if (userData.cvInfo.cvPreparationNodes != true) {
