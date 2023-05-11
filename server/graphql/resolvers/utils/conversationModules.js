@@ -238,6 +238,7 @@ async function findSummaryOfAnswers(convDataNow) {
         CONVERSATION: <${conversationString}>
 
         - Create the SUMMARY that answers to the QUESTION, based on the CONVERSATION above
+        - the SUMMARY should be as small as possible with only 1-2 sentences
         - If there is no answer you can create say, <User didn't answer the question>
 
         SUMMARY:
