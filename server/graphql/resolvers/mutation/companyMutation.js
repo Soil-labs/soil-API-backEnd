@@ -481,6 +481,8 @@ module.exports = {
               console.log("candidateResult[userIDn] = " , candidateResult[userIDn])
 
 
+              console.log(" questionsToAskObj[questionID] = " ,  questionsToAskObj[questionID])
+
               let summaryQuestions = []
 
               let overallScore = 0
@@ -491,10 +493,11 @@ module.exports = {
                   questionID: questionID,
                   questionContent: candidateResult[userIDn][questionID].questionContent,
                   questionContentSmall: questionsToAskObj[questionID]?.questionContentSmall,
-                  answerContent: candidateResult[userIDn][questionID].summaryOfAnswer.replace(/[<>]/g, ""),
-                  answerContentSmall: candidateResult[userIDn][questionID].summaryOfAnswerSmall.replace(/[<>]/g, ""),
+                  answerContent: candidateResult[userIDn][questionID].summaryOfAnswer?.replace(/[<>]/g, ""),
+                  answerContentSmall: candidateResult[userIDn][questionID].summaryOfAnswerSmall?.replace(/[<>]/g, ""),
                   reason: candidateResult[userIDn][questionID].reason,
                   score: candidateResult[userIDn][questionID].score,
+                  subConversationAnswer: candidateResult[userIDn][questionID].subConversationAnswer,
                 })
 
                 if (candidateResult[userIDn][questionID].score != undefined){

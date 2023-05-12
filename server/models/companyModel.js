@@ -27,6 +27,10 @@ const companyModel = mongoose.Schema({
       bestAnswerCompany: String,
       reason: String,
       score: Number,
+      subConversationAnswer: [{
+        role: String, // user or bot
+        content: String,
+      }],
     }]
   }]
 

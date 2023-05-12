@@ -36,6 +36,7 @@ module.exports = `
         bestAnswerCompany: String,
         reason: String,
         score: Float,
+        subConversationAnswer: [conversationType],
     }
 
     input updateCompanyInput {
