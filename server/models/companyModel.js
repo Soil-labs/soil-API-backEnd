@@ -12,6 +12,9 @@ const companyModel = mongoose.Schema({
     questionID: mongoose.Schema.ObjectId,
     bestAnswer: String,
   }],
+  nodes: [{
+    nodeID: mongoose.Schema.ObjectId,
+  }],
   candidatesReadyToDisplay: Boolean,
   candidates: [{
     userID: String,

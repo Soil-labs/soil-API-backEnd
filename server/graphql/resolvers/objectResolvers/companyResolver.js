@@ -1,6 +1,8 @@
 // const { User } = require('../../../models/user');
 const { Members } = require('../../../models/membersModel');
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
+const { Node } = require("../../../models/nodeModal");
+
 
 const { ApolloError } = require('apollo-server-express');
 
@@ -25,6 +27,33 @@ module.exports = {
             if (memberData){
                return memberData;
             }
+
+
+         } catch (err) {
+            throw new ApolloError(
+               err.message,
+               err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+               {
+                  component: 'userResolver > skills',
+                  user: context.req.user?._id,
+               }
+            );
+         }
+      },
+   },
+   NodeDataType: {
+      nodeData: async (parent, args, context, info) => {
+       console.log("parent = " , parent)
+
+         try {
+            const nodeID = parent.nodeID;
+
+
+
+            nodeData = await Node.findOne({_id: nodeID}).select('_id name node')
+         
+           
+            return nodeData
 
 
          } catch (err) {

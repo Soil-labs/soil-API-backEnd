@@ -83,6 +83,7 @@ module.exports = `
         deleteQuestionsToAskCompany(fields:deleteQuestionsToAskCompanyInput): Company
         addCandidatesCompany(fields:addCandidatesCompanyInput): Company
         updateCompanyUserAnswers(fields:updateCompanyUserAnswersInput): [Company]
+        addNodesToCompany(fields:addNodesToCompanyInput): Company
 
 
 

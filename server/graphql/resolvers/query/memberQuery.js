@@ -1429,11 +1429,23 @@ module.exports = {
     return val;
   },
   matchNodesToMembers_AI4: async (parent, args, context, info) => {
-    const { nodesID, weightModules,budget,availability,experienceLevel } =
+    const { nodesID,membersIDallow, weightModules,budget,availability,experienceLevel } =
       args.fields;
     let { page, limit } = args.fields;
     console.log("Query > matchNodesToMembers_AI4 > args.fields = ", args.fields);
     // df0
+
+
+    membersIDallowObj = {}
+    if (membersIDallow){
+      membersIDallow.forEach(m_id => {
+        membersIDallowObj[m_id] = true
+      })
+    } else {
+      membersIDallowObj["all"] = true
+    }
+
+    
 
     if (!nodesID) throw new ApolloError("nodesID is required");
 
@@ -1448,7 +1460,10 @@ module.exports = {
 
     try {
 
+
       weightModulesObj = await arrayToObject(weightModules)
+
+
 
       filter = {}
 
@@ -1465,15 +1480,17 @@ module.exports = {
 
       memberObj = {}
 
-      memberObj = await nodes_aiModule(nodesID,weightModulesObj,memberObj,filter)
+
+
+      memberObj = await nodes_aiModule(nodesID,weightModulesObj,memberObj,filter,membersIDallowObj)
 
       console.log("memberObj = " , memberObj)
       memberObj = await totalScore_aiModule(memberObj,weightModulesObj,numberNodes)
       console.log("memberObj = " , memberObj)
 
-      // asdf2
 
       memberArray = await sortArray_aiModule(memberObj)
+
 
       // await showObject(memberObj,"memberObj")
 
@@ -1516,6 +1533,8 @@ module.exports = {
         "_id node match_v2"
       );
 
+      
+
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
       w1_numNodes = 0.2; // the weight of the number of paths
@@ -1544,6 +1563,8 @@ module.exports = {
 
       memberIDs = [];
 
+      
+
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
       for (let i = 0; i < nodeData.length; i++) {
@@ -1562,6 +1583,8 @@ module.exports = {
         ) {
           w_node = w2_typeProject;
         }
+
+        
 
         for (let j = 0; j < match_v2.length; j++) {
           // find all the connections for this particular node
@@ -1638,6 +1661,7 @@ module.exports = {
               //   wh_k_T.wh_sum = wh_k_arr[idx].wh_sum * w_node;
               //   wh_k_T.numPath = wh_k_arr[idx].numPath;
               // });
+
 
               if (wh_k_arr.length == 0) {
                 wh_k_arr = [

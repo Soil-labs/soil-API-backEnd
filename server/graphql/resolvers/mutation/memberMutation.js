@@ -824,7 +824,6 @@ module.exports = {
         );
       }
     },
-  // ),
   deleteNodesFromMember: 
   // combineResolvers(
   //   IsAuthenticated,

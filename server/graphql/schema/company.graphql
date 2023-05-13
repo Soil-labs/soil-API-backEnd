@@ -6,7 +6,12 @@ module.exports = `
         candidatesReadyToDisplay: Boolean
         employees: [EmployeeType]
         questionsToAsk: [QuestionType]
+        nodes: [NodeDataType]
         candidates: [CandidateType]
+    }
+
+    type NodeDataType {
+        nodeData: Node
     }
 
     type EmployeeType {
@@ -94,6 +99,15 @@ module.exports = `
 
     input updateCompanyUserAnswersInput {
         companyIDs: [ID]
+    }
+
+    input addNodesToCompanyInput {
+        companyID: ID
+        nodes: [addNodeType]
+    }
+
+    input addNodeType {
+        nodeID: ID
     }
 
     
