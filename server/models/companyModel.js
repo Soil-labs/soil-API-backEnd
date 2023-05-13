@@ -15,6 +15,12 @@ const companyModel = mongoose.Schema({
   nodes: [{
     nodeID: mongoose.Schema.ObjectId,
   }],
+  talentList: [{
+    name: String,
+    talent: [{
+      userID: String,
+    }]
+  }],
   candidatesReadyToDisplay: Boolean,
   candidates: [{
     userID: String,

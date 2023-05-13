@@ -235,6 +235,7 @@ module.exports = {
         );
       }
     },
+
     addNodesToCompany: async (parent, args, context, info) => {
       let { companyID, nodes } = args.fields;
 
@@ -301,6 +302,95 @@ module.exports = {
           err.message,
           err.extensions?.code || "addNodesToCompany",
           { component: "companyMutation > addNodesToCompany" }
+        );
+      }
+    },
+
+    createTalentListCompany: async (parent, args, context, info) => {
+      const { companyID, name,talentListID } = args.fields;
+      console.log("Mutation > createTalentListCompany > args.fields = ", args.fields);
+
+      try {
+
+        companyData = await Company.findOne({ _id: companyID}).select('_id name talentList');
+
+        console.log("companyData = " , companyData)
+
+        if (talentListID){
+
+          // search inside companyData.talentList if talentListID is already there
+          let talentListData = companyData.talentList.find((talentList) => talentList._id.toString() == talentListID.toString());
+
+          if (!talentListData) {
+            companyData.talentList.push({
+              _id: talentListID,
+              name: name,
+            });
+          } else {
+            // update the name
+            talentListData.name = name;
+          }
+
+        } else {
+          companyData.talentList.push({
+            name: name,
+          });
+
+        }
+
+        // save it to mongo
+        companyData = await companyData.save();
+
+
+        return companyData
+        
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "createTalentListCompany",
+          { component: "companyMutation > createTalentListCompany" }
+        );
+      }
+    },
+
+    updateUsersTalentListCompany: async (parent, args, context, info) => {
+      const { companyID, talentListID, usersTalentList } = args.fields;
+      console.log("Mutation > updateUsersTalentListCompany > args.fields = ", args.fields);
+
+      try {
+
+        companyData = await Company.findOne({ _id: companyID}).select('_id name talentList');
+
+        if (!companyData) throw new ApolloError("Company not found", "updateUsersTalentListCompany", { component: "companyMutation > updateUsersTalentListCompany" });
+
+
+        // change from usersTalentList which is an array, to talent an array of objects with userID
+        let talent = usersTalentList.map((userTalentID) => {
+          return {
+            userID: userTalentID,
+          }
+        })
+
+        console.log("talent = " , talent)
+
+        // find the talentListID and update the talent
+
+        let talentListData = companyData.talentList.find((talentList) => talentList._id.toString() == talentListID.toString());
+
+        // update talent
+        talentListData.talent = talent;
+
+        // save it to mongo
+        companyData = await companyData.save();
+
+
+        return companyData
+        
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "updateUsersTalentListCompany",
+          { component: "companyMutation > updateUsersTalentListCompany" }
         );
       }
     },
