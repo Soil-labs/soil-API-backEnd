@@ -3,6 +3,8 @@ const { ApolloError } = require("apollo-server-express");
 
 const { Company } = require("../../../models/companyModel");
 const { Members } = require("../../../models/membersModel");
+const { Node } = require("../../../models/nodeModal");
+
 
 const { Conversation } = require("../../../models/conversationModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
@@ -230,6 +232,75 @@ module.exports = {
           err.message,
           err.extensions?.code || "addCandidatesCompany",
           { component: "companyMutation > addCandidatesCompany" }
+        );
+      }
+    },
+    addNodesToCompany: async (parent, args, context, info) => {
+      let { companyID, nodes } = args.fields;
+
+      console.log("Mutation > addNodesToCompany > args.fields = ", args.fields);
+
+      
+
+
+      if (!companyID) throw new ApolloError("companyID is required");
+
+      if (!nodes) throw new ApolloError("nodes is required");
+
+
+      try {
+        let companyData = await Company.findOne({ _id: companyID }).select('_id name nodes');
+
+        printC(companyData,"0","companyData","b")
+        
+
+        nodesIDArray = nodes.map((node) => node.nodeID);
+
+        printC(nodesIDArray,"1","nodesIDArray","g")
+
+
+        let nodesData = await Node.find({ _id: nodesIDArray }).select(
+          "_id name node "
+        );
+
+        printC(nodesData,"2","nodesData","g")
+
+
+        
+        let nodesDataOriginalArray = companyData.nodes.map(function (item) {
+          return item.nodeID.toString();
+        });
+
+        printC(nodesDataOriginalArray,"1","nodesDataOriginalArray","b")
+
+
+        // check if the nodes are already in the company if they don't then add it to the companyData.nodes and save it to mongo
+        for (let i=0;i<nodesData.length;i++) {
+          let nodeData = nodesData[i];
+
+          if (!nodesDataOriginalArray.includes(nodeData._id.toString())) {
+            companyData.nodes.push({
+              nodeID: nodeData._id,
+            })
+          }
+
+        }
+
+        printC(companyData,"1","companyData","b")
+
+        // save it to mongo
+        companyData = await companyData.save();
+
+
+
+
+
+        return companyData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "addNodesToCompany",
+          { component: "companyMutation > addNodesToCompany" }
         );
       }
     },

@@ -388,7 +388,7 @@ function chooseAPIkey(chooseAPI="") {
     return response.data.choices[0].message.content;
   }
 
-const nodes_aiModule = async (nodesID,weightModulesObj,memberObj,filter) => {
+const nodes_aiModule = async (nodesID,weightModulesObj,memberObj,filter,membersIDallowObj={}) => {
 
     
 
@@ -400,10 +400,9 @@ const nodes_aiModule = async (nodesID,weightModulesObj,memberObj,filter) => {
     if (!nodeData) throw new ApolloError("Node Don't exist");
 
 
-    memberObj = await nodesFindMembers(nodeData,memberObj)
+    memberObj = await nodesFindMembers(nodeData,memberObj,membersIDallowObj)
 
-    console.log("memberObj = " , memberObj)
-    // sdf0
+    
 
 
     // console.log("memberObj = " , memberObj)
@@ -412,7 +411,10 @@ const nodes_aiModule = async (nodesID,weightModulesObj,memberObj,filter) => {
     // }
     // sdf00
 
-    memberObj = await findMemberAndFilter(memberObj)
+    // memberObj = await findMemberAndFilter(memberObj)
+
+    console.log("memberObj = " , memberObj)
+    // sdf0
 
     // console.log("memberObj = " , memberObj)
     // sdf2
@@ -816,7 +818,7 @@ const distanceFromFilter = async (memberObj,filter) => {
     return memberObj
 }
 
-const nodesFindMembers = async (nodeData,memberObj) => {
+const nodesFindMembers = async (nodeData,memberObj,membersIDallowObj={}) => {
 
     memberIDs = [];
 
@@ -828,10 +830,15 @@ const nodesFindMembers = async (nodeData,memberObj) => {
         let node = nodeData[i];
 
         console.log(" = --->> tora tt0", node._id, match_v2.length)
+        // console.log(" = --->> tora tt0", match_v2)
+        const tstID = match_v2.map((item) => item.nodeResID);
 
-        memberObj = await nodeScoreMembersMap(match_v2,node,memberObj)
+        console.log("tstID = " , tstID)
+
+        memberObj = await nodeScoreMembersMap(match_v2,node,memberObj,membersIDallowObj)
 
     }
+    // sd9
 
     console.log(" = --->> tora 3",memberObj )
     // sdf
@@ -841,12 +848,15 @@ const nodesFindMembers = async (nodeData,memberObj) => {
     return memberObj
 }
 
-const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
+const nodeScoreMembersMap = async (match_v2,node,memberObj,membersIDallowObj={}) => {
 
     let nodeID = node._id;
 
     max_S = -1
     min_S = 100000000
+
+    // console.log("membersIDallowObj = " , membersIDallowObj)
+    // sdf0
 
     newMin_nodeMember = 0.2
     newMax_nodeMember = 1
@@ -856,15 +866,18 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
         if (! (match_v2[j].type == "Member")) continue;
 
         let memberID = match_v2[j].nodeResID;
+
+
+        if (membersIDallowObj[memberID] == undefined && membersIDallowObj["all"] != true) continue;
+
+        console.log("memberID = " , memberID)
+
         let scoreUser = match_v2[j].wh_sum;
 
         // ------------- Find all connected nodes -------------
         let conn_node = match_v2[j].conn_node_wh;
         let conn_nodeIDs = conn_node.map((item) => item.nodeConnID);
 
-        // console.log("scoreUser = " , scoreUser)
-        // console.log("conn_node = " , conn_node)
-        // asdf2
         // ------------- Find all connected nodes -------------
 
         if (scoreUser > max_S) max_S = scoreUser;
@@ -933,6 +946,16 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
         if (! (match_v2[j].type == "Member")) continue;
 
         let memberID = match_v2[j].nodeResID;
+
+
+
+
+        if (membersIDallowObj[memberID] == undefined && membersIDallowObj["all"] != true) continue;
+
+        console.log("Dokeratorinolari = " , memberID)
+
+
+
         let scoreUser = match_v2[j].wh_sum;
 
         let scoreUserMap = mapValue(scoreUser, min_S, max_S, newMin_nodeMember, newMax_nodeMember);
@@ -952,7 +975,7 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
 
         
     }
-    console.log(" = --->> tora 2",memberObj )
+    // console.log(" = --->> tora 2",memberObj )
 
     // ---------- Map Score [0,1]-----------
     // sfaf6
