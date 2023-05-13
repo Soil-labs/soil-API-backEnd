@@ -7,7 +7,18 @@ module.exports = `
         employees: [EmployeeType]
         questionsToAsk: [QuestionType]
         nodes: [NodeDataType]
+        talentList: [talentListType]
         candidates: [CandidateType]
+    }
+
+    type talentListType {
+        _id: ID
+        name: String
+        talent: [talentType]
+    }
+
+    type talentType {
+        user: Members
     }
 
     type NodeDataType {
@@ -99,6 +110,18 @@ module.exports = `
 
     input updateCompanyUserAnswersInput {
         companyIDs: [ID]
+    }
+
+    input createTalentListCompanyInput {
+        companyID: ID
+        name: String
+        talentListID: ID
+    }
+
+    input updateUsersTalentListCompanyInput {
+        companyID: ID
+        talentListID: ID
+        usersTalentList: [ID]
     }
 
     input addNodesToCompanyInput {
