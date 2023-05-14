@@ -300,6 +300,24 @@ module.exports = `
         commonSkills: [Skills]
         projectRoles: [matchProjectRoles]
     }
+
+    type memberPieChartNodeCategoriesOutput {
+        categoryName: String,
+        percentage: Float,
+        nodes: [Node]
+    }
+    input memberPieChartNodeCategoriesInput {
+        memberID: ID
+    }
+
+    type memberRadioChartCharacterAttributesOutput {
+        attributeName: String,
+        score: Float,
+        reason: String,
+    }
+    input memberRadioChartCharacterAttributesInput {
+        memberID: ID
+    }
     
     type matchProjectRoles {
         matchPercentage: Float,

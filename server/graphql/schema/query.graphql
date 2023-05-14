@@ -34,6 +34,8 @@ module.exports = `
             setAllMatch_v2(val: Boolean,node: String): Boolean
             matchNodesToMembers_old(fields:matchNodesToMembersInput): [matchMembersToSkillOutput]
             matchSkillsToProjects(fields:matchSkillsToProjectsInput): [matchSkillsToProjectsOutput]
+            memberPieChartNodeCategories(fields:memberPieChartNodeCategoriesInput): [memberPieChartNodeCategoriesOutput]
+            memberRadioChartCharacterAttributes(fields:memberRadioChartCharacterAttributesInput): [memberRadioChartCharacterAttributesOutput]
             matchNodesToProjectRoles(fields:matchNodesToProjectRolesInput): [matchSkillsToProjectsOutput]
             matchNodesToProjectRoles_old(fields:matchNodesToProjectRolesInput): [matchSkillsToProjectsOutput]
 
