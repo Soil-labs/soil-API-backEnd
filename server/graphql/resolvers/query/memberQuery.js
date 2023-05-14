@@ -1,5 +1,6 @@
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
+const { Conversation } = require("../../../models/conversationModel");
 const { ServerTemplate } = require("../../../models/serverModel");
 
 const mongoose = require("mongoose");
@@ -21,7 +22,7 @@ const {
 const { ApolloError } = require("apollo-server-express");
 const { IsAuthenticated } = require("../../../utils/authorization");
 
-const {nodes_aiModule,totalScore_aiModule,showObject,sortArray_aiModule,arrayToObject} = require("../utils/aiModules")
+const {nodes_aiModule,totalScore_aiModule,showObject,sortArray_aiModule,arrayToObject,useGPTchatSimple} = require("../utils/aiModules")
 
 function mapRange(input, inputMin, inputMax, outputMin, outputMax) {
   return (
@@ -2794,6 +2795,282 @@ module.exports = {
         err.message,
         err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
         { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
+  memberPieChartNodeCategories: async (parent, args, context, info) => {
+    const { memberID } = args.fields;
+    console.log("Query > memberPieChartNodeCategories > args.fields = ", args.fields);
+
+    if (!memberID) {
+      throw new ApolloError(
+        "memberID is required",
+        "MEMBER_PIE_CHART_NODE_CATEGORIES_MEMBER_ID_NOT_FOUND",
+        { component: "memberQuery > memberPieChartNodeCategories" }
+      );
+    }
+
+    // find memberData by memberID
+    memberData = await Members.findOne({ _id: memberID }).select('_id discordName nodes');
+
+    if (!memberData) {
+      throw new ApolloError(
+        "member is not found",
+        "MEMBER_PIE_CHART_NODE_CATEGORIES_MEMBER_ID_NOT_FOUND",
+        { component: "memberQuery > memberPieChartNodeCategories" }
+      );
+    }
+
+    try {
+
+      // console.log("memberData = " , memberData)
+
+      nodeIDs = memberData.nodes.map((x) => x._id);
+
+      // console.log("nodeIDs = " , nodeIDs)
+
+      nodeData = await Node.find({ _id: nodeIDs }).select('_id name categoryNodes groupNodes');
+
+      console.log("nodeData = " , nodeData)
+
+
+      let categoryObj = {};
+      let categoryIDs = [];
+      let allNodes = 0;
+      let groupObj = {};
+      let groupIDs = [];
+
+      for (let i = 0; i < nodeData.length; i++) {
+        let nodeNow = nodeData[i];
+        let categoryNow = nodeNow.categoryNodes[0];
+        let groupNow = nodeNow.groupNodes[0];
+
+        categoryIDs.push(categoryNow);
+
+        groupIDs.push(groupNow);
+
+        allNodes = allNodes + 1;
+
+        if (!categoryObj[categoryNow]) {
+          categoryObj[categoryNow] = {
+            nodes: [nodeNow],
+            numNodes: 1
+          };
+        } else {
+          categoryObj[categoryNow].nodes.push(nodeNow);
+          categoryObj[categoryNow].numNodes = categoryObj[categoryNow].numNodes + 1;
+        }
+
+        if (!groupObj[groupNow]) {
+          groupObj[groupNow] = {
+            nodes: [nodeNow],
+            numNodes: 1
+          };
+        } else {
+          groupObj[groupNow].nodes.push(nodeNow);
+          groupObj[groupNow].numNodes = groupObj[groupNow].numNodes + 1;
+        }
+      }
+
+      // console.log("categoryObj = " , categoryObj)
+      // console.log("groupObj = " , groupObj)
+
+
+      categoryData = await Node.find({ _id: categoryIDs }).select('_id name');
+
+      groupData = await Node.find({ _id: groupIDs }).select('_id name');
+
+
+      for (let i = 0; i < categoryData.length; i++) {
+        let categoryNow = categoryData[i];
+        categoryObj[categoryNow._id].name = categoryNow.name;
+
+        categoryObj[categoryNow._id].percentage = Math.round((categoryObj[categoryNow._id].numNodes / allNodes) * 100);
+      }
+
+      for (let i = 0; i < groupData.length; i++) {
+        let groupNow = groupData[i];
+        groupObj[groupNow._id].name = groupNow.name;
+
+        groupObj[groupNow._id].percentage = Math.round((groupObj[groupNow._id].numNodes / allNodes) * 100);
+      }
+
+      console.log("categoryObj = " , categoryObj)
+      console.log("groupObj = " , groupObj)
+
+
+      // groupObj to array
+      let groupObjArray = [];
+      for (let key in groupObj) {
+        groupObjArray.push({
+          categoryID: key,
+          categoryName: groupObj[key].name,
+          percentage: groupObj[key].percentage,
+          nodes: groupObj[key].nodes
+        });
+      }
+
+      // sort groupObjArray
+      groupObjArray.sort((a, b) => {
+        return b.percentage - a.percentage;
+      });
+
+      // only take the top 8
+      groupObjArray = groupObjArray.slice(0, 8);
+
+      // recalculate percentage
+      let totalPercentage = 0;
+      for (let i = 0; i < groupObjArray.length; i++) {
+        totalPercentage = totalPercentage + groupObjArray[i].percentage;
+      }
+
+      for (let i = 0; i < groupObjArray.length; i++) {
+        groupObjArray[i].percentage = Math.round((groupObjArray[i].percentage / totalPercentage) * 100);
+      }
+      
+
+
+      return groupObjArray;
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "memberPieChartNodeCategories",
+        { component: "memberQuery > memberPieChartNodeCategories" }
+      );
+    }
+  },
+  memberRadioChartCharacterAttributes: async (parent, args, context, info) => {
+    const { memberID } = args.fields;
+    console.log("Query > memberRadioChartCharacterAttributes > args.fields = ", args.fields);
+
+    if (!memberID) {
+      throw new ApolloError(
+        "memberID is required",
+        { component: "memberQuery > memberRadioChartCharacterAttributes" }
+      );
+    }
+
+    // find memberData by memberID
+    memberData = await Members.findOne({ _id: memberID }).select('_id discordName');
+
+    if (!memberData) {
+      throw new ApolloError(
+        "member is not found",
+        { component: "memberQuery > memberRadioChartCharacterAttributes" }
+      );
+    }
+
+    console.log("memberData = " , memberData)
+
+    try {
+
+      let convData = await Conversation.find({ userID: memberID }).select('_id userID conversation');
+
+      console.log("convData = " , convData)
+
+      //only take last conversation 
+      let convNow = convData[convData.length - 1];
+
+      // translate convNow.conversation to string prompt inside object there is role and content
+      let promptConv = "";
+      for (let i = 0; i < convNow.conversation.length; i++) {
+        let convNowNow = convNow.conversation[i];
+        if (convNowNow.role == "assistant")
+          promptConv = promptConv + "Recruiter: " + convNowNow.content + " \n\n";
+        else
+          promptConv = promptConv + "Candidate" + ": " + convNowNow.content + " \n\n";
+      }
+
+      console.log("promptConv = " , promptConv)
+
+
+      const attributes = [
+        "Communication skills",
+        "Relevant experience",
+        "Problem-solving skills",
+        "Cultural fit",
+        "Adaptability",
+        "Leadership potential",
+        "Passion and enthusiasm"
+      ];
+
+      // make attributes into a string prompt
+      let promptAttribute = "";
+      for (let i = 0; i < attributes.length; i++) {
+        promptAttribute = promptAttribute + "- " + attributes[i] + " \n\n";
+      }
+
+      console.log("promptAttribute = " , promptAttribute)
+      
+      
+
+      promptAttributeUser = `
+      You have as input a conversation between an Recruiter and a Candidate
+
+      Conversation is inside <>: <${promptConv}>
+
+      The Recruiter is trying to find out the Candidate's character attributes
+
+      Attribute Categories are inside <>: <${promptAttribute}>
+
+      You need to give points from 0 to 10 in every Attribute based on the Conversation, and the reason that you give this points
+
+      For example: 
+        Attribute 1: 5 Reason: ...
+        Attribute 2: 3 Reason: ...
+
+      Answer
+      `
+
+      // evaluateAttributes = await useGPTchatSimple(promptAttributeUser)
+      evaluateAttributes = ` Attribute 1: Communication skills - 7 Reason: The candidate was able to clearly express their experience and skills related to the job requirements. However, there were some moments where they needed clarification and repetition from the recruiter.
+
+      Attribute 2: Relevant experience - 9 Reason: The candidate has over 11 years of experience in Computer Vision, Machine Learning, and Robotics, as well as 5 years of experience in front-end engineering. They also have experience in leadership roles in both areas.
+      
+      Attribute 3: Problem-solving skills - 8 Reason: The candidate shared a challenging project they worked on and how they overcame it, demonstrating their problem-solving skills. However, they did not provide many specific examples of problem-solving skills related to the job requirements.
+      
+      Attribute 4: Cultural fit - 7 Reason: The candidate expressed interest in the company's goals and mission, but did not provide many details about their personal values or how they align with the company's culture.
+      
+      Attribute 5: Adaptability - 6 Reason: The candidate did not provide many examples of how they have adapted to new situations or challenges. However, they did express a growth mindset and willingness to improve.
+      
+      Attribute 6: Leadership potential - 8 Reason: The candidate has experience in leadership roles and expressed interest in becoming a team lead or CTO in the future.
+      
+      Attribute 7: Passion and enthusiasm - 7 Reason: The candidate expressed enthusiasm for the company's goals and mission, but did not show a lot of excitement or passion during the conversation.
+      `
+
+      evaluateAttributes += "Attribute 8"
+
+
+      console.log("evaluateAttributes = " , evaluateAttributes)
+
+      const regex = /Attribute\s+(\d+):\s+([\w\s-]+)\s+-\s+(\d+)\s+Reason:\s+(.*?)(?=Attribute\s+\d+|\z)/gis;
+      const attributesT = [];
+      let result;
+      while ((result = regex.exec(evaluateAttributes)) != null) {
+
+        const attribute = {
+          attributeNumber: result[1],
+          attributeName: result[2].trim(),
+          score: parseInt(result[3])*10,
+          reason: result[4].trim(),
+        };
+        attributesT.push(attribute);
+      }
+      
+
+      console.log("attributesT = " , attributesT)
+
+
+
+      return attributesT;
+
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "memberRadioChartCharacterAttributes",
+        { component: "memberQuery > memberRadioChartCharacterAttributes" }
       );
     }
   },
