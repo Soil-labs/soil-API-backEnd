@@ -3017,27 +3017,27 @@ module.exports = {
       You need to give points from 0 to 10 in every Attribute based on the Conversation, and the reason that you give this points
 
       For example: 
-        Attribute 1: 5 Reason: ...
-        Attribute 2: 3 Reason: ...
+        Attribute 1: ${attributes[0]} - 5 Reason: ...
+        Attribute 2: ${attributes[1]} - 3 Reason: ...
 
       Answer
       `
 
-      // evaluateAttributes = await useGPTchatSimple(promptAttributeUser)
-      evaluateAttributes = ` Attribute 1: Communication skills - 7 Reason: The candidate was able to clearly express their experience and skills related to the job requirements. However, there were some moments where they needed clarification and repetition from the recruiter.
+      evaluateAttributes = await useGPTchatSimple(promptAttributeUser)
+      // evaluateAttributes = ` Attribute 1: Communication skills - 7 Reason: The candidate was able to clearly express their experience and skills related to the job requirements. However, there were some moments where they needed clarification and repetition from the recruiter.
 
-      Attribute 2: Relevant experience - 9 Reason: The candidate has over 11 years of experience in Computer Vision, Machine Learning, and Robotics, as well as 5 years of experience in front-end engineering. They also have experience in leadership roles in both areas.
+      // Attribute 2: Relevant experience - 9 Reason: The candidate has over 11 years of experience in Computer Vision, Machine Learning, and Robotics, as well as 5 years of experience in front-end engineering. They also have experience in leadership roles in both areas.
       
-      Attribute 3: Problem-solving skills - 8 Reason: The candidate shared a challenging project they worked on and how they overcame it, demonstrating their problem-solving skills. However, they did not provide many specific examples of problem-solving skills related to the job requirements.
+      // Attribute 3: Problem-solving skills - 8 Reason: The candidate shared a challenging project they worked on and how they overcame it, demonstrating their problem-solving skills. However, they did not provide many specific examples of problem-solving skills related to the job requirements.
       
-      Attribute 4: Cultural fit - 7 Reason: The candidate expressed interest in the company's goals and mission, but did not provide many details about their personal values or how they align with the company's culture.
+      // Attribute 4: Cultural fit - 7 Reason: The candidate expressed interest in the company's goals and mission, but did not provide many details about their personal values or how they align with the company's culture.
       
-      Attribute 5: Adaptability - 6 Reason: The candidate did not provide many examples of how they have adapted to new situations or challenges. However, they did express a growth mindset and willingness to improve.
+      // Attribute 5: Adaptability - 6 Reason: The candidate did not provide many examples of how they have adapted to new situations or challenges. However, they did express a growth mindset and willingness to improve.
       
-      Attribute 6: Leadership potential - 8 Reason: The candidate has experience in leadership roles and expressed interest in becoming a team lead or CTO in the future.
+      // Attribute 6: Leadership potential - 8 Reason: The candidate has experience in leadership roles and expressed interest in becoming a team lead or CTO in the future.
       
-      Attribute 7: Passion and enthusiasm - 7 Reason: The candidate expressed enthusiasm for the company's goals and mission, but did not show a lot of excitement or passion during the conversation.
-      `
+      // Attribute 7: Passion and enthusiasm - 7 Reason: The candidate expressed enthusiasm for the company's goals and mission, but did not show a lot of excitement or passion during the conversation.
+      // `
 
       evaluateAttributes += "Attribute 8"
 
@@ -3071,6 +3071,144 @@ module.exports = {
         err.message,
         err.extensions?.code || "memberRadioChartCharacterAttributes",
         { component: "memberQuery > memberRadioChartCharacterAttributes" }
+      );
+    }
+  },
+  candidateNotesEdenAI: async (parent, args, context, info) => {
+    const { memberID } = args.fields;
+    console.log("Query > candidateNotesEdenAI > args.fields = ", args.fields);
+
+    if (!memberID) {
+      throw new ApolloError(
+        "memberID is required",
+        { component: "memberQuery > candidateNotesEdenAI" }
+      );
+    }
+
+    // find memberData by memberID
+    memberData = await Members.findOne({ _id: memberID }).select('_id discordName');
+
+    if (!memberData) {
+      throw new ApolloError(
+        "member is not found",
+        { component: "memberQuery > candidateNotesEdenAI" }
+      );
+    }
+
+    console.log("memberData = " , memberData)
+
+    try {
+
+      let convData = await Conversation.find({ userID: memberID }).select('_id userID conversation');
+
+      console.log("convData = " , convData)
+
+      //only take last conversation 
+      let convNow = convData[convData.length - 1];
+
+      // translate convNow.conversation to string prompt inside object there is role and content
+      let promptConv = "";
+      for (let i = 0; i < convNow.conversation.length; i++) {
+        let convNowNow = convNow.conversation[i];
+        if (convNowNow.role == "assistant")
+          promptConv = promptConv + "Recruiter: " + convNowNow.content + " \n\n";
+        else
+          promptConv = promptConv + "Candidate" + ": " + convNowNow.content + " \n\n";
+      }
+
+      console.log("promptConv = " , promptConv)
+
+
+      const noteCategories = [
+        "Personal Details",
+        "Work Culture",
+        "Interests"
+      ];
+
+      // make noteCategories into a string prompt
+      let promptNoteCategory = "";
+      for (let i = 0; i < noteCategories.length; i++) {
+        promptNoteCategory = promptNoteCategory + "- " + noteCategories[i] + " \n\n";
+      }
+
+      console.log("promptNoteCategory = " , promptNoteCategory)
+      
+      
+
+      promptNoteCategoryUser = `
+      You have as input a conversation between an Recruiter and a Candidate
+
+      Conversation is inside <>: <${promptConv}>
+
+      The Recruiter is trying to create some Notes for the Candidate for some Categories
+
+      Categories are inside <>: <${promptNoteCategory}>
+
+      - You need make really small bullet points of information about the Candidate for every Category
+      - Based on the conversation you can make from 0 to 4 bullet points for every Category
+
+      For example: 
+        <Category 1: title>
+          - content
+          - content
+        <Category 2: title>
+          - content
+
+      Answer:
+      `
+
+      evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
+      console.log("evaluateNoteCategories = " , evaluateNoteCategories)
+      
+
+
+      // evaluateNoteCategories = ` <Category 1: Personal Details>
+      // - 11+ years of experience in Computer Vision, Machine Learning, and Robotics
+      // - Focused on front-end engineering using React, Tailwind, and Node.js for 5 years
+      // - Has experience in team leadership in the field of machine learning
+      // - Strengths include having a growth mindset and being quick to innovate
+      // - Weaknesses include needing to work on coding skills, specifically cleaning up the database and creating a better environment for other coders to work with
+      
+      // <Category 2: Work Culture>
+      // - Has experience in team leadership in the field of machine learning
+      // - Has a growth mindset and is quick to innovate
+      // - Believes in giving back to the company and helping innovate and change lives
+      // - Experience with a challenging project focused on complete innovation
+      
+      // <Category 3: Interests>
+      // - Skilled in React, GraphQL, Next.js, fine-tuning, PyTorch, TensorFlow, and paper reading
+      // - Interested in becoming a team lead and eventually a successful CTO`
+
+
+
+      console.log("evaluateNoteCategories = " , evaluateNoteCategories)
+
+      const regex = /<Category\s+\d+:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
+      const categoriesT = [];
+      let result;
+      while ((result = regex.exec(evaluateNoteCategories)) !== null) {
+        const category = {
+          categoryName: result[1].trim(),
+          reason: result[2].trim().split('\n').map(detail => detail.trim()),
+        };
+        categoriesT.push(category);
+      }
+
+
+      
+
+      console.log("categoriesT = " , categoriesT)
+
+
+
+      return categoriesT;
+
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "candidateNotesEdenAI",
+        { component: "memberQuery > candidateNotesEdenAI" }
       );
     }
   },
