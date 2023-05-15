@@ -318,6 +318,14 @@ module.exports = `
     input memberRadioChartCharacterAttributesInput {
         memberID: ID
     }
+    type candidateNotesEdenAIOutput {
+        categoryName: String,
+        score: Float,
+        reason: [String],
+    }
+    input candidateNotesEdenAIInput {
+        memberID: ID
+    }
     
     type matchProjectRoles {
         matchPercentage: Float,
