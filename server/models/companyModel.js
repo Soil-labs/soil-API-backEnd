@@ -18,7 +18,17 @@ const companyModel = mongoose.Schema({
   convRecruiter: [{
     userID: String,
     conversationID: mongoose.Schema.ObjectId,
+    readyToDisplay: Boolean,
+    companyQuestions: [{
+      question: String,
+      content: String,
+    }],
+    roleQuestions: [{
+      question: String,
+      content: String,
+    }],
   }],
+  convRecruiterReadyToDisplay: Boolean,
   talentList: [{
     name: String,
     talent: [{

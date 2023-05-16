@@ -44,7 +44,7 @@ const { KeywordValue } = require("./objectResolvers/aiResolver");
 const { Graph } = require("./objectResolvers/graphVisualResolver");
 const { Rooms } = require("./objectResolvers/roomResolver");
 const { RoleTemplate } = require("./objectResolvers/roleTemplateResolver");
-const { CandidateType,talentListType,talentType,NodeDataType,QuestionType } = require("./objectResolvers/companyResolver");
+const { CandidateType,talentListType,talentType,convRecruiterType,NodeDataType,QuestionType } = require("./objectResolvers/companyResolver");
 const { SkillCategory } = require("./objectResolvers/skillCategoryResolver");
 const {
   SkillSubCategory,
@@ -100,7 +100,7 @@ module.exports = {
   Graph,
   Rooms,
   RoleTemplate,
-  CandidateType,talentListType,talentType,NodeDataType,QuestionType,
+  CandidateType,talentListType,talentType,convRecruiterType,NodeDataType,QuestionType,
   SkillCategory,
   SkillSubCategory,
   ProjectUpdate,
