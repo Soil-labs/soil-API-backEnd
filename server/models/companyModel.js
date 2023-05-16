@@ -15,6 +15,10 @@ const companyModel = mongoose.Schema({
   nodes: [{
     nodeID: mongoose.Schema.ObjectId,
   }],
+  convRecruiter: [{
+    userID: String,
+    conversationID: mongoose.Schema.ObjectId,
+  }],
   talentList: [{
     name: String,
     talent: [{
@@ -27,6 +31,7 @@ const companyModel = mongoose.Schema({
     overallScore: Number,
     acceptedOrRejected: Boolean,
     readyToDisplay: Boolean,
+    conversationID: mongoose.Schema.ObjectId,
     summaryQuestions: [{
       questionID: mongoose.Schema.ObjectId,
       questionContent: String,

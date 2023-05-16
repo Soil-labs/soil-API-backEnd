@@ -20,6 +20,9 @@ module.exports = {
       
       if (!companyData) throw new ApolloError("Company not found")
 
+      console.log("companyData = " , companyData)
+      // sdf9
+
       return companyData;
       
     } catch (err) {
