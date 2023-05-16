@@ -98,8 +98,8 @@ module.exports = {
 
           console.log("minutesSinceLastUpdate = " , minutesSinceLastUpdate)
 
-          // if (minutesSinceLastUpdate > 2.5) {
-            if (true) { 
+          if (minutesSinceLastUpdate > 2) {
+            // if (true) { 
 
             // ------------------ Delete old summaries from pinecone ------------------
             deletePineIDs = convDataNow.summary.map(obj => obj.pineConeID)
