@@ -84,6 +84,8 @@ module.exports = {
         console.log("compEmployees = " , compEmployees)
 
 
+
+
         // find one and updates
         let companyDataN = await Company.findOneAndUpdate(
           { _id: companyID },
@@ -209,6 +211,9 @@ module.exports = {
 
 
         let candidatesN = await updateEmployees(companyData.candidates, candidates,"userID");
+
+        console.log("candidatesN = " , candidatesN)
+        // sdf00
 
 
         await checkAndAddCompanyToMember(usersData,companyID)
@@ -403,7 +408,7 @@ module.exports = {
       if (companyIDs)
         companyData = await Company.find({ 
           _id: companyIDs,
-          // candidatesReadyToDisplay: { $ne: true } // SOS 🆘 - uncoment!!!
+          // candidatesReadyToDisplay: { $ne: true } // SOS 🆘 - uncomment!!!
         });
       else 
         companyData = await Company.find({ candidatesReadyToDisplay: { $ne: true } });
@@ -435,8 +440,18 @@ module.exports = {
 
             printC(candidate,"2","candidate","r")
 
-            let convData = await Conversation.find({ userID: candidate.userID }).select('_id userID questionsAnswered');
+            let convData = []
+            if (candidate.conversationID) {
 
+              convData = await Conversation.find({ _id: candidate.conversationID }).select('_id userID questionsAnswered');
+
+            } else {
+
+              convData = await Conversation.find({ userID: candidate.userID }).select('_id userID questionsAnswered');
+            }
+
+            
+            
             // from convData filter out the conversations that have questionsAnswered.length == 0
 
             convData = convData.filter(conv => conv.questionsAnswered.length > 0)
@@ -742,11 +757,18 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
         ...employee2,
         readyToDisplay: false,
       }
+      if (employee2.conversationID){
+        arr1[index].conversationID = employee2.conversationID
+      }
     } else {
       arr1.push({
         ...employee2,
         readyToDisplay: false,
       });
+
+      if (employee2.conversationID){
+        arr1[arr1.length - 1].conversationID = employee2.conversationID
+      }
 
     }
   });

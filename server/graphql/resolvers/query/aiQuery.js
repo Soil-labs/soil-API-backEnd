@@ -857,10 +857,13 @@ module.exports = {
   },
   interviewEdenAI: async (parent, args, context, info) => {
     const { userID,conversation,unansweredQuestions } = args.fields;
-    let {timesAsked,unansweredQuestionsArr,questionAskingNow,questionAskingID} = args.fields;
+    let {timesAsked,unansweredQuestionsArr,questionAskingNow,questionAskingI,useMemory,questionAskingID} = args.fields;
     // console.log("Query > interviewEdenAI > args.fields = ", args.fields);
 
-
+   
+    if (useMemory == undefined){
+      useMemory = true // default to true
+    }
 
     let nextQuestion
     let questionAskingNowA
@@ -918,7 +921,7 @@ module.exports = {
       }
       // console.log("prompt_conversation = \n", prompt_conversation);
       printC(prompt_conversation, "1", "prompt_conversation", "r")
-      // adsf
+      
       // -------------- Prompt of the conversation ------------
 
       if (questionAskingNow != undefined && questionAskingNow != "") {
@@ -1047,14 +1050,22 @@ module.exports = {
       if (questionAskingNowA == "Finish the conversation"){
         reply = "Thank you for taking time to talk to me, I will let you know with the results ASAP"
       } else {
-        reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,1)
+        if (useMemory == true){
+          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,1)
+        } else {
+          reply = questionAskingNowA
+        }
       }
 
     } else {
 
       if (flagFirstTime == true){
-        // reply = questionAskingNowA
-        reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,1)
+        console.log("useMemory = " , useMemory)
+        if (useMemory == true){
+          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,1)
+        } else {
+          reply = questionAskingNowA
+        }
       } else {
 
 
@@ -1064,27 +1075,39 @@ module.exports = {
         //   - if there is a QUESTION ASK AGAIN you can either ask question again or ask more details about it based on the context
         //   `
 
-        let memoriesCVPrompt = ""
-        if (userID){
-          filter = {
-            label: "CV_user_memory",
-            _id: userID,
+        console.log("useMemory = ", useMemory)
+        if (useMemory == true){
+          let memoriesCVPrompt = ""
+          if (userID){
+            filter = {
+              label: "CV_user_memory",
+              _id: userID,
+            }
+
+            memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,1)
           }
 
-          memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,1)
+          askGPT = `You are an Interviewer, you need to reply to the candidate with a small and consise way 
+            - You have the Conversation between Interviewer and Candidate
+            - you also have the quesiton that you need to collect informaiton
+
+            ONLY IF IT MAKE SENSE Modify reply based on the memory from the CV of the candidate
+
+            MEMORY(delimited by triple quotes): 
+            """ ${memoriesCVPrompt} """ 
+
+            - your goal is to collect the information from the candidate for this specific question
+            `
+        } else {
+
+          askGPT = `You are an Interviewer, you need to reply to the candidate with a small and consise way 
+            - You have the Conversation between Interviewer and Candidate
+            - you also have the quesiton that you need to collect informaiton
+
+            - your goal is to collect the information from the candidate for this specific question
+            `
         }
 
-        askGPT = `You are an Interviewer, you need to reply to the candidate with a small and consise way 
-          - You have the Conversation between Interviewer and Candidate
-          - you also have the quesiton that you need to collect informaiton
-
-          ONLY IF IT MAKE SENSE Modify reply based on the memory from the CV of the candidate
-
-          MEMORY(delimited by triple quotes): 
-          """ ${memoriesCVPrompt} """ 
-
-          - your goal is to collect the information from the candidate for this specific question
-          `
 
         askGPT += prompt_conversation + "\n\n" + nextQuestion + "\n\n"
         // askGPT += "\n\n Always ask the question that were requested above!"
@@ -1105,6 +1128,8 @@ module.exports = {
     //  -------------- Move to next question ------------
 
 
+    conversationID = undefined
+
     if (conversation.length >=2){
 
       // ------------- Update the Conversation MEMORY ----------------
@@ -1117,12 +1142,14 @@ module.exports = {
       resultConv = await updateAnsweredQuestionFunc(resultConv,conversation,questionAskingNow,questionAskingID,originalTimesAsked)
       //  ------------- Update the Answered Questions ----------------
 
+      conversationID = resultConv._id
     }
 
 
     
       return {
         reply: reply,
+        conversationID: conversationID,
         questionAskingNow: questionAskingNowA,
         // unansweredQuestions: unansweredQuestions,
         timesAsked: timesAsked,

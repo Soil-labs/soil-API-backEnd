@@ -2,6 +2,8 @@
 const { Members } = require('../../../models/membersModel');
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { Node } = require("../../../models/nodeModal");
+const { Conversation } = require("../../../models/conversationModel");
+
 
 
 const { ApolloError } = require('apollo-server-express');
@@ -40,6 +42,35 @@ module.exports = {
             );
          }
       },
+      conversation: async (parent, args, context, info) => {
+         //  console.log("parent = " , parent)
+   
+            try {
+               const conversationID = parent.conversationID;
+   
+               console.log("conversationID = " , conversationID)
+   
+   
+   
+               convData = await Conversation.findOne({_id: conversationID}).select('convKey userID conversation')
+            
+   
+               if (convData){
+                  return convData.conversation;
+               }
+   
+   
+            } catch (err) {
+               throw new ApolloError(
+                  err.message,
+                  err.extensions?.code || 'DATABASE_SEARCH_ERROR',
+                  {
+                     component: 'userResolver > skills',
+                     user: context.req.user?._id,
+                  }
+               );
+            }
+         },
    },
    talentListType: {
       talent: async (parent, args, context, info) => {

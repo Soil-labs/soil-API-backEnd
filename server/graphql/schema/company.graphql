@@ -7,8 +7,14 @@ module.exports = `
         employees: [EmployeeType]
         questionsToAsk: [QuestionType]
         nodes: [NodeDataType]
+        convRecruiter: [convRecruiterType]
         talentList: [talentListType]
         candidates: [CandidateType]
+    }
+
+    type convRecruiterType {
+        user: Members
+        conversation: [conversationType]
     }
 
     type talentListType {
@@ -40,6 +46,7 @@ module.exports = `
         overallScore: Float,
         acceptedOrRejected: Boolean,
         readyToDisplay: Boolean,
+        conversation: [conversationType],
         summaryQuestions: [SummaryQuestionType]
     }
 
@@ -99,6 +106,7 @@ module.exports = `
 
     input candidatesInput {
         userID: ID,
+        conversationID: ID,
         overallScore: Float,
         acceptedOrRejected: Boolean,
     }
