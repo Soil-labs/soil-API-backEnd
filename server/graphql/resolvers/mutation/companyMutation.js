@@ -240,6 +240,63 @@ module.exports = {
         );
       }
     },
+    addConvRecruiterToCompany: async (parent, args, context, info) => {
+      const { companyID,userID,conversationID } = args.fields;
+      console.log("Mutation > addConvRecruiterToCompany > args.fields = ", args.fields);
+
+      if (!userID) throw new ApolloError("userID is required", "addConvRecruiterToCompany", { component: "companyMutation > addConvRecruiterToCompany" });
+
+
+      if (!companyID) throw new ApolloError("Company ID is required", "addConvRecruiterToCompany", { component: "companyMutation > addConvRecruiterToCompany" });
+      companyData = await Company.findOne({ _id: companyID });
+      if (!companyData) throw new ApolloError("Company not found", "addConvRecruiterToCompany", { component: "companyMutation > addConvRecruiterToCompany" });
+
+
+      if (!conversationID) throw new ApolloError("conversationID is required", "addConvRecruiterToCompany", { component: "companyMutation > addConvRecruiterToCompany" });
+      
+ 
+
+
+      try {
+
+        // check if inside companyData.convRecruiter already conversationID exists
+        let convRecruiterData = companyData.convRecruiter.find((convRecruiter) => convRecruiter.conversationID.toString() == conversationID.toString());
+
+        if (!convRecruiterData) {
+          companyData.convRecruiter.push({
+            userID: userID,
+            conversationID: conversationID,
+            readyToDisplay: false,
+          });
+        } else {
+          convRecruiterData.readyToDisplay = false;
+        }
+
+        // save it to mongo
+        companyData.convRecruiterReadyToDisplay = false;
+        companyData = await companyData.save();
+
+
+        // // find one and updates
+        // let companyDataN = await Company.findOneAndUpdate(
+        //   { _id: companyID },
+        //   { 
+        //     candidates: candidatesN,
+        //     candidatesReadyToDisplay: false 
+        //   },
+        //   { new: true }
+        // );
+        
+        return companyData
+        
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "addConvRecruiterToCompany",
+          { component: "companyMutation > addConvRecruiterToCompany" }
+        );
+      }
+    },
 
     addNodesToCompany: async (parent, args, context, info) => {
       let { companyID, nodes } = args.fields;
@@ -739,7 +796,224 @@ module.exports = {
         );
       }
     },
+    updateCompanyConvRecruiter: async (parent, args, context, info) => {
+      const { companyIDs} = args.fields;
+      console.log("Mutation > updateCompanyConvRecruiter > args.fields = ", args.fields);
+
+
+      if (companyIDs)
+        companyData = await Company.find({ 
+          _id: companyIDs,
+          // convRecruiterReadyToDisplay: { $ne: true } // SOS 🆘 - uncomment!!!
+        });
+      else {
+        companyData = await Company.find({ convRecruiterReadyToDisplay: { $ne: true } }).select('_id name convRecruiter');
+      }
+
+      try {
+
+        for (let i = 0; i < companyData.length; i++) { // Loop on companies
+          let company = companyData[i];
+
+
+          const convRecruiter = company.convRecruiter
+
+          printC(convRecruiter,"0","convRecruiter","r")
+
+          let conversationID = undefined
+          if (convRecruiter.length == 0) {
+
+            company.convRecruiterReadyToDisplay = true
+            company = await company.save();
+
+            continue
+
+          } else {
+
+            conversationID = convRecruiter[convRecruiter.length -1 ].conversationID
+          }
+
+          printC(conversationID,"0","conversationID","b")
+
+          convData = await Conversation.findOne({ _id: conversationID }).select('_id userID conversation');
+
+          printC(convData,"1","convData","b")
+
+          let promptConv = "";
+          for (let i = 0; i < convData.conversation.length; i++) {
+            let convDataNow = convData.conversation[i];
+            if (convDataNow.role == "assistant")
+              promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+            else
+              promptConv = promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
+          }
+
+          printC(promptConv,"2","promptConv","b")
+
+
+          const noteCategories = [{
+              "content": "General info of Company",
+              "enum": "company",
+            },
+            {
+              "content": "Values of Company",
+              "enum": "company"
+            },
+            {
+              "content": "Industry of company",
+              "enum": "company"
+            },
+            {
+
+              "content": "Skills of the Candidate",
+              "enum": "role"
+            },
+            {
+
+              "content": "Responsibilities of the Candidate",
+              "enum": "role"
+           }];
+
+          
+
+    
+          // make noteCategories into a string prompt
+          let promptNoteCategory = "";
+          for (let i = 0; i < noteCategories.length; i++) {
+            promptNoteCategory = promptNoteCategory + "- " + noteCategories[i].content + " \n\n";
+          }
+
+      
+          printC(promptNoteCategory,"3","promptNoteCategory","b")
+    
+          
+        printC(promptNoteCategory,"4","promptNoteCategory","b")
+
+          
+    
+          const promptNoteCategoryUser = `
+          You have as input a conversation between an Recruiter and a Employ
+    
+          Conversation is inside <>: <${promptConv}>
+    
+          The Recruiter is trying to create some Notes for the company and the new Role that is Employ is looking for to put them in Categories
+    
+          Categories are inside <>: <${promptNoteCategory}>
+    
+          - You need make really small bullet points of information about the Candidate for every Category
+          - Based on the conversation you can make from 0 to 4 bullet points for every Category
+    
+          For example: 
+            <Category: title>
+              - content
+              - content
+            <Category: title>
+              - content
+    
+          Answer:
+          `
+        
+
+
+
+        // console.log("noteCategories = " , noteCategories)
+
+
+
+
+        printC(promptNoteCategoryUser,"0","promptNoteCategoryUser","g")
+
+        // sdf0
+
+        evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
+
+        // evaluateNoteCategories = `
+        // <Category: General info of Company>
+        // - Candidate was not very responsive during the conversation
+        // - Candidate was not very responsive during the conversation
+
+        // <Category: Values of Company>
+        // - No information gathered
+
+        // <Category: Industry of company>
+        // - Candidate has 11 years of experience in Computer Vision, Machine Learning, and Robotics
+
+        // <Category: Skills of the Candidate>
+        // - Candidate has expertise in Computer Vision, Machine Learning, and Robotics
+
+        // <Category: Responsibilities of the Candidate>
+        // - No information gathered about specific responsibilities in past projects
+        // `
+
+
+        printC(evaluateNoteCategories,"1","evaluateNoteCategories","g")
+
+        // -------------- Split String -------------
+
+        const regex = /<Category:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
+        const categoriesT = [];
+        let result;
+        while ((result = regex.exec(evaluateNoteCategories)) !== null) {
+          const category = {
+            categoryName: result[1].trim(),
+            // reason: result[2].trim().split('\n').map(detail => detail.trim()),
+            reason: result[2].trim(),
+          };
+          categoriesT.push(category);
+        }
+        
+
+        printC(categoriesT,"2","categoriesT","g")
+
+        // asdf0
+        // -------------- Split String -------------
+
+
+        company.convRecruiter[company.convRecruiter.length - 1].companyQuestions = []
+        company.convRecruiter[company.convRecruiter.length - 1].roleQuestions = []
+
+        company.convRecruiter[company.convRecruiter.length - 1].readyToDisplay = true
+
+
+        for (let i=0;i<categoriesT.length;i++){
+          if (noteCategories[i].enum == "company") {
+            printC(categoriesT[i],"3","categoriesT[i]","y")
+            company.convRecruiter[company.convRecruiter.length - 1].companyQuestions.push({
+              question: categoriesT[i].categoryName,
+              content: categoriesT[i].reason,
+            })
+          } else {
+            company.convRecruiter[company.convRecruiter.length - 1].roleQuestions.push({
+              question: categoriesT[i].categoryName,
+              content: categoriesT[i].reason,
+            })
+          }
+        }
+
+        
+        company.convRecruiterReadyToDisplay = true
+
+        printC(company.convRecruiter, "3", "company.convRecruiter", "r")
+
+        company = await company.save();
+
+      }
+
+
+
+        return companyData
+        
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "updateCompanyConvRecruiter",
+          { component: "companyMutation > updateCompanyConvRecruiter" }
+        );
+      }
+    },
 }
+
+
 
 async function updateEmployees(arr1, arr2,compareKey = "userID") {
 

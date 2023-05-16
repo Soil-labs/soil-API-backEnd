@@ -8,13 +8,22 @@ module.exports = `
         questionsToAsk: [QuestionType]
         nodes: [NodeDataType]
         convRecruiter: [convRecruiterType]
+        convRecruiterReadyToDisplay: Boolean
         talentList: [talentListType]
         candidates: [CandidateType]
     }
 
     type convRecruiterType {
         user: Members
+        readyToDisplay: Boolean
         conversation: [conversationType]
+        companyQuestions: [QuestionContentType]
+        roleQuestions: [QuestionContentType]
+    }
+
+    type QuestionContentType {
+        question: String,
+        content: String,
     }
 
     type talentListType {
@@ -116,7 +125,17 @@ module.exports = `
         candidates: [candidatesInput]
     }
 
+    input addConvRecruiterToCompanyInput {
+        companyID: ID
+        userID: ID
+        conversationID: ID
+    }
+
     input updateCompanyUserAnswersInput {
+        companyIDs: [ID]
+    }
+
+    input updateCompanyConvRecruiterInput {
         companyIDs: [ID]
     }
 

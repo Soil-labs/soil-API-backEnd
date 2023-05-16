@@ -82,7 +82,9 @@ module.exports = `
         addQuestionsToAskCompany(fields:addQuestionsToAskCompanyInput): Company
         deleteQuestionsToAskCompany(fields:deleteQuestionsToAskCompanyInput): Company
         addCandidatesCompany(fields:addCandidatesCompanyInput): Company
+        addConvRecruiterToCompany(fields:addConvRecruiterToCompanyInput): Company
         updateCompanyUserAnswers(fields:updateCompanyUserAnswersInput): [Company]
+        updateCompanyConvRecruiter(fields:updateCompanyConvRecruiterInput): [Company]
         createTalentListCompany(fields:createTalentListCompanyInput): Company
         updateUsersTalentListCompany(fields:updateUsersTalentListCompanyInput): Company
         addNodesToCompany(fields:addNodesToCompanyInput): Company
