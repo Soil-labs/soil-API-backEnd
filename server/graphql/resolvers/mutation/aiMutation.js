@@ -16,11 +16,13 @@ const fetch = require("node-fetch");
 const { request, gql } = require("graphql-request");
 
 const { printC } = require("../../../printModule");
-const { useGPTchatSimple,MessageMapKG_V2APICallF,deletePineCone } = require("../utils/aiModules");
+const {
+  useGPTchatSimple,
+  MessageMapKG_V2APICallF,
+  deletePineCone,
+} = require("../utils/aiModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
-
-
 
 globalThis.fetch = fetch;
 
@@ -195,10 +197,10 @@ module.exports = {
     }
     try {
       prompt =
-        'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
+        'I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. I want you to find experiences in the CV and combine them with a very brief and laconic description of what was done there + the skills that were associated with that experience, but don\'t list more than 5 skills per category. Do not list experiences, descriptions, or skills separately, only list them in relation to other things. For categories, include things like job, education, project, internship, and article. Only have those categories in the output if you find them in the string.\n\nFollow this strict format:\n• Category: name: explanation(be very brief, use very short sentenses) : skills(no more than 3-5 skills)\n\nExample (but do not include these examples in the output, also do not include the label category in the output):\n(\n• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js\n)\n\nHere is the string to extract the information from:\n' +
         message;
 
-      summaryBulletPoints = await useGPT(prompt, 0.7);
+      summaryBulletPoints = await useGPTchatSimple(prompt, 0);
 
       jobsArr = summaryBulletPoints
         .replace(/\n/g, "")
@@ -264,18 +266,15 @@ module.exports = {
       throw new ApolloError("userID is required");
     }
 
-
     let userData = await Members.findOne({ _id: userID });
 
     if (!userData) {
       throw new ApolloError("User not found");
     }
     try {
-
-
       // save userData to DB
       userData = await Members.findOneAndUpdate(
-        { _id: userID }, 
+        { _id: userID },
         {
           cvInfo: {
             ...userData.cvInfo,
@@ -287,9 +286,8 @@ module.exports = {
             cvPreparationMemory: false,
           },
         },
-         {new: true})
-
-
+        { new: true }
+      );
 
       return {
         success: true,
@@ -306,13 +304,14 @@ module.exports = {
   },
   autoUpdateUserInfoFromCV: async (parent, args, context, info) => {
     const { userIDs } = args.fields;
-    console.log("Mutation > autoUpdateUserInfoFromCV > args.fields = ", args.fields);
-
+    console.log(
+      "Mutation > autoUpdateUserInfoFromCV > args.fields = ",
+      args.fields
+    );
 
     try {
-
       if (userIDs)
-        usersData = await Members.find({ 
+        usersData = await Members.find({
           _id: userIDs,
           "cvInfo.cvPreparationDone": { $ne: true },
           "cvInfo.cvContent": { $ne: null },
@@ -320,44 +319,41 @@ module.exports = {
       else {
         usersData = await Members.find({
           "cvInfo.cvPreparationDone": { $ne: true },
-          "cvInfo.cvContent": { $ne: null }, 
+          "cvInfo.cvContent": { $ne: null },
         });
       }
 
-
       // for (let i=0;i<usersData.length;i++) {
-      if (usersData.length > 0 ){ // SOS 🆘 delete - only test one user at a time
+      if (usersData.length > 0) {
+        // SOS 🆘 delete - only test one user at a time
         let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
 
-
-        let filterUpdate = {}
+        let filterUpdate = {};
 
         // ------- Calculate Summary -------
         if (userData.cvInfo.cvPreparationBio != true) {
           promptSum =
-          `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent company in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present company that they work in and what they do there \n\n\n\n` +
-          cvContent;
+            `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent company in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present company that they work in and what they do there \n\n\n\n` +
+            cvContent;
 
           summaryOfCV = await useGPTchatSimple(promptSum);
 
-          printC(summaryOfCV,"0","summaryOfCV","b")
+          printC(summaryOfCV, "0", "summaryOfCV", "b");
 
           userData.bio = summaryOfCV;
 
           userData.cvInfo.cvPreparationBio = true;
         }
 
-
         // ------- Calculate Summary -------
 
         // -------Calculate Previous Jobs -------
         if (userData.cvInfo.cvPreparationPreviousProjects != true) {
-
           promptJobs =
-          'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
-          cvContent;
+            'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
+            cvContent;
 
           responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
 
@@ -374,59 +370,47 @@ module.exports = {
               description: jobsArr[i + 1],
             });
           }
-          printC(result,"1","result","g")
+          printC(result, "1", "result", "g");
 
           userData.previousProjects = result;
 
           userData.cvInfo.cvPreparationPreviousProjects = true;
         }
         // -------Calculate Previous Jobs -------
-        
+
         // -------------- Map Nodes from CV--------------
         if (userData.cvInfo.cvPreparationNodes != true) {
           // if (true) {
 
           promptCVtoMap =
-          "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.\nDo not have any other words except for skills. \n\nExaple output: Skills: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
-          cvContent;
+            "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.\nDo not have any other words except for skills. \n\nExaple output: Skills: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
+            cvContent;
 
           textForMapping = await useGPT(promptCVtoMap, 0.7);
-          let nodesN = await MessageMapKG_V2APICallF(textForMapping)
+          let nodesN = await MessageMapKG_V2APICallF(textForMapping);
 
-          printC(nodesN,"3","nodesN","b")
+          printC(nodesN, "3", "nodesN", "b");
 
+          nodeSave = nodesN.map((obj) => {
+            return {
+              _id: obj.nodeID,
+            };
+          });
 
+          nodeIDs = nodeSave.map((obj) => obj._id);
 
-          nodeSave = nodesN.map(obj => {
-            return ({
-              _id: obj.nodeID
-            })
-          })
+          await addNodesToMemberFunc(userData._id, nodeIDs);
 
-          nodeIDs = nodeSave.map(obj => obj._id)
-
-          await addNodesToMemberFunc(userData._id, nodeIDs)
-
-
-          printC(nodeSave,"3","nodeSave","r")
-
+          printC(nodeSave, "3", "nodeSave", "r");
 
           userData.cvInfo.cvPreparationNodes = true;
-
         }
         // -------------- Map Nodes from CV--------------
 
-
         userData.cvInfo.cvPreparationDone = true;
 
-
-        await userData.save()
-        
-
+        await userData.save();
       }
-
-
-
 
       return {
         users: usersData,
@@ -443,13 +427,14 @@ module.exports = {
   },
   autoUpdateMemoryFromCV: async (parent, args, context, info) => {
     const { userIDs } = args.fields;
-    console.log("Mutation > autoUpdateMemoryFromCV > args.fields = ", args.fields);
-
+    console.log(
+      "Mutation > autoUpdateMemoryFromCV > args.fields = ",
+      args.fields
+    );
 
     try {
-
       if (userIDs)
-        usersData = await Members.find({ 
+        usersData = await Members.find({
           _id: userIDs,
           "cvInfo.cvPreparationMemory": { $ne: true },
           "cvInfo.cvContent": { $ne: null },
@@ -457,78 +442,69 @@ module.exports = {
       else {
         usersData = await Members.find({
           "cvInfo.cvPreparationMemory": { $ne: true },
-          "cvInfo.cvContent": { $ne: null }, 
+          "cvInfo.cvContent": { $ne: null },
         });
       }
 
-
       for (let i=0;i<usersData.length;i++) {
+
         let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
 
-
         // ----------- Calculate and Save Memory ------------
         if (userData.cvInfo.cvPreparationMemory != true) {
-
-
           // ------------ Delete previous memory ------------
-          if (userData.cvInfo?.cvMemory?.length >0) {
-            deletePineIDs = userData.cvInfo.cvMemory.map(obj => obj.pineConeID)
-            await deletePineCone(deletePineIDs)
+          if (userData.cvInfo?.cvMemory?.length > 0) {
+            deletePineIDs = userData.cvInfo.cvMemory.map(
+              (obj) => obj.pineConeID
+            );
+            await deletePineCone(deletePineIDs);
           }
           // ------------ Delete previous memory ------------
 
           promptMemory =
-          'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
-          cvContent;
+            'I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. I want you to find experiences in the CV and combine them with a very brief and laconic description of what was done there + the skills that were associated with that experience, but don\'t list more than 5 skills per category. Do not list experiences, descriptions, or skills separately, only list them in relation to other things. For categories, include things like job, education, project, internship, and article. Only have those categories in the output if you find them in the string.\n\nFollow this strict format:\n• Category: name: explanation(be very brief, use very short sentenses) : skills(no more than 3-5 skills)\n\nExample (but do not include these examples in the output, also do not include the label category in the output):\n(\n• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js\n)\n\nHere is the string to extract the information from:\n' +
+            cvContent;
 
-          summaryBulletPoints = await useGPTchatSimple(promptMemory, 0.7);
+          summaryBulletPoints = await useGPTchatSimple(promptMemory, 0);
 
           sumBulletSplit = summaryBulletPoints
             .replace(/\n/g, "")
             .split("•")
             .filter((item) => item.trim() !== "");
 
-            
           let cvMemory = [];
 
           for (let i = 0; i < sumBulletSplit.length; i++) {
-
             // -------------- Sent to PineCone --------------
             let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
-            
+
             upsertSum = await upsertEmbedingPineCone({
               text: sumBulletSplit[i],
               embedding: embeddings[0],
               _id: userData._id,
               label: "CV_user_memory",
             });
-            printC(upsertSum,"2","upsertSum","y")
+            printC(upsertSum, "2", "upsertSum", "y");
             // -------------- Sent to PineCone --------------
 
             cvMemory.push({
               memoryContent: sumBulletSplit[i],
               pineConeID: upsertSum.id_message,
-            })
+            });
 
-            printC(sumBulletSplit[i],"2","sumBulletSplit[i]","p")
+            printC(sumBulletSplit[i], "2", "sumBulletSplit[i]", "p");
           }
 
           userData.cvInfo.cvMemory = cvMemory;
 
           userData.cvInfo.cvPreparationMemory = true;
-
         }
         // ----------- Calculate and Save Memory ------------
-        
 
-        await userData.save()
-
+        await userData.save();
       }
-
-
-
 
       return {
         users: usersData,
@@ -713,11 +689,27 @@ module.exports = {
     const { cvString } = args.fields;
     if (!cvString) throw new ApolloError("The cvString is required");
 
-    prompt =
-      'Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile. Give me that summary in a bullet point format,do not include the name in the summary. Keep the bullet points short. Only up to 5 bullet points are allowed. No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n' +
-      cvString;
+    const prompt = `
+    I want you to act as social media expert at writing profile bios. I will give you a string extracted from a CV(resume) delineated with triple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio:
+    
+    Pick the most impressive achievements(highest education and the most recent company in the CV) and list them in 2 bullet points(no more than 2).
+    
+    Follow this structure which has 2 parts. First part is 2 sentences. Second part is two bullet points
+    (Example:
+    My name is Bob and I am a tractor driver with 10 years of experience. I have worked in different conditions and I have a passion for mechanics.
+    • I have a masters in Agriculture 
+    • I worked at Cargill for the last 2 years)
+    
+    Part 1(do not include Part 1 in the response):
+    2 short sentences (Opening line: Introduce yourself and do not list jobs, education, or skills in this section. Just do a general introduction)
+    
+    Part 2(do not include Part 2 in the response):
+    • Highest level of education(bachelor's < Masters < Ph.D)(list only the highest education and only list that one)
+    • The present company that they work in and what they do there
+    
+    """${cvString}"""`;
 
-    summaryOfCV = await useGPT(prompt, 0.7);
+    summaryOfCV = await useGPT(prompt, 0.2);
 
     try {
       return {
@@ -1165,14 +1157,14 @@ function mapRange(input, inputMin, inputMax, outputMin, outputMax) {
   );
 }
 
-async function useGPT(prompt, temperature = 0.7) {
+async function useGPT(prompt, temperature = 0.7, max_tokens = 256) {
   // let model = "text-curie-001";
   let model = "text-davinci-003";
   const response = await openai.createCompletion({
     model,
     prompt,
     temperature,
-    max_tokens: 256,
+    max_tokens: max_tokens,
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
@@ -1289,7 +1281,7 @@ async function upsertEmbedingPineCone(data) {
 
   return {
     upsertResponse,
-    id_message
+    id_message,
   };
 }
 
