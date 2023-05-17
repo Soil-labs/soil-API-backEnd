@@ -1051,7 +1051,7 @@ module.exports = {
         reply = "Thank you for taking time to talk to me, I will let you know with the results ASAP"
       } else {
         if (useMemory == true){
-          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,1)
+          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,3)
         } else {
           reply = questionAskingNowA
         }
@@ -1062,7 +1062,7 @@ module.exports = {
       if (flagFirstTime == true){
         console.log("useMemory = " , useMemory)
         if (useMemory == true){
-          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,1)
+          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,3)
         } else {
           reply = questionAskingNowA
         }
@@ -1084,8 +1084,10 @@ module.exports = {
               _id: userID,
             }
 
-            memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,2)
+            memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,3)
           }
+
+          printC(memoriesCVPrompt, "2", "memoriesCVPrompt", "g")
 
           askGPT = `You are an Interviewer, you need to reply to the candidate with goal to deeply understand the candidate
 

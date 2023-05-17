@@ -17,7 +17,9 @@ const {checkAndAddCompanyToMember  } = require("../utils/companyModules");
 
 const { printC } = require("../../../printModule");
 
-const { useGPTchatSimple } = require("../utils/aiModules");
+const { useGPTchatSimple,deletePineCone,upsertEmbedingPineCone} = require("../utils/aiModules");
+
+
 
 
 const {
@@ -952,6 +954,7 @@ module.exports = {
 
         const regex = /<Category:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
         const categoriesT = [];
+        const newMemoryT = [];
         let result;
         while ((result = regex.exec(evaluateNoteCategories)) !== null) {
           const category = {
@@ -960,10 +963,24 @@ module.exports = {
             reason: result[2].trim(),
           };
           categoriesT.push(category);
+
+          // separate the result[2] on \n and put it on newMemoryT
+          const mem = result[2].trim().split('\n').map(detail => detail.trim())
+
+          mem.forEach((memNow) => {
+            newMemoryT.push({
+              memoryContent: memNow,
+              pineConeID: "",
+            })
+          })
+            
+
         }
         
 
         printC(categoriesT,"2","categoriesT","g")
+
+        printC(newMemoryT,"2","newMemoryT","g")
 
         // asdf0
         // -------------- Split String -------------
@@ -990,6 +1007,32 @@ module.exports = {
           }
         }
 
+
+        // ------------ Delete previous memory ------------
+        const convMemory = company.convRecruiter[company.convRecruiter.length - 1]?.convMemory
+        if (convMemory.length >0) {
+          deletePineIDs = convMemory.map(obj => obj.pineConeID)
+          await deletePineCone(deletePineIDs)
+        }
+        // ------------ Delete previous memory ------------
+        
+        // -------------- Sent to PineCone --------------
+        // newMemoryT.forEach(memorySaveN => {
+        for (let i=0;i<newMemoryT.length;i++){
+          const memorySaveN = newMemoryT[i].memoryContent;
+          upsertSum = await upsertEmbedingPineCone({
+            text: memorySaveN,
+            _id: company._id,
+            label: "Company_TrainEdenAI_memory",
+          });
+          printC(upsertSum,"2","upsertSum","y")
+
+          newMemoryT[i].pineConeID = upsertSum.pineConeID
+        }
+        // -------------- Sent to PineCone --------------
+
+
+        company.convRecruiter[company.convRecruiter.length - 1].convMemory = newMemoryT
         
         company.convRecruiterReadyToDisplay = true
 

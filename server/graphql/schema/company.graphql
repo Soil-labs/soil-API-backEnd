@@ -19,6 +19,12 @@ module.exports = `
         conversation: [conversationType]
         companyQuestions: [QuestionContentType]
         roleQuestions: [QuestionContentType]
+        convMemory: [convMemoryType]
+    }
+
+    type convMemoryType {
+        memoryContent: String
+        pineConeID: String
     }
 
     type QuestionContentType {
