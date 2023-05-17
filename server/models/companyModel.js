@@ -27,6 +27,10 @@ const companyModel = mongoose.Schema({
       question: String,
       content: String,
     }],
+    convMemory: [{
+      memoryContent: String,
+      pineConeID: String,
+    }],
   }],
   convRecruiterReadyToDisplay: Boolean,
   talentList: [{

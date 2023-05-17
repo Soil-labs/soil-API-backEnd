@@ -15,8 +15,9 @@ async function getMemory(messageContent,filter,topK = 3) {
 
     memories = await findBestEmbedings(messageContent, filter, (topK = topK));
 
+    printC(memories, "1", "memories", "r")
 
-    const memoriesForPrompt = memories.map((memory) => memory.metadata.text).join("•");
+    const memoriesForPrompt = memories.map((memory) => memory.metadata.text).join("\n - ");
 
     return memoriesForPrompt
 }
@@ -1290,4 +1291,5 @@ module.exports = {
     getMemory,
     modifyQuestionFromCVMemory,
     MessageMapKG_V2APICallF,
+    createEmbeddingsGPT,
   };
