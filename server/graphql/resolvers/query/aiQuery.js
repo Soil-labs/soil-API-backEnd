@@ -1084,34 +1084,56 @@ module.exports = {
               _id: userID,
             }
 
-            memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,1)
+            memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,2)
           }
 
-          askGPT = `You are an Interviewer, you need to reply to the candidate with a small and consise way 
-            - You have the Conversation between Interviewer and Candidate
-            - you also have the quesiton that you need to collect informaiton
+          askGPT = `You are an Interviewer, you need to reply to the candidate with goal to deeply understand the candidate
 
-            ONLY IF IT MAKE SENSE Modify reply based on the memory from the CV of the candidate
+            - We provide memory within (delimited by <>)
+           - The memory might be completely irrelevant! Don't use it if it doesn't add value
+       
+            < ${memoriesCVPrompt} > 
 
-            MEMORY(delimited by triple quotes): 
-            """ ${memoriesCVPrompt} """ 
+            - You have the Conversation between the Interviewer and the Candidate (delimited by <>)            
+
+            < ${prompt_conversation} >
+
+            - The original question that you need to collect information is (delimited by <>) 
+
+            < ${nextQuestion} >
 
             - your goal is to collect the information from the candidate for this specific question
+            - First make a small acknowledgment of the answer with 1-8 words, if it applies
+            - You can only ask 1 question at a time, 
+            - you should use a maximum 1-2 sentence
+            
+            Interviewer Reply: 
             `
         } else {
 
-          askGPT = `You are an Interviewer, you need to reply to the candidate with a small and consise way 
-            - You have the Conversation between Interviewer and Candidate
-            - you also have the quesiton that you need to collect informaiton
+          askGPT = `You are an Interviewer, you need to reply to the candidate with goal to deeply understand the candidate
 
-            - your goal is to collect the information from the candidate for this specific question
+          - You have the Conversation between the Interviewer and the Candidate (delimited by <>)            
+
+          < ${prompt_conversation} >
+
+          - The original question that you need to collect information is (delimited by <>) 
+
+          < ${nextQuestion} >
+
+          - your goal is to collect the information from the candidate for this specific question
+          - First make a small acknowledgment of the answer with 1-8 words, if it applies
+          - You can only ask 1 question at a time, 
+          - you should use a maximum 1-2 sentence
+          
+          Interviewer Reply: 
             `
         }
 
 
-        askGPT += prompt_conversation + "\n\n" + nextQuestion + "\n\n"
+        // askGPT += prompt_conversation + "\n\n" + nextQuestion + "\n\n"
         // askGPT += "\n\n Always ask the question that were requested above!"
-        askGPT += "\n\n Reply:"
+        // askGPT += "\n\n Reply:"
 
         
         printC(askGPT, "4", "askGPT", "p")
