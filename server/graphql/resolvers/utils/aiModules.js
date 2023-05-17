@@ -75,16 +75,18 @@ async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3) {
     let modifiedQuestion = ""
     if (memoriesPrompt != ""){
 
-      const promptPlusMemoryV = `Question Asking now: ${messageQ}
+      const promptPlusMemoryV = `QuestionAsking: ${messageQ}
 
-      - ONLY IF IT MAKE SENSE Modify the questionAskingNow by using MEMORY and asking a more specific question based on that memory
-      - it should still stay true the the original question
-       
-       MEMORY(delimited by triple quotes): 
+      - We provide memory within (delimited by <>)
+      - The memory might be completely irrelevant! Don't use it if it doesn't add value
+      - QuestionAsking should be able to give exactly the same meaning
 
-       """ ${memoriesPrompt} """ 
+       < ${memoriesPrompt} >
 
-       Create a simple question for the candidate to answer
+       - You can only ask 1 question at a time, 
+        - you should use a maximum 1-2 sentence
+
+          Question for the candidate:
        
        `;
 
