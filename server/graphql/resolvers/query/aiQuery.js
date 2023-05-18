@@ -25,6 +25,7 @@ const {
   updateConversation,evaluateAnswerEdenAIFunc,
   modifyQuestionFromCVMemory,
   getMemory,
+  askQuestionAgain,
 } = require("../utils/aiModules");
 
 const { updateAnsweredQuestionFunc,findAndUpdateConversationFunc } = require("../utils/conversationModules");
@@ -856,7 +857,7 @@ module.exports = {
     }
   },
   interviewEdenAI: async (parent, args, context, info) => {
-    const { userID,conversation,unansweredQuestions } = args.fields;
+    const { userID,companyID,conversation,unansweredQuestions } = args.fields;
     let {timesAsked,unansweredQuestionsArr,questionAskingNow,questionAskingI,useMemory,questionAskingID} = args.fields;
     // console.log("Query > interviewEdenAI > args.fields = ", args.fields);
 
@@ -894,7 +895,6 @@ module.exports = {
     console.log("questionAskingNow = " , questionAskingNow)
     console.log("questionAskingID = " , questionAskingID)
     
-    // asdf12
 
     try {
 
@@ -919,25 +919,13 @@ module.exports = {
           lastMessage = roleN + `: "` + conversation[i].content + `"`;
         }
       }
-      // console.log("prompt_conversation = \n", prompt_conversation);
-      printC(prompt_conversation, "1", "prompt_conversation", "r")
-      
+      printC(prompt_conversation, "1", "prompt_conversation", "r") 
       // -------------- Prompt of the conversation ------------
+
 
       if (questionAskingNow != undefined && questionAskingNow != "") {
 
         // -------------- Ask GPT what to do  ------------
-        // promptAskQuestion = `
-        // For the Conversation, the question that the Interviewer asked is: ${questionAskingNow}
-
-        //   Is the User 
-        //   1) YES answer the question
-        //   2) NO didn't answer the question 
-
-        //   you can only answer (YES, NO)
-
-        //   Result: 
-        // `
         promptAskQuestion = `
         Question: ${questionAskingNow}
 
@@ -951,7 +939,6 @@ module.exports = {
           Result: 
         `
 
-
         promptQuestionAskedN = prompt_conversation + "\n\n" + promptAskQuestion,
 
 
@@ -960,9 +947,7 @@ module.exports = {
         printC(promptQuestionAskedN, "1", "promptQuestionAskedN", "p");
 
 
-        responseGPTchat = await useGPTchatSimple(
-          promptQuestionAskedN,
-          );
+        responseGPTchat = await useGPTchatSimple(promptQuestionAskedN,);
 
         
 
@@ -1040,18 +1025,16 @@ module.exports = {
     printC(timesAsked, "2", "timesAsked", "g");
 
 
-    let askGPT = ""
 
     let reply
     if (timesAsked == 1){
-
-      // reply = questionAskingNowA
+      // NEW Question
 
       if (questionAskingNowA == "Finish the conversation"){
         reply = "Thank you for taking time to talk to me, I will let you know with the results ASAP"
       } else {
         if (useMemory == true){
-          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,3)
+          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,3,companyID)
         } else {
           reply = questionAskingNowA
         }
@@ -1060,82 +1043,22 @@ module.exports = {
     } else {
 
       if (flagFirstTime == true){
-        console.log("useMemory = " , useMemory)
+        // NEW Question
         if (useMemory == true){
-          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,3)
+          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,3,companyID)
         } else {
           reply = questionAskingNowA
         }
       } else {
+        // Ask Again Question
+        
+        let askGPT = ""
 
-
-        // askGPT = `DIRECTION: You are an Interviewer, you need to reply to the candidate with a small and consise way 
-      
-        //   - if there is a NEW QUESITON ASK always focus on asking the NEW QUESTION and nothing else!
-        //   - if there is a QUESTION ASK AGAIN you can either ask question again or ask more details about it based on the context
-        //   `
-
-        console.log("useMemory = ", useMemory)
         if (useMemory == true){
-          let memoriesCVPrompt = ""
-          if (userID){
-            filter = {
-              label: "CV_user_memory",
-              _id: userID,
-            }
-
-            memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,3)
-          }
-
-          printC(memoriesCVPrompt, "2", "memoriesCVPrompt", "g")
-
-          askGPT = `You are an Interviewer, you need to reply to the candidate with goal to deeply understand the candidate
-
-            - We provide memory within (delimited by <>)
-           - The memory might be completely irrelevant! Don't use it if it doesn't add value
-       
-            < ${memoriesCVPrompt} > 
-
-            - You have the Conversation between the Interviewer and the Candidate (delimited by <>)            
-
-            < ${prompt_conversation} >
-
-            - The original question that you need to collect information is (delimited by <>) 
-
-            < ${nextQuestion} >
-
-            - your goal is to collect the information from the candidate for this specific question
-            - First make a small acknowledgment of the answer with 1-8 words, if it applies
-            - You can only ask 1 question at a time, 
-            - you should use a maximum 1-2 sentence
-            
-            Interviewer Reply: 
-            `
-        } else {
-
-          askGPT = `You are an Interviewer, you need to reply to the candidate with goal to deeply understand the candidate
-
-          - You have the Conversation between the Interviewer and the Candidate (delimited by <>)            
-
-          < ${prompt_conversation} >
-
-          - The original question that you need to collect information is (delimited by <>) 
-
-          < ${nextQuestion} >
-
-          - your goal is to collect the information from the candidate for this specific question
-          - First make a small acknowledgment of the answer with 1-8 words, if it applies
-          - You can only ask 1 question at a time, 
-          - you should use a maximum 1-2 sentence
-          
-          Interviewer Reply: 
-            `
+          askGPT = await askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,userID,2,companyID)
+        }else {
+          askGPT = await askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,userID,0,companyID)
         }
-
-
-        // askGPT += prompt_conversation + "\n\n" + nextQuestion + "\n\n"
-        // askGPT += "\n\n Always ask the question that were requested above!"
-        // askGPT += "\n\n Reply:"
 
         
         printC(askGPT, "4", "askGPT", "p")
@@ -1143,10 +1066,6 @@ module.exports = {
         reply = await useGPTchatSimple(askGPT);
       }
     }
-
-
-
-    
 
       printC(reply, "4", "reply", "r");
     //  -------------- Move to next question ------------
