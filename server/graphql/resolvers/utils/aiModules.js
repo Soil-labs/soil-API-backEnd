@@ -57,38 +57,75 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
   };
 
 
-async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3) {
+async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3,companyID=undefined) {
 
-    // -------------- Connect Memory to question ------------
-    const filter = {
-        label: "CV_user_memory",
-      };
-      if (userID) {
-        filter._id = userID;
+
+    // -------------- Connect Memory Company Training to question ------------
+    let finalMemoriesCompanyTrainingPrompt = ""
+    let memoriesCompanyTrainingPrompt = ""
+    if (companyID != undefined){
+      filter = {
+        label: "Company_TrainEdenAI_memory",
+        _id: companyID,
       }
 
-      const memoriesPrompt = await getMemory(messageQ,filter,topK)
-      printC(filter, "1", "filter", "p")
-      printC(memories, "1", "memories", "r")
+      memoriesCompanyTrainingPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,topK)
 
-    //   ONLY IF IT MAKE SENSE Modify the questionAskingNow by using MEMORY and asking a more specific question based on that memory
+      finalMemoriesCompanyTrainingPrompt = `
+      Job Role is given (delimited by <>) 
+
+      Job Role: < ${memoriesCompanyTrainingPrompt}`
+
+
+      printC(finalMemoriesCompanyTrainingPrompt, "2", "finalMemoriesCompanyTrainingPrompt", "g")
+    }
+    // -------------- Connect Memory Company Training to question ------------
+
+
+    // -------------- Connect Memory CV to question ------------
+    if (topK > 0 && userID){
+      filter = {
+        label: "CV_user_memory",
+        _id: userID,
+      }
+  
+      let memoriesCVPrompt
+      if (memoriesCompanyTrainingPrompt != "")
+        memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage + "\n\n" + memoriesCompanyTrainingPrompt,filter,topK)
+      else 
+        memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,topK)
+  
+      
+  
+      printC(memoriesCVPrompt, "2", "memoriesCVPrompt", "g")
+  
+      finalMemoriesCVPrompt = `
+      Memory is given within (delimited by <>)
+      - The memory might be completely irrelevant! Don't use it if it doesn't add value
+  
+      Memory: < ${memoriesCVPrompt} > `
+  
+      
+    } 
+    // -------------- Connect Memory CV to question ------------
+
 
     let modifiedQuestion = ""
     if (memoriesPrompt != ""){
 
       const promptPlusMemoryV = `QuestionAsking: ${messageQ}
 
-      - We provide memory within (delimited by <>)
-      - The memory might be completely irrelevant! Don't use it if it doesn't add value
-      - QuestionAsking should be able to give exactly the same meaning
 
-       < ${memoriesPrompt} >
+      ${finalMemoriesCompanyTrainingPrompt}
 
-       - You can only ask 1 question at a time, 
-        - you should use a maximum 1-2 sentence
+      ${finalMemoriesCVPrompt}
 
-          Question for the candidate:
-       
+      - your goal is to collect the information from the candidate for this specific question and Job Role
+      - First make a small responded/acknowledgment of the answer with 1-8 words, if it applies
+      - You can only ask 1 question at a time, 
+      - you should use a maximum 1-2 sentence
+      
+      Interviewer Reply: 
        `;
 
        printC(promptPlusMemoryV, "1", "promptPlusMemoryV", "p")
@@ -102,10 +139,83 @@ async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3) {
     printC(modifiedQuestion, "5", "modifiedQuestion", "g")
 
 
-    // -------------- Connect Memory to question ------------
 
     return modifiedQuestion
 }
+
+async function askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,userID,topK,companyID=undefined) {
+
+  let finalMemoriesCompanyTrainingPrompt = ""
+  let memoriesCompanyTrainingPrompt = ""
+  if (companyID != undefined){
+    filter = {
+      label: "Company_TrainEdenAI_memory",
+      _id: companyID,
+    }
+
+    memoriesCompanyTrainingPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,topK)
+
+    finalMemoriesCompanyTrainingPrompt = `
+    Job Role is given (delimited by <>) 
+
+    Job Role: < ${memoriesCompanyTrainingPrompt}`
+
+
+    printC(finalMemoriesCompanyTrainingPrompt, "2", "finalMemoriesCompanyTrainingPrompt", "g")
+  }
+
+  let finalMemoriesCVPrompt = ""
+
+  if (topK > 0 && userID){
+    filter = {
+      label: "CV_user_memory",
+      _id: userID,
+    }
+
+    let memoriesCVPrompt
+    if (memoriesCompanyTrainingPrompt != "")
+      memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage + "\n\n" + memoriesCompanyTrainingPrompt,filter,topK)
+    else 
+      memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,topK)
+
+    
+
+    printC(memoriesCVPrompt, "2", "memoriesCVPrompt", "g")
+
+    finalMemoriesCVPrompt = `
+    Memory is given within (delimited by <>)
+    - The memory might be completely irrelevant! Don't use it if it doesn't add value
+
+    Memory: < ${memoriesCVPrompt} > `
+
+    
+  } 
+
+  askGPT = `You are an Interviewer, you need to reply to the candidate with goal to deeply understand the candidate
+
+      ${finalMemoriesCompanyTrainingPrompt}
+
+      ${finalMemoriesCVPrompt}
+
+      - You have the Conversation between the Interviewer and the Candidate (delimited by <>)            
+
+      < ${prompt_conversation} >
+
+      - The original question that you need to collect information is (delimited by <>) 
+
+      < ${nextQuestion} >
+
+      - your goal is to collect the information from the candidate for this specific question and Job Role
+      - First make a small responded/acknowledgment of the answer with 1-8 words, if it applies
+      - You can only ask 1 question at a time, 
+      - you should use a maximum 1-2 sentence
+      
+      Interviewer Reply: 
+      `
+  return (askGPT)
+
+}
+
 
 
 async function createEmbeddingsGPT(words_n) {
@@ -1292,4 +1402,5 @@ module.exports = {
     modifyQuestionFromCVMemory,
     MessageMapKG_V2APICallF,
     createEmbeddingsGPT,
+    askQuestionAgain,
   };

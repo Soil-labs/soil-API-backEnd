@@ -957,8 +957,9 @@ module.exports = {
         const newMemoryT = [];
         let result;
         while ((result = regex.exec(evaluateNoteCategories)) !== null) {
+          const categoryName = result[1].trim()
           const category = {
-            categoryName: result[1].trim(),
+            categoryName: categoryName,
             // reason: result[2].trim().split('\n').map(detail => detail.trim()),
             reason: result[2].trim(),
           };
@@ -969,7 +970,7 @@ module.exports = {
 
           mem.forEach((memNow) => {
             newMemoryT.push({
-              memoryContent: memNow,
+              memoryContent: categoryName + ": " + memNow,
               pineConeID: "",
             })
           })
@@ -1017,6 +1018,7 @@ module.exports = {
         // ------------ Delete previous memory ------------
         
         // -------------- Sent to PineCone --------------
+        printC(newMemoryT,"2","newMemoryT","y")
         // newMemoryT.forEach(memorySaveN => {
         for (let i=0;i<newMemoryT.length;i++){
           const memorySaveN = newMemoryT[i].memoryContent;
