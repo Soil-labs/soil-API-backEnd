@@ -59,8 +59,13 @@ const companyModel = mongoose.Schema({
         role: String, // user or bot
         content: String,
       }],
-    }]
-  }]
+    }],
+    interviewQuestionsForCandidate: [{
+      originalQuestionID: mongoose.Schema.ObjectId,
+      originalContent: String,
+      personalizedContent: String,
+    }],
+  }],
 
 });
 

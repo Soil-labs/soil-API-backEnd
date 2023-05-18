@@ -17,7 +17,7 @@ const {checkAndAddCompanyToMember  } = require("../utils/companyModules");
 
 const { printC } = require("../../../printModule");
 
-const { useGPTchatSimple,deletePineCone,upsertEmbedingPineCone} = require("../utils/aiModules");
+const { useGPTchatSimple,deletePineCone,upsertEmbedingPineCone,findBestEmbedings,getMemory} = require("../utils/aiModules");
 
 
 
@@ -61,6 +61,107 @@ module.exports = {
           err.message,
           err.extensions?.code || "updateCompany",
           { component: "companyMutation > updateCompany" }
+        );
+      }
+    },
+    interviewQuestionCreationUser: async (parent, args, context, info) => {
+      const { companyID,userID } = args.fields;
+      console.log("Mutation > interviewQuestionCreationUser > args.fields = ", args.fields);
+
+
+      if (!companyID) throw new ApolloError("Company ID is required", "interviewQuestionCreationUser", { component: "companyMutation > interviewQuestionCreationUser" });
+
+      if (!userID) throw new ApolloError("User ID is required", "interviewQuestionCreationUser", { component: "companyMutation > interviewQuestionCreationUser" });
+
+      try {
+
+        companyData = await Company.findOne({ _id: companyID}).select('_id name questionsToAsk convRecruiter');
+        if (!companyData) throw new ApolloError("Company not found", "interviewQuestionCreationUser", { component: "companyMutation > interviewQuestionCreationUser" });
+
+
+        userData = await Members.findOne({ _id: userID}).select('_id discordName');
+        if (!userData) throw new ApolloError("User not found", "interviewQuestionCreationUser", { component: "companyMutation > interviewQuestionCreationUser" });
+
+
+        const questionsToAsk = companyData.questionsToAsk
+
+        const questionsToAskID = questionsToAsk.map((question) => question.questionID)
+
+        questionData = await QuestionsEdenAI.find({ _id: questionsToAskID }).select('_id content');
+
+        printC(questionData,"1","questionData","b")
+
+        questionsThatWereAsked = ''
+
+        for (let i=0;i<questionData.length;i++){
+          const questionNow = questionData[i];
+
+          // printC(questionNow,"2","questionNow","g")
+
+
+          let filter = {}
+
+          // ------- Find best Open Job Role Memories ----------
+          filter = {
+            label: "Company_TrainEdenAI_memory",
+            _id: companyID,
+          };
+  
+          bestJobRoleMemories = await getMemory(
+            questionNow.content,
+            filter,
+            (topK = 3),
+            250
+          );
+
+          // printC(bestJobRoleMemories,"3","bestJobRoleMemories","p")
+          // ------- Find best Open Job Role Memories ----------
+
+
+          // ------- Find best Open Job Role Memories ----------
+          filter = {
+            label: "CV_user_memory",
+            _id: userID,
+          };
+  
+          bestUserCVMemories = await getMemory(
+            questionNow.content,
+            filter,
+            (topK = 3),
+            250
+          );
+
+          // printC(bestUserCVMemories,"3","bestUserCVMemories","r")
+          // ------- Find best Open Job Role Memories ----------
+
+          console.log("----------------------------" )
+
+
+          // -------- Create Prompt ---------
+          let promptAll = `
+            ORIGINAL QUESTION (delimiters <>): <${questionNow.content}>
+
+            JOB ROLE INFORMATION (delimiters <>): <${bestJobRoleMemories}>
+
+            USER CV INFORMATION (delimiters <>): <${bestUserCVMemories}>
+            
+          `
+          printC(promptAll,"3","promptAll","b")
+          // -------- Create Prompt ---------
+
+          // questionsThatWereAsked += "- " + questionCreated + "\n\n"
+        }
+
+
+
+        return companyData
+
+        
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "interviewQuestionCreationUser",
+          { component: "companyMutation > interviewQuestionCreationUser" }
         );
       }
     },
@@ -458,6 +559,7 @@ module.exports = {
         );
       }
     },
+
     
     updateCompanyUserAnswers: async (parent, args, context, info) => {
       const { companyIDs} = args.fields;

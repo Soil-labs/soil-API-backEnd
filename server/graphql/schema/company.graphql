@@ -114,6 +114,10 @@ module.exports = `
         companyID: ID
         questionsToAsk: [QuestionTypeInput]
     }
+    input interviewQuestionCreationUserInput {
+        companyID: ID
+        userID: ID
+    }
     input deleteQuestionsToAskCompanyInput {
         companyID: ID
         questionID: ID
