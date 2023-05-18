@@ -11,13 +11,20 @@ const { request, gql} = require('graphql-request');
 const { printC } = require("../../../printModule");
 
 
-async function getMemory(messageContent,filter,topK = 3) {
+async function getMemory(messageContent,filter,topK = 3,maxLength = 2000) {
 
     memories = await findBestEmbedings(messageContent, filter, (topK = topK));
 
-    printC(memories, "1", "memories", "r")
+    // printC(memories, "1", "memories", "r")
 
-    const memoriesForPrompt = memories.map((memory) => memory.metadata.text).join("\n - ");
+    const memoriesForPrompt = memories.map((memory) => {
+
+      let myString = memory.metadata.text;
+      myString = myString.length > 150 ? myString.substring(0, 150) : myString;
+
+
+      return myString
+    }).join("\n - ");
 
     return memoriesForPrompt
 }
@@ -488,7 +495,7 @@ function chooseAPIkey(chooseAPI="") {
       {
         messages: discussion,
         model: "gpt-3.5-turbo",
-        temperature: temperature,
+        temperature: temperature
       },
       {
         headers: {
