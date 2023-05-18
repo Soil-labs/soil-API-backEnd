@@ -192,6 +192,76 @@ module.exports = {
     const { message, userID } = args.fields;
     console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
 
+    // if (!userID) {
+    //   throw new ApolloError("userID is required");
+    // }
+    try {
+      prompt =
+        'I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. I want you to find experiences in the CV and combine them with a very brief and laconic description of what was done there + the skills that were associated with that experience, but don\'t list more than 5 skills per category. Do not list experiences, descriptions, or skills separately, only list them in relation to other things. For categories, include things like job, education, project, internship, and article. Only have those categories in the output if you find them in the string.\n\nFollow this strict format:\n• Category: name: explanation(be very brief, use very short sentenses) : skills(no more than 3-5 skills)\n\nExample (but do not include these examples in the output, also do not include the label category in the output):\n(\n• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js\n)\n\nHere is the string to extract the information from:\n' +
+        message;
+
+      summaryBulletPoints = await useGPTchatSimple(prompt, 0);
+
+      jobsArr = summaryBulletPoints
+        .replace(/\n/g, "")
+        .split("•")
+        .filter((item) => item.trim() !== "");
+
+      const getUpserts = async () => {
+        for (let i = 0; i < jobsArr.length; i++) {
+          let embeddings = await createEmbeddingsGPT(jobsArr[i]);
+          console.log("embeddings", embeddings); //
+          upsertSum = await upsertEmbedingPineCone({
+            text: jobsArr[i],
+            embedding: embeddings[0],
+            _id: userID,
+            label: "CV_user_memory",
+          });
+          console.log("upsertSum=", upsertSum);
+        }
+      };
+
+      getUpserts();
+      // embed_summary = await createEmbeddingsGPT(summary);
+
+      // let result = [];
+
+      // previousJobs = () => {
+      //   for (let i = 0; i < jobsArr.length; i += 2) {
+      //     result.push({
+      //       job: jobs Arr[i],
+      //       description: jobsArr[i + 1],
+      //     });
+      //   }
+      //   return JSON.stringify(result);
+      // };
+      // upsertDoc = await upsertEmbedingPineCone({
+      //   text: summary,
+      //   embedding: embed_summary[0],
+      //   _id: userID,
+      //   label: "long_term_memory",
+      // });
+
+      // console.log("upsertDoc = ", upsertDoc);
+
+      return {
+        message: message,
+        // success: true,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "storeLongTermMemory",
+        {
+          component: "aiMutation > storeLongTermMemory",
+        }
+      );
+    }
+  },
+  websiteToMemoryCompany: async (parent, args, context, info) => {
+    const { message, userID } = args.fields;
+    console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
+
     if (!userID) {
       throw new ApolloError("userID is required");
     }
@@ -446,8 +516,7 @@ module.exports = {
         });
       }
 
-      for (let i=0;i<usersData.length;i++) {
-
+      for (let i = 0; i < usersData.length; i++) {
         let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
