@@ -57,7 +57,7 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
   };
 
 
-async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3,companyID=undefined) {
+async function modifyQuestionFromCVMemory(messageQ,lastMessage,userID,topK = 3,companyID=undefined) {
 
 
     // -------------- Connect Memory Company Training to question ------------
@@ -69,7 +69,7 @@ async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3,companyID=und
         _id: companyID,
       }
 
-      memoriesCompanyTrainingPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,topK)
+      memoriesCompanyTrainingPrompt = await getMemory(messageQ + "\n\n" + lastMessage,filter,topK)
 
       finalMemoriesCompanyTrainingPrompt = `
       Job Role is given (delimited by <>) 
@@ -91,9 +91,9 @@ async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3,companyID=und
   
       let memoriesCVPrompt
       if (memoriesCompanyTrainingPrompt != "")
-        memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage + "\n\n" + memoriesCompanyTrainingPrompt,filter,topK)
+        memoriesCVPrompt = await getMemory(messageQ + "\n\n" + lastMessage + "\n\n" + memoriesCompanyTrainingPrompt,filter,topK)
       else 
-        memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,topK)
+        memoriesCVPrompt = await getMemory(messageQ + "\n\n" + lastMessage,filter,topK)
   
       
   
@@ -110,8 +110,8 @@ async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3,companyID=und
     // -------------- Connect Memory CV to question ------------
 
 
-    let modifiedQuestion = ""
-    if (memoriesPrompt != ""){
+    // let modifiedQuestion = ""
+    // if (memoriesPrompt != ""){
 
       const promptPlusMemoryV = `QuestionAsking: ${messageQ}
 
@@ -132,9 +132,9 @@ async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3,companyID=und
 
       modifiedQuestion = await useGPChatSimple(promptPlusMemoryV);
 
-    } else {
-      modifiedQuestion = messageQ
-    }
+    // } else {
+    //   modifiedQuestion = messageQ
+    // }
 
     printC(modifiedQuestion, "5", "modifiedQuestion", "g")
 

@@ -1025,6 +1025,10 @@ module.exports = {
     printC(timesAsked, "2", "timesAsked", "g");
 
 
+    printC(lastMessage, "2", "lastMessage", "y");
+    printC(nextQuestion, "2", "nextQuestion", "y");
+    printC(questionAskingNowA, "2", "questionAskingNowA", "y");
+
 
     let reply
     if (timesAsked == 1){
@@ -1034,7 +1038,7 @@ module.exports = {
         reply = "Thank you for taking time to talk to me, I will let you know with the results ASAP"
       } else {
         if (useMemory == true){
-          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,3,companyID)
+          reply = await modifyQuestionFromCVMemory(questionAskingNowA,lastMessage,userID,3,companyID)
         } else {
           reply = questionAskingNowA
         }
@@ -1045,13 +1049,13 @@ module.exports = {
       if (flagFirstTime == true){
         // NEW Question
         if (useMemory == true){
-          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,3,companyID)
+          reply = await modifyQuestionFromCVMemory(questionAskingNowA,lastMessage,userID,3,companyID)
         } else {
           reply = questionAskingNowA
         }
       } else {
         // Ask Again Question
-        
+
         let askGPT = ""
 
         if (useMemory == true){
@@ -1088,6 +1092,8 @@ module.exports = {
       conversationID = resultConv._id
     }
 
+
+    reply = reply.replace(/"/g, '');
 
     
       return {
