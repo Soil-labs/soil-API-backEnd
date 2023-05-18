@@ -245,7 +245,7 @@ module.exports = {
       // console.log("upsertDoc = ", upsertDoc);
 
       return {
-        message: message,
+        message: responseWithWholisticSummary,
         // success: true,
       };
     } catch (err) {
@@ -262,36 +262,65 @@ module.exports = {
     const { message, userID } = args.fields;
     console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
 
-    if (!userID) {
-      throw new ApolloError("userID is required");
-    }
+    // if (!userID) {
+    //   throw new ApolloError("userID is required");
+    // }
     try {
-      prompt =
-        'I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. I want you to find experiences in the CV and combine them with a very brief and laconic description of what was done there + the skills that were associated with that experience, but don\'t list more than 5 skills per category. Do not list experiences, descriptions, or skills separately, only list them in relation to other things. For categories, include things like job, education, project, internship, and article. Only have those categories in the output if you find them in the string.\n\nFollow this strict format:\n• Category: name: explanation(be very brief, use very short sentenses) : skills(no more than 3-5 skills)\n\nExample (but do not include these examples in the output, also do not include the label category in the output):\n(\n• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js\n)\n\nHere is the string to extract the information from:\n' +
-        message;
+      const getCombinedSummary = async (websiteString) => {
+        const chunks = websiteString.match(/.{1,4000}/g);
+        let combinedSummary = "";
 
-      summaryBulletPoints = await useGPTchatSimple(prompt, 0);
-
-      jobsArr = summaryBulletPoints
-        .replace(/\n/g, "")
-        .split("•")
-        .filter((item) => item.trim() !== "");
-
-      const getUpserts = async () => {
-        for (let i = 0; i < jobsArr.length; i++) {
-          let embeddings = await createEmbeddingsGPT(jobsArr[i]);
-          console.log("embeddings", embeddings); //
-          upsertSum = await upsertEmbedingPineCone({
-            text: jobsArr[i],
-            embedding: embeddings[0],
-            _id: userID,
-            label: "CV_user_memory",
-          });
-          console.log("upsertSum=", upsertSum);
+        for (const chunk of chunks) {
+          promptSummary =
+            "I am giving you multiple strings extracted a website of a company. Give me a short summary about this company, here is the partial string extracted from the website: " +
+            chunk;
+          const partialSummaryResponse = await useGPTchatSimple(
+            promptSummary,
+            0.01
+          );
+          wholeSummary = combinedSummary += partialSummaryResponse;
+          console.log(wholeSummary);
         }
+        return combinedSummary;
       };
 
-      getUpserts();
+      //Rename this
+      const responseCombinedSummaries = getCombinedSummary(message);
+
+      promptWholisticSummary =
+        "I give you a summary that was extracted and combined from a companies website. Your job is to white a more wholistic summary for this company:  " +
+        (await responseCombinedSummaries);
+
+      const responseWithWholisticSummary = await useGPTchatSimple(
+        promptWholisticSummary,
+        0.01
+      );
+      // prompt =
+      //   'I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. I want you to find experiences in the CV and combine them with a very brief and laconic description of what was done there + the skills that were associated with that experience, but don\'t list more than 5 skills per category. Do not list experiences, descriptions, or skills separately, only list them in relation to other things. For categories, include things like job, education, project, internship, and article. Only have those categories in the output if you find them in the string.\n\nFollow this strict format:\n• Category: name: explanation(be very brief, use very short sentenses) : skills(no more than 3-5 skills)\n\nExample (but do not include these examples in the output, also do not include the label category in the output):\n(\n• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js\n)\n\nHere is the string to extract the information from:\n' +
+      //   message;
+
+      // summaryBulletPoints = await useGPTchatSimple(prompt, 0);
+
+      // jobsArr = summaryBulletPoints
+      //   .replace(/\n/g, "")
+      //   .split("•")
+      //   .filter((item) => item.trim() !== "");
+
+      // const getUpserts = async () => {
+      //   for (let i = 0; i < jobsArr.length; i++) {
+      //     let embeddings = await createEmbeddingsGPT(jobsArr[i]);
+      //     console.log("embeddings", embeddings); //
+      //     upsertSum = await upsertEmbedingPineCone({
+      //       text: jobsArr[i],
+      //       embedding: embeddings[0],
+      //       _id: userID,
+      //       label: "CV_user_memory",
+      //     });
+      //     console.log("upsertSum=", upsertSum);
+      //   }
+      // };
+
+      // getUpserts();
       // embed_summary = await createEmbeddingsGPT(summary);
 
       // let result = [];
@@ -315,7 +344,7 @@ module.exports = {
       // console.log("upsertDoc = ", upsertDoc);
 
       return {
-        message: summaryBulletPoints,
+        message: responseWithWholisticSummary,
         success: true,
       };
     } catch (err) {
