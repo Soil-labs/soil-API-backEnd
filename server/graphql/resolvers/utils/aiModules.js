@@ -64,8 +64,8 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
   };
 
   const InterviewQuestionCreationUserAPICallF = async (companyID,userID,cvContent) => {
-    const query = gql`
-      query interviewQuestionCreationUser($fields: interviewQuestionCreationUserInput) {
+    const mutation = gql`
+      mutation interviewQuestionCreationUser($fields: interviewQuestionCreationUserInput) {
         interviewQuestionCreationUser(fields: $fields) {
           _id
           name
@@ -93,8 +93,8 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
     };
 
     res = await request(
-      "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
-      query,
+      "https://soil-api-backend-kgfromaicron.up.railway.app/graphql",
+      mutation,
       variables
     );
 
