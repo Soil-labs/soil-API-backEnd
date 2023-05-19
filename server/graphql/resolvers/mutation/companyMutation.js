@@ -65,7 +65,7 @@ module.exports = {
       }
     },
     interviewQuestionCreationUser: async (parent, args, context, info) => {
-      const { companyID,userID } = args.fields;
+      const { companyID,userID,cvContent } = args.fields;
       console.log("Mutation > interviewQuestionCreationUser > args.fields = ", args.fields);
 
 
@@ -114,21 +114,38 @@ module.exports = {
         // ------- Find best Open Job Role Memories ----------
 
 
-        // ------- Find best Open Job Role Memories ----------
-        filter = {
-          label: "CV_user_memory",
-          _id: userID,
-        };
+        // // ------- Find best Open CV Memories ----------
+        // filter = {
+        //   label: "CV_user_memory",
+        //   _id: userID,
+        // };
 
-        bestUserCVMemories = await getMemory(
-          questionNow.content,
-          filter,
-          (topK = 5),
-          350
-        );
+        // bestUserCVMemories = await getMemory(
+        //   questionNow.content,
+        //   filter,
+        //   (topK = 5),
+        //   350
+        // );
 
-        // printC(bestUserCVMemories,"3","bestUserCVMemories","r")
-        // ------- Find best Open Job Role Memories ----------
+        // // printC(bestUserCVMemories,"3","bestUserCVMemories","r")
+        // // ------- Find best Open CV Memories ----------
+
+        // ----------- CV to Summary -------------
+        let cvContentPrompt = `
+          CV CONTENT (delimiters <>): <${cvContent}>
+
+          - You are a recruiter with task to understand a candidate's CV.
+          - Your goal is to create a Summary of the CV CONTENT
+
+          Summary: 
+        `
+        printC(cvContentPrompt,"3","cvContentPrompt","b")
+
+        cvSummary = await useGPTchatSimple(cvContentPrompt,0)
+
+        printC(cvSummary,"2","cvSummary","r")
+        // sdf0
+        // ----------- CV to Summary -------------
 
         console.log("----------------------------" )
 
@@ -138,12 +155,12 @@ module.exports = {
         let promptJOB_CV = `
           JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
 
-          USER_CV (delimiters <>) <${bestUserCVMemories}>
+          USER_CV (delimiters <>) <${cvSummary}>
 
           - Your goal is to collect information from the candidate for the JOB_ROLE.
-          -  Use the candidate's USER_CV information only if it makes sense for this JOB_ROLE.
+          - Analyse for each point of the JOB_ROLE if a Candidate has the right CV info or he is missing something, be creative on the ways that the candidate background can be applied on the role
 
-        smallest number of Bullet points with small summary analyzing USER_CV for the Job:
+        smallest number of Bullet points with small summary analyzing the JOB_ROLE for this USER CV:
         `
         printC(promptJOB_CV,"3","promptJOB_CV","b")
 
@@ -182,7 +199,7 @@ module.exports = {
 
         improvedQuestions = await useGPTchatSimple(promptNewQuestions,0)
 
-        printC(improvedQuestions,"3","improvedQuestions","r")
+        printC(improvedQuestions,"4","improvedQuestions","r")
 
 //         improvedQuestions = `1. Can you tell us about your experience working with Machine Learning and Computer Vision, and how it could be useful for understanding user needs and solving their problems in this role?
 // 2. What specific experience do you have leading teams and innovating with cutting-edge technologies, and how do you think it could be valuable for working independently to create code in this role?

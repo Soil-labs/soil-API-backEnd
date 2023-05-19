@@ -124,6 +124,8 @@ module.exports = `
     input interviewQuestionCreationUserInput {
         companyID: ID
         userID: ID
+        cvContent: String
+
     }
     input deleteQuestionsToAskCompanyInput {
         companyID: ID
