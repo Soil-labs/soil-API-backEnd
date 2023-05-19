@@ -63,6 +63,46 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
     return res.messageMapKG_V2.keywords;
   };
 
+  const InterviewQuestionCreationUserAPICallF = async (companyID,userID,cvContent) => {
+    const query = gql`
+      query interviewQuestionCreationUser($fields: interviewQuestionCreationUserInput) {
+        interviewQuestionCreationUser(fields: $fields) {
+          _id
+          name
+          candidates {
+            user {
+              _id
+              discordName
+            }
+            interviewQuestionsForCandidate {
+              originalQuestionID
+              originalContent
+              personalizedContent
+            }
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      fields: {
+        companyID: companyID,
+        userID: userID,
+        cvContent: cvContent,
+      },
+    };
+
+    res = await request(
+      "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+      query,
+      variables
+    );
+
+    // console.log("res = " , res)
+    // console.log("res.messageMapKG_V2", res.messageMapKG_V2);
+    return res.interviewQuestionCreationUser;
+  };
+
 
 async function modifyQuestionFromCVMemory(messageQ,lastMessage,userID,topK = 3,companyID=undefined) {
 
@@ -1408,6 +1448,7 @@ module.exports = {
     getMemory,
     modifyQuestionFromCVMemory,
     MessageMapKG_V2APICallF,
+    InterviewQuestionCreationUserAPICallF,
     createEmbeddingsGPT,
     askQuestionAgain,
   };
