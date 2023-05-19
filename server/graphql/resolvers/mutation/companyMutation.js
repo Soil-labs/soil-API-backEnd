@@ -241,9 +241,17 @@ module.exports = {
 
         if (candidateIdx!=-1 && candidateIdx!=undefined) {
           companyData.candidates[candidateIdx].interviewQuestionsForCandidate = interviewQuestionsForCandidate
-          
-          companyData = await companyData.save();
+
+        } else {
+          companyData.candidates.push({
+            userID: userID,
+            interviewQuestionsForCandidate: interviewQuestionsForCandidate,
+          })
+
         }
+
+        companyData = await companyData.save();
+
 
         return companyData
 
