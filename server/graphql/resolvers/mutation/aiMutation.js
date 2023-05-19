@@ -192,12 +192,12 @@ module.exports = {
     const { message, userID } = args.fields;
     console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
 
-    if (!userID) {
-      throw new ApolloError("userID is required");
-    }
+    // if (!userID) {
+    //   throw new ApolloError("userID is required");
+    // }
     try {
       prompt =
-        'I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. I want you to find experiences in the CV and combine them with a very brief and laconic description of what was done there + the skills that were associated with that experience, but don\'t list more than 5 skills per category. Do not list experiences, descriptions, or skills separately, only list them in relation to other things. For categories, include things like job, education, project, internship, and article. Only have those categories in the output if you find them in the string.\n\nFollow this strict format:\n• Category: name: explanation(be very brief, use very short sentenses) : skills(no more than 3-5 skills)\n\nExample (but do not include these examples in the output, also do not include the label category in the output):\n(\n• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js\n)\n\nHere is the string to extract the information from:\n' +
+        'I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. \n\nThese facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. I want you to find experiences in the CV and combine them with a description of what was done there + the skills(Never have a bullet point for skills in the output, do not list skills as a separate category) that were associated with that experience. \n\nDo not list experiences, descriptions, or skills separately, only list them in relation to other things. \n\nFor categories, include job, education(make sure to include the highest level of education(Bachelors < Masters < Ph.D )), project, internship (take your time and make sure that this is not a job, make sure that it is actually an internship), and published article. If an internship was not found, do not include it as an output, just skip it(DO NOT out • Internship: None found, just leave it blank), this would apply to any category that was not found in text. Only list categories in the output if you find them in the text. If a category is not found in the text, do not have a put it as a bullet-point.\n\nFollow this strict format (each category should be limited to 200 characters, do not go beyond 200 character limit for each category):\n• Category: name: explanation: skills (limit 6 skills per category, do not go beyond 6 skills per category)\n\nExample (but do not include these examples in the output, also do not include the label category in the output):\n(\n• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js\n)\n\nHere is the string to extract the information from:\n' +
         message;
 
       summaryBulletPoints = await useGPTchatSimple(prompt, 0);
@@ -207,21 +207,24 @@ module.exports = {
         .split("•")
         .filter((item) => item.trim() !== "");
 
-      const getUpserts = async () => {
-        for (let i = 0; i < jobsArr.length; i++) {
-          let embeddings = await createEmbeddingsGPT(jobsArr[i]);
-          console.log("embeddings", embeddings); //
-          upsertSum = await upsertEmbedingPineCone({
-            text: jobsArr[i],
-            embedding: embeddings[0],
-            _id: userID,
-            label: "CV_user_memory",
-          });
-          console.log("upsertSum=", upsertSum);
-        }
-      };
+      console.log("jobsArr", jobsArr);
 
-      getUpserts();
+      // const getUpserts = async () => {
+      //   for (let i = 0; i < jobsArr.length; i++) {
+      //     let embeddings = await createEmbeddingsGPT(jobsArr[i]);
+      //     console.log("embeddings", embeddings); //
+      //     upsertSum = await upsertEmbedingPineCone({
+      //       text: jobsArr[i],
+      //       embedding: embeddings[0],
+      //       _id: userID,
+      //       label: "CV_user_memory",
+      //     });
+      //     console.log("upsertSum=", upsertSum);
+      //   }
+      // };
+
+      // getUpserts();
+
       // embed_summary = await createEmbeddingsGPT(summary);
 
       // let result = [];
@@ -246,7 +249,7 @@ module.exports = {
 
       return {
         message: summaryBulletPoints,
-        success: true,
+        // success: true,
       };
     } catch (err) {
       throw new ApolloError(
@@ -446,8 +449,7 @@ module.exports = {
         });
       }
 
-      for (let i=0;i<usersData.length;i++) {
-
+      for (let i = 0; i < usersData.length; i++) {
         let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
