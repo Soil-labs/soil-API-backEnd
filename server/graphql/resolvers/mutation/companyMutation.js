@@ -75,7 +75,7 @@ module.exports = {
 
       try {
 
-        companyData = await Company.findOne({ _id: companyID}).select('_id name questionsToAsk convRecruiter');
+        companyData = await Company.findOne({ _id: companyID}).select('_id name candidates questionsToAsk');
         if (!companyData) throw new ApolloError("Company not found", "interviewQuestionCreationUser", { component: "companyMutation > interviewQuestionCreationUser" });
 
 
@@ -93,66 +93,140 @@ module.exports = {
 
         questionsThatWereAsked = ''
 
+
+
+        const questionNow = questionData[0];
+
+        // ------- Find best Open Job Role Memories ----------
+        filter = {
+          label: "Company_TrainEdenAI_memory",
+          _id: companyID,
+        };
+
+        bestJobRoleMemories = await getMemory(
+          questionNow.content,
+          filter,
+          (topK = 6),
+          250
+        );
+
+        // printC(bestJobRoleMemories,"3","bestJobRoleMemories","p")
+        // ------- Find best Open Job Role Memories ----------
+
+
+        // ------- Find best Open Job Role Memories ----------
+        filter = {
+          label: "CV_user_memory",
+          _id: userID,
+        };
+
+        bestUserCVMemories = await getMemory(
+          questionNow.content,
+          filter,
+          (topK = 5),
+          350
+        );
+
+        // printC(bestUserCVMemories,"3","bestUserCVMemories","r")
+        // ------- Find best Open Job Role Memories ----------
+
+        console.log("----------------------------" )
+
+
+        // -------- Create Prompt ---------
+        
+        let promptJOB_CV = `
+          JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
+
+          USER_CV (delimiters <>) <${bestUserCVMemories}>
+
+          - Your goal is to collect information from the candidate for the JOB_ROLE.
+          -  Use the candidate's USER_CV information only if it makes sense for this JOB_ROLE.
+
+        smallest number of Bullet points with small summary analyzing USER_CV for the Job:
+        `
+        printC(promptJOB_CV,"3","promptJOB_CV","b")
+
+        infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0)
+
+        printC(infoCandidateForJob,"3","infoCandidateForJob","r")
+
+        // sdf
+        // -------- Create Prompt ---------
+
+        
+        questionsPrompt = ""
         for (let i=0;i<questionData.length;i++){
           const questionNow = questionData[i];
 
-          // printC(questionNow,"2","questionNow","g")
 
-
-          let filter = {}
-
-          // ------- Find best Open Job Role Memories ----------
-          filter = {
-            label: "Company_TrainEdenAI_memory",
-            _id: companyID,
-          };
-  
-          bestJobRoleMemories = await getMemory(
-            questionNow.content,
-            filter,
-            (topK = 3),
-            250
-          );
-
-          // printC(bestJobRoleMemories,"3","bestJobRoleMemories","p")
-          // ------- Find best Open Job Role Memories ----------
-
-
-          // ------- Find best Open Job Role Memories ----------
-          filter = {
-            label: "CV_user_memory",
-            _id: userID,
-          };
-  
-          bestUserCVMemories = await getMemory(
-            questionNow.content,
-            filter,
-            (topK = 3),
-            250
-          );
-
-          // printC(bestUserCVMemories,"3","bestUserCVMemories","r")
-          // ------- Find best Open Job Role Memories ----------
-
-          console.log("----------------------------" )
-
-
-          // -------- Create Prompt ---------
-          let promptAll = `
-            ORIGINAL QUESTION (delimiters <>): <${questionNow.content}>
-
-            JOB ROLE INFORMATION (delimiters <>): <${bestJobRoleMemories}>
-
-            USER CV INFORMATION (delimiters <>): <${bestUserCVMemories}>
-            
-          `
-          printC(promptAll,"3","promptAll","b")
-          // -------- Create Prompt ---------
-
-          // questionsThatWereAsked += "- " + questionCreated + "\n\n"
+          questionsPrompt += ` ${i+1}. ${questionNow.content} \n`
         }
 
+        printC(questionsPrompt,"3","questionsPrompt","b")
 
+
+        let promptNewQuestions = `
+          NOTES for this Job Role and User CV (delimiters <>): <${infoCandidateForJob}>
+
+          QUESTIONS (delimiters <>) <${questionsPrompt}>
+
+         
+          - You can improve each of the QUESTINOS using any of the NOTES
+          - you can only ask 1 question at a time
+          - You should stay really close to the meaning of the QUESTIONS!
+          
+          
+          Improved QUESTIONS: 
+        `
+
+        improvedQuestions = await useGPTchatSimple(promptNewQuestions,0)
+
+        printC(improvedQuestions,"3","improvedQuestions","r")
+
+//         improvedQuestions = `1. Can you tell us about your experience working with Machine Learning and Computer Vision, and how it could be useful for understanding user needs and solving their problems in this role?
+// 2. What specific experience do you have leading teams and innovating with cutting-edge technologies, and how do you think it could be valuable for working independently to create code in this role?
+// 3. Do you have experience with GraphQL, Next.js, React, and TailwindCSS, which are required for this role?
+// 4. What other technical skills do you have that could be helpful in this position?
+// 5. How comfortable are you with UI implementation, and what experience do you have in this area?
+// 6. Would you be willing to join Soil 🌱 as a contributor, given that the company is not yet financially secure?
+// 7. Do you share Eden's vision of using AI and blockchain to create context and trust and connect the right person to the right opportunity?
+// 8. What specifically interests you about joining Soil 🌱, and how do you think you could contribute to the company's mission?
+// 9. What are your long-term career goals, and how do you see this role fitting into them?`
+
+
+
+        const improvedQuestionsArray = improvedQuestions.split('\n').map((item) => item.replace(/^\d+\.\s*/, ''));
+
+        printC(improvedQuestionsArray,"3","improvedQuestionsArray","r")
+
+        let interviewQuestionsForCandidate = []
+
+        for (let i=0;i<improvedQuestionsArray.length;i++){
+          const improvedQuestion = improvedQuestionsArray[i];
+
+          interviewQuestionsForCandidate.push({
+            originalQuestionID: questionData[i]._id,
+            originalContent: questionData[i].content,
+            personalizedContent: improvedQuestion,
+          })
+        }
+
+        printC(interviewQuestionsForCandidate,"3","interviewQuestionsForCandidate","r")
+
+        // find the idx what candidate you will update from the companyData
+
+        printC(companyData.candidates,"3","companyData.candidates","p")
+        // sf0
+        let candidateIdx = companyData.candidates.findIndex((candidate) => candidate.userID.toString() == userID.toString());
+
+        printC(candidateIdx,"3","candidateIdx","r")
+
+        if (candidateIdx!=-1)
+          companyData.candidates[candidateIdx].interviewQuestionsForCandidate = interviewQuestionsForCandidate
+
+
+        companyData = await companyData.save();
 
         return companyData
 

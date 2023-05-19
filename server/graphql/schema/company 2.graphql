@@ -63,13 +63,6 @@ module.exports = `
         readyToDisplay: Boolean,
         conversation: [conversationType],
         summaryQuestions: [SummaryQuestionType]
-        interviewQuestionsForCandidate: [interviewQuestionsForCandidateType]
-    }
-
-    type interviewQuestionsForCandidateType {
-        originalQuestionID: ID,
-        originalContent: String,  
-        personalizedContent: String,
     }
 
     type SummaryQuestionType {
