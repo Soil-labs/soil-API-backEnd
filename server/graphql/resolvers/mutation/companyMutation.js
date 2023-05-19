@@ -235,15 +235,15 @@ module.exports = {
 
         printC(companyData.candidates,"3","companyData.candidates","p")
         // sf0
-        let candidateIdx = companyData.candidates.findIndex((candidate) => candidate.userID.toString() == userID.toString());
+        let candidateIdx = companyData?.candidates?.findIndex((candidate) => candidate.userID.toString() == userID.toString());
 
         printC(candidateIdx,"3","candidateIdx","r")
 
-        if (candidateIdx!=-1)
+        if (candidateIdx!=-1 && candidateIdx!=undefined) {
           companyData.candidates[candidateIdx].interviewQuestionsForCandidate = interviewQuestionsForCandidate
-
-
-        companyData = await companyData.save();
+          
+          companyData = await companyData.save();
+        }
 
         return companyData
 

@@ -260,7 +260,7 @@ module.exports = {
     }
   },
   saveCVtoUser: async (parent, args, context, info) => {
-    const { cvContent, userID } = args.fields;
+    const { cvContent, userID,companyID } = args.fields;
     console.log("Mutation > saveCVtoUser > args.fields = ", args.fields);
 
     if (!userID) {
@@ -289,6 +289,8 @@ module.exports = {
         },
         { new: true }
       );
+
+      InterviewQuestionCreationUserAPICallF(companyID, userID, cvContent)
 
       return {
         success: true,
