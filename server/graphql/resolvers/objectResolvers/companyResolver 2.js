@@ -71,23 +71,6 @@ module.exports = {
                );
             }
          },
-         // interviewQuestionsForCandidate: async (parent, args, context, info) => {
-         //     console.log("parent = " , parent)
-      
-         //       try {
-         //          return parent
-      
-         //       } catch (err) {
-         //          throw new ApolloError(
-         //             err.message,
-         //             err.extensions?.code || 'DATABASE_SEARCH_ERROR',
-         //             {
-         //                component: 'userResolver > skills',
-         //                user: context.req.user?._id,
-         //             }
-         //          );
-         //       }
-         //    },
    },
    talentListType: {
       talent: async (parent, args, context, info) => {

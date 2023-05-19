@@ -323,8 +323,8 @@ module.exports = {
         });
       }
 
-      // for (let i=0;i<usersData.length;i++) {
-      if (usersData.length > 0) {
+      for (let i=0;i<usersData.length;i++) {
+      // if (usersData.length > 0) {
         // SOS 🆘 delete - only test one user at a time
         let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
@@ -410,6 +410,7 @@ module.exports = {
         userData.cvInfo.cvPreparationDone = true;
 
         await userData.save();
+        
       }
 
       return {
