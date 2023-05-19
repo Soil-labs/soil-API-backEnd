@@ -245,8 +245,8 @@ module.exports = {
       // console.log("upsertDoc = ", upsertDoc);
 
       return {
-        message: responseWithWholisticSummary,
-        // success: true,
+        message: summaryBulletPoints,
+        success: true,
       };
     } catch (err) {
       throw new ApolloError(
@@ -266,35 +266,84 @@ module.exports = {
     //   throw new ApolloError("userID is required");
     // }
     try {
-      const getCombinedSummary = async (websiteString) => {
-        const chunks = websiteString.match(/.{1,4000}/g);
-        let combinedSummary = "";
+      // const getCombinedSummary = async (websiteString) => {
+      //   const chunks = websiteString.match(/.{1,4000}/g);
+      //   let combinedSummary = "";
 
-        for (const chunk of chunks) {
-          promptSummary =
-            "I am giving you multiple strings extracted a website of a company. Give me a short summary about this company, here is the partial string extracted from the website: " +
-            chunk;
-          const partialSummaryResponse = await useGPTchatSimple(
-            promptSummary,
-            0.01
-          );
-          wholeSummary = combinedSummary += partialSummaryResponse;
-          console.log(wholeSummary);
-        }
-        return combinedSummary;
-      };
+      //   for (const chunk of chunks) {
+      //     promptSummary =
+      //       "I am giving you multiple strings extracted a website of a company. Give me a short summary about this company, here is the partial string extracted from the website: " +
+      //       chunk;
+      //     const partialSummaryResponse = await useGPTchatSimple(
+      //       promptSummary,
+      //       0.01
+      //     );
+      //     wholeSummary = combinedSummary += partialSummaryResponse;
+      //     console.log(wholeSummary);
+      //   }
+      //   return combinedSummary;
+      // };
 
       //Rename this
-      const responseCombinedSummaries = getCombinedSummary(message);
+      // const responseCombinedSummaries = await getCombinedSummary(message);
 
-      promptWholisticSummary =
-        "I give you a summary that was extracted and combined from a companies website. Your job is to white a more wholistic summary for this company:  " +
-        (await responseCombinedSummaries);
+      // promptWholisticSummary =
+      //   "I give you a summary that was extracted and combined from a companies website. Your job is to white a more wholistic summary for this company:  " +
+      //   responseCombinedSummaries;
 
-      const responseWithWholisticSummary = await useGPTchatSimple(
-        promptWholisticSummary,
-        0.01
-      );
+      // const responseWithWholisticSummary = await useGPTchatSimple(
+      //   promptWholisticSummary,
+      //   0.01
+      // );
+
+      const questions = [
+        "What does your company do?",
+        "What is a unique trait of your company?",
+        "What are the core values of your company?",
+        "What are you working on right now?",
+        "What is your short term plan?",
+        "What is your long term plan?",
+        "Where do you see your company in 5 years?",
+        "What are 3 most important traits of a great employee?",
+        "What do you expect from your employees?",
+        "How do you treat your employees? What are the benefits?",
+        "Are there any unique perks or benefits that employees enjoy while working at your company?",
+        "Do you expect your employees to work remotely or from the office?",
+        "Tell me about growth and professional development opportunities in your company",
+        "Why are you hiring people now?",
+      ];
+
+      // let answersFromWebsite = [];
+
+      // for (let i = 0; i < questions.length; i++) {
+      //   promptAnswerQuestion =
+      //     `I will provide you with a summary that came from the company's website, delineated with """ """.
+      //   """${responseWithWholisticSummary}""". Your job is to answer a question, using this summary. If you don't know the answer just say "DON'T KNOW".
+      //   Here is the question: ` + questions[i];
+
+      //   let answers = await useGPTchatSimple(promptAnswerQuestion, 0);
+
+      //   console.log("answer", answers);
+
+      //   answersFromWebsite.push(answer);
+      // }
+
+      promptAnswerQuestions = `I will give you text extracted from a companies website, delineated with """${message}"""". Your job is to use this text to answer a set of question in this array <${questions}>.Only answer the question if you find the information in the text, if you can't find the information, just say "I DON'T KNOW" and DO NOT use any other phrases except for: "I DON'T KNOW".
+      Also, do not provide the questions in the output, only answers without any labels.
+
+      Example: 
+      1. Some answer that you derived from text.
+      2. Some answer that you derived from text.
+      3. I DON'T KNOW
+      4. Some answer that you derived from text.
+      5. ...
+      
+      `;
+
+      const answers = await useGPTchatSimple(promptAnswerQuestions, 0.05);
+
+      console.log("answer", answers);
+
       // prompt =
       //   'I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. I want you to find experiences in the CV and combine them with a very brief and laconic description of what was done there + the skills that were associated with that experience, but don\'t list more than 5 skills per category. Do not list experiences, descriptions, or skills separately, only list them in relation to other things. For categories, include things like job, education, project, internship, and article. Only have those categories in the output if you find them in the string.\n\nFollow this strict format:\n• Category: name: explanation(be very brief, use very short sentenses) : skills(no more than 3-5 skills)\n\nExample (but do not include these examples in the output, also do not include the label category in the output):\n(\n• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js\n)\n\nHere is the string to extract the information from:\n' +
       //   message;
@@ -344,7 +393,7 @@ module.exports = {
       // console.log("upsertDoc = ", upsertDoc);
 
       return {
-        message: responseWithWholisticSummary,
+        message: answers,
         success: true,
       };
     } catch (err) {
