@@ -260,30 +260,33 @@ module.exports = {
         // find the idx what candidate you will update from the companyData
 
         printC(userID,"5","userID","y")
-        printC(companyData?.candidates?.length,"5","companyData.candidates.length","y")
+        printC(companyID,"5","companyID","y")
+
+        companyData2 = await Company.findOne({ _id: companyID}).select('_id name candidates');
+        printC(companyData2?.candidates?.length,"5","companyData2.candidates.length","y")
 
         // sf0
-        let candidateIdx = companyData?.candidates?.findIndex((candidate) => candidate.userID.toString() == userID.toString());
+        let candidateIdx = companyData2?.candidates?.findIndex((candidate) => candidate.userID.toString() == userID.toString());
 
         printC(candidateIdx,"3","candidateIdx","r")
 
         if (candidateIdx!=-1 && candidateIdx!=undefined) {
-          companyData.candidates[candidateIdx].interviewQuestionsForCandidate = interviewQuestionsForCandidate
+          companyData2.candidates[candidateIdx].interviewQuestionsForCandidate = interviewQuestionsForCandidate
 
         } else {
-          companyData?.candidates?.push({
+          companyData2?.candidates?.push({
             userID: userID,
             interviewQuestionsForCandidate: interviewQuestionsForCandidate,
           })
 
         }
 
-        if (companyData){
-          companyData = await companyData.save();
+        if (companyData2){
+          companyData2 = await companyData2.save();
         }
 
 
-        return companyData
+        return companyData2
 
         
       } catch (err) {
