@@ -1,6 +1,8 @@
 const { AI } = require("../../../models/aiModel");
 const { Node } = require("../../../models/nodeModal");
 const { Members } = require("../../../models/membersModel");
+const { Company } = require("../../../models/companyModel");
+
 
 
 
@@ -897,6 +899,23 @@ module.exports = {
     
 
     try {
+
+      // ------------ Find Modified questions ------------
+      let companyData = await Company.findOne({ _id: companyID }).select('_id candidates');
+
+      const candidate = companyData.candidates.find(candidate => candidate.userID.toString() == userID.toString());
+
+      // find inside candidate Array the questionAskingID
+
+      const newQuestion = candidate?.interviewQuestionsForCandidate?.find(question => question?.originalQuestionID?.toString() == questionAskingID.toString());
+
+      console.log("newQuestion = " , newQuestion)
+
+      if (newQuestion?.personalizedContent != undefined)
+        questionAskingNow = newQuestion.personalizedContent
+      // SDF9
+
+      // ------------ Find Modified questions ------------
 
       // -------------- Prompt of the conversation ------------
       let prompt_conversation = "Conversation:";

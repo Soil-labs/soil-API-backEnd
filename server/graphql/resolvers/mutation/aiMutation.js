@@ -274,21 +274,21 @@ module.exports = {
     }
     try {
       // save userData to DB
-      userData = await Members.findOneAndUpdate(
-        { _id: userID },
-        {
-          cvInfo: {
-            ...userData.cvInfo,
-            cvContent: cvContent,
-            cvPreparationDone: false,
-            cvPreparationBio: false,
-            cvPreparationNodes: false,
-            cvPreparationPreviousProjects: false,
-            cvPreparationMemory: false,
-          },
-        },
-        { new: true }
-      );
+      // userData = await Members.findOneAndUpdate(
+      //   { _id: userID },
+      //   {
+      //     cvInfo: {
+      //       ...userData.cvInfo,
+      //       cvContent: cvContent,
+      //       cvPreparationDone: false,
+      //       cvPreparationBio: false,
+      //       cvPreparationNodes: false,
+      //       cvPreparationPreviousProjects: false,
+      //       cvPreparationMemory: false,
+      //     },
+      //   },
+      //   { new: true }
+      // );
 
       InterviewQuestionCreationUserAPICallF(companyID, userID, cvContent)
 

@@ -33,6 +33,47 @@ module.exports = {
       );
     }
   },
+  findCompanyCandidate: async (parent, args, context, info) => {
+    const { companyID,userID } = args.fields;
+    console.log("Query > findCompanyCandidate > args.fields = ", args.fields);
+
+    if (!companyID) throw new ApolloError("companyID is required")
+
+    if (!userID) throw new ApolloError("userID is required")
+
+
+    try {
+      let companyData = await Company.findOne({ _id: companyID }).select('_id candidates');
+      
+      if (!companyData) throw new ApolloError("Company not found")
+
+      console.log("companyData = " , companyData)
+
+      // find the companyData.candidates userID and return it
+
+      // const candidate = companyData.candidates.find(candidate => candidate.userID.toString() == userID.toString());
+      const index = companyData.candidates.findIndex(candidate => candidate.userID.toString() == userID.toString());
+
+
+      companyData.candidates[index].interviewQuestionsForCandidate = []
+
+      companyData = await companyData.save()
+
+      // console.log("candidate = " , candidate)
+
+      
+
+
+      return  companyData.candidates[index];
+      
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findCompanyCandidate",
+        { component: "companyQuery > findCompanyCandidate" }
+      );
+    }
+  },
   findCompanies: async (parent, args, context, info) => {
     const { _id } = args.fields;
     console.log("Query > findCompanies > args.fields = ", args.fields);
