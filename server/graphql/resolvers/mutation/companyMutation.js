@@ -164,7 +164,7 @@ module.exports = {
         `
         printC(promptJOB_CV,"3","promptJOB_CV","b")
 
-        infoCandidateForJob = await useGPTchatSimple("I am dying",0)
+        infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0)
 
         infoCandidateForJob = `
         Responsibilities of the Candidate:
