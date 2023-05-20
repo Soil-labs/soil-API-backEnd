@@ -152,19 +152,31 @@ module.exports = {
 
         // -------- Create Prompt ---------
         
-        let promptJOB_CV = `
-          JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
+        // let promptJOB_CV = `
+        //   JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
 
-          USER_CV (delimiters <>) <${cvContent.substring(0, 1000)}>
+        //   USER_CV (delimiters <>) <${cvContent.substring(0, 1000)}>
 
-          - Your goal is to collect information from the candidate for the JOB_ROLE.
-          - Analyse for each point of the JOB_ROLE if a Candidate has the right CV info or he is missing something, be creative on the ways that the candidate background can be applied on the role
+        //   - Your goal is to collect information from the candidate for the JOB_ROLE.
+        //   - Analyse for each point of the JOB_ROLE if a Candidate has the right CV info or he is missing something, be creative on the ways that the candidate background can be applied on the role
 
-        smallest number of Bullet points with small summary analyzing the JOB_ROLE for this USER CV:
+        // smallest number of Bullet points with small summary analyzing the JOB_ROLE for this USER CV:
+        // `
+        // printC(promptJOB_CV,"3","promptJOB_CV","b")
+
+        // infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0)
+
+        infoCandidateForJob = `
+        Responsibilities of the Candidate:
+        - The candidate must understand user needs and be able to solve their problems.
+        - The candidate will work independently to innovate and create code.
+        Skills of the Candidate:
+        - Must have knowledge of front-end development, including GraphQL, Next.js, React, and TailwindCSS.
+        Analysis:
+        - The candidate's background in machine learning and deep learning research can be applied to understanding user needs and solving their problems through data analysis and modeling.
+        - The candidate's experience in developing novel solutions and accelerating products can be applied to innovating and creating code independently.
+        - The candidate's programming skills in Python and C++ can be applied to front
         `
-        printC(promptJOB_CV,"3","promptJOB_CV","b")
-
-        infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0)
 
         printC(infoCandidateForJob,"3","infoCandidateForJob","r")
 
@@ -247,9 +259,9 @@ module.exports = {
 
         // find the idx what candidate you will update from the companyData
 
-        printC(companyData.candidates.length,"5","companyData.candidates.length","y")
-
         printC(userID,"5","userID","y")
+        printC(companyData?.candidates?.length,"5","companyData.candidates.length","y")
+
         // sf0
         let candidateIdx = companyData?.candidates?.findIndex((candidate) => candidate.userID.toString() == userID.toString());
 
