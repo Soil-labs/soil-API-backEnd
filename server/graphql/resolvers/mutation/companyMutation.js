@@ -97,79 +97,79 @@ module.exports = {
 
         const questionNow = questionData[0];
 
-        // ------- Find best Open Job Role Memories ----------
-        filter = {
-          label: "Company_TrainEdenAI_memory",
-          _id: companyID,
-        };
-
-        bestJobRoleMemories = await getMemory(
-          questionNow.content,
-          filter,
-          (topK = 6),
-          250
-        );
-
-        // printC(bestJobRoleMemories,"3","bestJobRoleMemories","p")
-        // ------- Find best Open Job Role Memories ----------
-
-
-        // // ------- Find best Open CV Memories ----------
+        // // ------- Find best Open Job Role Memories ----------
         // filter = {
-        //   label: "CV_user_memory",
-        //   _id: userID,
+        //   label: "Company_TrainEdenAI_memory",
+        //   _id: companyID,
         // };
 
-        // bestUserCVMemories = await getMemory(
+        // bestJobRoleMemories = await getMemory(
         //   questionNow.content,
         //   filter,
-        //   (topK = 5),
-        //   350
+        //   (topK = 6),
+        //   250
         // );
 
-        // // printC(bestUserCVMemories,"3","bestUserCVMemories","r")
-        // // ------- Find best Open CV Memories ----------
-
-        // ----------- CV to Summary -------------
-        let cvContentPrompt = `
-          CV CONTENT (delimiters <>): <${cvContent}>
-
-          - You are a recruiter with task to understand a candidate's CV.
-          - Your goal is to create a Summary of the CV CONTENT
-
-          Summary: 
-        `
-        printC(cvContentPrompt,"3","cvContentPrompt","b")
-
-        cvSummary = await useGPTchatSimple(cvContentPrompt,0)
-
-        printC(cvSummary,"2","cvSummary","r")
-        // sdf0
-        // ----------- CV to Summary -------------
-
-        console.log("----------------------------" )
+        // // printC(bestJobRoleMemories,"3","bestJobRoleMemories","p")
+        // // ------- Find best Open Job Role Memories ----------
 
 
-        // -------- Create Prompt ---------
+        // // // ------- Find best Open CV Memories ----------
+        // // filter = {
+        // //   label: "CV_user_memory",
+        // //   _id: userID,
+        // // };
+
+        // // bestUserCVMemories = await getMemory(
+        // //   questionNow.content,
+        // //   filter,
+        // //   (topK = 5),
+        // //   350
+        // // );
+
+        // // // printC(bestUserCVMemories,"3","bestUserCVMemories","r")
+        // // // ------- Find best Open CV Memories ----------
+
+        // // ----------- CV to Summary -------------
+        // let cvContentPrompt = `
+        //   CV CONTENT (delimiters <>): <${cvContent}>
+
+        //   - You are a recruiter with task to understand a candidate's CV.
+        //   - Your goal is to create a Summary of the CV CONTENT
+
+        //   Summary: 
+        // `
+        // printC(cvContentPrompt,"3","cvContentPrompt","b")
+
+        // cvSummary = await useGPTchatSimple(cvContentPrompt,0)
+
+        // printC(cvSummary,"2","cvSummary","r")
+        // // sdf0
+        // // ----------- CV to Summary -------------
+
+        // console.log("----------------------------" )
+
+
+        // // -------- Create Prompt ---------
         
-        let promptJOB_CV = `
-          JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
+        // let promptJOB_CV = `
+        //   JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
 
-          USER_CV (delimiters <>) <${cvSummary}>
+        //   USER_CV (delimiters <>) <${cvSummary}>
 
-          - Your goal is to collect information from the candidate for the JOB_ROLE.
-          - Analyse for each point of the JOB_ROLE if a Candidate has the right CV info or he is missing something, be creative on the ways that the candidate background can be applied on the role
+        //   - Your goal is to collect information from the candidate for the JOB_ROLE.
+        //   - Analyse for each point of the JOB_ROLE if a Candidate has the right CV info or he is missing something, be creative on the ways that the candidate background can be applied on the role
 
-        smallest number of Bullet points with small summary analyzing the JOB_ROLE for this USER CV:
-        `
-        printC(promptJOB_CV,"3","promptJOB_CV","b")
+        // smallest number of Bullet points with small summary analyzing the JOB_ROLE for this USER CV:
+        // `
+        // printC(promptJOB_CV,"3","promptJOB_CV","b")
 
-        infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0)
+        // infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0)
 
-        printC(infoCandidateForJob,"3","infoCandidateForJob","r")
+        // printC(infoCandidateForJob,"3","infoCandidateForJob","r")
 
-        // sdf
-        // -------- Create Prompt ---------
+        // // sdf
+        // // -------- Create Prompt ---------
 
         
         questionsPrompt = ""
@@ -181,6 +181,20 @@ module.exports = {
         }
 
         printC(questionsPrompt,"3","questionsPrompt","b")
+
+        infoCandidateForJob = `
+        - Responsibilities of the Candidate: The candidate must understand user needs and be able to solve their problems.
+        - Analysis: While Miltiadis has experience in developing solutions for various projects, there is no specific mention of understanding user needs and solving their problems. However, his expertise in computer vision and deep learning can be applied to create innovative solutions for user problems.
+        - Skills of the Candidate: Must have knowledge of front-end development, including GraphQL, Next.js, React, and TailwindCSS.
+        - Analysis: Miltiadis' CV does not mention any experience or knowledge in front-end development technologies like GraphQL, Next.js, React, and TailwindCSS. Therefore, he may not be the ideal candidate for this specific skill set.
+        - Responsibilities of the Candidate: The candidate will work independently to innovate and create code.
+        - Analysis: Miltiadis has over 11 years of experience in computer vision, machine learning, and robotics, and has worked on various projects independently. Therefore, he has the necessary experience to work independently and innovate to create code.
+        - General info of Company: Soil is creating a marketplace for companies and talent using AI and blockchain.
+        - Analysis: There is no specific mention of Miltiadis' experience in AI and blockchain technologies. However, his expertise in computer vision and deep learning can be applied to create innovative solutions for Soil's marketplace.
+        - Values of Company: Soil values innovation and user discovery.
+        - Analysis: Miltiadis has a passion for optimized software development and research, and has worked on various projects related to sequence models, robotics, and autonomous OCR dictating systems for blind people. Therefore, he has the necessary experience to contribute to Soil's value of innovation and user discovery.
+        - Values of Company: The company culture is fun and collaborative.
+        - Analysis: There is no specific mention of Miltiadis' experience in a`
 
 
         let promptNewQuestions = `
@@ -233,7 +247,9 @@ module.exports = {
 
         // find the idx what candidate you will update from the companyData
 
-        printC(companyData.candidates,"3","companyData.candidates","p")
+        printC(companyData.candidates.length,"5","companyData.candidates.length","y")
+
+        printC(userID,"5","userID","y")
         // sf0
         let candidateIdx = companyData?.candidates?.findIndex((candidate) => candidate.userID.toString() == userID.toString());
 
