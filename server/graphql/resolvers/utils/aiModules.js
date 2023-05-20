@@ -93,13 +93,14 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
     };
 
     res = await request(
+      // "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
       "https://soil-api-backend-kgfromaicron.up.railway.app/graphql",
       mutation,
       variables
     );
 
     // console.log("res = " , res)
-    // console.log("res.messageMapKG_V2", res.messageMapKG_V2);
+    console.log("res.interviewQuestionCreationUser", res.interviewQuestionCreationUser);
     return res.interviewQuestionCreationUser;
   };
 

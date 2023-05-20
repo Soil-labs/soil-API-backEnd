@@ -111,6 +111,10 @@ module.exports = `
     input findCompaniesInput {
         _id: ID,
     }
+    input findCompanyCandidateInput {
+        companyID:  ID,
+        userID: ID,
+    }
 
     input addEmployeesCompanyInput {
         companyID: ID
