@@ -111,7 +111,7 @@ module.exports = `
     input findCompaniesInput {
         _id: ID,
     }
-    input findCompanyCandidateInput {
+    input deleteCompanyCandidateInput {
         companyID:  ID,
         userID: ID,
     }
