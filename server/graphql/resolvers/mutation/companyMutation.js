@@ -114,40 +114,40 @@ module.exports = {
         // ------- Find best Open Job Role Memories ----------
 
 
-        // // // ------- Find best Open CV Memories ----------
-        // // filter = {
-        // //   label: "CV_user_memory",
-        // //   _id: userID,
-        // // };
+        // // ------- Find best Open CV Memories ----------
+        // filter = {
+        //   label: "CV_user_memory",
+        //   _id: userID,
+        // };
 
-        // // bestUserCVMemories = await getMemory(
-        // //   questionNow.content,
-        // //   filter,
-        // //   (topK = 5),
-        // //   350
-        // // );
+        // bestUserCVMemories = await getMemory(
+        //   questionNow.content,
+        //   filter,
+        //   (topK = 5),
+        //   350
+        // );
 
-        // // // printC(bestUserCVMemories,"3","bestUserCVMemories","r")
-        // // // ------- Find best Open CV Memories ----------
+        // // printC(bestUserCVMemories,"3","bestUserCVMemories","r")
+        // // ------- Find best Open CV Memories ----------
 
-        // // ----------- CV to Summary -------------
-        // let cvContentPrompt = `
-        //   CV CONTENT (delimiters <>): <${cvContent}>
+        // ----------- CV to Summary -------------
+        let cvContentPrompt = `
+          CV CONTENT (delimiters <>): <${cvContent}>
 
-        //   - You are a recruiter with task to understand a candidate's CV.
-        //   - Your goal is to create a Summary of the CV CONTENT
+          - You are a recruiter with task to understand a candidate's CV.
+          - Your goal is to create a Summary of the CV CONTENT
 
-        //   Summary: 
-        // `
-        // printC(cvContentPrompt,"3","cvContentPrompt","b")
+          Summary: 
+        `
+        printC(cvContentPrompt,"3","cvContentPrompt","b")
 
-        // cvSummary = await useGPTchatSimple(cvContentPrompt,0)
+        cvSummary = await useGPTchatSimple(cvContentPrompt,0)
 
-        // printC(cvSummary,"2","cvSummary","r")
-        // // sdf0
-        // // ----------- CV to Summary -------------
+        printC(cvSummary,"2","cvSummary","r")
+        // sdf0
+        // ----------- CV to Summary -------------
 
-        // console.log("----------------------------" )
+        console.log("----------------------------" )
 
 
         // -------- Create Prompt ---------
@@ -155,7 +155,7 @@ module.exports = {
         let promptJOB_CV = `
           JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
 
-          USER_CV (delimiters <>) <${cvContent.substring(0, 1000)}>
+          USER_CV (delimiters <>) <${cvSummary}>
 
           - Your goal is to collect information from the candidate for the JOB_ROLE.
           - Analyse for each point of the JOB_ROLE if a Candidate has the right CV info or he is missing something, be creative on the ways that the candidate background can be applied on the role
@@ -166,17 +166,17 @@ module.exports = {
 
         infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0)
 
-        infoCandidateForJob = `
-        Responsibilities of the Candidate:
-        - The candidate must understand user needs and be able to solve their problems.
-        - The candidate will work independently to innovate and create code.
-        Skills of the Candidate:
-        - Must have knowledge of front-end development, including GraphQL, Next.js, React, and TailwindCSS.
-        Analysis:
-        - The candidate's background in machine learning and deep learning research can be applied to understanding user needs and solving their problems through data analysis and modeling.
-        - The candidate's experience in developing novel solutions and accelerating products can be applied to innovating and creating code independently.
-        - The candidate's programming skills in Python and C++ can be applied to front
-        `
+        // infoCandidateForJob = `
+        // Responsibilities of the Candidate:
+        // - The candidate must understand user needs and be able to solve their problems.
+        // - The candidate will work independently to innovate and create code.
+        // Skills of the Candidate:
+        // - Must have knowledge of front-end development, including GraphQL, Next.js, React, and TailwindCSS.
+        // Analysis:
+        // - The candidate's background in machine learning and deep learning research can be applied to understanding user needs and solving their problems through data analysis and modeling.
+        // - The candidate's experience in developing novel solutions and accelerating products can be applied to innovating and creating code independently.
+        // - The candidate's programming skills in Python and C++ can be applied to front
+        // `
 
         printC(infoCandidateForJob,"3","infoCandidateForJob","r")
 
