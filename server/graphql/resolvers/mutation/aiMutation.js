@@ -290,7 +290,7 @@ module.exports = {
       //   { new: true }
       // );
 
-      InterviewQuestionCreationUserAPICallF(companyID, userID, cvContent)
+      await InterviewQuestionCreationUserAPICallF(companyID, userID, cvContent)
 
       return {
         success: true,
