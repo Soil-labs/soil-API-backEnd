@@ -152,17 +152,17 @@ module.exports = {
 
         // -------- Create Prompt ---------
         
-        // let promptJOB_CV = `
-        //   JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
+        let promptJOB_CV = `
+          JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
 
-        //   USER_CV (delimiters <>) <${cvContent.substring(0, 1000)}>
+          USER_CV (delimiters <>) <${cvContent.substring(0, 1000)}>
 
-        //   - Your goal is to collect information from the candidate for the JOB_ROLE.
-        //   - Analyse for each point of the JOB_ROLE if a Candidate has the right CV info or he is missing something, be creative on the ways that the candidate background can be applied on the role
+          - Your goal is to collect information from the candidate for the JOB_ROLE.
+          - Analyse for each point of the JOB_ROLE if a Candidate has the right CV info or he is missing something, be creative on the ways that the candidate background can be applied on the role
 
-        // smallest number of Bullet points with small summary analyzing the JOB_ROLE for this USER CV:
-        // `
-        // printC(promptJOB_CV,"3","promptJOB_CV","b")
+        smallest number of Bullet points with small summary analyzing the JOB_ROLE for this USER CV:
+        `
+        printC(promptJOB_CV,"3","promptJOB_CV","b")
 
         infoCandidateForJob = await useGPTchatSimple("I am dying",0)
 
@@ -278,7 +278,9 @@ module.exports = {
 
         }
 
-        companyData = await companyData.save();
+        if (companyData){
+          companyData = await companyData.save();
+        }
 
 
         return companyData
