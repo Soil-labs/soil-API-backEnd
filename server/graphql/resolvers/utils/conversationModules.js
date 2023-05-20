@@ -140,11 +140,13 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
         else return -1
         
       });
-      if (index !== -1) {
-        arr1[index] = {
-          ...employee2,
-          readyToDisplay: false,
-        }
+      if (index != -1) {
+        // arr1[index] = {
+        //   ...employee2,
+        //   readyToDisplay: false,
+        // }
+        arr1[index].readyToDisplay = false
+        arr1[index].userID = employee2.userID
       } else {
         arr1.push({
           ...employee2,

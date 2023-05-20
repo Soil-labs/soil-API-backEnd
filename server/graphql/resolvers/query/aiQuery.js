@@ -1110,11 +1110,11 @@ module.exports = {
 
 
 
-      //  ------------- Update the Answered Questions ----------------
-      resultConv = await updateAnsweredQuestionFunc(resultConv,conversation,questionAskingNow,questionAskingID,originalTimesAsked)
-      //  ------------- Update the Answered Questions ----------------
+      // //  ------------- Update the Answered Questions ----------------
+      // resultConv = await updateAnsweredQuestionFunc(resultConv,conversation,questionAskingNow,questionAskingID,originalTimesAsked)
+      // //  ------------- Update the Answered Questions ----------------
 
-      conversationID = resultConv._id
+      // conversationID = resultConv._id
     }
 
 
@@ -1122,10 +1122,10 @@ module.exports = {
 
     
       return {
-        reply: reply,
-        conversationID: conversationID,
+        reply: "sdf",
+        conversationID: "dsfs",
         questionAskingNow: questionAskingNowA,
-        // unansweredQuestions: unansweredQuestions,
+        // // unansweredQuestions: unansweredQuestions,
         timesAsked: timesAsked,
         unansweredQuestionsArr: unansweredQuestionsArr,
       };

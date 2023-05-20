@@ -445,13 +445,13 @@ module.exports = {
       try {
 
 
-        let candidatesN = await updateEmployees(companyData.candidates, candidates,"userID");
+        // let candidatesN = await updateEmployees(companyData.candidates, candidates,"userID");
 
-        console.log("candidatesN = " , candidatesN)
-        // sdf00
+        // console.log("candidatesN = " , candidatesN)
+        // // sdf00
 
 
-        await checkAndAddCompanyToMember(usersData,companyID)
+        // await checkAndAddCompanyToMember(usersData,companyID)
         
 
 
@@ -459,7 +459,7 @@ module.exports = {
         let companyDataN = await Company.findOneAndUpdate(
           { _id: companyID },
           { 
-            candidates: candidatesN,
+            candidates: companyData.candidates,
             candidatesReadyToDisplay: false 
           },
           { new: true }
@@ -1305,11 +1305,13 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
       else return -1
       
     });
-    if (index !== -1) {
-      arr1[index] = {
-        ...employee2,
-        readyToDisplay: false,
-      }
+    if (index != -1) {
+      // arr1[index] = {
+      //   ...employee2,
+      //   ...arr1[index],
+      //   readyToDisplay: false,
+      // }
+      arr1[index].readyToDisplay = false
       if (employee2.conversationID){
         arr1[index].conversationID = employee2.conversationID
       }

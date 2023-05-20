@@ -20,7 +20,7 @@ const {
   useGPTchatSimple,
   MessageMapKG_V2APICallF,
   deletePineCone,
-  InterviewQuestionCreationUserAPICallF,
+  InterviewQuestionCreationUserAPICallF,wait
 } = require("../utils/aiModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
@@ -273,7 +273,7 @@ module.exports = {
       throw new ApolloError("User not found");
     }
     try {
-      // save userData to DB
+      
       userData = await Members.findOneAndUpdate(
         { _id: userID },
         {
@@ -292,9 +292,13 @@ module.exports = {
 
       InterviewQuestionCreationUserAPICallF(companyID, userID, cvContent)
 
+      await wait(40000)
+
       return {
         success: true,
       };
+      
+
     } catch (err) {
       throw new ApolloError(
         err.message,
