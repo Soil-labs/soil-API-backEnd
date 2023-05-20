@@ -87,7 +87,7 @@ module.exports = {
 
           console.log("convDataNow = " , convDataNow)
 
-          // await updateCompanyInterviewedOfUser(convDataNow.userID)
+          await updateCompanyInterviewedOfUser(convDataNow.userID)
           // asdf9
 
 
