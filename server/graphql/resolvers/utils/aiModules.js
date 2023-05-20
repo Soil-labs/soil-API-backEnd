@@ -1424,10 +1424,12 @@ function nodeToMaxScore(x) {
 }
 
 
-
-
+async function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 module.exports = {
+    wait,
     nodes_aiModule,
     totalScore_aiModule,
     showObject,
