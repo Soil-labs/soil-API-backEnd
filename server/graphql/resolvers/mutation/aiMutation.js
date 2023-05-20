@@ -340,7 +340,7 @@ module.exports = {
       
       `;
 
-      const answers = await useGPTchatSimple(promptAnswerQuestions, 0.05);
+      const answers = await useGPTchatSimple(promptAnswerQuestions, 0.05, 500);
 
       console.log("answer", answers);
 
