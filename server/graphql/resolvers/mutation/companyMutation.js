@@ -445,13 +445,13 @@ module.exports = {
       try {
 
 
-        // let candidatesN = await updateEmployees(companyData.candidates, candidates,"userID");
+        let candidatesN = await updateEmployees(companyData.candidates, candidates,"userID");
 
-        // console.log("candidatesN = " , candidatesN)
-        // // sdf00
+        console.log("candidatesN = " , candidatesN)
+        // sdf00
 
 
-        // await checkAndAddCompanyToMember(usersData,companyID)
+        await checkAndAddCompanyToMember(usersData,companyID)
         
 
 

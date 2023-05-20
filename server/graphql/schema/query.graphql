@@ -66,7 +66,7 @@ module.exports = `
            #  ---------- COMPANY QUERY -------
             findCompany(fields:findCompanyInput): Company
             findCompanies(fields:findCompaniesInput): [Company]
-            findCompanyCandidate(fields:findCompanyCandidateInput): CandidateType
+            deleteCompanyCandidate(fields:deleteCompanyCandidateInput): CandidateType
 
 
 

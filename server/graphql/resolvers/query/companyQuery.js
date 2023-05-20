@@ -33,9 +33,9 @@ module.exports = {
       );
     }
   },
-  findCompanyCandidate: async (parent, args, context, info) => {
+  deleteCompanyCandidate: async (parent, args, context, info) => {
     const { companyID,userID } = args.fields;
-    console.log("Query > findCompanyCandidate > args.fields = ", args.fields);
+    console.log("Query > deleteCompanyCandidate > args.fields = ", args.fields);
 
     if (!companyID) throw new ApolloError("companyID is required")
 
@@ -69,8 +69,8 @@ module.exports = {
     } catch (err) {
       throw new ApolloError(
         err.message,
-        err.extensions?.code || "findCompanyCandidate",
-        { component: "companyQuery > findCompanyCandidate" }
+        err.extensions?.code || "deleteCompanyCandidate",
+        { component: "companyQuery > deleteCompanyCandidate" }
       );
     }
   },
