@@ -1002,8 +1002,21 @@ module.exports = {
             // nextQuestion = "Next Question to Answer: " + questionAskingNowA
 
             resT = unansweredQuestionsArr.shift()
-            console.log("resT ---f-f-f-f-= " , resT) 
-            questionAskingNowA = questionAskingNow
+
+
+            const newQuestion = candidate?.interviewQuestionsForCandidate?.find(question => question?.originalQuestionID?.toString() == unansweredQuestionsArr[0].questionID.toString());
+
+            // console.log("newQuestion = " , newQuestion)
+            // sdf9
+
+            if (newQuestion?.personalizedContent != undefined)
+              questionAskingNowA = newQuestion.personalizedContent
+            else 
+              questionAskingNowA = unansweredQuestionsArr[0].questionContent
+
+
+            // console.log("resT ---f-f-f-f-= " , resT) 
+            // questionAskingNowA = unansweredQuestionsArr[0].questionContent
             nextQuestion = `NEW QUESTION ASK: "` + questionAskingNowA + `"`
           }
           timesAsked = 1
@@ -1030,7 +1043,13 @@ module.exports = {
 
         resT = unansweredQuestionsArr.shift()
 
-        questionAskingNowA = questionAskingNow
+        const newQuestion = candidate?.interviewQuestionsForCandidate?.find(question => question?.originalQuestionID?.toString() == unansweredQuestionsArr[0].questionID.toString());
+
+        if (newQuestion?.personalizedContent != undefined)
+          questionAskingNowA = newQuestion.personalizedContent
+        else 
+          questionAskingNowA = unansweredQuestionsArr[0].questionContent
+        // questionAskingNowA = unansweredQuestionsArr[0].questionContent
         nextQuestion = `NEW QUESITON ASK: "` + questionAskingNowA + `"`
 
         // unansweredQuestionsArr.shift()
