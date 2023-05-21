@@ -63,6 +63,40 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
     return res.messageMapKG_V2.keywords;
   };
 
+  const MessageMapKG_V4APICallF = async (textToMap) => {
+    const query = gql`
+      query messageMapKG_V4($fields: messageMapKG_V4Input) {
+        messageMapKG_V4(fields: $fields) {
+          keywords {
+            keyword
+            confidence
+            nodeID
+            node {
+              _id
+              name
+            }
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      fields: {
+        message: textToMap,
+      },
+    };
+
+    res = await request(
+      "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+      query,
+      variables
+    );
+
+    // console.log("res = " , res)
+    // console.log("res.messageMapKG_V4", res.messageMapKG_V4);
+    return res.messageMapKG_V4.keywords;
+  };
+
   const InterviewQuestionCreationUserAPICallF = async (companyID,userID,cvContent) => {
     const mutation = gql`
       mutation interviewQuestionCreationUser($fields: interviewQuestionCreationUserInput) {
@@ -1451,6 +1485,7 @@ module.exports = {
     getMemory,
     modifyQuestionFromCVMemory,
     MessageMapKG_V2APICallF,
+    MessageMapKG_V4APICallF,
     InterviewQuestionCreationUserAPICallF,
     createEmbeddingsGPT,
     askQuestionAgain,

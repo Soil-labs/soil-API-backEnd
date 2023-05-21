@@ -19,6 +19,7 @@ const { printC } = require("../../../printModule");
 const {
   useGPTchatSimple,
   MessageMapKG_V2APICallF,
+  MessageMapKG_V4APICallF,
   deletePineCone,
   InterviewQuestionCreationUserAPICallF,wait
 } = require("../utils/aiModules");
@@ -363,6 +364,8 @@ module.exports = {
           userData.cvInfo.cvPreparationBio = true;
         }
 
+        
+
         // ------- Calculate Summary -------
 
         // -------Calculate Previous Jobs -------
@@ -399,11 +402,26 @@ module.exports = {
           // if (true) {
 
           promptCVtoMap =
-            "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.\nDo not have any other words except for skills. \n\nExaple output: Skills: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
-            cvContent;
+            `I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. 
+            Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.
+            Do not have any other words except for skills. 
+
+            Exaple output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
+            
+            CV Content (delimiters <>): <${cvContent}>
+
+            Skills Result:
+            `
 
           textForMapping = await useGPT(promptCVtoMap, 0.7);
-          let nodesN = await MessageMapKG_V2APICallF(textForMapping);
+
+
+          printC(textForMapping, "3", "textForMapping", "b");
+          // sdf00
+          
+
+
+          let nodesN = await MessageMapKG_V4APICallF(textForMapping);
 
           printC(nodesN, "3", "nodesN", "b");
 
