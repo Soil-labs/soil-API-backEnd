@@ -1003,7 +1003,7 @@ module.exports = {
 
             resT = unansweredQuestionsArr.shift()
             console.log("resT ---f-f-f-f-= " , resT) 
-            questionAskingNowA = unansweredQuestionsArr[0].questionContent
+            questionAskingNowA = questionAskingNow
             nextQuestion = `NEW QUESTION ASK: "` + questionAskingNowA + `"`
           }
           timesAsked = 1
@@ -1030,7 +1030,7 @@ module.exports = {
 
         resT = unansweredQuestionsArr.shift()
 
-        questionAskingNowA = unansweredQuestionsArr[0].questionContent
+        questionAskingNowA = questionAskingNow
         nextQuestion = `NEW QUESITON ASK: "` + questionAskingNowA + `"`
 
         // unansweredQuestionsArr.shift()

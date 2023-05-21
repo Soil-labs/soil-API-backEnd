@@ -147,6 +147,8 @@ module.exports = {
         // sdf0
         // ----------- CV to Summary -------------
 
+        // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
+
         console.log("----------------------------" )
 
 
@@ -166,17 +168,20 @@ module.exports = {
 
         infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0)
 
-        // infoCandidateForJob = `
-        // Responsibilities of the Candidate:
-        // - The candidate must understand user needs and be able to solve their problems.
-        // - The candidate will work independently to innovate and create code.
-        // Skills of the Candidate:
-        // - Must have knowledge of front-end development, including GraphQL, Next.js, React, and TailwindCSS.
-        // Analysis:
-        // - The candidate's background in machine learning and deep learning research can be applied to understanding user needs and solving their problems through data analysis and modeling.
-        // - The candidate's experience in developing novel solutions and accelerating products can be applied to innovating and creating code independently.
-        // - The candidate's programming skills in Python and C++ can be applied to front
-        // `
+//         infoCandidateForJob = `
+//         - Responsibilities of the Candidate: The candidate must understand user needs and be able to solve their problems.
+//     - Analysis: Lolita's experience in product ownership and stakeholder management shows that she has a strong understanding of user needs and can effectively solve their problems.
+// - Skills of the Candidate: Must have knowledge of front-end development, including GraphQL, Next.js, React, and TailwindCSS.
+//     - Analysis: Lolita's CV does not mention any experience or knowledge in front-end development, so she may not be the best fit for this specific skill requirement.
+// - Responsibilities of the Candidate: The candidate will work independently to innovate and create code.
+//     - Analysis: Lolita's experience in leadership and continuous improvement suggests that she can work independently and innovate, but her lack of experience in front-end development may limit her ability to create code.
+// - General info of Company: Soil is creating a marketplace for companies and talent using AI and blockchain.
+//     - Analysis: No specific relevance to Lolita's CV, but her background in IT and international relations may give her a unique perspective on the use of AI and blockchain in the marketplace.
+// - Values of Company: Soil values innovation and user discovery.
+//     - Analysis: Lolita's experience in product ownership and stakeholder management aligns well with Soil's values of innovation and user discovery.
+// - Values of Company: The company culture is fun and collaborative.
+//     - Analysis: No specific relevance to Lolita's CV, but her experience in leadership and community volunteering may suggest that she can contribute to a fun and collaborative company culture.
+//         `
 
         printC(infoCandidateForJob,"3","infoCandidateForJob","r")
 
@@ -218,6 +223,8 @@ module.exports = {
           - You can improve each of the QUESTINOS using any of the NOTES
           - you can only ask 1 question at a time
           - You should stay really close to the meaning of the QUESTIONS!
+          - You should use as many facts from the NOTES related to the CV of the candidate to make it relevant
+          - If from NOTES candidate don't have some skills, ask them directly if they do i the Improved QUESTIONS
           
           
           Improved QUESTIONS: 
@@ -247,6 +254,10 @@ module.exports = {
 
         for (let i=0;i<improvedQuestionsArray.length;i++){
           const improvedQuestion = improvedQuestionsArray[i];
+
+          
+          printC(questionData[i],"5","questionData[i]","y")
+
 
           interviewQuestionsForCandidate.push({
             originalQuestionID: questionData[i]._id,
