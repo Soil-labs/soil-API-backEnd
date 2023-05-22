@@ -47,7 +47,7 @@ module.exports = {
         }
         positionData = await new Position({
           name,
-          company: companyID,
+          companyID: companyID,
         });
 
         await positionData.save();
