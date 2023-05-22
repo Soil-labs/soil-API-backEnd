@@ -64,6 +64,13 @@ module.exports = `
         conversation: [conversationType],
         summaryQuestions: [SummaryQuestionType]
         interviewQuestionsForCandidate: [interviewQuestionsForCandidateType]
+        notesInterview: [notesInterviewType]
+    }
+
+    type notesInterviewType {
+        categoryName: String,
+        score: Float,
+        reason: [String],
     }
 
     type interviewQuestionsForCandidateType {

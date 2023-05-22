@@ -1124,7 +1124,7 @@ module.exports = {
     if (conversation.length >=2){
 
       // ------------- Update the Conversation MEMORY ----------------
-      resultConv = await findAndUpdateConversationFunc(userID,conversation)
+      resultConv = await findAndUpdateConversationFunc(userID,conversation,companyID)
       // ------------- Update the Conversation MEMORY ----------------
 
 

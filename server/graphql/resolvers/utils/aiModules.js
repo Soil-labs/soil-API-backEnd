@@ -63,6 +63,37 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
     return res.messageMapKG_V2.keywords;
   };
 
+
+  const CandidateNotesEdenAIAPICallF = async (memberID,companyID) => {
+    const query = gql`
+      query candidateNotesEdenAI($fields: candidateNotesEdenAIInput) {
+        candidateNotesEdenAI(fields: $fields) {
+          categoryName
+          score
+          reason
+        }
+      }
+    `;
+
+    const variables = {
+      fields: {
+        memberID: memberID,
+        companyID: companyID,
+      },
+    };
+
+    res = await request(
+      // "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+      "https://soil-api-backend-kgfromaicron.up.railway.app/graphql",
+      query,
+      variables
+    );
+
+    
+    return res.candidateNotesEdenAI;
+  };
+
+
   const MessageMapKG_V4APICallF = async (textToMap) => {
     const query = gql`
       query messageMapKG_V4($fields: messageMapKG_V4Input) {
@@ -1489,4 +1520,5 @@ module.exports = {
     InterviewQuestionCreationUserAPICallF,
     createEmbeddingsGPT,
     askQuestionAgain,
+    CandidateNotesEdenAIAPICallF,
   };

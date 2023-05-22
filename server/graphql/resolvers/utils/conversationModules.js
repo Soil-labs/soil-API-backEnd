@@ -161,7 +161,7 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
   }
 
 
-async function findAndUpdateConversationFunc(userID,conversation) {
+async function findAndUpdateConversationFunc(userID,conversation,companyID) {
 
     convKey = await concatenateFirstTwoMessages(conversation);
 
@@ -179,6 +179,7 @@ async function findAndUpdateConversationFunc(userID,conversation) {
       existingConversation.conversation = conversation;
       existingConversation.updatedAt = Date.now();
       existingConversation.summaryReady = false;
+      existingConversation.companyID = companyID;
 
       resultConv = await existingConversation.save();
 
@@ -189,6 +190,7 @@ async function findAndUpdateConversationFunc(userID,conversation) {
         convKey,
         userID,
         conversation,
+        companyID,
         summaryReady: false,
         summary: [],
         updatedAt: Date.now(),

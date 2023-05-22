@@ -65,6 +65,11 @@ const companyModel = mongoose.Schema({
       originalContent: String,
       personalizedContent: String,
     }],
+    notesInterview: [{
+      categoryName: String,
+      score: Number,
+      reason: [String],
+    }]
   }],
 
 });
