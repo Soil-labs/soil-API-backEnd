@@ -3005,6 +3005,23 @@ module.exports = {
       
       
 
+      // promptAttributeUser = `
+      // You have as input a conversation between an Recruiter and a Candidate
+
+      // Conversation is inside <>: <${promptConv}>
+
+      // The Recruiter is trying to find out the Candidate's character attributes
+
+      // Attribute Categories are inside <>: <${promptAttribute}>
+
+      // You need to give points from 0 to 10 in every Attribute based on the Conversation, and the reason that you give this points
+
+      // For example: 
+      //   Attribute 1: ${attributes[0]} - 5 Reason: ...
+      //   Attribute 2: ${attributes[1]} - 3 Reason: ...
+
+      // Answer
+      // `
       promptAttributeUser = `
       You have as input a conversation between an Recruiter and a Candidate
 
@@ -3014,16 +3031,19 @@ module.exports = {
 
       Attribute Categories are inside <>: <${promptAttribute}>
 
-      You need to give points from 0 to 10 in every Attribute based on the Conversation, and the reason that you give this points
+      Give a score 0 to 10 in every Attribute based on the Conversation, and the reason
 
       For example: 
         Attribute 1: ${attributes[0]} - 5 Reason: ...
         Attribute 2: ${attributes[1]} - 3 Reason: ...
 
-      Answer
+      Answer, the reason for every attribute can only have 3-6 words:
       `
 
       evaluateAttributes = await useGPTchatSimple(promptAttributeUser)
+
+      // console.log("evaluateAttributes = " , evaluateAttributes)
+      // df9
       // evaluateAttributes = ` Attribute 1: Communication skills - 7 Reason: The candidate was able to clearly express their experience and skills related to the job requirements. However, there were some moments where they needed clarification and repetition from the recruiter.
 
       // Attribute 2: Relevant experience - 9 Reason: The candidate has over 11 years of experience in Computer Vision, Machine Learning, and Robotics, as well as 5 years of experience in front-end engineering. They also have experience in leadership roles in both areas.
@@ -3117,6 +3137,8 @@ module.exports = {
       }
 
       console.log("promptConv = " , promptConv)
+
+      // sdf0
 
 
       const noteCategories = [
