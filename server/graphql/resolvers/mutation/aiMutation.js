@@ -21,7 +21,8 @@ const {
   MessageMapKG_V2APICallF,
   MessageMapKG_V4APICallF,
   deletePineCone,
-  InterviewQuestionCreationUserAPICallF,wait
+  InterviewQuestionCreationUserAPICallF,
+  wait,
 } = require("../utils/aiModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
@@ -163,7 +164,7 @@ module.exports = {
         paragraph;
 
       summary = await useGPT(prompt, 0.7);
-      // summary = "The conversation between the user and recruiter was about finding a Designer for the user's company. The desired skills for the designer were the ability to work well in a team, and proficiency in Figma and wireframe design. The user's company is working with a web3 NFT marketplace."
+      // summary = "The conversation between the user and recruiter was about finding a Designer for the user's position. The desired skills for the designer were the ability to work well in a team, and proficiency in Figma and wireframe design. The user's position is working with a web3 NFT marketplace."
 
       embed_summary = await createEmbeddingsGPT(summary);
 
@@ -198,9 +199,21 @@ module.exports = {
       throw new ApolloError("userID is required");
     }
     try {
-      prompt =
-        'I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. I want you to find experiences in the CV and combine them with a very brief and laconic description of what was done there + the skills that were associated with that experience, but don\'t list more than 5 skills per category. Do not list experiences, descriptions, or skills separately, only list them in relation to other things. For categories, include things like job, education, project, internship, and article. Only have those categories in the output if you find them in the string.\n\nFollow this strict format:\n• Category: name: explanation(be very brief, use very short sentenses) : skills(no more than 3-5 skills)\n\nExample (but do not include these examples in the output, also do not include the label category in the output):\n(\n• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js\n)\n\nHere is the string to extract the information from:\n' +
-        message;
+      promptMemory = `I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. 
+        These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. 
+        I want you to find experiences in the CV and combine them with a description of what was done there + the skills that were associated with that experience. 
+        
+        Never have a bullet point for skills in the output, do not list skills as a separate category. 
+        Do not list experiences, descriptions, or skills separately, only list them in relation to other things. For categories, include job, education(make sure to include the highest level of education(Bachelors < Masters < Ph.D )), project, internship (take your time and make sure that this is not a job, make sure that it is actually an internship), and published article. 
+        If an internship was not found, do not include it as an output, just skip it(DO NOT output: (• Internship: None found), just leave it blank), this would apply to any category that was not found in text. 
+        Only list categories in the output if you find them in the text. If a category is not found in the text, do not have a output it as a bullet-point.
+        
+        Follow this strict format (each category should be limited to 200 characters, do not go beyond 200 character limit for each category):
+        • Category: name: explanation: skills (limit 6 skills per category, do not go beyond 6 skills per category)
+         Example (but do not include these examples in the output, also do not include the label category in the output) Delimiters<>:
+          <• Job: Facebook: worked at this position for 1 year focusing on frontend and backend: C++, React, Node.js>
+        
+        Here is the string to extract the information from: """${message}"""`;
 
       summaryBulletPoints = await useGPTchatSimple(prompt, 0);
 
@@ -208,6 +221,14 @@ module.exports = {
         .replace(/\n/g, "")
         .split("•")
         .filter((item) => item.trim() !== "");
+
+      for (let i = 0; i < jobsArr.length; i++) {
+        if (jobsArr[i].includes("Skills:")) {
+          jobsArr.splice(i, 1);
+        }
+      }
+
+      console.log("jobsArr", jobsArr);
 
       const getUpserts = async () => {
         for (let i = 0; i < jobsArr.length; i++) {
@@ -224,6 +245,7 @@ module.exports = {
       };
 
       getUpserts();
+
       // embed_summary = await createEmbeddingsGPT(summary);
 
       // let result = [];
@@ -261,7 +283,7 @@ module.exports = {
     }
   },
   saveCVtoUser: async (parent, args, context, info) => {
-    const { cvContent, userID,companyID } = args.fields;
+    const { cvContent, userID, positionID } = args.fields;
     console.log("Mutation > saveCVtoUser > args.fields = ", args.fields);
 
     if (!userID) {
@@ -274,7 +296,6 @@ module.exports = {
       throw new ApolloError("User not found");
     }
     try {
-      
       userData = await Members.findOneAndUpdate(
         { _id: userID },
         {
@@ -291,15 +312,13 @@ module.exports = {
         { new: true }
       );
 
-      InterviewQuestionCreationUserAPICallF(companyID, userID, cvContent)
+      InterviewQuestionCreationUserAPICallF(positionID, userID, cvContent);
 
-      await wait(40000)
+      await wait(40000);
 
       return {
         success: true,
       };
-      
-
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -331,8 +350,8 @@ module.exports = {
         });
       }
 
-      for (let i=0;i<usersData.length;i++) {
-      // if (usersData.length > 0) {
+      for (let i = 0; i < usersData.length; i++) {
+        // if (usersData.length > 0) {
         // SOS 🆘 delete - only test one user at a time
         let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
@@ -343,7 +362,7 @@ module.exports = {
         // ------- Calculate Summary -------
         if (userData.cvInfo.cvPreparationBio != true) {
           promptSum =
-            `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent company in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present company that they work in and what they do there \n\n\n\n` +
+            `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
             cvContent;
 
           summaryOfCV = await useGPTchatSimple(promptSum);
@@ -435,7 +454,6 @@ module.exports = {
         userData.cvInfo.cvPreparationDone = true;
 
         await userData.save();
-        
       }
 
       return {
@@ -472,8 +490,7 @@ module.exports = {
         });
       }
 
-      for (let i=0;i<usersData.length;i++) {
-
+      for (let i = 0; i < usersData.length; i++) {
         let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
@@ -489,16 +506,36 @@ module.exports = {
           }
           // ------------ Delete previous memory ------------
 
-          promptMemory =
-            'I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. I want you to find experiences in the CV and combine them with a very brief and laconic description of what was done there + the skills that were associated with that experience, but don\'t list more than 5 skills per category. Do not list experiences, descriptions, or skills separately, only list them in relation to other things. For categories, include things like job, education, project, internship, and article. Only have those categories in the output if you find them in the string.\n\nFollow this strict format:\n• Category: name: explanation(be very brief, use very short sentenses) : skills(no more than 3-5 skills)\n\nExample (but do not include these examples in the output, also do not include the label category in the output):\n(\n• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js\n)\n\nHere is the string to extract the information from:\n' +
-            cvContent;
+          promptMemory = `I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. 
+        These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. 
+        I want you to find experiences in the CV and combine them with a description of what was done there + the skills that were associated with that experience. 
+        
+        Never have a bullet point for skills in the output, do not list skills as a separate category. 
+        Do not list experiences, descriptions, or skills separately, only list them in relation to other things. 
+        For categories, include job, education(make sure to include the highest level of education(Bachelors < Masters < Ph.D )), project, internship (take your time and make sure that this is not a job, make sure that it is actually an internship), and published article. 
+        If an internship was not found, do not include it as an output, just skip it(DO NOT output: (• Internship: None found), just leave it blank), this would apply to any category that was not found in text. 
+        Only list categories in the output if you find them in the text. If a category is not found in the text, do not have a output it as a bullet-point.
+        
+        Follow this strict format (each category should be limited to 200 characters, do not go beyond 200 character limit for each category):
+        • Category: name: explanation: skills (limit 6 skills per category, do not go beyond 6 skills per category)
+         Example (but do not include these examples in the output, also do not include the label category in the output) Delimiters<>:
+          <• Job: Facebook: worked at this position for 1 year focusing on frontend and backend: C++, React, Node.js>
+        
+        Here is the string to extract the information from: """${cvContent}"""`;
 
-          summaryBulletPoints = await useGPTchatSimple(promptMemory, 0);
+          summaryBulletPoints = await useGPTchatSimple(prompt, 0);
 
-          sumBulletSplit = summaryBulletPoints
+          jobsArr = summaryBulletPoints
             .replace(/\n/g, "")
             .split("•")
             .filter((item) => item.trim() !== "");
+
+          //occasionally gpt outputs skills as a separate problem, the for loop gets rid of those skills in case they do appear
+          for (let i = 0; i < jobsArr.length; i++) {
+            if (jobsArr[i].includes("Skills:")) {
+              jobsArr.splice(i, 1);
+            }
+          }
 
           let cvMemory = [];
 
@@ -554,7 +591,7 @@ module.exports = {
       let model = "text-davinci-003";
       const reason = {
         project:
-          "You are a successful ceo of a company wih 10 years of experience. You talk elegant and descriptive language. Give a description of a project based on this information:  ",
+          "You are a successful ceo of a position wih 10 years of experience. You talk elegant and descriptive language. Give a description of a project based on this information:  ",
         skill: "Give a description of a skill named: ",
         role: "Give a description of role with a name of: ",
       };
@@ -718,7 +755,7 @@ module.exports = {
     const prompt = `
     I want you to act as social media expert at writing profile bios. I will give you a string extracted from a CV(resume) delineated with triple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio:
     
-    Pick the most impressive achievements(highest education and the most recent company in the CV) and list them in 2 bullet points(no more than 2).
+    Pick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).
     
     Follow this structure which has 2 parts. First part is 2 sentences. Second part is two bullet points
     (Example:
@@ -731,7 +768,7 @@ module.exports = {
     
     Part 2(do not include Part 2 in the response):
     • Highest level of education(bachelor's < Masters < Ph.D)(list only the highest education and only list that one)
-    • The present company that they work in and what they do there
+    • The present position that they work in and what they do there
     
     """${cvString}"""`;
 

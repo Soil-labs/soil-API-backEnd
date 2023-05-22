@@ -4,7 +4,7 @@ module.exports = `
         _id: ID
         userID: String, 
         convKey: String,
-        companyID: String, 
+        positionID: String, 
 
         #  conv: [messageChat],
         conversation: [conversationType],

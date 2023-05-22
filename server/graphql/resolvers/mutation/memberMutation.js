@@ -2484,7 +2484,7 @@ module.exports = {
 
         for (let i=0;i<3;i++){
           // for (let i=0;i<Math.floor(Math.random() * 2) + 2;i++){
-          let promptT = expertiseInterestPrompt + "\n" + "Give me 1 title, real company name and description (only 1 paragraph with 2 sentences) of a job that he did in his past, be creative with the title of the position. Example: \n Title: programming at Soil Corp \n Description: main programmer that was working on...  \n Result:"
+          let promptT = expertiseInterestPrompt + "\n" + "Give me 1 title, real position name and description (only 1 paragraph with 2 sentences) of a job that he did in his past, be creative with the title of the position. Example: \n Title: programming at Soil Corp \n Description: main programmer that was working on...  \n Result:"
 
           const jobData = await useGPTchat(promptT)
           

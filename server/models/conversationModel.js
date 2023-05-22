@@ -5,7 +5,7 @@ require("dotenv").config();
 const conversationSchema = mongoose.Schema({
   userID: String, 
   convKey: String, // part of first 3 messages concatenated
-  companyID: String, 
+  positionID: String, 
 
   conversation: [{
     role: String, // user or bot
