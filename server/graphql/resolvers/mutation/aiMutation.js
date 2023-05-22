@@ -404,7 +404,7 @@ module.exports = {
             Skills Result:
             `
 
-          textForMapping = await useGPT(promptCVtoMap, 0.7);
+          textForMapping = await useGPT(promptCVtoMap, 0);
 
 
           printC(textForMapping, "3", "textForMapping", "b");
