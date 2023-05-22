@@ -3189,31 +3189,31 @@ module.exports = {
       Answer:
       `
 
-      // evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
-      // console.log("evaluateNoteCategories = " , evaluateNoteCategories)
-      
-
-
-      evaluateNoteCategories = ` <Category 1: Personal Details>
-      - 11+ years of experience in Computer Vision, Machine Learning, and Robotics
-      - Focused on front-end engineering using React, Tailwind, and Node.js for 5 years
-      - Has experience in team leadership in the field of machine learning
-      - Strengths include having a growth mindset and being quick to innovate
-      - Weaknesses include needing to work on coding skills, specifically cleaning up the database and creating a better environment for other coders to work with
-      
-      <Category 2: Work Culture>
-      - Has experience in team leadership in the field of machine learning
-      - Has a growth mindset and is quick to innovate
-      - Believes in giving back to the position and helping innovate and change lives
-      - Experience with a challenging project focused on complete innovation
-      
-      <Category 3: Interests>
-      - Skilled in React, GraphQL, Next.js, fine-tuning, PyTorch, TensorFlow, and paper reading
-      - Interested in becoming a team lead and eventually a successful CTO`
-
-
-
+      evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
       console.log("evaluateNoteCategories = " , evaluateNoteCategories)
+      
+
+
+      // evaluateNoteCategories = ` <Category 1: Personal Details>
+      // - 11+ years of experience in Computer Vision, Machine Learning, and Robotics
+      // - Focused on front-end engineering using React, Tailwind, and Node.js for 5 years
+      // - Has experience in team leadership in the field of machine learning
+      // - Strengths include having a growth mindset and being quick to innovate
+      // - Weaknesses include needing to work on coding skills, specifically cleaning up the database and creating a better environment for other coders to work with
+      
+      // <Category 2: Work Culture>
+      // - Has experience in team leadership in the field of machine learning
+      // - Has a growth mindset and is quick to innovate
+      // - Believes in giving back to the position and helping innovate and change lives
+      // - Experience with a challenging project focused on complete innovation
+      
+      // <Category 3: Interests>
+      // - Skilled in React, GraphQL, Next.js, fine-tuning, PyTorch, TensorFlow, and paper reading
+      // - Interested in becoming a team lead and eventually a successful CTO`
+      // console.log("evaluateNoteCategories = " , evaluateNoteCategories)
+
+
+
 
       const regex = /<Category\s+\d+:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
       const categoriesT = [];
