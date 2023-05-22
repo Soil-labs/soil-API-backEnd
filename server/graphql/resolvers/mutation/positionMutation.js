@@ -1,160 +1,178 @@
-
 const { ApolloError } = require("apollo-server-express");
 
 const { Position } = require("../../../models/positionModel");
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
 
-
 const { Conversation } = require("../../../models/conversationModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
+const {
+  addMultipleQuestionsToEdenAIFunc,
+  updateQuestionSmall,
+} = require("../utils/questionsEdenAIModules");
 
-
-const { addMultipleQuestionsToEdenAIFunc ,updateQuestionSmall} = require("../utils/questionsEdenAIModules");
-
-const {checkAndAddPositionToMember  } = require("../utils/positionModules");
+const { checkAndAddPositionToMember } = require("../utils/positionModules");
 
 const { printC } = require("../../../printModule");
 
-const { useGPTchatSimple,deletePineCone,upsertEmbedingPineCone,findBestEmbedings,getMemory} = require("../utils/aiModules");
-
-
-
-
 const {
-  arrayToObj,
-} = require("../utils/endorsementModules");
+  useGPTchatSimple,
+  deletePineCone,
+  upsertEmbedingPineCone,
+  findBestEmbedings,
+  getMemory,
+} = require("../utils/aiModules");
+
+const { arrayToObj } = require("../utils/endorsementModules");
 
 module.exports = {
   updatePosition: async (parent, args, context, info) => {
-      const { _id,name } = args.fields;
-      console.log("Mutation > updatePosition > args.fields = ", args.fields);
+    const { _id, name } = args.fields;
+    console.log("Mutation > updatePosition > args.fields = ", args.fields);
 
+    try {
+      let positionData;
+      if (_id) {
+        positionData = await Position.findOne({ _id });
 
-      try {
+        // update
+        if (name) positionData.name = name;
+        await positionData.save();
+      } else {
+        positionData = await new Position({
+          name,
+        });
 
-        let positionData
-        if (_id) {
-          positionData = await Position.findOne({ _id });
-
-          // update
-          if (name) positionData.name = name;
-          await positionData.save();
-        } else {
-          positionData = await new Position({
-            name,
-          });
-
-          await positionData.save();
-        }
-
-
-
-        return {
-          _id: positionData._id,
-          name: positionData.name,
-        }
-        
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "updatePosition",
-          { component: "positionMutation > updatePosition" }
-        );
+        await positionData.save();
       }
-    },
-    interviewQuestionCreationUser: async (parent, args, context, info) => {
-      const { positionID,userID,cvContent } = args.fields;
-      console.log("Mutation > interviewQuestionCreationUser > args.fields = ", args.fields);
 
+      return {
+        _id: positionData._id,
+        name: positionData.name,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updatePosition",
+        { component: "positionMutation > updatePosition" }
+      );
+    }
+  },
+  interviewQuestionCreationUser: async (parent, args, context, info) => {
+    const { positionID, userID, cvContent } = args.fields;
+    console.log(
+      "Mutation > interviewQuestionCreationUser > args.fields = ",
+      args.fields
+    );
 
-      if (!positionID) throw new ApolloError("Position ID is required", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
+    if (!positionID)
+      throw new ApolloError(
+        "Position ID is required",
+        "interviewQuestionCreationUser",
+        { component: "positionMutation > interviewQuestionCreationUser" }
+      );
 
-      if (!userID) throw new ApolloError("User ID is required", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
+    if (!userID)
+      throw new ApolloError(
+        "User ID is required",
+        "interviewQuestionCreationUser",
+        { component: "positionMutation > interviewQuestionCreationUser" }
+      );
 
-      try {
-
-        positionData = await Position.findOne({ _id: positionID}).select('_id name candidates questionsToAsk');
-        if (!positionData) throw new ApolloError("Position not found", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
-
-
-        userData = await Members.findOne({ _id: userID}).select('_id discordName');
-        if (!userData) throw new ApolloError("User not found", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
-
-
-        const questionsToAsk = positionData.questionsToAsk
-
-        const questionsToAskID = questionsToAsk.map((question) => question.questionID)
-
-        questionData = await QuestionsEdenAI.find({ _id: questionsToAskID }).select('_id content');
-
-        printC(questionData,"1","questionData","b")
-
-        questionsThatWereAsked = ''
-
-
-
-        const questionNow = questionData[0];
-
-        // ------- Find best Open Job Role Memories ----------
-        filter = {
-          label: "Position_TrainEdenAI_memory",
-          _id: positionID,
-        };
-
-        bestJobRoleMemories = await getMemory(
-          questionNow.content,
-          filter,
-          (topK = 6),
-          250
+    try {
+      positionData = await Position.findOne({ _id: positionID }).select(
+        "_id name candidates questionsToAsk"
+      );
+      if (!positionData)
+        throw new ApolloError(
+          "Position not found",
+          "interviewQuestionCreationUser",
+          { component: "positionMutation > interviewQuestionCreationUser" }
         );
 
-        // printC(bestJobRoleMemories,"3","bestJobRoleMemories","p")
-        // ------- Find best Open Job Role Memories ----------
+      userData = await Members.findOne({ _id: userID }).select(
+        "_id discordName"
+      );
+      if (!userData)
+        throw new ApolloError(
+          "User not found",
+          "interviewQuestionCreationUser",
+          { component: "positionMutation > interviewQuestionCreationUser" }
+        );
 
+      const questionsToAsk = positionData.questionsToAsk;
 
-        // // ------- Find best Open CV Memories ----------
-        // filter = {
-        //   label: "CV_user_memory",
-        //   _id: userID,
-        // };
+      const questionsToAskID = questionsToAsk.map(
+        (question) => question.questionID
+      );
 
-        // bestUserCVMemories = await getMemory(
-        //   questionNow.content,
-        //   filter,
-        //   (topK = 5),
-        //   350
-        // );
+      questionData = await QuestionsEdenAI.find({
+        _id: questionsToAskID,
+      }).select("_id content");
 
-        // // printC(bestUserCVMemories,"3","bestUserCVMemories","r")
-        // // ------- Find best Open CV Memories ----------
+      printC(questionData, "1", "questionData", "b");
 
-        // ----------- CV to Summary -------------
-        let cvContentPrompt = `
+      questionsThatWereAsked = "";
+
+      const questionNow = questionData[0];
+
+      // ------- Find best Open Job Role Memories ----------
+      filter = {
+        label: "Position_TrainEdenAI_memory",
+        _id: positionID,
+      };
+
+      bestJobRoleMemories = await getMemory(
+        questionNow.content,
+        filter,
+        (topK = 6),
+        250
+      );
+
+      // printC(bestJobRoleMemories,"3","bestJobRoleMemories","p")
+      // ------- Find best Open Job Role Memories ----------
+
+      // // ------- Find best Open CV Memories ----------
+      // filter = {
+      //   label: "CV_user_memory",
+      //   _id: userID,
+      // };
+
+      // bestUserCVMemories = await getMemory(
+      //   questionNow.content,
+      //   filter,
+      //   (topK = 5),
+      //   350
+      // );
+
+      // // printC(bestUserCVMemories,"3","bestUserCVMemories","r")
+      // // ------- Find best Open CV Memories ----------
+
+      // ----------- CV to Summary -------------
+      let cvContentPrompt = `
           CV CONTENT (delimiters <>): <${cvContent}>
 
           - You are a recruiter with task to understand a candidate's CV.
           - Your goal is to create a Summary of the CV CONTENT
 
           Summary: 
-        `
-        printC(cvContentPrompt,"3","cvContentPrompt","b")
+        `;
+      printC(cvContentPrompt, "3", "cvContentPrompt", "b");
 
-        cvSummary = await useGPTchatSimple(cvContentPrompt,0)
+      cvSummary = await useGPTchatSimple(cvContentPrompt, 0);
 
-        printC(cvSummary,"2","cvSummary","r")
-        // sdf0
-        // ----------- CV to Summary -------------
+      printC(cvSummary, "2", "cvSummary", "r");
+      // sdf0
+      // ----------- CV to Summary -------------
 
-        // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
+      // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
 
-        console.log("----------------------------" )
+      console.log("----------------------------");
 
+      // -------- Create Prompt ---------
 
-        // -------- Create Prompt ---------
-        
-        let promptJOB_CV = `
+      let promptJOB_CV = `
           JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
 
           USER_CV (delimiters <>) <${cvSummary}>
@@ -163,58 +181,55 @@ module.exports = {
           - Analyse for each point of the JOB_ROLE if a Candidate has the right CV info or he is missing something, be creative on the ways that the candidate background can be applied on the role
 
         smallest number of Bullet points with small summary analyzing the JOB_ROLE for this USER CV:
-        `
-        printC(promptJOB_CV,"3","promptJOB_CV","b")
+        `;
+      printC(promptJOB_CV, "3", "promptJOB_CV", "b");
 
-        infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0)
+      infoCandidateForJob = await useGPTchatSimple(promptJOB_CV, 0);
 
-//         infoCandidateForJob = `
-//         - Responsibilities of the Candidate: The candidate must understand user needs and be able to solve their problems.
-//     - Analysis: Lolita's experience in product ownership and stakeholder management shows that she has a strong understanding of user needs and can effectively solve their problems.
-// - Skills of the Candidate: Must have knowledge of front-end development, including GraphQL, Next.js, React, and TailwindCSS.
-//     - Analysis: Lolita's CV does not mention any experience or knowledge in front-end development, so she may not be the best fit for this specific skill requirement.
-// - Responsibilities of the Candidate: The candidate will work independently to innovate and create code.
-//     - Analysis: Lolita's experience in leadership and continuous improvement suggests that she can work independently and innovate, but her lack of experience in front-end development may limit her ability to create code.
-// - General info of Position: Soil is creating a marketplace for positions and talent using AI and blockchain.
-//     - Analysis: No specific relevance to Lolita's CV, but her background in IT and international relations may give her a unique perspective on the use of AI and blockchain in the marketplace.
-// - Values of Position: Soil values innovation and user discovery.
-//     - Analysis: Lolita's experience in product ownership and stakeholder management aligns well with Soil's values of innovation and user discovery.
-// - Values of Position: The position culture is fun and collaborative.
-//     - Analysis: No specific relevance to Lolita's CV, but her experience in leadership and community volunteering may suggest that she can contribute to a fun and collaborative position culture.
-//         `
+      //         infoCandidateForJob = `
+      //         - Responsibilities of the Candidate: The candidate must understand user needs and be able to solve their problems.
+      //     - Analysis: Lolita's experience in product ownership and stakeholder management shows that she has a strong understanding of user needs and can effectively solve their problems.
+      // - Skills of the Candidate: Must have knowledge of front-end development, including GraphQL, Next.js, React, and TailwindCSS.
+      //     - Analysis: Lolita's CV does not mention any experience or knowledge in front-end development, so she may not be the best fit for this specific skill requirement.
+      // - Responsibilities of the Candidate: The candidate will work independently to innovate and create code.
+      //     - Analysis: Lolita's experience in leadership and continuous improvement suggests that she can work independently and innovate, but her lack of experience in front-end development may limit her ability to create code.
+      // - General info of Position: Soil is creating a marketplace for positions and talent using AI and blockchain.
+      //     - Analysis: No specific relevance to Lolita's CV, but her background in IT and international relations may give her a unique perspective on the use of AI and blockchain in the marketplace.
+      // - Values of Position: Soil values innovation and user discovery.
+      //     - Analysis: Lolita's experience in product ownership and stakeholder management aligns well with Soil's values of innovation and user discovery.
+      // - Values of Position: The position culture is fun and collaborative.
+      //     - Analysis: No specific relevance to Lolita's CV, but her experience in leadership and community volunteering may suggest that she can contribute to a fun and collaborative position culture.
+      //         `
 
-        printC(infoCandidateForJob,"3","infoCandidateForJob","r")
+      printC(infoCandidateForJob, "3", "infoCandidateForJob", "r");
 
-        // sdf
-        // -------- Create Prompt ---------
+      // sdf
+      // -------- Create Prompt ---------
 
-        
-        questionsPrompt = ""
-        for (let i=0;i<questionData.length;i++){
-          const questionNow = questionData[i];
+      questionsPrompt = "";
+      for (let i = 0; i < questionData.length; i++) {
+        const questionNow = questionData[i];
 
+        questionsPrompt += ` ${i + 1}. ${questionNow.content} \n`;
+      }
 
-          questionsPrompt += ` ${i+1}. ${questionNow.content} \n`
-        }
+      printC(questionsPrompt, "3", "questionsPrompt", "b");
 
-        printC(questionsPrompt,"3","questionsPrompt","b")
+      // infoCandidateForJob = `
+      // - Responsibilities of the Candidate: The candidate must understand user needs and be able to solve their problems.
+      // - Analysis: While Miltiadis has experience in developing solutions for various projects, there is no specific mention of understanding user needs and solving their problems. However, his expertise in computer vision and deep learning can be applied to create innovative solutions for user problems.
+      // - Skills of the Candidate: Must have knowledge of front-end development, including GraphQL, Next.js, React, and TailwindCSS.
+      // - Analysis: Miltiadis' CV does not mention any experience or knowledge in front-end development technologies like GraphQL, Next.js, React, and TailwindCSS. Therefore, he may not be the ideal candidate for this specific skill set.
+      // - Responsibilities of the Candidate: The candidate will work independently to innovate and create code.
+      // - Analysis: Miltiadis has over 11 years of experience in computer vision, machine learning, and robotics, and has worked on various projects independently. Therefore, he has the necessary experience to work independently and innovate to create code.
+      // - General info of Position: Soil is creating a marketplace for positions and talent using AI and blockchain.
+      // - Analysis: There is no specific mention of Miltiadis' experience in AI and blockchain technologies. However, his expertise in computer vision and deep learning can be applied to create innovative solutions for Soil's marketplace.
+      // - Values of Position: Soil values innovation and user discovery.
+      // - Analysis: Miltiadis has a passion for optimized software development and research, and has worked on various projects related to sequence models, robotics, and autonomous OCR dictating systems for blind people. Therefore, he has the necessary experience to contribute to Soil's value of innovation and user discovery.
+      // - Values of Position: The position culture is fun and collaborative.
+      // - Analysis: There is no specific mention of Miltiadis' experience in a`
 
-        // infoCandidateForJob = `
-        // - Responsibilities of the Candidate: The candidate must understand user needs and be able to solve their problems.
-        // - Analysis: While Miltiadis has experience in developing solutions for various projects, there is no specific mention of understanding user needs and solving their problems. However, his expertise in computer vision and deep learning can be applied to create innovative solutions for user problems.
-        // - Skills of the Candidate: Must have knowledge of front-end development, including GraphQL, Next.js, React, and TailwindCSS.
-        // - Analysis: Miltiadis' CV does not mention any experience or knowledge in front-end development technologies like GraphQL, Next.js, React, and TailwindCSS. Therefore, he may not be the ideal candidate for this specific skill set.
-        // - Responsibilities of the Candidate: The candidate will work independently to innovate and create code.
-        // - Analysis: Miltiadis has over 11 years of experience in computer vision, machine learning, and robotics, and has worked on various projects independently. Therefore, he has the necessary experience to work independently and innovate to create code.
-        // - General info of Position: Soil is creating a marketplace for positions and talent using AI and blockchain.
-        // - Analysis: There is no specific mention of Miltiadis' experience in AI and blockchain technologies. However, his expertise in computer vision and deep learning can be applied to create innovative solutions for Soil's marketplace.
-        // - Values of Position: Soil values innovation and user discovery.
-        // - Analysis: Miltiadis has a passion for optimized software development and research, and has worked on various projects related to sequence models, robotics, and autonomous OCR dictating systems for blind people. Therefore, he has the necessary experience to contribute to Soil's value of innovation and user discovery.
-        // - Values of Position: The position culture is fun and collaborative.
-        // - Analysis: There is no specific mention of Miltiadis' experience in a`
-
-
-        let promptNewQuestions = `
+      let promptNewQuestions = `
           NOTES for this Job Role and User CV (delimiters <>): <${infoCandidateForJob}>
 
           QUESTIONS (delimiters <>) <${questionsPrompt}>
@@ -228,650 +243,721 @@ module.exports = {
           
           
           Improved QUESTIONS: 
-        `
+        `;
 
-        improvedQuestions = await useGPTchatSimple(promptNewQuestions,0)
+      improvedQuestions = await useGPTchatSimple(promptNewQuestions, 0);
 
-        printC(improvedQuestions,"4","improvedQuestions","r")
+      printC(improvedQuestions, "4", "improvedQuestions", "r");
 
-//         improvedQuestions = `1. Can you tell us about your experience working with Machine Learning and Computer Vision, and how it could be useful for understanding user needs and solving their problems in this role?
-// 2. What specific experience do you have leading teams and innovating with cutting-edge technologies, and how do you think it could be valuable for working independently to create code in this role?
-// 3. Do you have experience with GraphQL, Next.js, React, and TailwindCSS, which are required for this role?
-// 4. What other technical skills do you have that could be helpful in this position?
-// 5. How comfortable are you with UI implementation, and what experience do you have in this area?
-// 6. Would you be willing to join Soil 🌱 as a contributor, given that the position is not yet financially secure?
-// 7. Do you share Eden's vision of using AI and blockchain to create context and trust and connect the right person to the right opportunity?
-// 8. What specifically interests you about joining Soil 🌱, and how do you think you could contribute to the position's mission?
-// 9. What are your long-term career goals, and how do you see this role fitting into them?`
+      //         improvedQuestions = `1. Can you tell us about your experience working with Machine Learning and Computer Vision, and how it could be useful for understanding user needs and solving their problems in this role?
+      // 2. What specific experience do you have leading teams and innovating with cutting-edge technologies, and how do you think it could be valuable for working independently to create code in this role?
+      // 3. Do you have experience with GraphQL, Next.js, React, and TailwindCSS, which are required for this role?
+      // 4. What other technical skills do you have that could be helpful in this position?
+      // 5. How comfortable are you with UI implementation, and what experience do you have in this area?
+      // 6. Would you be willing to join Soil 🌱 as a contributor, given that the position is not yet financially secure?
+      // 7. Do you share Eden's vision of using AI and blockchain to create context and trust and connect the right person to the right opportunity?
+      // 8. What specifically interests you about joining Soil 🌱, and how do you think you could contribute to the position's mission?
+      // 9. What are your long-term career goals, and how do you see this role fitting into them?`
 
+      const improvedQuestionsArray = improvedQuestions
+        .split("\n")
+        .map((item) => item.replace(/^\d+\.\s*/, ""));
 
+      printC(improvedQuestionsArray, "3", "improvedQuestionsArray", "r");
 
-        const improvedQuestionsArray = improvedQuestions.split('\n').map((item) => item.replace(/^\d+\.\s*/, ''));
+      let interviewQuestionsForCandidate = [];
 
-        printC(improvedQuestionsArray,"3","improvedQuestionsArray","r")
+      for (let i = 0; i < improvedQuestionsArray.length; i++) {
+        const improvedQuestion = improvedQuestionsArray[i];
 
-        let interviewQuestionsForCandidate = []
+        printC(questionData[i], "5", "questionData[i]", "y");
 
-        for (let i=0;i<improvedQuestionsArray.length;i++){
-          const improvedQuestion = improvedQuestionsArray[i];
-
-          
-          printC(questionData[i],"5","questionData[i]","y")
-
-
-          interviewQuestionsForCandidate.push({
-            originalQuestionID: questionData[i]._id,
-            originalContent: questionData[i].content,
-            personalizedContent: improvedQuestion,
-          })
-        }
-
-        printC(interviewQuestionsForCandidate,"3","interviewQuestionsForCandidate","r")
-
-        // find the idx what candidate you will update from the positionData
-
-        printC(userID,"5","userID","y")
-        printC(positionID,"5","positionID","y")
-
-        positionData2 = await Position.findOne({ _id: positionID}).select('_id name candidates');
-        printC(positionData2?.candidates?.length,"5","positionData2.candidates.length","y")
-
-        // sf0
-        let candidateIdx = positionData2?.candidates?.findIndex((candidate) => candidate.userID.toString() == userID.toString());
-
-        printC(candidateIdx,"3","candidateIdx","r")
-
-        if (candidateIdx!=-1 && candidateIdx!=undefined) {
-          positionData2.candidates[candidateIdx].interviewQuestionsForCandidate = interviewQuestionsForCandidate
-
-        } else {
-          positionData2?.candidates?.push({
-            userID: userID,
-            interviewQuestionsForCandidate: interviewQuestionsForCandidate,
-          })
-
-        }
-
-        if (positionData2){
-          positionData2 = await positionData2.save();
-        }
-
-
-        return positionData2
-
-        
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "interviewQuestionCreationUser",
-          { component: "positionMutation > interviewQuestionCreationUser" }
-        );
-      }
-    },
-    addEmployeesPosition: async (parent, args, context, info) => {
-      const { positionID,employees } = args.fields;
-      console.log("Mutation > addEmployeesPosition > args.fields = ", args.fields);
-
-      if (!employees) throw new ApolloError("Employees is required", "addEmployeesPosition", { component: "positionMutation > addEmployeesPosition" });
-
-      if (!positionID) throw new ApolloError("Position ID is required", "addEmployeesPosition", { component: "positionMutation > addEmployeesPosition" });
-
-      positionData = await Position.findOne({ _id: positionID });
-
-      if (!positionData) throw new ApolloError("Position not found", "addEmployeesPosition", { component: "positionMutation > addEmployeesPosition" });
-
- 
-
-      try {
-
-
-        let compEmployees = await updateEmployees(positionData.employees, employees);
-
-        console.log("compEmployees = " , compEmployees)
-
-
-
-
-        // find one and updates
-        let positionDataN = await Position.findOneAndUpdate(
-          { _id: positionID },
-          { employees: compEmployees },
-          { new: true }
-        );
-
-        return positionDataN
-        
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "addEmployeesPosition",
-          { component: "positionMutation > addEmployeesPosition" }
-        );
-      }
-    },
-    addQuestionsToAskPosition: async (parent, args, context, info) => {
-      const { positionID } = args.fields;
-      let {questionsToAsk} = args.fields;
-      console.log("Mutation > addQuestionsToAskPosition > args.fields = ", args.fields);
-
-      if (!questionsToAsk) throw new ApolloError("Employees is required", "addQuestionsToAskPosition", { component: "positionMutation > addQuestionsToAskPosition" });
-
-      if (!positionID) throw new ApolloError("Position ID is required", "addQuestionsToAskPosition", { component: "positionMutation > addQuestionsToAskPosition" });
-
-      positionData = await Position.findOne({ _id: positionID });
-
-      if (!positionData) throw new ApolloError("Position not found", "addQuestionsToAskPosition", { component: "positionMutation > addQuestionsToAskPosition" });
-
- 
-
-      try {
-
-        questionsToAsk = await addMultipleQuestionsToEdenAIFunc(questionsToAsk)
-
-        console.log("questionsToAsk = " , questionsToAsk)
-        // asdf12
-
-
-        let questionsToAskN = await updateEmployees(positionData.questionsToAsk, questionsToAsk,"questionID");
-
-        console.log("questionsToAskN = " , questionsToAskN)
-
-
-        // find one and updates
-        let positionDataN = await Position.findOneAndUpdate(
-          { _id: positionID },
-          { questionsToAsk: questionsToAskN },
-          { new: true }
-        );
-        
-        return positionDataN
-        
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "addQuestionsToAskPosition",
-          { component: "positionMutation > addQuestionsToAskPosition" }
-        );
-      }
-    },
-    deleteQuestionsToAskPosition: async (parent, args, context, info) => {
-      const { positionID,questionID } = args.fields;
-      console.log("Mutation > deleteQuestionsToAskPosition > args.fields = ", args.fields);
-
-      if (!positionID) throw new ApolloError("Position ID is required", "deleteQuestionsToAskPosition", { component: "positionMutation > deleteQuestionsToAskPosition" });
-
-      positionData = await Position.findOne({ _id: positionID });
-
-      if (!positionData) throw new ApolloError("Position not found", "deleteQuestionsToAskPosition", { component: "positionMutation > deleteQuestionsToAskPosition" });
-
- 
-
-      try {
-
-        questionsToAsk = positionData.questionsToAsk
-
-        console.log("questionsToAsk = " , questionsToAsk)
-
-        // filter out the questionID
-        questionsToAsk = questionsToAsk.filter((question) => question.questionID.toString() != questionID.toString());
-
-        // save it to mongo
-        let positionDataN = await Position.findOneAndUpdate(
-          { _id: positionID },
-          { questionsToAsk },
-          { new: true }
-        );
-
-        
-        
-        return positionDataN
-        
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "deleteQuestionsToAskPosition",
-          { component: "positionMutation > deleteQuestionsToAskPosition" }
-        );
-      }
-    },
-    addCandidatesPosition: async (parent, args, context, info) => {
-      const { positionID,candidates } = args.fields;
-      console.log("Mutation > addCandidatesPosition > args.fields = ", args.fields);
-
-      if (!candidates) throw new ApolloError("Employees is required", "addCandidatesPosition", { component: "positionMutation > addCandidatesPosition" });
-
-      if (!positionID) throw new ApolloError("Position ID is required", "addCandidatesPosition", { component: "positionMutation > addCandidatesPosition" });
-
-      positionData = await Position.findOne({ _id: positionID });
-
-      if (!positionData) throw new ApolloError("Position not found", "addCandidatesPosition", { component: "positionMutation > addCandidatesPosition" });
-
- 
-      userIDs = candidates.map((candidate) => candidate.userID)
-      
-      usersData = await Members.find({ _id: { $in: userIDs } }).select("_id discordName positionsApplied");
-
-      
- 
-      try {
-
-
-        let candidatesN = await updateEmployees(positionData.candidates, candidates,"userID");
-
-        console.log("candidatesN = " , candidatesN)
-        // sdf00
-
-
-        await checkAndAddPositionToMember(usersData,positionID)
-        
-
-
-        // find one and updates
-        let positionDataN = await Position.findOneAndUpdate(
-          { _id: positionID },
-          { 
-            candidates: positionData.candidates,
-            candidatesReadyToDisplay: false 
-          },
-          { new: true }
-        );
-        
-        return positionDataN
-        
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "addCandidatesPosition",
-          { component: "positionMutation > addCandidatesPosition" }
-        );
-      }
-    },
-    addConvRecruiterToPosition: async (parent, args, context, info) => {
-      const { positionID,userID,conversationID } = args.fields;
-      console.log("Mutation > addConvRecruiterToPosition > args.fields = ", args.fields);
-
-      if (!userID) throw new ApolloError("userID is required", "addConvRecruiterToPosition", { component: "positionMutation > addConvRecruiterToPosition" });
-
-
-      if (!positionID) throw new ApolloError("Position ID is required", "addConvRecruiterToPosition", { component: "positionMutation > addConvRecruiterToPosition" });
-      positionData = await Position.findOne({ _id: positionID });
-      if (!positionData) throw new ApolloError("Position not found", "addConvRecruiterToPosition", { component: "positionMutation > addConvRecruiterToPosition" });
-
-
-      if (!conversationID) throw new ApolloError("conversationID is required", "addConvRecruiterToPosition", { component: "positionMutation > addConvRecruiterToPosition" });
-      
- 
-
-
-      try {
-
-        // check if inside positionData.convRecruiter already conversationID exists
-        let convRecruiterData = positionData.convRecruiter.find((convRecruiter) => convRecruiter.conversationID.toString() == conversationID.toString());
-
-        if (!convRecruiterData) {
-          positionData.convRecruiter.push({
-            userID: userID,
-            conversationID: conversationID,
-            readyToDisplay: false,
-          });
-        } else {
-          convRecruiterData.readyToDisplay = false;
-        }
-
-        // save it to mongo
-        positionData.convRecruiterReadyToDisplay = false;
-        positionData = await positionData.save();
-
-
-        // // find one and updates
-        // let positionDataN = await Position.findOneAndUpdate(
-        //   { _id: positionID },
-        //   { 
-        //     candidates: candidatesN,
-        //     candidatesReadyToDisplay: false 
-        //   },
-        //   { new: true }
-        // );
-        
-        return positionData
-        
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "addConvRecruiterToPosition",
-          { component: "positionMutation > addConvRecruiterToPosition" }
-        );
-      }
-    },
-
-    addNodesToPosition: async (parent, args, context, info) => {
-      let { positionID, nodes } = args.fields;
-
-      console.log("Mutation > addNodesToPosition > args.fields = ", args.fields);
-
-      
-
-
-      if (!positionID) throw new ApolloError("positionID is required");
-
-      if (!nodes) throw new ApolloError("nodes is required");
-
-
-      try {
-        let positionData = await Position.findOne({ _id: positionID }).select('_id name nodes');
-
-        printC(positionData,"0","positionData","b")
-        
-
-        nodesIDArray = nodes.map((node) => node.nodeID);
-
-        printC(nodesIDArray,"1","nodesIDArray","g")
-
-
-        let nodesData = await Node.find({ _id: nodesIDArray }).select(
-          "_id name node "
-        );
-
-        printC(nodesData,"2","nodesData","g")
-
-
-        
-        let nodesDataOriginalArray = positionData.nodes.map(function (item) {
-          return item.nodeID.toString();
+        interviewQuestionsForCandidate.push({
+          originalQuestionID: questionData[i]._id,
+          originalContent: questionData[i].content,
+          personalizedContent: improvedQuestion,
         });
-
-        printC(nodesDataOriginalArray,"1","nodesDataOriginalArray","b")
-
-
-        // check if the nodes are already in the position if they don't then add it to the positionData.nodes and save it to mongo
-        for (let i=0;i<nodesData.length;i++) {
-          let nodeData = nodesData[i];
-
-          if (!nodesDataOriginalArray.includes(nodeData._id.toString())) {
-            positionData.nodes.push({
-              nodeID: nodeData._id,
-            })
-          }
-
-        }
-
-        printC(positionData,"1","positionData","b")
-
-        // save it to mongo
-        positionData = await positionData.save();
-
-
-
-
-
-        return positionData;
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "addNodesToPosition",
-          { component: "positionMutation > addNodesToPosition" }
-        );
       }
-    },
 
-    createTalentListPosition: async (parent, args, context, info) => {
-      const { positionID, name,talentListID } = args.fields;
-      console.log("Mutation > createTalentListPosition > args.fields = ", args.fields);
+      printC(
+        interviewQuestionsForCandidate,
+        "3",
+        "interviewQuestionsForCandidate",
+        "r"
+      );
 
-      try {
+      // find the idx what candidate you will update from the positionData
 
-        positionData = await Position.findOne({ _id: positionID}).select('_id name talentList');
+      printC(userID, "5", "userID", "y");
+      printC(positionID, "5", "positionID", "y");
 
-        console.log("positionData = " , positionData)
+      positionData2 = await Position.findOne({ _id: positionID }).select(
+        "_id name candidates"
+      );
+      printC(
+        positionData2?.candidates?.length,
+        "5",
+        "positionData2.candidates.length",
+        "y"
+      );
 
-        if (talentListID){
+      // sf0
+      let candidateIdx = positionData2?.candidates?.findIndex(
+        (candidate) => candidate.userID.toString() == userID.toString()
+      );
 
-          // search inside positionData.talentList if talentListID is already there
-          let talentListData = positionData.talentList.find((talentList) => talentList._id.toString() == talentListID.toString());
+      printC(candidateIdx, "3", "candidateIdx", "r");
 
-          if (!talentListData) {
-            positionData.talentList.push({
-              _id: talentListID,
-              name: name,
-            });
-          } else {
-            // update the name
-            talentListData.name = name;
-          }
+      if (candidateIdx != -1 && candidateIdx != undefined) {
+        positionData2.candidates[candidateIdx].interviewQuestionsForCandidate =
+          interviewQuestionsForCandidate;
+      } else {
+        positionData2?.candidates?.push({
+          userID: userID,
+          interviewQuestionsForCandidate: interviewQuestionsForCandidate,
+        });
+      }
 
-        } else {
+      if (positionData2) {
+        positionData2 = await positionData2.save();
+      }
+
+      return positionData2;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "interviewQuestionCreationUser",
+        { component: "positionMutation > interviewQuestionCreationUser" }
+      );
+    }
+  },
+  addEmployeesPosition: async (parent, args, context, info) => {
+    const { positionID, employees } = args.fields;
+    console.log(
+      "Mutation > addEmployeesPosition > args.fields = ",
+      args.fields
+    );
+
+    if (!employees)
+      throw new ApolloError("Employees is required", "addEmployeesPosition", {
+        component: "positionMutation > addEmployeesPosition",
+      });
+
+    if (!positionID)
+      throw new ApolloError("Position ID is required", "addEmployeesPosition", {
+        component: "positionMutation > addEmployeesPosition",
+      });
+
+    positionData = await Position.findOne({ _id: positionID });
+
+    if (!positionData)
+      throw new ApolloError("Position not found", "addEmployeesPosition", {
+        component: "positionMutation > addEmployeesPosition",
+      });
+
+    try {
+      let compEmployees = await updateEmployees(
+        positionData.employees,
+        employees
+      );
+
+      console.log("compEmployees = ", compEmployees);
+
+      // find one and updates
+      let positionDataN = await Position.findOneAndUpdate(
+        { _id: positionID },
+        { employees: compEmployees },
+        { new: true }
+      );
+
+      return positionDataN;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "addEmployeesPosition",
+        { component: "positionMutation > addEmployeesPosition" }
+      );
+    }
+  },
+  addQuestionsToAskPosition: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
+    let { questionsToAsk } = args.fields;
+    console.log(
+      "Mutation > addQuestionsToAskPosition > args.fields = ",
+      args.fields
+    );
+
+    if (!questionsToAsk)
+      throw new ApolloError(
+        "Employees is required",
+        "addQuestionsToAskPosition",
+        { component: "positionMutation > addQuestionsToAskPosition" }
+      );
+
+    if (!positionID)
+      throw new ApolloError(
+        "Position ID is required",
+        "addQuestionsToAskPosition",
+        { component: "positionMutation > addQuestionsToAskPosition" }
+      );
+
+    positionData = await Position.findOne({ _id: positionID });
+
+    if (!positionData)
+      throw new ApolloError("Position not found", "addQuestionsToAskPosition", {
+        component: "positionMutation > addQuestionsToAskPosition",
+      });
+
+    try {
+      questionsToAsk = await addMultipleQuestionsToEdenAIFunc(questionsToAsk);
+
+      console.log("questionsToAsk = ", questionsToAsk);
+      // asdf12
+
+      let questionsToAskN = await updateEmployees(
+        positionData.questionsToAsk,
+        questionsToAsk,
+        "questionID"
+      );
+
+      console.log("questionsToAskN = ", questionsToAskN);
+
+      // find one and updates
+      let positionDataN = await Position.findOneAndUpdate(
+        { _id: positionID },
+        { questionsToAsk: questionsToAskN },
+        { new: true }
+      );
+
+      return positionDataN;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "addQuestionsToAskPosition",
+        { component: "positionMutation > addQuestionsToAskPosition" }
+      );
+    }
+  },
+  deleteQuestionsToAskPosition: async (parent, args, context, info) => {
+    const { positionID, questionID } = args.fields;
+    console.log(
+      "Mutation > deleteQuestionsToAskPosition > args.fields = ",
+      args.fields
+    );
+
+    if (!positionID)
+      throw new ApolloError(
+        "Position ID is required",
+        "deleteQuestionsToAskPosition",
+        { component: "positionMutation > deleteQuestionsToAskPosition" }
+      );
+
+    positionData = await Position.findOne({ _id: positionID });
+
+    if (!positionData)
+      throw new ApolloError(
+        "Position not found",
+        "deleteQuestionsToAskPosition",
+        { component: "positionMutation > deleteQuestionsToAskPosition" }
+      );
+
+    try {
+      questionsToAsk = positionData.questionsToAsk;
+
+      console.log("questionsToAsk = ", questionsToAsk);
+
+      // filter out the questionID
+      questionsToAsk = questionsToAsk.filter(
+        (question) => question.questionID.toString() != questionID.toString()
+      );
+
+      // save it to mongo
+      let positionDataN = await Position.findOneAndUpdate(
+        { _id: positionID },
+        { questionsToAsk },
+        { new: true }
+      );
+
+      return positionDataN;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "deleteQuestionsToAskPosition",
+        { component: "positionMutation > deleteQuestionsToAskPosition" }
+      );
+    }
+  },
+  addCandidatesPosition: async (parent, args, context, info) => {
+    const { positionID, candidates } = args.fields;
+    console.log(
+      "Mutation > addCandidatesPosition > args.fields = ",
+      args.fields
+    );
+
+    if (!candidates)
+      throw new ApolloError("Employees is required", "addCandidatesPosition", {
+        component: "positionMutation > addCandidatesPosition",
+      });
+
+    if (!positionID)
+      throw new ApolloError(
+        "Position ID is required",
+        "addCandidatesPosition",
+        { component: "positionMutation > addCandidatesPosition" }
+      );
+
+    positionData = await Position.findOne({ _id: positionID });
+
+    if (!positionData)
+      throw new ApolloError("Position not found", "addCandidatesPosition", {
+        component: "positionMutation > addCandidatesPosition",
+      });
+
+    userIDs = candidates.map((candidate) => candidate.userID);
+
+    usersData = await Members.find({ _id: { $in: userIDs } }).select(
+      "_id discordName positionsApplied"
+    );
+
+    try {
+      let candidatesN = await updateEmployees(
+        positionData.candidates,
+        candidates,
+        "userID"
+      );
+
+      console.log("candidatesN = ", candidatesN);
+      // sdf00
+
+      await checkAndAddPositionToMember(usersData, positionID);
+
+      // find one and updates
+      let positionDataN = await Position.findOneAndUpdate(
+        { _id: positionID },
+        {
+          candidates: positionData.candidates,
+          candidatesReadyToDisplay: false,
+        },
+        { new: true }
+      );
+
+      return positionDataN;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "addCandidatesPosition",
+        { component: "positionMutation > addCandidatesPosition" }
+      );
+    }
+  },
+  addConvRecruiterToPosition: async (parent, args, context, info) => {
+    const { positionID, userID, conversationID } = args.fields;
+    console.log(
+      "Mutation > addConvRecruiterToPosition > args.fields = ",
+      args.fields
+    );
+
+    if (!userID)
+      throw new ApolloError(
+        "userID is required",
+        "addConvRecruiterToPosition",
+        { component: "positionMutation > addConvRecruiterToPosition" }
+      );
+
+    if (!positionID)
+      throw new ApolloError(
+        "Position ID is required",
+        "addConvRecruiterToPosition",
+        { component: "positionMutation > addConvRecruiterToPosition" }
+      );
+    positionData = await Position.findOne({ _id: positionID });
+    if (!positionData)
+      throw new ApolloError(
+        "Position not found",
+        "addConvRecruiterToPosition",
+        { component: "positionMutation > addConvRecruiterToPosition" }
+      );
+
+    if (!conversationID)
+      throw new ApolloError(
+        "conversationID is required",
+        "addConvRecruiterToPosition",
+        { component: "positionMutation > addConvRecruiterToPosition" }
+      );
+
+    try {
+      // check if inside positionData.convRecruiter already conversationID exists
+      let convRecruiterData = positionData.convRecruiter.find(
+        (convRecruiter) =>
+          convRecruiter.conversationID.toString() == conversationID.toString()
+      );
+
+      if (!convRecruiterData) {
+        positionData.convRecruiter.push({
+          userID: userID,
+          conversationID: conversationID,
+          readyToDisplay: false,
+        });
+      } else {
+        convRecruiterData.readyToDisplay = false;
+      }
+
+      // save it to mongo
+      positionData.convRecruiterReadyToDisplay = false;
+      positionData = await positionData.save();
+
+      // // find one and updates
+      // let positionDataN = await Position.findOneAndUpdate(
+      //   { _id: positionID },
+      //   {
+      //     candidates: candidatesN,
+      //     candidatesReadyToDisplay: false
+      //   },
+      //   { new: true }
+      // );
+
+      return positionData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "addConvRecruiterToPosition",
+        { component: "positionMutation > addConvRecruiterToPosition" }
+      );
+    }
+  },
+
+  addNodesToPosition: async (parent, args, context, info) => {
+    let { positionID, nodes } = args.fields;
+
+    console.log("Mutation > addNodesToPosition > args.fields = ", args.fields);
+
+    if (!positionID) throw new ApolloError("positionID is required");
+
+    if (!nodes) throw new ApolloError("nodes is required");
+
+    try {
+      let positionData = await Position.findOne({ _id: positionID }).select(
+        "_id name nodes"
+      );
+
+      printC(positionData, "0", "positionData", "b");
+
+      nodesIDArray = nodes.map((node) => node.nodeID);
+
+      printC(nodesIDArray, "1", "nodesIDArray", "g");
+
+      let nodesData = await Node.find({ _id: nodesIDArray }).select(
+        "_id name node "
+      );
+
+      printC(nodesData, "2", "nodesData", "g");
+
+      let nodesDataOriginalArray = positionData.nodes.map(function (item) {
+        return item.nodeID.toString();
+      });
+
+      printC(nodesDataOriginalArray, "1", "nodesDataOriginalArray", "b");
+
+      // check if the nodes are already in the position if they don't then add it to the positionData.nodes and save it to mongo
+      for (let i = 0; i < nodesData.length; i++) {
+        let nodeData = nodesData[i];
+
+        if (!nodesDataOriginalArray.includes(nodeData._id.toString())) {
+          positionData.nodes.push({
+            nodeID: nodeData._id,
+          });
+        }
+      }
+
+      printC(positionData, "1", "positionData", "b");
+
+      // save it to mongo
+      positionData = await positionData.save();
+
+      return positionData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "addNodesToPosition",
+        { component: "positionMutation > addNodesToPosition" }
+      );
+    }
+  },
+
+  createTalentListPosition: async (parent, args, context, info) => {
+    const { positionID, name, talentListID } = args.fields;
+    console.log(
+      "Mutation > createTalentListPosition > args.fields = ",
+      args.fields
+    );
+
+    try {
+      positionData = await Position.findOne({ _id: positionID }).select(
+        "_id name talentList"
+      );
+
+      console.log("positionData = ", positionData);
+
+      if (talentListID) {
+        // search inside positionData.talentList if talentListID is already there
+        let talentListData = positionData.talentList.find(
+          (talentList) => talentList._id.toString() == talentListID.toString()
+        );
+
+        if (!talentListData) {
           positionData.talentList.push({
+            _id: talentListID,
             name: name,
           });
-
+        } else {
+          // update the name
+          talentListData.name = name;
         }
-
-        // save it to mongo
-        positionData = await positionData.save();
-
-
-        return positionData
-        
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "createTalentListPosition",
-          { component: "positionMutation > createTalentListPosition" }
-        );
+      } else {
+        positionData.talentList.push({
+          name: name,
+        });
       }
-    },
 
-    updateUsersTalentListPosition: async (parent, args, context, info) => {
-      const { positionID, talentListID, usersTalentList } = args.fields;
-      console.log("Mutation > updateUsersTalentListPosition > args.fields = ", args.fields);
+      // save it to mongo
+      positionData = await positionData.save();
 
-      try {
+      return positionData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "createTalentListPosition",
+        { component: "positionMutation > createTalentListPosition" }
+      );
+    }
+  },
 
-        positionData = await Position.findOne({ _id: positionID}).select('_id name talentList');
+  updateUsersTalentListPosition: async (parent, args, context, info) => {
+    const { positionID, talentListID, usersTalentList } = args.fields;
+    console.log(
+      "Mutation > updateUsersTalentListPosition > args.fields = ",
+      args.fields
+    );
 
-        if (!positionData) throw new ApolloError("Position not found", "updateUsersTalentListPosition", { component: "positionMutation > updateUsersTalentListPosition" });
+    try {
+      positionData = await Position.findOne({ _id: positionID }).select(
+        "_id name talentList"
+      );
 
-
-        // change from usersTalentList which is an array, to talent an array of objects with userID
-        let talent = usersTalentList.map((userTalentID) => {
-          return {
-            userID: userTalentID,
-          }
-        })
-
-        console.log("talent = " , talent)
-
-        // find the talentListID and update the talent
-
-        let talentListData = positionData.talentList.find((talentList) => talentList._id.toString() == talentListID.toString());
-
-        // update talent
-        talentListData.talent = talent;
-
-        // save it to mongo
-        positionData = await positionData.save();
-
-
-        return positionData
-        
-      } catch (err) {
+      if (!positionData)
         throw new ApolloError(
-          err.message,
-          err.extensions?.code || "updateUsersTalentListPosition",
+          "Position not found",
+          "updateUsersTalentListPosition",
           { component: "positionMutation > updateUsersTalentListPosition" }
         );
-      }
-    },
 
-    
-    updatePositionUserAnswers: async (parent, args, context, info) => {
-      const { positionIDs} = args.fields;
-      console.log("Mutation > updatePositionUserAnswers > args.fields = ", args.fields);
+      // change from usersTalentList which is an array, to talent an array of objects with userID
+      let talent = usersTalentList.map((userTalentID) => {
+        return {
+          userID: userTalentID,
+        };
+      });
 
+      console.log("talent = ", talent);
 
-      if (positionIDs)
-        positionData = await Position.find({ 
-          _id: positionIDs,
-          // candidatesReadyToDisplay: { $ne: true } // SOS 🆘 - uncomment!!!
-        });
-      else 
-        positionData = await Position.find({ candidatesReadyToDisplay: { $ne: true } });
+      // find the talentListID and update the talent
 
-      try {
+      let talentListData = positionData.talentList.find(
+        (talentList) => talentList._id.toString() == talentListID.toString()
+      );
 
-        let candidateResult = {}
+      // update talent
+      talentListData.talent = talent;
 
-        for (let i = 0; i < positionData.length; i++) { // Loop on positions
-          const position = positionData[i];
+      // save it to mongo
+      positionData = await positionData.save();
 
-          questionsToAsk = position.questionsToAsk
+      return positionData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updateUsersTalentListPosition",
+        { component: "positionMutation > updateUsersTalentListPosition" }
+      );
+    }
+  },
 
-          printC(questionsToAsk,"0","questionsToAsk","g")
+  updatePositionUserAnswers: async (parent, args, context, info) => {
+    const { positionIDs } = args.fields;
+    console.log(
+      "Mutation > updatePositionUserAnswers > args.fields = ",
+      args.fields
+    );
 
-          let questionsToAskObj = await arrayToObj(questionsToAsk,"questionID")
+    if (positionIDs)
+      positionData = await Position.find({
+        _id: positionIDs,
+        // candidatesReadyToDisplay: { $ne: true } // SOS 🆘 - uncomment!!!
+      });
+    else
+      positionData = await Position.find({
+        candidatesReadyToDisplay: { $ne: true },
+      });
 
+    try {
+      let candidateResult = {};
 
-          printC(questionsToAskObj,"1","questionsToAskObj","b")
+      for (let i = 0; i < positionData.length; i++) {
+        // Loop on positions
+        const position = positionData[i];
 
+        questionsToAsk = position.questionsToAsk;
 
-          candidates = position.candidates
+        printC(questionsToAsk, "0", "questionsToAsk", "g");
 
-          for (let j = 0; j < candidates.length; j++) { // loop on candidates
+        let questionsToAskObj = await arrayToObj(questionsToAsk, "questionID");
 
-            const candidate = candidates[j];
+        printC(questionsToAskObj, "1", "questionsToAskObj", "b");
 
-            if (candidate.readyToDisplay == true) continue
+        candidates = position.candidates;
 
-            printC(candidate,"2","candidate","r")
+        for (let j = 0; j < candidates.length; j++) {
+          // loop on candidates
 
-            let convData = []
-            if (candidate.conversationID) {
+          const candidate = candidates[j];
 
-              convData = await Conversation.find({ _id: candidate.conversationID }).select('_id userID questionsAnswered');
+          if (candidate.readyToDisplay == true) continue;
 
-            } else {
+          printC(candidate, "2", "candidate", "r");
 
-              convData = await Conversation.find({ userID: candidate.userID }).select('_id userID questionsAnswered');
-            }
-
-            
-            
-            // from convData filter out the conversations that have questionsAnswered.length == 0
-
-            convData = convData.filter(conv => conv.questionsAnswered.length > 0)
-
-            printC(convData,"3","convData","p")
-
-            for (let k=0;k<convData.length;k++){ // loop on conversations
-              const conversationN = convData[k];
-
-              questionAnswered = conversationN.questionsAnswered
-              
-
-              for (let pl = 0; pl< questionAnswered.length;pl++){ // loop on questionsAnswered
-                const questionAnsweredN = questionAnswered[pl];
-
-                questionID = questionAnsweredN.questionID
-
-                if (questionsToAskObj[questionID]) {
-                  printC(questionID,"3","questionID","y")
-                  if (questionsToAskObj[questionID].usersAnswers == undefined) {
-                    questionsToAskObj[questionID] = {
-                      ...questionsToAskObj[questionID]._doc,
-                      usersAnswers: {}
-                    }
-                    // console.log("candidate.userID = " , candidate.userID)
-
-                  }
-                  
-
-                  if (questionsToAskObj[questionID].usersAnswers[candidate.userID] == undefined) {
-                    questionsToAskObj[questionID].usersAnswers[candidate.userID] = [questionAnsweredN]
-                  } else {
-                    questionsToAskObj[questionID].usersAnswers[candidate.userID].push(questionAnsweredN)
-                  }
-
-                  // printC(questionsToAskObj[questionID],"3","questionsToAskObj[questionID]","y")
-                   
-                  
-                }
-
-              }
-            }
-
-            // sfd00
-
+          let convData = [];
+          if (candidate.conversationID) {
+            convData = await Conversation.find({
+              _id: candidate.conversationID,
+            }).select("_id userID questionsAnswered");
+          } else {
+            convData = await Conversation.find({
+              userID: candidate.userID,
+            }).select("_id userID questionsAnswered");
           }
 
+          // from convData filter out the conversations that have questionsAnswered.length == 0
 
-          // console.log("questionsToAskObj = " , questionsToAskObj)
+          convData = convData.filter(
+            (conv) => conv.questionsAnswered.length > 0
+          );
 
-          printC(questionsToAskObj,"4","questionsToAskObj","b")
+          printC(convData, "3", "convData", "p");
 
-          // loop throw the oboject questionsToAskObj
-          for (let questionID in questionsToAskObj) {
-            let questionInfo = questionsToAskObj[questionID];
+          for (let k = 0; k < convData.length; k++) {
+            // loop on conversations
+            const conversationN = convData[k];
 
-            questionContent = await QuestionsEdenAI.findOne({ _id: questionInfo.questionID }).select('_id content contentSmall');
-            questionContent = await updateQuestionSmall(questionContent)
+            questionAnswered = conversationN.questionsAnswered;
 
-            // questionInfo.questionsToAskObj[questionID].questionContentSmall =  questionContent?.contentSmall
+            for (let pl = 0; pl < questionAnswered.length; pl++) {
+              // loop on questionsAnswered
+              const questionAnsweredN = questionAnswered[pl];
 
+              questionID = questionAnsweredN.questionID;
 
-            if (!questionInfo._doc) {
-              questionsToAskObj[questionID].questionContent =  questionContent?.content
-              questionsToAskObj[questionID].questionContentSmall =  questionContent?.contentSmall
-
-              // questionInfo.questionsToAskObj[questionID].questionContent =  questionContent?.content
-              // questionInfo.questionsToAskObj[questionID].questionContentSmall =  questionContent?.contentSmall
-            } else {
-              questionsToAskObj[questionID] = {
-                ...questionInfo._doc,
-                questionContent: questionContent?.content,
-                questionContentSmall: questionContent?.contentSmall
-              }
-              // questionInfo.questionsToAskObj[questionID] = {
-              //   ...questionInfo._doc,
-              //   questionContent: questionContent?.content,
-              //   questionContentSmall: questionContent?.contentSmall
-              // }
-            }
-
-            questionInfo = questionsToAskObj[questionID];
-
-            if (questionInfo.bestAnswer == undefined) { // If we don't have a best answer for this quesiton
-
-              for (userID in questionInfo.usersAnswers) {
-                qLen = questionInfo.usersAnswers[userID].length -1
-
-                if (candidateResult[userID] == undefined) {
-                  // candidateResult[userID] // add on candidateResult[userID] the questionID questionID and the value questionInfo.usersAnswers[userID][0]
-
-                  candidateResult[userID] = {
-                    [questionID]: questionInfo.usersAnswers[userID][qLen] // SOS 🆘 -> right now I only take the first answer, this need to cahnge! 
-                  }
-                } else {
-                  candidateResult[userID][questionID] = questionInfo.usersAnswers[userID][qLen] // SOS 🆘 -> right now I only take the first answer, this need to cahnge! 
+              if (questionsToAskObj[questionID]) {
+                printC(questionID, "3", "questionID", "y");
+                if (questionsToAskObj[questionID].usersAnswers == undefined) {
+                  questionsToAskObj[questionID] = {
+                    ...questionsToAskObj[questionID]._doc,
+                    usersAnswers: {},
+                  };
+                  // console.log("candidate.userID = " , candidate.userID)
                 }
+
+                if (
+                  questionsToAskObj[questionID].usersAnswers[
+                    candidate.userID
+                  ] == undefined
+                ) {
+                  questionsToAskObj[questionID].usersAnswers[candidate.userID] =
+                    [questionAnsweredN];
+                } else {
+                  questionsToAskObj[questionID].usersAnswers[
+                    candidate.userID
+                  ].push(questionAnsweredN);
+                }
+
+                // printC(questionsToAskObj[questionID],"3","questionsToAskObj[questionID]","y")
               }
+            }
+          }
 
-            }else {
+          // sfd00
+        }
 
-              const questionN = questionContent?.content
-              const bestAnswerN = questionInfo.bestAnswer
+        // console.log("questionsToAskObj = " , questionsToAskObj)
 
-              for (userID in questionInfo.usersAnswers) {
+        printC(questionsToAskObj, "4", "questionsToAskObj", "b");
 
-                qLen = questionInfo.usersAnswers[userID].length -1
+        // loop throw the oboject questionsToAskObj
+        for (let questionID in questionsToAskObj) {
+          let questionInfo = questionsToAskObj[questionID];
 
-                const answerN = questionInfo.usersAnswers[userID][qLen].summaryOfAnswer.replace(/[<>]/g, "")
+          questionContent = await QuestionsEdenAI.findOne({
+            _id: questionInfo.questionID,
+          }).select("_id content contentSmall");
+          questionContent = await updateQuestionSmall(questionContent);
 
-                printC(questionN,"5","questionN","y")
-                printC(bestAnswerN,"5","bestAnswerN","y")
-                printC(answerN,"5","answerN","y")
+          // questionInfo.questionsToAskObj[questionID].questionContentSmall =  questionContent?.contentSmall
 
+          if (!questionInfo._doc) {
+            questionsToAskObj[questionID].questionContent =
+              questionContent?.content;
+            questionsToAskObj[questionID].questionContentSmall =
+              questionContent?.contentSmall;
 
-                let promptEvaluate = `
+            // questionInfo.questionsToAskObj[questionID].questionContent =  questionContent?.content
+            // questionInfo.questionsToAskObj[questionID].questionContentSmall =  questionContent?.contentSmall
+          } else {
+            questionsToAskObj[questionID] = {
+              ...questionInfo._doc,
+              questionContent: questionContent?.content,
+              questionContentSmall: questionContent?.contentSmall,
+            };
+            // questionInfo.questionsToAskObj[questionID] = {
+            //   ...questionInfo._doc,
+            //   questionContent: questionContent?.content,
+            //   questionContentSmall: questionContent?.contentSmall
+            // }
+          }
+
+          questionInfo = questionsToAskObj[questionID];
+
+          if (questionInfo.bestAnswer == undefined) {
+            // If we don't have a best answer for this quesiton
+
+            for (userID in questionInfo.usersAnswers) {
+              qLen = questionInfo.usersAnswers[userID].length - 1;
+
+              if (candidateResult[userID] == undefined) {
+                // candidateResult[userID] // add on candidateResult[userID] the questionID questionID and the value questionInfo.usersAnswers[userID][0]
+
+                candidateResult[userID] = {
+                  [questionID]: questionInfo.usersAnswers[userID][qLen], // SOS 🆘 -> right now I only take the first answer, this need to cahnge!
+                };
+              } else {
+                candidateResult[userID][questionID] =
+                  questionInfo.usersAnswers[userID][qLen]; // SOS 🆘 -> right now I only take the first answer, this need to cahnge!
+              }
+            }
+          } else {
+            const questionN = questionContent?.content;
+            const bestAnswerN = questionInfo.bestAnswer;
+
+            for (userID in questionInfo.usersAnswers) {
+              qLen = questionInfo.usersAnswers[userID].length - 1;
+
+              const answerN = questionInfo.usersAnswers[userID][
+                qLen
+              ].summaryOfAnswer.replace(/[<>]/g, "");
+
+              printC(questionN, "5", "questionN", "y");
+              printC(bestAnswerN, "5", "bestAnswerN", "y");
+              printC(answerN, "5", "answerN", "y");
+
+              let promptEvaluate = `
                 QUESTION: <${questionN}>
 
                 BEST DESIRED answer: <${bestAnswerN}>
@@ -885,260 +971,253 @@ module.exports = {
                 Example 
                 EVALUATE: 6
                 REASON: the reason...
-                `
+                `;
 
+              let evaluateResult = await useGPTchatSimple(promptEvaluate);
 
-                let evaluateResult = await useGPTchatSimple(promptEvaluate)
+              // separate the result on EVALUATE and REASON on two different variables, using regex, it should work for all caps and all small letters
 
-                // separate the result on EVALUATE and REASON on two different variables, using regex, it should work for all caps and all small letters
+              printC(evaluateResult, "5.5", "evaluateResult", "g");
 
-     
-                printC(evaluateResult,"5.5","evaluateResult","g")
+              // const evaluateRegex = /<evaluate:\s*(\d+)\s*/i;
+              // const reasonRegex = /reason:\s*(.*)>/i;
 
-                // const evaluateRegex = /<evaluate:\s*(\d+)\s*/i;
-                // const reasonRegex = /reason:\s*(.*)>/i;
+              // const evaluateMatch = evaluateResult.toLowerCase().match(evaluateRegex);
+              // const reasonMatch = evaluateResult.toLowerCase().match(reasonRegex);
 
-                // const evaluateMatch = evaluateResult.toLowerCase().match(evaluateRegex);
-                // const reasonMatch = evaluateResult.toLowerCase().match(reasonRegex);
+              // const evaluate = evaluateMatch ? evaluateMatch[1] : null;
+              // const reason = reasonMatch ? reasonMatch[1] : null;
 
-                // const evaluate = evaluateMatch ? evaluateMatch[1] : null;
-                // const reason = reasonMatch ? reasonMatch[1] : null;
+              const regex = /evaluate\s*:\s*(\d+)\s*.*?reason\s*:\s*(.*)/is;
+              const result = regex.exec(evaluateResult);
 
-                const regex = /evaluate\s*:\s*(\d+)\s*.*?reason\s*:\s*(.*)/is;
-                const result = regex.exec(evaluateResult);
+              const evaluate = result[1]; // "3"
+              const reason = result[2].trim();
 
-                const evaluate = result[1]; // "3"
-                const reason = result[2].trim();
+              printC(evaluate, "5", "evaluate", "y");
+              printC(reason, "5", "reason", "y");
+              printC(
+                questionInfo.usersAnswers[userID][qLen],
+                "5",
+                "questionInfo.usersAnswers[userID][qLen]",
+                "y"
+              );
 
-                printC(evaluate,"5","evaluate","y")
-                printC(reason,"5","reason","y")
-                printC(questionInfo.usersAnswers[userID][qLen],"5","questionInfo.usersAnswers[userID][qLen]","y")
+              qLen = questionInfo.usersAnswers[userID].length - 1;
 
+              if (candidateResult[userID] == undefined) {
+                // candidateResult[userID] // add on candidateResult[userID] the questionID questionID and the value questionInfo.usersAnswers[userID][0]
 
-                qLen = questionInfo.usersAnswers[userID].length -1
-
-                if (candidateResult[userID] == undefined) {
-                  // candidateResult[userID] // add on candidateResult[userID] the questionID questionID and the value questionInfo.usersAnswers[userID][0]
-
-                  candidateResult[userID] = {
-                    [questionID]: {
-                      ...questionInfo.usersAnswers[userID][qLen]._doc, // SOS 🆘 -> right now I only take the first answer, this need to cahnge! 
-                      score: evaluate,
-                      reason: reason
-                    }
-                  }
-                } else {
-                  candidateResult[userID][questionID] = {
-                    ...questionInfo.usersAnswers[userID][qLen]._doc, // SOS 🆘 -> right now I only take the first answer, this need to cahnge! 
+                candidateResult[userID] = {
+                  [questionID]: {
+                    ...questionInfo.usersAnswers[userID][qLen]._doc, // SOS 🆘 -> right now I only take the first answer, this need to cahnge!
                     score: evaluate,
-                    reason: reason
-                  }
-                }
-
-
-
-
-
+                    reason: reason,
+                  },
+                };
+              } else {
+                candidateResult[userID][questionID] = {
+                  ...questionInfo.usersAnswers[userID][qLen]._doc, // SOS 🆘 -> right now I only take the first answer, this need to cahnge!
+                  score: evaluate,
+                  reason: reason,
+                };
               }
-
-            }
-            
-
-          }
-
-          printC(questionsToAskObj,"5","questionsToAskObj","b")
-
-          printC(candidateResult,"6","candidateResult","p")
-
-
-          // --------------- Return results on positionData ---------------
-          for (j=0;j<positionData[i].candidates.length;j++){
-            userIDn = positionData[i].candidates[j].userID
-
-            positionData[i].candidates[j].readyToDisplay = true
-            positionData[i].candidatesReadyToDisplay = true
-            if (candidateResult[userIDn]) {
-              console.log("candidateResult[userIDn] = " , candidateResult[userIDn])
-
-
-              console.log(" questionsToAskObj[questionID] = " ,  questionsToAskObj[questionID])
-
-              let summaryQuestions = []
-
-              let overallScore = 0
-              let numberQ = 0
-
-              for (questionID in candidateResult[userIDn]) {
-                summaryQuestions.push({
-                  questionID: questionID,
-                  questionContent: candidateResult[userIDn][questionID].questionContent,
-                  questionContentSmall: questionsToAskObj[questionID]?.questionContentSmall,
-                  answerContent: candidateResult[userIDn][questionID].summaryOfAnswer?.replace(/[<>]/g, ""),
-                  answerContentSmall: candidateResult[userIDn][questionID].summaryOfAnswerSmall?.replace(/[<>]/g, ""),
-                  reason: candidateResult[userIDn][questionID].reason,
-                  score: candidateResult[userIDn][questionID].score,
-                  subConversationAnswer: candidateResult[userIDn][questionID].subConversationAnswer,
-                })
-
-                if (candidateResult[userIDn][questionID].score != undefined){
-                  overallScore += parseInt(candidateResult[userIDn][questionID].score)
-                  numberQ += 1
-                }
-              }
-
-              if (numberQ != 0) {
-                const averageT = (overallScore/numberQ)*10
-                positionData[i].candidates[j].overallScore = Math.floor(averageT);
-              }
-
-              positionData[i].candidates[j].summaryQuestions = summaryQuestions
-
-              
-              
             }
           }
-          // --------------- Return results on positionData ---------------
+        }
 
+        printC(questionsToAskObj, "5", "questionsToAskObj", "b");
 
+        printC(candidateResult, "6", "candidateResult", "p");
 
-          // ------------------ Update Position ----------------
+        // --------------- Return results on positionData ---------------
+        for (j = 0; j < positionData[i].candidates.length; j++) {
+          userIDn = positionData[i].candidates[j].userID;
+
+          positionData[i].candidates[j].readyToDisplay = true;
+          positionData[i].candidatesReadyToDisplay = true;
+          if (candidateResult[userIDn]) {
+            console.log(
+              "candidateResult[userIDn] = ",
+              candidateResult[userIDn]
+            );
+
+            console.log(
+              " questionsToAskObj[questionID] = ",
+              questionsToAskObj[questionID]
+            );
+
+            let summaryQuestions = [];
+
+            let overallScore = 0;
+            let numberQ = 0;
+
+            for (questionID in candidateResult[userIDn]) {
+              summaryQuestions.push({
+                questionID: questionID,
+                questionContent:
+                  candidateResult[userIDn][questionID].questionContent,
+                questionContentSmall:
+                  questionsToAskObj[questionID]?.questionContentSmall,
+                answerContent: candidateResult[userIDn][
+                  questionID
+                ].summaryOfAnswer?.replace(/[<>]/g, ""),
+                answerContentSmall: candidateResult[userIDn][
+                  questionID
+                ].summaryOfAnswerSmall?.replace(/[<>]/g, ""),
+                reason: candidateResult[userIDn][questionID].reason,
+                score: candidateResult[userIDn][questionID].score,
+                subConversationAnswer:
+                  candidateResult[userIDn][questionID].subConversationAnswer,
+              });
+
+              if (candidateResult[userIDn][questionID].score != undefined) {
+                overallScore += parseInt(
+                  candidateResult[userIDn][questionID].score
+                );
+                numberQ += 1;
+              }
+            }
+
+            if (numberQ != 0) {
+              const averageT = (overallScore / numberQ) * 10;
+              positionData[i].candidates[j].overallScore = Math.floor(averageT);
+            }
+
+            positionData[i].candidates[j].summaryQuestions = summaryQuestions;
+          }
+        }
+        // --------------- Return results on positionData ---------------
+
+        // ------------------ Update Position ----------------
+        positionNowD = await Position.findOneAndUpdate(
+          { _id: positionData[i]._id },
+          {
+            $set: {
+              candidates: positionData[i].candidates,
+              candidatesReadyToDisplay:
+                positionData[i].candidatesReadyToDisplay,
+            },
+          },
+          { new: true }
+        );
+        if (position.candidates.length == 0) {
           positionNowD = await Position.findOneAndUpdate(
             { _id: positionData[i]._id },
             {
               $set: {
-                candidates: positionData[i].candidates,
-                candidatesReadyToDisplay: positionData[i].candidatesReadyToDisplay
-              }
+                candidatesReadyToDisplay: true,
+              },
             },
             { new: true }
-          )
-          if (position.candidates.length == 0){
-            positionNowD = await Position.findOneAndUpdate(
-              { _id: positionData[i]._id },
-              {
-                $set: {
-                  candidatesReadyToDisplay: true
-                }
-              },
-              { new: true }
-            )
-          }
-          // ------------------ Update Position ----------------
+          );
+        }
+        // ------------------ Update Position ----------------
+      }
 
+      return positionData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updatePositionUserAnswers",
+        { component: "positionMutation > updatePositionUserAnswers" }
+      );
+    }
+  },
+  updatePositionConvRecruiter: async (parent, args, context, info) => {
+    const { positionIDs } = args.fields;
+    console.log(
+      "Mutation > updatePositionConvRecruiter > args.fields = ",
+      args.fields
+    );
 
+    if (positionIDs)
+      positionData = await Position.find({
+        _id: positionIDs,
+        // convRecruiterReadyToDisplay: { $ne: true } // SOS 🆘 - uncomment!!!
+      });
+    else {
+      positionData = await Position.find({
+        convRecruiterReadyToDisplay: { $ne: true },
+      }).select("_id name convRecruiter");
+    }
 
+    try {
+      for (let i = 0; i < positionData.length; i++) {
+        // Loop on positions
+        let position = positionData[i];
 
+        const convRecruiter = position.convRecruiter;
+
+        printC(convRecruiter, "0", "convRecruiter", "r");
+
+        let conversationID = undefined;
+        if (convRecruiter.length == 0) {
+          position.convRecruiterReadyToDisplay = true;
+          position = await position.save();
+
+          continue;
+        } else {
+          conversationID =
+            convRecruiter[convRecruiter.length - 1].conversationID;
         }
 
-        
+        printC(conversationID, "0", "conversationID", "b");
 
-
-        return positionData
-        
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "updatePositionUserAnswers",
-          { component: "positionMutation > updatePositionUserAnswers" }
+        convData = await Conversation.findOne({ _id: conversationID }).select(
+          "_id userID conversation"
         );
-      }
-    },
-    updatePositionConvRecruiter: async (parent, args, context, info) => {
-      const { positionIDs} = args.fields;
-      console.log("Mutation > updatePositionConvRecruiter > args.fields = ", args.fields);
 
+        printC(convData, "1", "convData", "b");
 
-      if (positionIDs)
-        positionData = await Position.find({ 
-          _id: positionIDs,
-          // convRecruiterReadyToDisplay: { $ne: true } // SOS 🆘 - uncomment!!!
-        });
-      else {
-        positionData = await Position.find({ convRecruiterReadyToDisplay: { $ne: true } }).select('_id name convRecruiter');
-      }
+        let promptConv = "";
+        for (let i = 0; i < convData.conversation.length; i++) {
+          let convDataNow = convData.conversation[i];
+          if (convDataNow.role == "assistant")
+            promptConv =
+              promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+          else
+            promptConv =
+              promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
+        }
 
-      try {
+        printC(promptConv, "2", "promptConv", "b");
 
-        for (let i = 0; i < positionData.length; i++) { // Loop on positions
-          let position = positionData[i];
+        const noteCategories = [
+          {
+            content: "General info of Position",
+            enum: "position",
+          },
+          {
+            content: "Values of Position",
+            enum: "position",
+          },
+          {
+            content: "Industry of position",
+            enum: "position",
+          },
+          {
+            content: "Skills of the Candidate",
+            enum: "role",
+          },
+          {
+            content: "Responsibilities of the Candidate",
+            enum: "role",
+          },
+        ];
 
+        // make noteCategories into a string prompt
+        let promptNoteCategory = "";
+        for (let i = 0; i < noteCategories.length; i++) {
+          promptNoteCategory =
+            promptNoteCategory + "- " + noteCategories[i].content + " \n\n";
+        }
 
-          const convRecruiter = position.convRecruiter
+        printC(promptNoteCategory, "3", "promptNoteCategory", "b");
 
-          printC(convRecruiter,"0","convRecruiter","r")
+        printC(promptNoteCategory, "4", "promptNoteCategory", "b");
 
-          let conversationID = undefined
-          if (convRecruiter.length == 0) {
-
-            position.convRecruiterReadyToDisplay = true
-            position = await position.save();
-
-            continue
-
-          } else {
-
-            conversationID = convRecruiter[convRecruiter.length -1 ].conversationID
-          }
-
-          printC(conversationID,"0","conversationID","b")
-
-          convData = await Conversation.findOne({ _id: conversationID }).select('_id userID conversation');
-
-          printC(convData,"1","convData","b")
-
-          let promptConv = "";
-          for (let i = 0; i < convData.conversation.length; i++) {
-            let convDataNow = convData.conversation[i];
-            if (convDataNow.role == "assistant")
-              promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
-            else
-              promptConv = promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
-          }
-
-          printC(promptConv,"2","promptConv","b")
-
-
-          const noteCategories = [{
-              "content": "General info of Position",
-              "enum": "position",
-            },
-            {
-              "content": "Values of Position",
-              "enum": "position"
-            },
-            {
-              "content": "Industry of position",
-              "enum": "position"
-            },
-            {
-
-              "content": "Skills of the Candidate",
-              "enum": "role"
-            },
-            {
-
-              "content": "Responsibilities of the Candidate",
-              "enum": "role"
-           }];
-
-          
-
-    
-          // make noteCategories into a string prompt
-          let promptNoteCategory = "";
-          for (let i = 0; i < noteCategories.length; i++) {
-            promptNoteCategory = promptNoteCategory + "- " + noteCategories[i].content + " \n\n";
-          }
-
-      
-          printC(promptNoteCategory,"3","promptNoteCategory","b")
-    
-          
-        printC(promptNoteCategory,"4","promptNoteCategory","b")
-
-          
-    
-          const promptNoteCategoryUser = `
+        const promptNoteCategoryUser = `
           You have as input a conversation between an Recruiter and a Employ
     
           Conversation is inside <>: <${promptConv}>
@@ -1158,21 +1237,15 @@ module.exports = {
               - content
     
           Answer:
-          `
-        
-
-
+          `;
 
         // console.log("noteCategories = " , noteCategories)
 
-
-
-
-        printC(promptNoteCategoryUser,"0","promptNoteCategoryUser","g")
+        printC(promptNoteCategoryUser, "0", "promptNoteCategoryUser", "g");
 
         // sdf0
 
-        evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
+        evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser);
 
         // evaluateNoteCategories = `
         // <Category: General info of Position>
@@ -1192,8 +1265,7 @@ module.exports = {
         // - No information gathered about specific responsibilities in past projects
         // `
 
-
-        printC(evaluateNoteCategories,"1","evaluateNoteCategories","g")
+        printC(evaluateNoteCategories, "1", "evaluateNoteCategories", "g");
 
         // -------------- Split String -------------
 
@@ -1202,7 +1274,7 @@ module.exports = {
         const newMemoryT = [];
         let result;
         while ((result = regex.exec(evaluateNoteCategories)) !== null) {
-          const categoryName = result[1].trim()
+          const categoryName = result[1].trim();
           const category = {
             categoryName: categoryName,
             // reason: result[2].trim().split('\n').map(detail => detail.trim()),
@@ -1211,110 +1283,111 @@ module.exports = {
           categoriesT.push(category);
 
           // separate the result[2] on \n and put it on newMemoryT
-          const mem = result[2].trim().split('\n').map(detail => detail.trim())
+          const mem = result[2]
+            .trim()
+            .split("\n")
+            .map((detail) => detail.trim());
 
           mem.forEach((memNow) => {
             newMemoryT.push({
               memoryContent: categoryName + ": " + memNow,
               pineConeID: "",
-            })
-          })
-            
-
+            });
+          });
         }
-        
 
-        printC(categoriesT,"2","categoriesT","g")
+        printC(categoriesT, "2", "categoriesT", "g");
 
-        printC(newMemoryT,"2","newMemoryT","g")
+        printC(newMemoryT, "2", "newMemoryT", "g");
 
         // asdf0
         // -------------- Split String -------------
 
+        position.convRecruiter[
+          position.convRecruiter.length - 1
+        ].positionQuestions = [];
+        position.convRecruiter[
+          position.convRecruiter.length - 1
+        ].roleQuestions = [];
 
-        position.convRecruiter[position.convRecruiter.length - 1].positionQuestions = []
-        position.convRecruiter[position.convRecruiter.length - 1].roleQuestions = []
+        position.convRecruiter[
+          position.convRecruiter.length - 1
+        ].readyToDisplay = true;
 
-        position.convRecruiter[position.convRecruiter.length - 1].readyToDisplay = true
-
-
-        for (let i=0;i<categoriesT.length;i++){
+        for (let i = 0; i < categoriesT.length; i++) {
           if (noteCategories[i].enum == "position") {
-            printC(categoriesT[i],"3","categoriesT[i]","y")
-            position.convRecruiter[position.convRecruiter.length - 1].positionQuestions.push({
+            printC(categoriesT[i], "3", "categoriesT[i]", "y");
+            position.convRecruiter[
+              position.convRecruiter.length - 1
+            ].positionQuestions.push({
               question: categoriesT[i].categoryName,
               content: categoriesT[i].reason,
-            })
+            });
           } else {
-            position.convRecruiter[position.convRecruiter.length - 1].roleQuestions.push({
+            position.convRecruiter[
+              position.convRecruiter.length - 1
+            ].roleQuestions.push({
               question: categoriesT[i].categoryName,
               content: categoriesT[i].reason,
-            })
+            });
           }
         }
 
-
         // ------------ Delete previous memory ------------
-        const convMemory = position.convRecruiter[position.convRecruiter.length - 1]?.convMemory
-        if (convMemory.length >0) {
-          deletePineIDs = convMemory.map(obj => obj.pineConeID)
-          await deletePineCone(deletePineIDs)
+        const convMemory =
+          position.convRecruiter[position.convRecruiter.length - 1]?.convMemory;
+        if (convMemory.length > 0) {
+          deletePineIDs = convMemory.map((obj) => obj.pineConeID);
+          await deletePineCone(deletePineIDs);
         }
         // ------------ Delete previous memory ------------
-        
+
         // -------------- Sent to PineCone --------------
-        printC(newMemoryT,"2","newMemoryT","y")
+        printC(newMemoryT, "2", "newMemoryT", "y");
         // newMemoryT.forEach(memorySaveN => {
-        for (let i=0;i<newMemoryT.length;i++){
+        for (let i = 0; i < newMemoryT.length; i++) {
           const memorySaveN = newMemoryT[i].memoryContent;
           upsertSum = await upsertEmbedingPineCone({
             text: memorySaveN,
             _id: position._id,
             label: "Position_TrainEdenAI_memory",
           });
-          printC(upsertSum,"2","upsertSum","y")
+          printC(upsertSum, "2", "upsertSum", "y");
 
-          newMemoryT[i].pineConeID = upsertSum.pineConeID
+          newMemoryT[i].pineConeID = upsertSum.pineConeID;
         }
         // -------------- Sent to PineCone --------------
 
+        position.convRecruiter[position.convRecruiter.length - 1].convMemory =
+          newMemoryT;
 
-        position.convRecruiter[position.convRecruiter.length - 1].convMemory = newMemoryT
-        
-        position.convRecruiterReadyToDisplay = true
+        position.convRecruiterReadyToDisplay = true;
 
-        printC(position.convRecruiter, "3", "position.convRecruiter", "r")
+        printC(position.convRecruiter, "3", "position.convRecruiter", "r");
 
         position = await position.save();
-
       }
 
+      return positionData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updatePositionConvRecruiter",
+        { component: "positionMutation > updatePositionConvRecruiter" }
+      );
+    }
+  },
+};
 
-
-        return positionData
-        
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "updatePositionConvRecruiter",
-          { component: "positionMutation > updatePositionConvRecruiter" }
-        );
-      }
-    },
-}
-
-
-
-async function updateEmployees(arr1, arr2,compareKey = "userID") {
-
+async function updateEmployees(arr1, arr2, compareKey = "userID") {
   // arr1New = [...arr1]
-  arr2.forEach(employee2 => {
-    const index = arr1.findIndex(employee1 => {
-
-      
-      if (employee1[compareKey] && employee2[compareKey]) return (employee1[compareKey].toString() == employee2[compareKey].toString())
-      else return -1
-      
+  arr2.forEach((employee2) => {
+    const index = arr1.findIndex((employee1) => {
+      if (employee1[compareKey] && employee2[compareKey])
+        return (
+          employee1[compareKey].toString() == employee2[compareKey].toString()
+        );
+      else return -1;
     });
     if (index != -1) {
       // arr1[index] = {
@@ -1322,9 +1395,9 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
       //   ...arr1[index],
       //   readyToDisplay: false,
       // }
-      arr1[index].readyToDisplay = false
-      if (employee2.conversationID){
-        arr1[index].conversationID = employee2.conversationID
+      arr1[index].readyToDisplay = false;
+      if (employee2.conversationID) {
+        arr1[index].conversationID = employee2.conversationID;
       }
     } else {
       arr1.push({
@@ -1332,13 +1405,11 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
         readyToDisplay: false,
       });
 
-      if (employee2.conversationID){
-        arr1[arr1.length - 1].conversationID = employee2.conversationID
+      if (employee2.conversationID) {
+        arr1[arr1.length - 1].conversationID = employee2.conversationID;
       }
-
     }
   });
-
 
   return arr1;
 }
