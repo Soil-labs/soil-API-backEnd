@@ -1,0 +1,167 @@
+module.exports = `
+    
+    type Position {
+        _id: ID
+        name: String
+        url: String
+        company: Company
+        candidatesReadyToDisplay: Boolean
+        questionsToAsk: [QuestionType]
+        nodes: [NodeDataType]
+        convRecruiter: [convRecruiterType]
+        convRecruiterReadyToDisplay: Boolean
+        talentList: [talentListType]
+        candidates: [CandidateType]
+    }
+
+    type convRecruiterType {
+        user: Members
+        readyToDisplay: Boolean
+        conversation: [conversationType]
+        companyQuestions: [QuestionContentType]
+        roleQuestions: [QuestionContentType]
+        convMemory: [convMemoryType]
+    }
+
+    type convMemoryType {
+        memoryContent: String
+        pineConeID: String
+    }
+
+    type QuestionContentType {
+        question: String,
+        content: String,
+    }
+
+    type talentListType {
+        _id: ID
+        name: String
+        talent: [talentType]
+    }
+
+    type talentType {
+        user: Members
+    }
+
+    type NodeDataType {
+        nodeData: Node
+    }
+
+    type QuestionType {
+        question: QuestionsEdenAI
+        bestAnswer: String
+    }
+
+    type CandidateType {
+        user: Members,
+        overallScore: Float,
+        acceptedOrRejected: Boolean,
+        readyToDisplay: Boolean,
+        conversation: [conversationType],
+        summaryQuestions: [SummaryQuestionType]
+    }
+
+    type SummaryQuestionType {
+        questionID: ID,
+        questionContent: String,
+        questionContentSmall: String,
+        answerContent: String,
+        answerContentSmall: String,
+        bestAnswerPosition: String,
+        reason: String,
+        score: Float,
+        subConversationAnswer: [conversationType],
+    }
+
+    input updatePositionInput {
+        _id: ID
+        name: String
+        companyID: String
+    }
+
+    input updateUrlInput {
+        positionID: ID
+        url: String
+    }
+
+    input QuestionTypeInput {
+        questionID: ID
+        questionContent: String
+        bestAnswer: String
+    }
+
+    input CandidateTypeInput {
+        userID: ID,
+    }
+
+    input findPositionInput {
+        _id: [ID],
+    }
+
+    input findPositionsInput {
+        _id: ID,
+    }
+
+    input addQuestionsToAskPositionInput {
+        positionID: ID
+        questionsToAsk: [QuestionTypeInput]
+    }
+    input interviewQuestionCreationUserPositionInput {
+        positionID: ID
+        userID: ID
+    }
+    input deleteQuestionsToAskPositionInput {
+        positionID: ID
+        questionID: ID
+    }
+
+    input candidatesInput {
+        userID: ID,
+        conversationID: ID,
+        overallScore: Float,
+        acceptedOrRejected: Boolean,
+    }
+
+    input addCandidatesPositionInput {
+        positionID: ID
+        candidates: [candidatesInput]
+    }
+
+    input addConvRecruiterToPositionInput {
+        positionID: ID
+        userID: ID
+        conversationID: ID
+    }
+
+    input updatePositionUserAnswersInput {
+        positionIDs: [ID]
+    }
+
+    input updatePositionConvRecruiterInput {
+        positionIDs: [ID]
+    }
+
+    input createTalentListPositionInput {
+        positionID: ID
+        name: String
+        talentListID: ID
+    }
+
+    input updateUsersTalentListPositionInput {
+        positionID: ID
+        talentListID: ID
+        usersTalentList: [ID]
+    }
+
+    input addNodesToPositionInput {
+        positionID: ID
+        nodes: [addNodeType]
+    }
+
+    input addNodeType {
+        nodeID: ID
+    }
+
+    
+
+`
