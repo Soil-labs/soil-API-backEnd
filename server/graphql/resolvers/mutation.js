@@ -54,17 +54,8 @@ const { addQuestionToEdenAI } = require("./mutation/questionsEdenAIMutation");
 
 const {
   updateCompany,
+  updateCompanyUrl,
   addEmployeesCompany,
-  addQuestionsToAskCompany,
-  interviewQuestionCreationUser,
-  deleteQuestionsToAskCompany,
-  addCandidatesCompany,
-  addConvRecruiterToCompany,
-  updateCompanyUserAnswers,
-  updateCompanyConvRecruiter,
-  createTalentListCompany,
-  updateUsersTalentListCompany,
-  addNodesToCompany,
 } = require("./mutation/companyMutation");
 
 const {
@@ -206,17 +197,8 @@ module.exports = {
 
     // ------------- COMPANY MUTATION -----------------
     updateCompany,
+    updateCompanyUrl,
     addEmployeesCompany,
-    addQuestionsToAskCompany,
-    interviewQuestionCreationUser,
-    deleteQuestionsToAskCompany,
-    addCandidatesCompany,
-    addConvRecruiterToCompany,
-    updateCompanyUserAnswers,
-    updateCompanyConvRecruiter,
-    createTalentListCompany,
-    updateUsersTalentListCompany,
-    addNodesToCompany,
 
     // ------------- POSITION MUTATION -----------------
     updatePosition,

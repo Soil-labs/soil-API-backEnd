@@ -79,16 +79,7 @@ module.exports = `
         # ------------- COMPANY MUTATION -----------------
         updateCompany(fields:updateCompanyInput): Company
         addEmployeesCompany(fields:addEmployeesCompanyInput): Company
-        addQuestionsToAskCompany(fields:addQuestionsToAskCompanyInput): Company
-        interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Company
-        deleteQuestionsToAskCompany(fields:deleteQuestionsToAskCompanyInput): Company
-        addCandidatesCompany(fields:addCandidatesCompanyInput): Company
-        addConvRecruiterToCompany(fields:addConvRecruiterToCompanyInput): Company
-        updateCompanyUserAnswers(fields:updateCompanyUserAnswersInput): [Company]
-        updateCompanyConvRecruiter(fields:updateCompanyConvRecruiterInput): [Company]
-        createTalentListCompany(fields:createTalentListCompanyInput): Company
-        updateUsersTalentListCompany(fields:updateUsersTalentListCompanyInput): Company
-        addNodesToCompany(fields:addNodesToCompanyInput): Company
+        updateCompanyUrl(fields:updateCompanyUrlInput): Company
         
         
         # ------------- POSITION MUTATION -----------------
