@@ -63,7 +63,7 @@ module.exports = `
             findConversations(fields:findConversationsInput): [Conversation]
 
 
-           #  ---------- COMPANY QUERY -------
+           #  ---------- POSITION QUERY -------
             findPosition(fields:findPositionInput): Position
             findPositions(fields:findPositionsInput): [Position]
             deletePositionCandidate(fields:deletePositionCandidateInput): CandidateType

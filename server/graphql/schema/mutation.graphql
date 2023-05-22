@@ -76,8 +76,9 @@ module.exports = `
         addQuestionToEdenAI(fields:addQuestionToEdenAIInput): addQuestionToEdenAIOutput
 
 
-        # ------------- COMPANY MUTATION -----------------
+        # ------------- POSITION MUTATION -----------------
         updatePosition(fields:updatePositionInput): Position
+        updateUrl(fields:updateUrlInput): Position
         addEmployeesPosition(fields:addEmployeesPositionInput): Position
         addQuestionsToAskPosition(fields:addQuestionsToAskPositionInput): Position
         interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Position

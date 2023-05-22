@@ -59,6 +59,43 @@ module.exports = {
       );
     }
   },
+  updateUrl: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
+    let { url } = args.fields;
+    console.log("Mutation > updateUrl > args.fields = ", args.fields);
+
+    if (!url)
+      throw new ApolloError("Url is required", "updateUrl", {
+        component: "positionMutation > updateUrl",
+      });
+
+    if (!positionID)
+      throw new ApolloError("Position ID is required", "updateUrl", {
+        component: "positionMutation > updateUrl",
+      });
+
+    positionData = await Position.findOne({ _id: positionID });
+
+    if (!positionData)
+      throw new ApolloError("Position not found", "updateUrl", {
+        component: "positionMutation > updateUrl",
+      });
+
+    try {
+      // find one and updates
+      let positionDataN = await Position.findOneAndUpdate(
+        { _id: positionID },
+        { url: url },
+        { new: true }
+      );
+
+      return positionDataN;
+    } catch (err) {
+      throw new ApolloError(err.message, err.extensions?.code || "updateUrl", {
+        component: "positionMutation > updateUrl",
+      });
+    }
+  },
   interviewQuestionCreationUser: async (parent, args, context, info) => {
     const { positionID, userID, cvContent } = args.fields;
     console.log(

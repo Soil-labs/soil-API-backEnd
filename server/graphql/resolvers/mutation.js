@@ -2,7 +2,8 @@ const {
   addNewMember,
   updateMember,
   addNodesToMember,
-  updateNodesToMember,updateNodesToMemberMultiTypeNode,
+  updateNodesToMember,
+  updateNodesToMemberMultiTypeNode,
   deleteNodesFromMember,
   deleteMember,
   addFavoriteProject,
@@ -45,15 +46,26 @@ const {
 } = require("./mutation/nodeMutation");
 
 const {
-  updateConversation,updateConvSummaries,
+  updateConversation,
+  updateConvSummaries,
 } = require("./mutation/conversationMutation");
 
-const {
-  addQuestionToEdenAI,
-} = require("./mutation/questionsEdenAIMutation");
+const { addQuestionToEdenAI } = require("./mutation/questionsEdenAIMutation");
 
 const {
-  updatePosition,addEmployeesPosition,addQuestionsToAskPosition,interviewQuestionCreationUser,deleteQuestionsToAskPosition,addCandidatesPosition,addConvRecruiterToPosition,updatePositionUserAnswers,updatePositionConvRecruiter,createTalentListPosition,updateUsersTalentListPosition,addNodesToPosition,
+  updatePosition,
+  updateUrl,
+  addEmployeesPosition,
+  addQuestionsToAskPosition,
+  interviewQuestionCreationUser,
+  deleteQuestionsToAskPosition,
+  addCandidatesPosition,
+  addConvRecruiterToPosition,
+  updatePositionUserAnswers,
+  updatePositionConvRecruiter,
+  createTalentListPosition,
+  updateUsersTalentListPosition,
+  addNodesToPosition,
 } = require("./mutation/positionMutation");
 
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
@@ -71,11 +83,18 @@ const {
 const { createProjectUpdate } = require("./mutation/projectUpdateMutation");
 const {
   addEndorsement,
-  findEndorsements,deleteAllEndorsements,calculateReputation,createMultipleFakeEndorsementAndReview,
+  findEndorsements,
+  deleteAllEndorsements,
+  calculateReputation,
+  createMultipleFakeEndorsementAndReview,
   createFakeEndorsement,
   createEndorsementLink,
 } = require("./mutation/endorsementMutation");
-const { addReview,createFakeReview, findReviews } = require("./mutation/reviewMutation");
+const {
+  addReview,
+  createFakeReview,
+  findReviews,
+} = require("./mutation/reviewMutation");
 const {
   createRoom,
   enterRoom,
@@ -96,11 +115,14 @@ const {
 const {
   addMessage,
   storeLongTermMemory,
-  storeLongTermMemorySummary,saveCVtoUser,autoUpdateUserInfoFromCV,
+  storeLongTermMemorySummary,
+  saveCVtoUser,
+  autoUpdateUserInfoFromCV,
   addMessages,
   updateMessage,
   useAI_OnMessage,
-  messageToGPT,autoUpdateMemoryFromCV,
+  messageToGPT,
+  autoUpdateMemoryFromCV,
   inputToGPT,
   CVtoSummary,
   CVtoJobs,
@@ -121,7 +143,8 @@ module.exports = {
     addNewMember,
     updateMember,
     addNodesToMember,
-    updateNodesToMember,updateNodesToMemberMultiTypeNode,
+    updateNodesToMember,
+    updateNodesToMemberMultiTypeNode,
     deleteNodesFromMember,
     deleteMember,
     endorseAttribute,
@@ -161,13 +184,26 @@ module.exports = {
     createNodeCategoryGroup,
 
     // ------------- CONVERSATION MUTATION -----------------
-    updateConversation,updateConvSummaries,
+    updateConversation,
+    updateConvSummaries,
 
     // ------------- QUESTION EDEN AI MUTATION -----------------
     addQuestionToEdenAI,
 
-    // ------------- COMPANY MUTATION -----------------
-    updatePosition,addEmployeesPosition,addQuestionsToAskPosition,interviewQuestionCreationUser,deleteQuestionsToAskPosition,addCandidatesPosition,addConvRecruiterToPosition,updatePositionUserAnswers,updatePositionConvRecruiter,createTalentListPosition,updateUsersTalentListPosition,addNodesToPosition,
+    // ------------- POSITION MUTATION -----------------
+    updatePosition,
+    updateUrl,
+    addEmployeesPosition,
+    addQuestionsToAskPosition,
+    interviewQuestionCreationUser,
+    deleteQuestionsToAskPosition,
+    addCandidatesPosition,
+    addConvRecruiterToPosition,
+    updatePositionUserAnswers,
+    updatePositionConvRecruiter,
+    createTalentListPosition,
+    updateUsersTalentListPosition,
+    addNodesToPosition,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,
@@ -192,12 +228,16 @@ module.exports = {
 
     // ------------- ENDORSEMENT MUTATION -----------------
     addEndorsement,
-    findEndorsements,deleteAllEndorsements,calculateReputation,createMultipleFakeEndorsementAndReview,
+    findEndorsements,
+    deleteAllEndorsements,
+    calculateReputation,
+    createMultipleFakeEndorsementAndReview,
     createFakeEndorsement,
     createEndorsementLink,
 
     // ------------- REVIEW MUTATION -----------------
-    addReview,createFakeReview,
+    addReview,
+    createFakeReview,
     findReviews,
 
     //---------------ROOM MUTATION --------------------
@@ -217,11 +257,14 @@ module.exports = {
     // --------------- AI MUTATION -----------------
     addMessage,
     storeLongTermMemory,
-    storeLongTermMemorySummary,saveCVtoUser,autoUpdateUserInfoFromCV,
+    storeLongTermMemorySummary,
+    saveCVtoUser,
+    autoUpdateUserInfoFromCV,
     addMessages,
     updateMessage,
     useAI_OnMessage,
-    messageToGPT,autoUpdateMemoryFromCV,
+    messageToGPT,
+    autoUpdateMemoryFromCV,
     inputToGPT,
     CVtoSummary,
     CVtoJobs,

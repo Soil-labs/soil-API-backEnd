@@ -3,6 +3,7 @@ module.exports = `
     type Position {
         _id: ID
         name: String
+        url: String
         candidatesReadyToDisplay: Boolean
         employees: [EmployeeType]
         questionsToAsk: [QuestionType]
@@ -94,6 +95,11 @@ module.exports = `
     input updatePositionInput {
         _id: ID
         name: String
+    }
+    
+    input updateUrlInput {
+        positionID: ID
+        url: String
     }
 
     input EmployeeTypeInput {
