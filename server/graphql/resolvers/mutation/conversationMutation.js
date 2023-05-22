@@ -5,7 +5,7 @@ const { ApolloError } = require("apollo-server-express");
 
 const { concatenateFirstTwoMessages,updateQuestionAskedConvoID,updateCompanyInterviewedOfUser,findSummaryOfAnswers,findAndUpdateConversationFunc,updateAnsweredQuestionFunc } = require("../utils/conversationModules");
 
-const { useGPTchat,useGPTchatSimple,upsertEmbedingPineCone,deletePineCone } = require("../utils/aiModules");
+const { useGPTchat,useGPTchatSimple,upsertEmbedingPineCone,deletePineCone,CandidateNotesEdenAIAPICallF } = require("../utils/aiModules");
 
 
 module.exports = {
@@ -79,10 +79,28 @@ module.exports = {
   
         let convData = await Conversation.find(searchQuery);
 
-        // console.log("convData = " , convData)
+
+
+        
+
+        
 
         for (let i = 0; i < convData.length; i++) {
           convDataNow = convData[i];
+
+
+          console.log("convDataNow = " , convDataNow)
+
+          // --------------- Calculate candidateNotesEdenAI ---------------
+          const userID = convDataNow.userID
+          const companyID = convDataNow.companyID
+
+          console.log("userID,companyID = " , userID,companyID)
+
+          CandidateNotesEdenAIAPICallF(userID,companyID)
+          df0
+
+          // --------------- Calculate candidateNotesEdenAI ---------------
 
 
           console.log("convDataNow = " , convDataNow)

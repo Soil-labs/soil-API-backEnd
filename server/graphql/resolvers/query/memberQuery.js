@@ -1,4 +1,6 @@
 const { Members } = require("../../../models/membersModel");
+const { Company } = require("../../../models/companyModel");
+
 const { Node } = require("../../../models/nodeModal");
 const { Conversation } = require("../../../models/conversationModel");
 const { ServerTemplate } = require("../../../models/serverModel");
@@ -3095,7 +3097,7 @@ module.exports = {
     }
   },
   candidateNotesEdenAI: async (parent, args, context, info) => {
-    const { memberID } = args.fields;
+    const { memberID,companyID } = args.fields;
     console.log("Query > candidateNotesEdenAI > args.fields = ", args.fields);
 
     if (!memberID) {
@@ -3105,8 +3107,16 @@ module.exports = {
       );
     }
 
+    if (!companyID) {
+      throw new ApolloError(
+        "companyID is required",
+        { component: "memberQuery > candidateNotesEdenAI" }
+      );
+    }
+
     // find memberData by memberID
     memberData = await Members.findOne({ _id: memberID }).select('_id discordName');
+
 
     if (!memberData) {
       throw new ApolloError(
@@ -3179,27 +3189,27 @@ module.exports = {
       Answer:
       `
 
-      evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
-      console.log("evaluateNoteCategories = " , evaluateNoteCategories)
+      // evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
+      // console.log("evaluateNoteCategories = " , evaluateNoteCategories)
       
 
 
-      // evaluateNoteCategories = ` <Category 1: Personal Details>
-      // - 11+ years of experience in Computer Vision, Machine Learning, and Robotics
-      // - Focused on front-end engineering using React, Tailwind, and Node.js for 5 years
-      // - Has experience in team leadership in the field of machine learning
-      // - Strengths include having a growth mindset and being quick to innovate
-      // - Weaknesses include needing to work on coding skills, specifically cleaning up the database and creating a better environment for other coders to work with
+      evaluateNoteCategories = ` <Category 1: Personal Details>
+      - 11+ years of experience in Computer Vision, Machine Learning, and Robotics
+      - Focused on front-end engineering using React, Tailwind, and Node.js for 5 years
+      - Has experience in team leadership in the field of machine learning
+      - Strengths include having a growth mindset and being quick to innovate
+      - Weaknesses include needing to work on coding skills, specifically cleaning up the database and creating a better environment for other coders to work with
       
-      // <Category 2: Work Culture>
-      // - Has experience in team leadership in the field of machine learning
-      // - Has a growth mindset and is quick to innovate
-      // - Believes in giving back to the company and helping innovate and change lives
-      // - Experience with a challenging project focused on complete innovation
+      <Category 2: Work Culture>
+      - Has experience in team leadership in the field of machine learning
+      - Has a growth mindset and is quick to innovate
+      - Believes in giving back to the company and helping innovate and change lives
+      - Experience with a challenging project focused on complete innovation
       
-      // <Category 3: Interests>
-      // - Skilled in React, GraphQL, Next.js, fine-tuning, PyTorch, TensorFlow, and paper reading
-      // - Interested in becoming a team lead and eventually a successful CTO`
+      <Category 3: Interests>
+      - Skilled in React, GraphQL, Next.js, fine-tuning, PyTorch, TensorFlow, and paper reading
+      - Interested in becoming a team lead and eventually a successful CTO`
 
 
 
@@ -3211,11 +3221,32 @@ module.exports = {
       while ((result = regex.exec(evaluateNoteCategories)) !== null) {
         const category = {
           categoryName: result[1].trim(),
+          score: -1,
           reason: result[2].trim().split('\n').map(detail => detail.trim()),
         };
         categoriesT.push(category);
       }
 
+
+
+      // ------------ Save results to company.candidates Mongo ----------
+
+      companyData = await Company.findOne({ _id: companyID }).select('_id name candidates');
+
+
+      const indexC = companyData.candidates.findIndex(candidate => candidate.userID.toString() == memberID.toString());
+
+
+      console.log("indexC = " , indexC)
+      
+      if (indexC != -1) {
+
+        companyData.candidates[indexC].notesInterview = categoriesT;
+        await companyData.save();
+
+      }
+      // ------------ Save results to company.candidates Mongo ----------
+      
 
       
 
