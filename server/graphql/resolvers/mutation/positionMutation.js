@@ -3,6 +3,8 @@ const { ApolloError } = require("apollo-server-express");
 const { Position } = require("../../../models/positionModel");
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
+const { Company } = require("../../../models/companyModel");
+
 
 const { Conversation } = require("../../../models/conversationModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
@@ -55,10 +57,20 @@ module.exports = {
         //@TODO missing add position to company
       }
 
+      let companyData = await Company.findOne({ _id: companyID })
+
+
+      // ------------------- Add position to company -------------------
+
+      
+      // ------------------- Add position to company -------------------
+
+
+
       return {
         _id: positionData._id,
         name: positionData.name,
-        companyID: positionData.companyID,
+        company: companyData,
       };
     } catch (err) {
       throw new ApolloError(
