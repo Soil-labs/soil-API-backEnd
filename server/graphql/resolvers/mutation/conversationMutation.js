@@ -97,8 +97,9 @@ module.exports = {
 
           console.log("userID,positionID = " , userID,positionID)
 
-          CandidateNotesEdenAIAPICallF(userID,positionID)
-          df0
+          // CandidateNotesEdenAIAPICallF(userID,companyID)
+          // df0
+
 
           // --------------- Calculate candidateNotesEdenAI ---------------
 
