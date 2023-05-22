@@ -42,8 +42,8 @@ const {
 } = require("./query/conversationQuery");
 
 const {
-  findCompany,findCompanies,deleteCompanyCandidate,
-} = require("./query/companyQuery");
+  findPosition,findPositions,deletePositionCandidate,
+} = require("./query/positionQuery");
 
 const {
   findQuestionEdenAI,
@@ -177,7 +177,7 @@ module.exports = {
     findConversation,findConversations,
 
     // ------------- COMPANY QUERY -----------------
-    findCompany,findCompanies,deleteCompanyCandidate,
+    findPosition,findPositions,deletePositionCandidate,
 
     // ------------- QUESTIONS EDEN AI QUERY -----------------
     findQuestionEdenAI,

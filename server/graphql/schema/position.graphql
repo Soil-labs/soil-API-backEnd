@@ -1,6 +1,6 @@
 module.exports = `
     
-    type Company {
+    type Position {
         _id: ID
         name: String
         candidatesReadyToDisplay: Boolean
@@ -17,7 +17,7 @@ module.exports = `
         user: Members
         readyToDisplay: Boolean
         conversation: [conversationType]
-        companyQuestions: [QuestionContentType]
+        positionQuestions: [QuestionContentType]
         roleQuestions: [QuestionContentType]
         convMemory: [convMemoryType]
     }
@@ -85,13 +85,13 @@ module.exports = `
         questionContentSmall: String,
         answerContent: String,
         answerContentSmall: String,
-        bestAnswerCompany: String,
+        bestAnswerPosition: String,
         reason: String,
         score: Float,
         subConversationAnswer: [conversationType],
     }
 
-    input updateCompanyInput {
+    input updatePositionInput {
         _id: ID
         name: String
     }
@@ -111,35 +111,35 @@ module.exports = `
         userID: ID,
     }
 
-    input findCompanyInput {
+    input findPositionInput {
         _id: [ID],
     }
 
-    input findCompaniesInput {
+    input findPositionsInput {
         _id: ID,
     }
-    input deleteCompanyCandidateInput {
-        companyID:  ID,
+    input deletePositionCandidateInput {
+        positionID:  ID,
         userID: ID,
     }
 
-    input addEmployeesCompanyInput {
-        companyID: ID
+    input addEmployeesPositionInput {
+        positionID: ID
         employees: [EmployeeTypeInput]
     }
 
-    input addQuestionsToAskCompanyInput {
-        companyID: ID
+    input addQuestionsToAskPositionInput {
+        positionID: ID
         questionsToAsk: [QuestionTypeInput]
     }
     input interviewQuestionCreationUserInput {
-        companyID: ID
+        positionID: ID
         userID: ID
         cvContent: String
 
     }
-    input deleteQuestionsToAskCompanyInput {
-        companyID: ID
+    input deleteQuestionsToAskPositionInput {
+        positionID: ID
         questionID: ID
     }
 
@@ -150,39 +150,39 @@ module.exports = `
         acceptedOrRejected: Boolean,
     }
 
-    input addCandidatesCompanyInput {
-        companyID: ID
+    input addCandidatesPositionInput {
+        positionID: ID
         candidates: [candidatesInput]
     }
 
-    input addConvRecruiterToCompanyInput {
-        companyID: ID
+    input addConvRecruiterToPositionInput {
+        positionID: ID
         userID: ID
         conversationID: ID
     }
 
-    input updateCompanyUserAnswersInput {
-        companyIDs: [ID]
+    input updatePositionUserAnswersInput {
+        positionIDs: [ID]
     }
 
-    input updateCompanyConvRecruiterInput {
-        companyIDs: [ID]
+    input updatePositionConvRecruiterInput {
+        positionIDs: [ID]
     }
 
-    input createTalentListCompanyInput {
-        companyID: ID
+    input createTalentListPositionInput {
+        positionID: ID
         name: String
         talentListID: ID
     }
 
-    input updateUsersTalentListCompanyInput {
-        companyID: ID
+    input updateUsersTalentListPositionInput {
+        positionID: ID
         talentListID: ID
         usersTalentList: [ID]
     }
 
-    input addNodesToCompanyInput {
-        companyID: ID
+    input addNodesToPositionInput {
+        positionID: ID
         nodes: [addNodeType]
     }
 

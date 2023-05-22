@@ -1,7 +1,7 @@
 const { AI } = require("../../../models/aiModel");
 const { Node } = require("../../../models/nodeModal");
 const { Members } = require("../../../models/membersModel");
-const { Company } = require("../../../models/companyModel");
+const { Position } = require("../../../models/positionModel");
 
 
 
@@ -859,7 +859,7 @@ module.exports = {
     }
   },
   interviewEdenAI: async (parent, args, context, info) => {
-    const { userID,companyID,conversation,unansweredQuestions } = args.fields;
+    const { userID,positionID,conversation,unansweredQuestions } = args.fields;
     let {timesAsked,unansweredQuestionsArr,questionAskingNow,questionAskingI,useMemory,questionAskingID} = args.fields;
     // console.log("Query > interviewEdenAI > args.fields = ", args.fields);
 
@@ -901,9 +901,9 @@ module.exports = {
     try {
 
       // ------------ Find Modified questions ------------
-      let companyData = await Company.findOne({ _id: companyID }).select('_id candidates');
+      let positionData = await Position.findOne({ _id: positionID }).select('_id candidates');
 
-      const candidate = companyData.candidates.find(candidate => candidate.userID.toString() == userID.toString());
+      const candidate = positionData.candidates.find(candidate => candidate.userID.toString() == userID.toString());
 
       // find inside candidate Array the questionAskingID
 
@@ -1124,7 +1124,7 @@ module.exports = {
     if (conversation.length >=2){
 
       // ------------- Update the Conversation MEMORY ----------------
-      resultConv = await findAndUpdateConversationFunc(userID,conversation,companyID)
+      resultConv = await findAndUpdateConversationFunc(userID,conversation,positionID)
       // ------------- Update the Conversation MEMORY ----------------
 
 
@@ -1159,7 +1159,7 @@ module.exports = {
     }
   },
   interviewEdenAI_old: async (parent, args, context, info) => {
-    const { userID,companyID,conversation,unansweredQuestions } = args.fields;
+    const { userID,positionID,conversation,unansweredQuestions } = args.fields;
     let {timesAsked,unansweredQuestionsArr,questionAskingNow,questionAskingI,useMemory,questionAskingID} = args.fields;
     // console.log("Query > interviewEdenAI_old > args.fields = ", args.fields);
 
@@ -1340,7 +1340,7 @@ module.exports = {
         reply = "Thank you for taking time to talk to me, I will let you know with the results ASAP"
       } else {
         if (useMemory == true){
-          reply = await modifyQuestionFromCVMemory(questionAskingNowA,lastMessage,userID,3,companyID)
+          reply = await modifyQuestionFromCVMemory(questionAskingNowA,lastMessage,userID,3,positionID)
         } else {
           reply = questionAskingNowA
         }
@@ -1351,7 +1351,7 @@ module.exports = {
       if (flagFirstTime == true){
         // NEW Question
         if (useMemory == true){
-          reply = await modifyQuestionFromCVMemory(questionAskingNowA,lastMessage,userID,3,companyID)
+          reply = await modifyQuestionFromCVMemory(questionAskingNowA,lastMessage,userID,3,positionID)
         } else {
           reply = questionAskingNowA
         }
@@ -1361,9 +1361,9 @@ module.exports = {
         let askGPT = ""
 
         if (useMemory == true){
-          askGPT = await askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,userID,2,companyID)
+          askGPT = await askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,userID,2,positionID)
         }else {
-          askGPT = await askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,userID,0,companyID)
+          askGPT = await askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,userID,0,positionID)
         }
 
         

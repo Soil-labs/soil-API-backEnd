@@ -53,8 +53,8 @@ const {
 } = require("./mutation/questionsEdenAIMutation");
 
 const {
-  updateCompany,addEmployeesCompany,addQuestionsToAskCompany,interviewQuestionCreationUser,deleteQuestionsToAskCompany,addCandidatesCompany,addConvRecruiterToCompany,updateCompanyUserAnswers,updateCompanyConvRecruiter,createTalentListCompany,updateUsersTalentListCompany,addNodesToCompany,
-} = require("./mutation/companyMutation");
+  updatePosition,addEmployeesPosition,addQuestionsToAskPosition,interviewQuestionCreationUser,deleteQuestionsToAskPosition,addCandidatesPosition,addConvRecruiterToPosition,updatePositionUserAnswers,updatePositionConvRecruiter,createTalentListPosition,updateUsersTalentListPosition,addNodesToPosition,
+} = require("./mutation/positionMutation");
 
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
 const { updateServer } = require("./mutation/serverMutation");
@@ -167,7 +167,7 @@ module.exports = {
     addQuestionToEdenAI,
 
     // ------------- COMPANY MUTATION -----------------
-    updateCompany,addEmployeesCompany,addQuestionsToAskCompany,interviewQuestionCreationUser,deleteQuestionsToAskCompany,addCandidatesCompany,addConvRecruiterToCompany,updateCompanyUserAnswers,updateCompanyConvRecruiter,createTalentListCompany,updateUsersTalentListCompany,addNodesToCompany,
+    updatePosition,addEmployeesPosition,addQuestionsToAskPosition,interviewQuestionCreationUser,deleteQuestionsToAskPosition,addCandidatesPosition,addConvRecruiterToPosition,updatePositionUserAnswers,updatePositionConvRecruiter,createTalentListPosition,updateUsersTalentListPosition,addNodesToPosition,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,

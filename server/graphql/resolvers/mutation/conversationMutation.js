@@ -3,7 +3,7 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 const { ApolloError } = require("apollo-server-express");
 
-const { concatenateFirstTwoMessages,updateQuestionAskedConvoID,updateCompanyInterviewedOfUser,findSummaryOfAnswers,findAndUpdateConversationFunc,updateAnsweredQuestionFunc } = require("../utils/conversationModules");
+const { concatenateFirstTwoMessages,updateQuestionAskedConvoID,updatePositionInterviewedOfUser,findSummaryOfAnswers,findAndUpdateConversationFunc,updateAnsweredQuestionFunc } = require("../utils/conversationModules");
 
 const { useGPTchat,useGPTchatSimple,upsertEmbedingPineCone,deletePineCone,CandidateNotesEdenAIAPICallF } = require("../utils/aiModules");
 
@@ -93,11 +93,11 @@ module.exports = {
 
           // --------------- Calculate candidateNotesEdenAI ---------------
           const userID = convDataNow.userID
-          const companyID = convDataNow.companyID
+          const positionID = convDataNow.positionID
 
-          console.log("userID,companyID = " , userID,companyID)
+          console.log("userID,positionID = " , userID,positionID)
 
-          CandidateNotesEdenAIAPICallF(userID,companyID)
+          CandidateNotesEdenAIAPICallF(userID,positionID)
           df0
 
           // --------------- Calculate candidateNotesEdenAI ---------------
@@ -105,7 +105,7 @@ module.exports = {
 
           console.log("convDataNow = " , convDataNow)
 
-          await updateCompanyInterviewedOfUser(convDataNow.userID)
+          await updatePositionInterviewedOfUser(convDataNow.userID)
           // asdf9
 
 

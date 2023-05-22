@@ -77,18 +77,18 @@ module.exports = `
 
 
         # ------------- COMPANY MUTATION -----------------
-        updateCompany(fields:updateCompanyInput): Company
-        addEmployeesCompany(fields:addEmployeesCompanyInput): Company
-        addQuestionsToAskCompany(fields:addQuestionsToAskCompanyInput): Company
-        interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Company
-        deleteQuestionsToAskCompany(fields:deleteQuestionsToAskCompanyInput): Company
-        addCandidatesCompany(fields:addCandidatesCompanyInput): Company
-        addConvRecruiterToCompany(fields:addConvRecruiterToCompanyInput): Company
-        updateCompanyUserAnswers(fields:updateCompanyUserAnswersInput): [Company]
-        updateCompanyConvRecruiter(fields:updateCompanyConvRecruiterInput): [Company]
-        createTalentListCompany(fields:createTalentListCompanyInput): Company
-        updateUsersTalentListCompany(fields:updateUsersTalentListCompanyInput): Company
-        addNodesToCompany(fields:addNodesToCompanyInput): Company
+        updatePosition(fields:updatePositionInput): Position
+        addEmployeesPosition(fields:addEmployeesPositionInput): Position
+        addQuestionsToAskPosition(fields:addQuestionsToAskPositionInput): Position
+        interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Position
+        deleteQuestionsToAskPosition(fields:deleteQuestionsToAskPositionInput): Position
+        addCandidatesPosition(fields:addCandidatesPositionInput): Position
+        addConvRecruiterToPosition(fields:addConvRecruiterToPositionInput): Position
+        updatePositionUserAnswers(fields:updatePositionUserAnswersInput): [Position]
+        updatePositionConvRecruiter(fields:updatePositionConvRecruiterInput): [Position]
+        createTalentListPosition(fields:createTalentListPositionInput): Position
+        updateUsersTalentListPosition(fields:updateUsersTalentListPositionInput): Position
+        addNodesToPosition(fields:addNodesToPositionInput): Position
 
 
 

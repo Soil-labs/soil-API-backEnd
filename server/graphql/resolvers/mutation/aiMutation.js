@@ -164,7 +164,7 @@ module.exports = {
         paragraph;
 
       summary = await useGPT(prompt, 0.7);
-      // summary = "The conversation between the user and recruiter was about finding a Designer for the user's company. The desired skills for the designer were the ability to work well in a team, and proficiency in Figma and wireframe design. The user's company is working with a web3 NFT marketplace."
+      // summary = "The conversation between the user and recruiter was about finding a Designer for the user's position. The desired skills for the designer were the ability to work well in a team, and proficiency in Figma and wireframe design. The user's position is working with a web3 NFT marketplace."
 
       embed_summary = await createEmbeddingsGPT(summary);
 
@@ -211,7 +211,7 @@ module.exports = {
         Follow this strict format (each category should be limited to 200 characters, do not go beyond 200 character limit for each category):
         • Category: name: explanation: skills (limit 6 skills per category, do not go beyond 6 skills per category)
          Example (but do not include these examples in the output, also do not include the label category in the output) Delimiters<>:
-          <• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js>
+          <• Job: Facebook: worked at this position for 1 year focusing on frontend and backend: C++, React, Node.js>
         
         Here is the string to extract the information from: """${message}"""`;
 
@@ -283,7 +283,7 @@ module.exports = {
     }
   },
   saveCVtoUser: async (parent, args, context, info) => {
-    const { cvContent, userID, companyID } = args.fields;
+    const { cvContent, userID, positionID } = args.fields;
     console.log("Mutation > saveCVtoUser > args.fields = ", args.fields);
 
     if (!userID) {
@@ -312,7 +312,7 @@ module.exports = {
         { new: true }
       );
 
-      InterviewQuestionCreationUserAPICallF(companyID, userID, cvContent);
+      InterviewQuestionCreationUserAPICallF(positionID, userID, cvContent);
 
       await wait(40000);
 
@@ -362,7 +362,7 @@ module.exports = {
         // ------- Calculate Summary -------
         if (userData.cvInfo.cvPreparationBio != true) {
           promptSum =
-            `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent company in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present company that they work in and what they do there \n\n\n\n` +
+            `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
             cvContent;
 
           summaryOfCV = await useGPTchatSimple(promptSum);
@@ -519,7 +519,7 @@ module.exports = {
         Follow this strict format (each category should be limited to 200 characters, do not go beyond 200 character limit for each category):
         • Category: name: explanation: skills (limit 6 skills per category, do not go beyond 6 skills per category)
          Example (but do not include these examples in the output, also do not include the label category in the output) Delimiters<>:
-          <• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js>
+          <• Job: Facebook: worked at this position for 1 year focusing on frontend and backend: C++, React, Node.js>
         
         Here is the string to extract the information from: """${cvContent}"""`;
 
@@ -591,7 +591,7 @@ module.exports = {
       let model = "text-davinci-003";
       const reason = {
         project:
-          "You are a successful ceo of a company wih 10 years of experience. You talk elegant and descriptive language. Give a description of a project based on this information:  ",
+          "You are a successful ceo of a position wih 10 years of experience. You talk elegant and descriptive language. Give a description of a project based on this information:  ",
         skill: "Give a description of a skill named: ",
         role: "Give a description of role with a name of: ",
       };
@@ -755,7 +755,7 @@ module.exports = {
     const prompt = `
     I want you to act as social media expert at writing profile bios. I will give you a string extracted from a CV(resume) delineated with triple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio:
     
-    Pick the most impressive achievements(highest education and the most recent company in the CV) and list them in 2 bullet points(no more than 2).
+    Pick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).
     
     Follow this structure which has 2 parts. First part is 2 sentences. Second part is two bullet points
     (Example:
@@ -768,7 +768,7 @@ module.exports = {
     
     Part 2(do not include Part 2 in the response):
     • Highest level of education(bachelor's < Masters < Ph.D)(list only the highest education and only list that one)
-    • The present company that they work in and what they do there
+    • The present position that they work in and what they do there
     
     """${cvString}"""`;
 

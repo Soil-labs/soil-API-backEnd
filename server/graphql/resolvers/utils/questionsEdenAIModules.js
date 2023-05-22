@@ -80,7 +80,7 @@ async function addQuestionToEdenAIFunc(content) {
         const newQuestion = await new QuestionsEdenAI({
             content: content,
             answeredQuestionByUsers: [],
-            questionOwnedByCompanies: []
+            questionOwnedByPositions: []
         });
 
         const result = await newQuestion.save();

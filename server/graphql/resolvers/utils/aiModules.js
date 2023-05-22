@@ -64,7 +64,7 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
   };
 
 
-  const CandidateNotesEdenAIAPICallF = async (memberID,companyID) => {
+  const CandidateNotesEdenAIAPICallF = async (memberID,positionID) => {
     const query = gql`
       query candidateNotesEdenAI($fields: candidateNotesEdenAIInput) {
         candidateNotesEdenAI(fields: $fields) {
@@ -78,7 +78,7 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
     const variables = {
       fields: {
         memberID: memberID,
-        companyID: companyID,
+        positionID: positionID,
       },
     };
 
@@ -128,7 +128,7 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
     return res.messageMapKG_V4.keywords;
   };
 
-  const InterviewQuestionCreationUserAPICallF = async (companyID,userID,cvContent) => {
+  const InterviewQuestionCreationUserAPICallF = async (positionID,userID,cvContent) => {
     const mutation = gql`
       mutation interviewQuestionCreationUser($fields: interviewQuestionCreationUserInput) {
         interviewQuestionCreationUser(fields: $fields) {
@@ -151,7 +151,7 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
 
     const variables = {
       fields: {
-        companyID: companyID,
+        positionID: positionID,
         userID: userID,
         cvContent: cvContent,
       },
@@ -170,29 +170,29 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
   };
 
 
-async function modifyQuestionFromCVMemory(messageQ,lastMessage,userID,topK = 3,companyID=undefined) {
+async function modifyQuestionFromCVMemory(messageQ,lastMessage,userID,topK = 3,positionID=undefined) {
 
 
-    // -------------- Connect Memory Company Training to question ------------
-    let finalMemoriesCompanyTrainingPrompt = ""
-    let memoriesCompanyTrainingPrompt = ""
-    if (companyID != undefined){
+    // -------------- Connect Memory Position Training to question ------------
+    let finalMemoriesPositionTrainingPrompt = ""
+    let memoriesPositionTrainingPrompt = ""
+    if (positionID != undefined){
       filter = {
-        label: "Company_TrainEdenAI_memory",
-        _id: companyID,
+        label: "Position_TrainEdenAI_memory",
+        _id: positionID,
       }
 
-      memoriesCompanyTrainingPrompt = await getMemory(messageQ + "\n\n" + lastMessage,filter,topK)
+      memoriesPositionTrainingPrompt = await getMemory(messageQ + "\n\n" + lastMessage,filter,topK)
 
-      finalMemoriesCompanyTrainingPrompt = `
+      finalMemoriesPositionTrainingPrompt = `
       Job Role is given (delimited by <>) 
 
-      Job Role: < ${memoriesCompanyTrainingPrompt}`
+      Job Role: < ${memoriesPositionTrainingPrompt}`
 
 
-      printC(finalMemoriesCompanyTrainingPrompt, "2", "finalMemoriesCompanyTrainingPrompt", "g")
+      printC(finalMemoriesPositionTrainingPrompt, "2", "finalMemoriesPositionTrainingPrompt", "g")
     }
-    // -------------- Connect Memory Company Training to question ------------
+    // -------------- Connect Memory Position Training to question ------------
 
 
     // -------------- Connect Memory CV to question ------------
@@ -203,8 +203,8 @@ async function modifyQuestionFromCVMemory(messageQ,lastMessage,userID,topK = 3,c
       }
   
       let memoriesCVPrompt
-      if (memoriesCompanyTrainingPrompt != "")
-        memoriesCVPrompt = await getMemory(messageQ + "\n\n" + lastMessage + "\n\n" + memoriesCompanyTrainingPrompt,filter,topK)
+      if (memoriesPositionTrainingPrompt != "")
+        memoriesCVPrompt = await getMemory(messageQ + "\n\n" + lastMessage + "\n\n" + memoriesPositionTrainingPrompt,filter,topK)
       else 
         memoriesCVPrompt = await getMemory(messageQ + "\n\n" + lastMessage,filter,topK)
   
@@ -229,7 +229,7 @@ async function modifyQuestionFromCVMemory(messageQ,lastMessage,userID,topK = 3,c
       const promptPlusMemoryV = `QuestionAsking: ${messageQ}
 
 
-      ${finalMemoriesCompanyTrainingPrompt}
+      ${finalMemoriesPositionTrainingPrompt}
 
       ${finalMemoriesCVPrompt}
 
@@ -256,25 +256,25 @@ async function modifyQuestionFromCVMemory(messageQ,lastMessage,userID,topK = 3,c
     return modifiedQuestion
 }
 
-async function askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,userID,topK,companyID=undefined) {
+async function askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,userID,topK,positionID=undefined) {
 
-  let finalMemoriesCompanyTrainingPrompt = ""
-  let memoriesCompanyTrainingPrompt = ""
-  if (companyID != undefined){
+  let finalMemoriesPositionTrainingPrompt = ""
+  let memoriesPositionTrainingPrompt = ""
+  if (positionID != undefined){
     filter = {
-      label: "Company_TrainEdenAI_memory",
-      _id: companyID,
+      label: "Position_TrainEdenAI_memory",
+      _id: positionID,
     }
 
-    memoriesCompanyTrainingPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,topK)
+    memoriesPositionTrainingPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,topK)
 
-    finalMemoriesCompanyTrainingPrompt = `
+    finalMemoriesPositionTrainingPrompt = `
     Job Role is given (delimited by <>) 
 
-    Job Role: < ${memoriesCompanyTrainingPrompt}`
+    Job Role: < ${memoriesPositionTrainingPrompt}`
 
 
-    printC(finalMemoriesCompanyTrainingPrompt, "2", "finalMemoriesCompanyTrainingPrompt", "g")
+    printC(finalMemoriesPositionTrainingPrompt, "2", "finalMemoriesPositionTrainingPrompt", "g")
   }
 
   let finalMemoriesCVPrompt = ""
@@ -286,8 +286,8 @@ async function askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,use
     }
 
     let memoriesCVPrompt
-    if (memoriesCompanyTrainingPrompt != "")
-      memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage + "\n\n" + memoriesCompanyTrainingPrompt,filter,topK)
+    if (memoriesPositionTrainingPrompt != "")
+      memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage + "\n\n" + memoriesPositionTrainingPrompt,filter,topK)
     else 
       memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,topK)
 
@@ -306,7 +306,7 @@ async function askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,use
 
   askGPT = `You are an Interviewer, you need to reply to the candidate with goal to deeply understand the candidate
 
-      ${finalMemoriesCompanyTrainingPrompt}
+      ${finalMemoriesPositionTrainingPrompt}
 
       ${finalMemoriesCVPrompt}
 

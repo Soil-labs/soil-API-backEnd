@@ -5,7 +5,7 @@ module.exports = `
         content: String,
         contentSmall: String,
         answeredQuestionByUsers: [ID],
-        questionOwnedByCompanies: [ID],
+        questionOwnedByPositions: [ID],
     }
 
 

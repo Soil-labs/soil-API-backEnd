@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 
-const companyModel = mongoose.Schema({
+const positionModel = mongoose.Schema({
   name: String,
   employees: [{
     typeT: String,
@@ -19,7 +19,7 @@ const companyModel = mongoose.Schema({
     userID: String,
     conversationID: mongoose.Schema.ObjectId,
     readyToDisplay: Boolean,
-    companyQuestions: [{
+    positionQuestions: [{
       question: String,
       content: String,
     }],
@@ -52,7 +52,7 @@ const companyModel = mongoose.Schema({
       questionContentSmall: String,
       answerContent: String,
       answerContentSmall: String,
-      bestAnswerCompany: String,
+      bestAnswerPosition: String,
       reason: String,
       score: Number,
       subConversationAnswer: [{
@@ -74,5 +74,5 @@ const companyModel = mongoose.Schema({
 
 });
 
-const Company = mongoose.model("Company", companyModel);
-module.exports = { Company };
+const Position = mongoose.model("Position", positionModel);
+module.exports = { Position };

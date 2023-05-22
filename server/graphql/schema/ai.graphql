@@ -59,7 +59,7 @@ module.exports = `
     input saveCVtoUserInput {
         cvContent: String
         userID: ID
-        companyID: ID
+        positionID: ID
 
     }
 
@@ -289,7 +289,7 @@ module.exports = `
 
     input interviewEdenAIInput {
         userID: ID
-        companyID: ID
+        positionID: ID
         useMemory: Boolean
         conversation: [messageChat]
         unansweredQuestions: [String]
