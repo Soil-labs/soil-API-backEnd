@@ -99,7 +99,7 @@ module.exports = {
 
           if (userID!=undefined && positionID!=undefined) 
             CandidateNotesEdenAIAPICallF(userID,positionID)
-          df0
+          // df0
 
 
           // --------------- Calculate candidateNotesEdenAI ---------------
