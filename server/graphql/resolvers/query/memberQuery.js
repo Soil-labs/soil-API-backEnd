@@ -1,5 +1,5 @@
 const { Members } = require("../../../models/membersModel");
-const { Company } = require("../../../models/companyModel");
+const { Position } = require("../../../models/positionModel");
 
 const { Node } = require("../../../models/nodeModal");
 const { Conversation } = require("../../../models/conversationModel");
@@ -3052,13 +3052,13 @@ module.exports = {
       
       // Attribute 3: Problem-solving skills - 8 Reason: The candidate shared a challenging project they worked on and how they overcame it, demonstrating their problem-solving skills. However, they did not provide many specific examples of problem-solving skills related to the job requirements.
       
-      // Attribute 4: Cultural fit - 7 Reason: The candidate expressed interest in the company's goals and mission, but did not provide many details about their personal values or how they align with the company's culture.
+      // Attribute 4: Cultural fit - 7 Reason: The candidate expressed interest in the position's goals and mission, but did not provide many details about their personal values or how they align with the position's culture.
       
       // Attribute 5: Adaptability - 6 Reason: The candidate did not provide many examples of how they have adapted to new situations or challenges. However, they did express a growth mindset and willingness to improve.
       
       // Attribute 6: Leadership potential - 8 Reason: The candidate has experience in leadership roles and expressed interest in becoming a team lead or CTO in the future.
       
-      // Attribute 7: Passion and enthusiasm - 7 Reason: The candidate expressed enthusiasm for the company's goals and mission, but did not show a lot of excitement or passion during the conversation.
+      // Attribute 7: Passion and enthusiasm - 7 Reason: The candidate expressed enthusiasm for the position's goals and mission, but did not show a lot of excitement or passion during the conversation.
       // `
 
       evaluateAttributes += "Attribute 8"
@@ -3097,7 +3097,7 @@ module.exports = {
     }
   },
   candidateNotesEdenAI: async (parent, args, context, info) => {
-    const { memberID,companyID } = args.fields;
+    const { memberID,positionID } = args.fields;
     console.log("Query > candidateNotesEdenAI > args.fields = ", args.fields);
 
     if (!memberID) {
@@ -3107,9 +3107,9 @@ module.exports = {
       );
     }
 
-    if (!companyID) {
+    if (!positionID) {
       throw new ApolloError(
-        "companyID is required",
+        "positionID is required",
         { component: "memberQuery > candidateNotesEdenAI" }
       );
     }
@@ -3204,7 +3204,7 @@ module.exports = {
       <Category 2: Work Culture>
       - Has experience in team leadership in the field of machine learning
       - Has a growth mindset and is quick to innovate
-      - Believes in giving back to the company and helping innovate and change lives
+      - Believes in giving back to the position and helping innovate and change lives
       - Experience with a challenging project focused on complete innovation
       
       <Category 3: Interests>
@@ -3229,23 +3229,23 @@ module.exports = {
 
 
 
-      // ------------ Save results to company.candidates Mongo ----------
+      // ------------ Save results to position.candidates Mongo ----------
 
-      companyData = await Company.findOne({ _id: companyID }).select('_id name candidates');
+      positionData = await Position.findOne({ _id: positionID }).select('_id name candidates');
 
 
-      const indexC = companyData.candidates.findIndex(candidate => candidate.userID.toString() == memberID.toString());
+      const indexC = positionData.candidates.findIndex(candidate => candidate.userID.toString() == memberID.toString());
 
 
       console.log("indexC = " , indexC)
       
       if (indexC != -1) {
 
-        companyData.candidates[indexC].notesInterview = categoriesT;
-        await companyData.save();
+        positionData.candidates[indexC].notesInterview = categoriesT;
+        await positionData.save();
 
       }
-      // ------------ Save results to company.candidates Mongo ----------
+      // ------------ Save results to position.candidates Mongo ----------
       
 
       

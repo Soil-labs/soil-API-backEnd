@@ -12,7 +12,7 @@ module.exports = `
 
         onbording: onboardingType
 
-        companiesApplied: [companiesAppliedType]
+        positionsApplied: [positionsAppliedType]
 
         cvInfo: cvInfoType
 
@@ -77,8 +77,8 @@ module.exports = `
         preferences: preferencesType
     }
 
-    type companiesAppliedType {
-        companyID: ID
+    type positionsAppliedType {
+        positionID: ID
     }
 
     type cvInfoType {
@@ -325,7 +325,7 @@ module.exports = `
     }
     input candidateNotesEdenAIInput {
         memberID: ID
-        companyID: ID
+        positionID: ID
     }
     
     type matchProjectRoles {

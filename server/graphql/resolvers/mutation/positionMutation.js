@@ -1,7 +1,7 @@
 
 const { ApolloError } = require("apollo-server-express");
 
-const { Company } = require("../../../models/companyModel");
+const { Position } = require("../../../models/positionModel");
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
 
@@ -13,7 +13,7 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 const { addMultipleQuestionsToEdenAIFunc ,updateQuestionSmall} = require("../utils/questionsEdenAIModules");
 
-const {checkAndAddCompanyToMember  } = require("../utils/companyModules");
+const {checkAndAddPositionToMember  } = require("../utils/positionModules");
 
 const { printC } = require("../../../printModule");
 
@@ -27,63 +27,63 @@ const {
 } = require("../utils/endorsementModules");
 
 module.exports = {
-  updateCompany: async (parent, args, context, info) => {
+  updatePosition: async (parent, args, context, info) => {
       const { _id,name } = args.fields;
-      console.log("Mutation > updateCompany > args.fields = ", args.fields);
+      console.log("Mutation > updatePosition > args.fields = ", args.fields);
 
 
       try {
 
-        let companyData
+        let positionData
         if (_id) {
-          companyData = await Company.findOne({ _id });
+          positionData = await Position.findOne({ _id });
 
           // update
-          if (name) companyData.name = name;
-          await companyData.save();
+          if (name) positionData.name = name;
+          await positionData.save();
         } else {
-          companyData = await new Company({
+          positionData = await new Position({
             name,
           });
 
-          await companyData.save();
+          await positionData.save();
         }
 
 
 
         return {
-          _id: companyData._id,
-          name: companyData.name,
+          _id: positionData._id,
+          name: positionData.name,
         }
         
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "updateCompany",
-          { component: "companyMutation > updateCompany" }
+          err.extensions?.code || "updatePosition",
+          { component: "positionMutation > updatePosition" }
         );
       }
     },
     interviewQuestionCreationUser: async (parent, args, context, info) => {
-      const { companyID,userID,cvContent } = args.fields;
+      const { positionID,userID,cvContent } = args.fields;
       console.log("Mutation > interviewQuestionCreationUser > args.fields = ", args.fields);
 
 
-      if (!companyID) throw new ApolloError("Company ID is required", "interviewQuestionCreationUser", { component: "companyMutation > interviewQuestionCreationUser" });
+      if (!positionID) throw new ApolloError("Position ID is required", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
 
-      if (!userID) throw new ApolloError("User ID is required", "interviewQuestionCreationUser", { component: "companyMutation > interviewQuestionCreationUser" });
+      if (!userID) throw new ApolloError("User ID is required", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
 
       try {
 
-        companyData = await Company.findOne({ _id: companyID}).select('_id name candidates questionsToAsk');
-        if (!companyData) throw new ApolloError("Company not found", "interviewQuestionCreationUser", { component: "companyMutation > interviewQuestionCreationUser" });
+        positionData = await Position.findOne({ _id: positionID}).select('_id name candidates questionsToAsk');
+        if (!positionData) throw new ApolloError("Position not found", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
 
 
         userData = await Members.findOne({ _id: userID}).select('_id discordName');
-        if (!userData) throw new ApolloError("User not found", "interviewQuestionCreationUser", { component: "companyMutation > interviewQuestionCreationUser" });
+        if (!userData) throw new ApolloError("User not found", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
 
 
-        const questionsToAsk = companyData.questionsToAsk
+        const questionsToAsk = positionData.questionsToAsk
 
         const questionsToAskID = questionsToAsk.map((question) => question.questionID)
 
@@ -99,8 +99,8 @@ module.exports = {
 
         // ------- Find best Open Job Role Memories ----------
         filter = {
-          label: "Company_TrainEdenAI_memory",
-          _id: companyID,
+          label: "Position_TrainEdenAI_memory",
+          _id: positionID,
         };
 
         bestJobRoleMemories = await getMemory(
@@ -175,12 +175,12 @@ module.exports = {
 //     - Analysis: Lolita's CV does not mention any experience or knowledge in front-end development, so she may not be the best fit for this specific skill requirement.
 // - Responsibilities of the Candidate: The candidate will work independently to innovate and create code.
 //     - Analysis: Lolita's experience in leadership and continuous improvement suggests that she can work independently and innovate, but her lack of experience in front-end development may limit her ability to create code.
-// - General info of Company: Soil is creating a marketplace for companies and talent using AI and blockchain.
+// - General info of Position: Soil is creating a marketplace for positions and talent using AI and blockchain.
 //     - Analysis: No specific relevance to Lolita's CV, but her background in IT and international relations may give her a unique perspective on the use of AI and blockchain in the marketplace.
-// - Values of Company: Soil values innovation and user discovery.
+// - Values of Position: Soil values innovation and user discovery.
 //     - Analysis: Lolita's experience in product ownership and stakeholder management aligns well with Soil's values of innovation and user discovery.
-// - Values of Company: The company culture is fun and collaborative.
-//     - Analysis: No specific relevance to Lolita's CV, but her experience in leadership and community volunteering may suggest that she can contribute to a fun and collaborative company culture.
+// - Values of Position: The position culture is fun and collaborative.
+//     - Analysis: No specific relevance to Lolita's CV, but her experience in leadership and community volunteering may suggest that she can contribute to a fun and collaborative position culture.
 //         `
 
         printC(infoCandidateForJob,"3","infoCandidateForJob","r")
@@ -206,11 +206,11 @@ module.exports = {
         // - Analysis: Miltiadis' CV does not mention any experience or knowledge in front-end development technologies like GraphQL, Next.js, React, and TailwindCSS. Therefore, he may not be the ideal candidate for this specific skill set.
         // - Responsibilities of the Candidate: The candidate will work independently to innovate and create code.
         // - Analysis: Miltiadis has over 11 years of experience in computer vision, machine learning, and robotics, and has worked on various projects independently. Therefore, he has the necessary experience to work independently and innovate to create code.
-        // - General info of Company: Soil is creating a marketplace for companies and talent using AI and blockchain.
+        // - General info of Position: Soil is creating a marketplace for positions and talent using AI and blockchain.
         // - Analysis: There is no specific mention of Miltiadis' experience in AI and blockchain technologies. However, his expertise in computer vision and deep learning can be applied to create innovative solutions for Soil's marketplace.
-        // - Values of Company: Soil values innovation and user discovery.
+        // - Values of Position: Soil values innovation and user discovery.
         // - Analysis: Miltiadis has a passion for optimized software development and research, and has worked on various projects related to sequence models, robotics, and autonomous OCR dictating systems for blind people. Therefore, he has the necessary experience to contribute to Soil's value of innovation and user discovery.
-        // - Values of Company: The company culture is fun and collaborative.
+        // - Values of Position: The position culture is fun and collaborative.
         // - Analysis: There is no specific mention of Miltiadis' experience in a`
 
 
@@ -239,9 +239,9 @@ module.exports = {
 // 3. Do you have experience with GraphQL, Next.js, React, and TailwindCSS, which are required for this role?
 // 4. What other technical skills do you have that could be helpful in this position?
 // 5. How comfortable are you with UI implementation, and what experience do you have in this area?
-// 6. Would you be willing to join Soil 🌱 as a contributor, given that the company is not yet financially secure?
+// 6. Would you be willing to join Soil 🌱 as a contributor, given that the position is not yet financially secure?
 // 7. Do you share Eden's vision of using AI and blockchain to create context and trust and connect the right person to the right opportunity?
-// 8. What specifically interests you about joining Soil 🌱, and how do you think you could contribute to the company's mission?
+// 8. What specifically interests you about joining Soil 🌱, and how do you think you could contribute to the position's mission?
 // 9. What are your long-term career goals, and how do you see this role fitting into them?`
 
 
@@ -268,64 +268,64 @@ module.exports = {
 
         printC(interviewQuestionsForCandidate,"3","interviewQuestionsForCandidate","r")
 
-        // find the idx what candidate you will update from the companyData
+        // find the idx what candidate you will update from the positionData
 
         printC(userID,"5","userID","y")
-        printC(companyID,"5","companyID","y")
+        printC(positionID,"5","positionID","y")
 
-        companyData2 = await Company.findOne({ _id: companyID}).select('_id name candidates');
-        printC(companyData2?.candidates?.length,"5","companyData2.candidates.length","y")
+        positionData2 = await Position.findOne({ _id: positionID}).select('_id name candidates');
+        printC(positionData2?.candidates?.length,"5","positionData2.candidates.length","y")
 
         // sf0
-        let candidateIdx = companyData2?.candidates?.findIndex((candidate) => candidate.userID.toString() == userID.toString());
+        let candidateIdx = positionData2?.candidates?.findIndex((candidate) => candidate.userID.toString() == userID.toString());
 
         printC(candidateIdx,"3","candidateIdx","r")
 
         if (candidateIdx!=-1 && candidateIdx!=undefined) {
-          companyData2.candidates[candidateIdx].interviewQuestionsForCandidate = interviewQuestionsForCandidate
+          positionData2.candidates[candidateIdx].interviewQuestionsForCandidate = interviewQuestionsForCandidate
 
         } else {
-          companyData2?.candidates?.push({
+          positionData2?.candidates?.push({
             userID: userID,
             interviewQuestionsForCandidate: interviewQuestionsForCandidate,
           })
 
         }
 
-        if (companyData2){
-          companyData2 = await companyData2.save();
+        if (positionData2){
+          positionData2 = await positionData2.save();
         }
 
 
-        return companyData2
+        return positionData2
 
         
       } catch (err) {
         throw new ApolloError(
           err.message,
           err.extensions?.code || "interviewQuestionCreationUser",
-          { component: "companyMutation > interviewQuestionCreationUser" }
+          { component: "positionMutation > interviewQuestionCreationUser" }
         );
       }
     },
-    addEmployeesCompany: async (parent, args, context, info) => {
-      const { companyID,employees } = args.fields;
-      console.log("Mutation > addEmployeesCompany > args.fields = ", args.fields);
+    addEmployeesPosition: async (parent, args, context, info) => {
+      const { positionID,employees } = args.fields;
+      console.log("Mutation > addEmployeesPosition > args.fields = ", args.fields);
 
-      if (!employees) throw new ApolloError("Employees is required", "addEmployeesCompany", { component: "companyMutation > addEmployeesCompany" });
+      if (!employees) throw new ApolloError("Employees is required", "addEmployeesPosition", { component: "positionMutation > addEmployeesPosition" });
 
-      if (!companyID) throw new ApolloError("Company ID is required", "addEmployeesCompany", { component: "companyMutation > addEmployeesCompany" });
+      if (!positionID) throw new ApolloError("Position ID is required", "addEmployeesPosition", { component: "positionMutation > addEmployeesPosition" });
 
-      companyData = await Company.findOne({ _id: companyID });
+      positionData = await Position.findOne({ _id: positionID });
 
-      if (!companyData) throw new ApolloError("Company not found", "addEmployeesCompany", { component: "companyMutation > addEmployeesCompany" });
+      if (!positionData) throw new ApolloError("Position not found", "addEmployeesPosition", { component: "positionMutation > addEmployeesPosition" });
 
  
 
       try {
 
 
-        let compEmployees = await updateEmployees(companyData.employees, employees);
+        let compEmployees = await updateEmployees(positionData.employees, employees);
 
         console.log("compEmployees = " , compEmployees)
 
@@ -333,34 +333,34 @@ module.exports = {
 
 
         // find one and updates
-        let companyDataN = await Company.findOneAndUpdate(
-          { _id: companyID },
+        let positionDataN = await Position.findOneAndUpdate(
+          { _id: positionID },
           { employees: compEmployees },
           { new: true }
         );
 
-        return companyDataN
+        return positionDataN
         
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "addEmployeesCompany",
-          { component: "companyMutation > addEmployeesCompany" }
+          err.extensions?.code || "addEmployeesPosition",
+          { component: "positionMutation > addEmployeesPosition" }
         );
       }
     },
-    addQuestionsToAskCompany: async (parent, args, context, info) => {
-      const { companyID } = args.fields;
+    addQuestionsToAskPosition: async (parent, args, context, info) => {
+      const { positionID } = args.fields;
       let {questionsToAsk} = args.fields;
-      console.log("Mutation > addQuestionsToAskCompany > args.fields = ", args.fields);
+      console.log("Mutation > addQuestionsToAskPosition > args.fields = ", args.fields);
 
-      if (!questionsToAsk) throw new ApolloError("Employees is required", "addQuestionsToAskCompany", { component: "companyMutation > addQuestionsToAskCompany" });
+      if (!questionsToAsk) throw new ApolloError("Employees is required", "addQuestionsToAskPosition", { component: "positionMutation > addQuestionsToAskPosition" });
 
-      if (!companyID) throw new ApolloError("Company ID is required", "addQuestionsToAskCompany", { component: "companyMutation > addQuestionsToAskCompany" });
+      if (!positionID) throw new ApolloError("Position ID is required", "addQuestionsToAskPosition", { component: "positionMutation > addQuestionsToAskPosition" });
 
-      companyData = await Company.findOne({ _id: companyID });
+      positionData = await Position.findOne({ _id: positionID });
 
-      if (!companyData) throw new ApolloError("Company not found", "addQuestionsToAskCompany", { component: "companyMutation > addQuestionsToAskCompany" });
+      if (!positionData) throw new ApolloError("Position not found", "addQuestionsToAskPosition", { component: "positionMutation > addQuestionsToAskPosition" });
 
  
 
@@ -372,43 +372,43 @@ module.exports = {
         // asdf12
 
 
-        let questionsToAskN = await updateEmployees(companyData.questionsToAsk, questionsToAsk,"questionID");
+        let questionsToAskN = await updateEmployees(positionData.questionsToAsk, questionsToAsk,"questionID");
 
         console.log("questionsToAskN = " , questionsToAskN)
 
 
         // find one and updates
-        let companyDataN = await Company.findOneAndUpdate(
-          { _id: companyID },
+        let positionDataN = await Position.findOneAndUpdate(
+          { _id: positionID },
           { questionsToAsk: questionsToAskN },
           { new: true }
         );
         
-        return companyDataN
+        return positionDataN
         
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "addQuestionsToAskCompany",
-          { component: "companyMutation > addQuestionsToAskCompany" }
+          err.extensions?.code || "addQuestionsToAskPosition",
+          { component: "positionMutation > addQuestionsToAskPosition" }
         );
       }
     },
-    deleteQuestionsToAskCompany: async (parent, args, context, info) => {
-      const { companyID,questionID } = args.fields;
-      console.log("Mutation > deleteQuestionsToAskCompany > args.fields = ", args.fields);
+    deleteQuestionsToAskPosition: async (parent, args, context, info) => {
+      const { positionID,questionID } = args.fields;
+      console.log("Mutation > deleteQuestionsToAskPosition > args.fields = ", args.fields);
 
-      if (!companyID) throw new ApolloError("Company ID is required", "deleteQuestionsToAskCompany", { component: "companyMutation > deleteQuestionsToAskCompany" });
+      if (!positionID) throw new ApolloError("Position ID is required", "deleteQuestionsToAskPosition", { component: "positionMutation > deleteQuestionsToAskPosition" });
 
-      companyData = await Company.findOne({ _id: companyID });
+      positionData = await Position.findOne({ _id: positionID });
 
-      if (!companyData) throw new ApolloError("Company not found", "deleteQuestionsToAskCompany", { component: "companyMutation > deleteQuestionsToAskCompany" });
+      if (!positionData) throw new ApolloError("Position not found", "deleteQuestionsToAskPosition", { component: "positionMutation > deleteQuestionsToAskPosition" });
 
  
 
       try {
 
-        questionsToAsk = companyData.questionsToAsk
+        questionsToAsk = positionData.questionsToAsk
 
         console.log("questionsToAsk = " , questionsToAsk)
 
@@ -416,100 +416,100 @@ module.exports = {
         questionsToAsk = questionsToAsk.filter((question) => question.questionID.toString() != questionID.toString());
 
         // save it to mongo
-        let companyDataN = await Company.findOneAndUpdate(
-          { _id: companyID },
+        let positionDataN = await Position.findOneAndUpdate(
+          { _id: positionID },
           { questionsToAsk },
           { new: true }
         );
 
         
         
-        return companyDataN
+        return positionDataN
         
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "deleteQuestionsToAskCompany",
-          { component: "companyMutation > deleteQuestionsToAskCompany" }
+          err.extensions?.code || "deleteQuestionsToAskPosition",
+          { component: "positionMutation > deleteQuestionsToAskPosition" }
         );
       }
     },
-    addCandidatesCompany: async (parent, args, context, info) => {
-      const { companyID,candidates } = args.fields;
-      console.log("Mutation > addCandidatesCompany > args.fields = ", args.fields);
+    addCandidatesPosition: async (parent, args, context, info) => {
+      const { positionID,candidates } = args.fields;
+      console.log("Mutation > addCandidatesPosition > args.fields = ", args.fields);
 
-      if (!candidates) throw new ApolloError("Employees is required", "addCandidatesCompany", { component: "companyMutation > addCandidatesCompany" });
+      if (!candidates) throw new ApolloError("Employees is required", "addCandidatesPosition", { component: "positionMutation > addCandidatesPosition" });
 
-      if (!companyID) throw new ApolloError("Company ID is required", "addCandidatesCompany", { component: "companyMutation > addCandidatesCompany" });
+      if (!positionID) throw new ApolloError("Position ID is required", "addCandidatesPosition", { component: "positionMutation > addCandidatesPosition" });
 
-      companyData = await Company.findOne({ _id: companyID });
+      positionData = await Position.findOne({ _id: positionID });
 
-      if (!companyData) throw new ApolloError("Company not found", "addCandidatesCompany", { component: "companyMutation > addCandidatesCompany" });
+      if (!positionData) throw new ApolloError("Position not found", "addCandidatesPosition", { component: "positionMutation > addCandidatesPosition" });
 
  
       userIDs = candidates.map((candidate) => candidate.userID)
       
-      usersData = await Members.find({ _id: { $in: userIDs } }).select("_id discordName companiesApplied");
+      usersData = await Members.find({ _id: { $in: userIDs } }).select("_id discordName positionsApplied");
 
       
  
       try {
 
 
-        let candidatesN = await updateEmployees(companyData.candidates, candidates,"userID");
+        let candidatesN = await updateEmployees(positionData.candidates, candidates,"userID");
 
         console.log("candidatesN = " , candidatesN)
         // sdf00
 
 
-        await checkAndAddCompanyToMember(usersData,companyID)
+        await checkAndAddPositionToMember(usersData,positionID)
         
 
 
         // find one and updates
-        let companyDataN = await Company.findOneAndUpdate(
-          { _id: companyID },
+        let positionDataN = await Position.findOneAndUpdate(
+          { _id: positionID },
           { 
-            candidates: companyData.candidates,
+            candidates: positionData.candidates,
             candidatesReadyToDisplay: false 
           },
           { new: true }
         );
         
-        return companyDataN
+        return positionDataN
         
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "addCandidatesCompany",
-          { component: "companyMutation > addCandidatesCompany" }
+          err.extensions?.code || "addCandidatesPosition",
+          { component: "positionMutation > addCandidatesPosition" }
         );
       }
     },
-    addConvRecruiterToCompany: async (parent, args, context, info) => {
-      const { companyID,userID,conversationID } = args.fields;
-      console.log("Mutation > addConvRecruiterToCompany > args.fields = ", args.fields);
+    addConvRecruiterToPosition: async (parent, args, context, info) => {
+      const { positionID,userID,conversationID } = args.fields;
+      console.log("Mutation > addConvRecruiterToPosition > args.fields = ", args.fields);
 
-      if (!userID) throw new ApolloError("userID is required", "addConvRecruiterToCompany", { component: "companyMutation > addConvRecruiterToCompany" });
-
-
-      if (!companyID) throw new ApolloError("Company ID is required", "addConvRecruiterToCompany", { component: "companyMutation > addConvRecruiterToCompany" });
-      companyData = await Company.findOne({ _id: companyID });
-      if (!companyData) throw new ApolloError("Company not found", "addConvRecruiterToCompany", { component: "companyMutation > addConvRecruiterToCompany" });
+      if (!userID) throw new ApolloError("userID is required", "addConvRecruiterToPosition", { component: "positionMutation > addConvRecruiterToPosition" });
 
 
-      if (!conversationID) throw new ApolloError("conversationID is required", "addConvRecruiterToCompany", { component: "companyMutation > addConvRecruiterToCompany" });
+      if (!positionID) throw new ApolloError("Position ID is required", "addConvRecruiterToPosition", { component: "positionMutation > addConvRecruiterToPosition" });
+      positionData = await Position.findOne({ _id: positionID });
+      if (!positionData) throw new ApolloError("Position not found", "addConvRecruiterToPosition", { component: "positionMutation > addConvRecruiterToPosition" });
+
+
+      if (!conversationID) throw new ApolloError("conversationID is required", "addConvRecruiterToPosition", { component: "positionMutation > addConvRecruiterToPosition" });
       
  
 
 
       try {
 
-        // check if inside companyData.convRecruiter already conversationID exists
-        let convRecruiterData = companyData.convRecruiter.find((convRecruiter) => convRecruiter.conversationID.toString() == conversationID.toString());
+        // check if inside positionData.convRecruiter already conversationID exists
+        let convRecruiterData = positionData.convRecruiter.find((convRecruiter) => convRecruiter.conversationID.toString() == conversationID.toString());
 
         if (!convRecruiterData) {
-          companyData.convRecruiter.push({
+          positionData.convRecruiter.push({
             userID: userID,
             conversationID: conversationID,
             readyToDisplay: false,
@@ -519,13 +519,13 @@ module.exports = {
         }
 
         // save it to mongo
-        companyData.convRecruiterReadyToDisplay = false;
-        companyData = await companyData.save();
+        positionData.convRecruiterReadyToDisplay = false;
+        positionData = await positionData.save();
 
 
         // // find one and updates
-        // let companyDataN = await Company.findOneAndUpdate(
-        //   { _id: companyID },
+        // let positionDataN = await Position.findOneAndUpdate(
+        //   { _id: positionID },
         //   { 
         //     candidates: candidatesN,
         //     candidatesReadyToDisplay: false 
@@ -533,34 +533,34 @@ module.exports = {
         //   { new: true }
         // );
         
-        return companyData
+        return positionData
         
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "addConvRecruiterToCompany",
-          { component: "companyMutation > addConvRecruiterToCompany" }
+          err.extensions?.code || "addConvRecruiterToPosition",
+          { component: "positionMutation > addConvRecruiterToPosition" }
         );
       }
     },
 
-    addNodesToCompany: async (parent, args, context, info) => {
-      let { companyID, nodes } = args.fields;
+    addNodesToPosition: async (parent, args, context, info) => {
+      let { positionID, nodes } = args.fields;
 
-      console.log("Mutation > addNodesToCompany > args.fields = ", args.fields);
+      console.log("Mutation > addNodesToPosition > args.fields = ", args.fields);
 
       
 
 
-      if (!companyID) throw new ApolloError("companyID is required");
+      if (!positionID) throw new ApolloError("positionID is required");
 
       if (!nodes) throw new ApolloError("nodes is required");
 
 
       try {
-        let companyData = await Company.findOne({ _id: companyID }).select('_id name nodes');
+        let positionData = await Position.findOne({ _id: positionID }).select('_id name nodes');
 
-        printC(companyData,"0","companyData","b")
+        printC(positionData,"0","positionData","b")
         
 
         nodesIDArray = nodes.map((node) => node.nodeID);
@@ -576,61 +576,61 @@ module.exports = {
 
 
         
-        let nodesDataOriginalArray = companyData.nodes.map(function (item) {
+        let nodesDataOriginalArray = positionData.nodes.map(function (item) {
           return item.nodeID.toString();
         });
 
         printC(nodesDataOriginalArray,"1","nodesDataOriginalArray","b")
 
 
-        // check if the nodes are already in the company if they don't then add it to the companyData.nodes and save it to mongo
+        // check if the nodes are already in the position if they don't then add it to the positionData.nodes and save it to mongo
         for (let i=0;i<nodesData.length;i++) {
           let nodeData = nodesData[i];
 
           if (!nodesDataOriginalArray.includes(nodeData._id.toString())) {
-            companyData.nodes.push({
+            positionData.nodes.push({
               nodeID: nodeData._id,
             })
           }
 
         }
 
-        printC(companyData,"1","companyData","b")
+        printC(positionData,"1","positionData","b")
 
         // save it to mongo
-        companyData = await companyData.save();
+        positionData = await positionData.save();
 
 
 
 
 
-        return companyData;
+        return positionData;
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "addNodesToCompany",
-          { component: "companyMutation > addNodesToCompany" }
+          err.extensions?.code || "addNodesToPosition",
+          { component: "positionMutation > addNodesToPosition" }
         );
       }
     },
 
-    createTalentListCompany: async (parent, args, context, info) => {
-      const { companyID, name,talentListID } = args.fields;
-      console.log("Mutation > createTalentListCompany > args.fields = ", args.fields);
+    createTalentListPosition: async (parent, args, context, info) => {
+      const { positionID, name,talentListID } = args.fields;
+      console.log("Mutation > createTalentListPosition > args.fields = ", args.fields);
 
       try {
 
-        companyData = await Company.findOne({ _id: companyID}).select('_id name talentList');
+        positionData = await Position.findOne({ _id: positionID}).select('_id name talentList');
 
-        console.log("companyData = " , companyData)
+        console.log("positionData = " , positionData)
 
         if (talentListID){
 
-          // search inside companyData.talentList if talentListID is already there
-          let talentListData = companyData.talentList.find((talentList) => talentList._id.toString() == talentListID.toString());
+          // search inside positionData.talentList if talentListID is already there
+          let talentListData = positionData.talentList.find((talentList) => talentList._id.toString() == talentListID.toString());
 
           if (!talentListData) {
-            companyData.talentList.push({
+            positionData.talentList.push({
               _id: talentListID,
               name: name,
             });
@@ -640,36 +640,36 @@ module.exports = {
           }
 
         } else {
-          companyData.talentList.push({
+          positionData.talentList.push({
             name: name,
           });
 
         }
 
         // save it to mongo
-        companyData = await companyData.save();
+        positionData = await positionData.save();
 
 
-        return companyData
+        return positionData
         
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "createTalentListCompany",
-          { component: "companyMutation > createTalentListCompany" }
+          err.extensions?.code || "createTalentListPosition",
+          { component: "positionMutation > createTalentListPosition" }
         );
       }
     },
 
-    updateUsersTalentListCompany: async (parent, args, context, info) => {
-      const { companyID, talentListID, usersTalentList } = args.fields;
-      console.log("Mutation > updateUsersTalentListCompany > args.fields = ", args.fields);
+    updateUsersTalentListPosition: async (parent, args, context, info) => {
+      const { positionID, talentListID, usersTalentList } = args.fields;
+      console.log("Mutation > updateUsersTalentListPosition > args.fields = ", args.fields);
 
       try {
 
-        companyData = await Company.findOne({ _id: companyID}).select('_id name talentList');
+        positionData = await Position.findOne({ _id: positionID}).select('_id name talentList');
 
-        if (!companyData) throw new ApolloError("Company not found", "updateUsersTalentListCompany", { component: "companyMutation > updateUsersTalentListCompany" });
+        if (!positionData) throw new ApolloError("Position not found", "updateUsersTalentListPosition", { component: "positionMutation > updateUsersTalentListPosition" });
 
 
         // change from usersTalentList which is an array, to talent an array of objects with userID
@@ -683,48 +683,48 @@ module.exports = {
 
         // find the talentListID and update the talent
 
-        let talentListData = companyData.talentList.find((talentList) => talentList._id.toString() == talentListID.toString());
+        let talentListData = positionData.talentList.find((talentList) => talentList._id.toString() == talentListID.toString());
 
         // update talent
         talentListData.talent = talent;
 
         // save it to mongo
-        companyData = await companyData.save();
+        positionData = await positionData.save();
 
 
-        return companyData
+        return positionData
         
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "updateUsersTalentListCompany",
-          { component: "companyMutation > updateUsersTalentListCompany" }
+          err.extensions?.code || "updateUsersTalentListPosition",
+          { component: "positionMutation > updateUsersTalentListPosition" }
         );
       }
     },
 
     
-    updateCompanyUserAnswers: async (parent, args, context, info) => {
-      const { companyIDs} = args.fields;
-      console.log("Mutation > updateCompanyUserAnswers > args.fields = ", args.fields);
+    updatePositionUserAnswers: async (parent, args, context, info) => {
+      const { positionIDs} = args.fields;
+      console.log("Mutation > updatePositionUserAnswers > args.fields = ", args.fields);
 
 
-      if (companyIDs)
-        companyData = await Company.find({ 
-          _id: companyIDs,
+      if (positionIDs)
+        positionData = await Position.find({ 
+          _id: positionIDs,
           // candidatesReadyToDisplay: { $ne: true } // SOS 🆘 - uncomment!!!
         });
       else 
-        companyData = await Company.find({ candidatesReadyToDisplay: { $ne: true } });
+        positionData = await Position.find({ candidatesReadyToDisplay: { $ne: true } });
 
       try {
 
         let candidateResult = {}
 
-        for (let i = 0; i < companyData.length; i++) { // Loop on companies
-          const company = companyData[i];
+        for (let i = 0; i < positionData.length; i++) { // Loop on positions
+          const position = positionData[i];
 
-          questionsToAsk = company.questionsToAsk
+          questionsToAsk = position.questionsToAsk
 
           printC(questionsToAsk,"0","questionsToAsk","g")
 
@@ -734,7 +734,7 @@ module.exports = {
           printC(questionsToAskObj,"1","questionsToAskObj","b")
 
 
-          candidates = company.candidates
+          candidates = position.candidates
 
           for (let j = 0; j < candidates.length; j++) { // loop on candidates
 
@@ -951,12 +951,12 @@ module.exports = {
           printC(candidateResult,"6","candidateResult","p")
 
 
-          // --------------- Return results on companyData ---------------
-          for (j=0;j<companyData[i].candidates.length;j++){
-            userIDn = companyData[i].candidates[j].userID
+          // --------------- Return results on positionData ---------------
+          for (j=0;j<positionData[i].candidates.length;j++){
+            userIDn = positionData[i].candidates[j].userID
 
-            companyData[i].candidates[j].readyToDisplay = true
-            companyData[i].candidatesReadyToDisplay = true
+            positionData[i].candidates[j].readyToDisplay = true
+            positionData[i].candidatesReadyToDisplay = true
             if (candidateResult[userIDn]) {
               console.log("candidateResult[userIDn] = " , candidateResult[userIDn])
 
@@ -988,33 +988,33 @@ module.exports = {
 
               if (numberQ != 0) {
                 const averageT = (overallScore/numberQ)*10
-                companyData[i].candidates[j].overallScore = Math.floor(averageT);
+                positionData[i].candidates[j].overallScore = Math.floor(averageT);
               }
 
-              companyData[i].candidates[j].summaryQuestions = summaryQuestions
+              positionData[i].candidates[j].summaryQuestions = summaryQuestions
 
               
               
             }
           }
-          // --------------- Return results on companyData ---------------
+          // --------------- Return results on positionData ---------------
 
 
 
-          // ------------------ Update Company ----------------
-          companyNowD = await Company.findOneAndUpdate(
-            { _id: companyData[i]._id },
+          // ------------------ Update Position ----------------
+          positionNowD = await Position.findOneAndUpdate(
+            { _id: positionData[i]._id },
             {
               $set: {
-                candidates: companyData[i].candidates,
-                candidatesReadyToDisplay: companyData[i].candidatesReadyToDisplay
+                candidates: positionData[i].candidates,
+                candidatesReadyToDisplay: positionData[i].candidatesReadyToDisplay
               }
             },
             { new: true }
           )
-          if (company.candidates.length == 0){
-            companyNowD = await Company.findOneAndUpdate(
-              { _id: companyData[i]._id },
+          if (position.candidates.length == 0){
+            positionNowD = await Position.findOneAndUpdate(
+              { _id: positionData[i]._id },
               {
                 $set: {
                   candidatesReadyToDisplay: true
@@ -1023,7 +1023,7 @@ module.exports = {
               { new: true }
             )
           }
-          // ------------------ Update Company ----------------
+          // ------------------ Update Position ----------------
 
 
 
@@ -1033,45 +1033,45 @@ module.exports = {
         
 
 
-        return companyData
+        return positionData
         
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "updateCompanyUserAnswers",
-          { component: "companyMutation > updateCompanyUserAnswers" }
+          err.extensions?.code || "updatePositionUserAnswers",
+          { component: "positionMutation > updatePositionUserAnswers" }
         );
       }
     },
-    updateCompanyConvRecruiter: async (parent, args, context, info) => {
-      const { companyIDs} = args.fields;
-      console.log("Mutation > updateCompanyConvRecruiter > args.fields = ", args.fields);
+    updatePositionConvRecruiter: async (parent, args, context, info) => {
+      const { positionIDs} = args.fields;
+      console.log("Mutation > updatePositionConvRecruiter > args.fields = ", args.fields);
 
 
-      if (companyIDs)
-        companyData = await Company.find({ 
-          _id: companyIDs,
+      if (positionIDs)
+        positionData = await Position.find({ 
+          _id: positionIDs,
           // convRecruiterReadyToDisplay: { $ne: true } // SOS 🆘 - uncomment!!!
         });
       else {
-        companyData = await Company.find({ convRecruiterReadyToDisplay: { $ne: true } }).select('_id name convRecruiter');
+        positionData = await Position.find({ convRecruiterReadyToDisplay: { $ne: true } }).select('_id name convRecruiter');
       }
 
       try {
 
-        for (let i = 0; i < companyData.length; i++) { // Loop on companies
-          let company = companyData[i];
+        for (let i = 0; i < positionData.length; i++) { // Loop on positions
+          let position = positionData[i];
 
 
-          const convRecruiter = company.convRecruiter
+          const convRecruiter = position.convRecruiter
 
           printC(convRecruiter,"0","convRecruiter","r")
 
           let conversationID = undefined
           if (convRecruiter.length == 0) {
 
-            company.convRecruiterReadyToDisplay = true
-            company = await company.save();
+            position.convRecruiterReadyToDisplay = true
+            position = await position.save();
 
             continue
 
@@ -1099,16 +1099,16 @@ module.exports = {
 
 
           const noteCategories = [{
-              "content": "General info of Company",
-              "enum": "company",
+              "content": "General info of Position",
+              "enum": "position",
             },
             {
-              "content": "Values of Company",
-              "enum": "company"
+              "content": "Values of Position",
+              "enum": "position"
             },
             {
-              "content": "Industry of company",
-              "enum": "company"
+              "content": "Industry of position",
+              "enum": "position"
             },
             {
 
@@ -1143,7 +1143,7 @@ module.exports = {
     
           Conversation is inside <>: <${promptConv}>
     
-          The Recruiter is trying to create some Notes for the company and the new Role that is Employ is looking for to put them in Categories
+          The Recruiter is trying to create some Notes for the position and the new Role that is Employ is looking for to put them in Categories
     
           Categories are inside <>: <${promptNoteCategory}>
     
@@ -1175,14 +1175,14 @@ module.exports = {
         evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
 
         // evaluateNoteCategories = `
-        // <Category: General info of Company>
+        // <Category: General info of Position>
         // - Candidate was not very responsive during the conversation
         // - Candidate was not very responsive during the conversation
 
-        // <Category: Values of Company>
+        // <Category: Values of Position>
         // - No information gathered
 
-        // <Category: Industry of company>
+        // <Category: Industry of position>
         // - Candidate has 11 years of experience in Computer Vision, Machine Learning, and Robotics
 
         // <Category: Skills of the Candidate>
@@ -1232,21 +1232,21 @@ module.exports = {
         // -------------- Split String -------------
 
 
-        company.convRecruiter[company.convRecruiter.length - 1].companyQuestions = []
-        company.convRecruiter[company.convRecruiter.length - 1].roleQuestions = []
+        position.convRecruiter[position.convRecruiter.length - 1].positionQuestions = []
+        position.convRecruiter[position.convRecruiter.length - 1].roleQuestions = []
 
-        company.convRecruiter[company.convRecruiter.length - 1].readyToDisplay = true
+        position.convRecruiter[position.convRecruiter.length - 1].readyToDisplay = true
 
 
         for (let i=0;i<categoriesT.length;i++){
-          if (noteCategories[i].enum == "company") {
+          if (noteCategories[i].enum == "position") {
             printC(categoriesT[i],"3","categoriesT[i]","y")
-            company.convRecruiter[company.convRecruiter.length - 1].companyQuestions.push({
+            position.convRecruiter[position.convRecruiter.length - 1].positionQuestions.push({
               question: categoriesT[i].categoryName,
               content: categoriesT[i].reason,
             })
           } else {
-            company.convRecruiter[company.convRecruiter.length - 1].roleQuestions.push({
+            position.convRecruiter[position.convRecruiter.length - 1].roleQuestions.push({
               question: categoriesT[i].categoryName,
               content: categoriesT[i].reason,
             })
@@ -1255,7 +1255,7 @@ module.exports = {
 
 
         // ------------ Delete previous memory ------------
-        const convMemory = company.convRecruiter[company.convRecruiter.length - 1]?.convMemory
+        const convMemory = position.convRecruiter[position.convRecruiter.length - 1]?.convMemory
         if (convMemory.length >0) {
           deletePineIDs = convMemory.map(obj => obj.pineConeID)
           await deletePineCone(deletePineIDs)
@@ -1269,8 +1269,8 @@ module.exports = {
           const memorySaveN = newMemoryT[i].memoryContent;
           upsertSum = await upsertEmbedingPineCone({
             text: memorySaveN,
-            _id: company._id,
-            label: "Company_TrainEdenAI_memory",
+            _id: position._id,
+            label: "Position_TrainEdenAI_memory",
           });
           printC(upsertSum,"2","upsertSum","y")
 
@@ -1279,25 +1279,25 @@ module.exports = {
         // -------------- Sent to PineCone --------------
 
 
-        company.convRecruiter[company.convRecruiter.length - 1].convMemory = newMemoryT
+        position.convRecruiter[position.convRecruiter.length - 1].convMemory = newMemoryT
         
-        company.convRecruiterReadyToDisplay = true
+        position.convRecruiterReadyToDisplay = true
 
-        printC(company.convRecruiter, "3", "company.convRecruiter", "r")
+        printC(position.convRecruiter, "3", "position.convRecruiter", "r")
 
-        company = await company.save();
+        position = await position.save();
 
       }
 
 
 
-        return companyData
+        return positionData
         
       } catch (err) {
         throw new ApolloError(
           err.message,
-          err.extensions?.code || "updateCompanyConvRecruiter",
-          { component: "companyMutation > updateCompanyConvRecruiter" }
+          err.extensions?.code || "updatePositionConvRecruiter",
+          { component: "positionMutation > updatePositionConvRecruiter" }
         );
       }
     },
