@@ -15,30 +15,30 @@ module.exports = {
 
     try {
 
-      const collection = Position.collection;
+      // const collection = Position.collection;
 
 
-      // Rename the collection
-      collection.rename('positions', { dropTarget: true }, (err, result) => {
-        if (err) {
-          console.error(err);
-        } else {
-          console.log(result);
-        }
-      });
+      // // Rename the collection
+      // collection.rename('positions', { dropTarget: true }, (err, result) => {
+      //   if (err) {
+      //     console.error(err);
+      //   } else {
+      //     console.log(result);
+      //   }
+      // });
 
-      // // find conversaiotn 
-      // console.log("change = ")
-      // let positionData = await Position.findOne({ _id: _id });
-      // console.log("change = 1",positionData)
+      // find conversaiotn 
+      console.log("change = ")
+      let positionData = await Position.findOne({ _id: _id });
+      console.log("change = 1",positionData)
 
       
-      // if (!positionData) throw new ApolloError("Position not found")
+      if (!positionData) throw new ApolloError("Position not found")
 
-      // console.log("positionData = " , positionData)
-      // // sdf9
+      console.log("positionData = " , positionData)
+      // sdf9
 
-      // return positionData;
+      return positionData;
       
     } catch (err) {
       throw new ApolloError(
