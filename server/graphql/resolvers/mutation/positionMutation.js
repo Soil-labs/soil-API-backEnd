@@ -53,20 +53,23 @@ module.exports = {
       }
 
       await positionData.save();
-      if (!companyData.positions.includes(positionData._id.toString())) {
-        const _positions = [...companyData.positions, positionData._id];
-        await Company.findOneAndUpdate(
+      if (
+        !companyData.positions.some(
+          (_pos) => _pos.positionID.toString() === positionData._id.toString()
+        )
+      ) {
+        const _positions = [
+          ...companyData.positions,
+          { positionID: positionData._id },
+        ];
+
+        companyData = await Company.findOneAndUpdate(
           { _id: companyID },
           { positions: _positions }
         );
-        companyData = await Company.findOne({ _id: companyID });
       }
 
-      return {
-        _id: positionData._id,
-        name: positionData.name,
-        companyID: companyData,
-      };
+      return positionData;
     } catch (err) {
       throw new ApolloError(
         err.message,

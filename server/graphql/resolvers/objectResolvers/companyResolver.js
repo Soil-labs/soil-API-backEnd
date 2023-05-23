@@ -12,7 +12,9 @@ module.exports = {
     positions: async (parent, args, context, info) => {
       console.log("parent = ", parent);
       try {
-        positionsID = [...parent.positions];
+        const positionsID = parent._id;
+        console.log("positionsID = ", positionsID);
+        // positionsID = [...parent.positions];
 
         // console.log("positionsID = " , positionsID)
 
@@ -36,7 +38,7 @@ module.exports = {
           err.extensions?.code || "DATABASE_SEARCH_ERROR",
           {
             component: "companyResolver > position",
-            position: context.req.position?._id,
+            // position: context.req.position?._id,
           }
         );
       }

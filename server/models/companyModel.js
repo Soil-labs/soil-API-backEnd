@@ -10,7 +10,12 @@ const companyModel = mongoose.Schema({
       userID: String,
     },
   ],
-  positions: [mongoose.Schema.ObjectId],
+  positions: [
+    {
+      typeT: String,
+      positionID: mongoose.Schema.ObjectId,
+    },
+  ],
 });
 
 const Company = mongoose.model("Company", companyModel);
