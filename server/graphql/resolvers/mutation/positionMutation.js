@@ -75,7 +75,7 @@ module.exports = {
 
       try {
 
-        positionData = await Position.findOne({ _id: positionID}).select('_id name candidates questionsToAsk');
+        positionData = await Position.findOne({ _id: positionID}).select('_id name candidates questionsToAsk positionsRequirements');
         if (!positionData) throw new ApolloError("Position not found", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
 
 
@@ -98,37 +98,39 @@ module.exports = {
         const questionNow = questionData[0];
 
         // ------- Find best Open Job Role Memories ----------
-        filter = {
-          label: "Position_TrainEdenAI_memory",
-          _id: positionID,
-        };
 
-        bestJobRoleMemories = await getMemory(
-          questionNow.content,
-          filter,
-          (topK = 6),
-          250
-        );
+        // console.log("positionData?.positionsRequirements = " , positionData?.positionsRequirements?.content)
+        // console.log(Object.keys(positionData?.positionsRequirements))
+
+        let bestJobRoleMemories = ""
+        if (positionData?.positionsRequirements?.content == undefined) {
+          filter = {
+            label: "Company_TrainEdenAI_memory",
+            _id: positionID,
+          };
+  
+          bestJobRoleMemories = await getMemory(
+            questionNow.content,
+            filter,
+            (topK = 6),
+            250
+          );
+
+          
+          positionData.positionsRequirements.content = bestJobRoleMemories
+
+          positionData = await positionData.save();
+        } else {
+          bestJobRoleMemories = positionData.positionsRequirements.content
+        } 
+ 
+
+        
 
         // printC(bestJobRoleMemories,"3","bestJobRoleMemories","p")
+        // sdf0
         // ------- Find best Open Job Role Memories ----------
 
-
-        // // ------- Find best Open CV Memories ----------
-        // filter = {
-        //   label: "CV_user_memory",
-        //   _id: userID,
-        // };
-
-        // bestUserCVMemories = await getMemory(
-        //   questionNow.content,
-        //   filter,
-        //   (topK = 5),
-        //   350
-        // );
-
-        // // printC(bestUserCVMemories,"3","bestUserCVMemories","r")
-        // // ------- Find best Open CV Memories ----------
 
         // ----------- CV to Summary -------------
         let cvContentPrompt = `
@@ -184,6 +186,35 @@ module.exports = {
 //         `
 
         printC(infoCandidateForJob,"3","infoCandidateForJob","r")
+
+
+        // positionData.candidates.compareCandidatePosition.CVToPosition.content = infoCandidateForJob
+
+
+        // positionData = await positionData.save();
+
+        // ------------ Save the CV to the positionData -------------
+        let candidateIdx_ = positionData?.candidates?.findIndex((candidate) => candidate.userID.toString() == userID.toString());
+        if (candidateIdx_!=-1 && candidateIdx_!=undefined) {
+          positionData.candidates[candidateIdx_].compareCandidatePosition.CVToPosition.content = infoCandidateForJob
+          await positionData.save();
+        }
+        else {
+          positionData?.candidates?.push({
+            userID: userID,
+            compareCandidatePosition: {
+              CVToPosition: {
+                content: infoCandidateForJob,
+              }
+            },
+          })
+          await positionData.save();
+        }
+        // ------------ Save the CV to the positionData -------------
+
+
+
+        sdf
 
         // sdf
         // -------- Create Prompt ---------
@@ -1270,7 +1301,7 @@ module.exports = {
           upsertSum = await upsertEmbedingPineCone({
             text: memorySaveN,
             _id: position._id,
-            label: "Position_TrainEdenAI_memory",
+            label: "Company_TrainEdenAI_memory",
           });
           printC(upsertSum,"2","upsertSum","y")
 

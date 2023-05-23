@@ -6,11 +6,16 @@ module.exports = `
         candidatesReadyToDisplay: Boolean
         employees: [EmployeeType]
         questionsToAsk: [QuestionType]
+        positionsRequirements: positionsRequirementsType
         nodes: [NodeDataType]
         convRecruiter: [convRecruiterType]
         convRecruiterReadyToDisplay: Boolean
         talentList: [talentListType]
         candidates: [CandidateType]
+    }
+
+    type positionsRequirementsType { 
+        content: String
     }
 
     type convRecruiterType {
@@ -65,6 +70,22 @@ module.exports = `
         summaryQuestions: [SummaryQuestionType]
         interviewQuestionsForCandidate: [interviewQuestionsForCandidateType]
         notesInterview: [notesInterviewType]
+        compareCandidatePosition: compareCandidatePositionType
+    }
+
+    type compareCandidatePositionType {
+        CVToPosition: CVToPositionType,
+        CV_ConvoToPosition: CV_ConvoToPositionType,
+    }
+
+    type CVToPositionType {
+        content: String,
+        score: Float,
+    }
+
+    type CV_ConvoToPositionType {
+        content: String,
+        score: Float,
     }
 
     type notesInterviewType {

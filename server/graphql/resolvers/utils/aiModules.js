@@ -180,7 +180,7 @@ async function modifyQuestionFromCVMemory(messageQ,lastMessage,userID,topK = 3,p
     let memoriesPositionTrainingPrompt = ""
     if (positionID != undefined){
       filter = {
-        label: "Position_TrainEdenAI_memory",
+        label: "Company_TrainEdenAI_memory",
         _id: positionID,
       }
 
@@ -264,7 +264,7 @@ async function askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,use
   let memoriesPositionTrainingPrompt = ""
   if (positionID != undefined){
     filter = {
-      label: "Position_TrainEdenAI_memory",
+      label: "Company_TrainEdenAI_memory",
       _id: positionID,
     }
 

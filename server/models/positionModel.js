@@ -12,6 +12,9 @@ const positionModel = mongoose.Schema({
     questionID: mongoose.Schema.ObjectId,
     bestAnswer: String,
   }],
+  positionsRequirements: {
+    content: String,
+  },
   nodes: [{
     nodeID: mongoose.Schema.ObjectId,
   }],
@@ -69,7 +72,17 @@ const positionModel = mongoose.Schema({
       categoryName: String,
       score: Number,
       reason: [String],
-    }]
+    }],
+    compareCandidatePosition: {
+      CVToPosition: {
+        content: String,
+        score: Number,
+      },
+      CV_ConvoToPosition: {
+        content: String,
+        score: Number,
+      },
+    }
   }],
 
 });
