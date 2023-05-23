@@ -12,9 +12,10 @@ module.exports = {
     positions: async (parent, args, context, info) => {
       console.log("parent = ", parent);
       try {
-        const positionsID = parent._id;
-        console.log("positionsID = ", positionsID);
-        // positionsID = [...parent.positions];
+        
+        const positionsID = parent.positions.map((position) => {
+          return position.positionID;
+        });
 
         // console.log("positionsID = " , positionsID)
 

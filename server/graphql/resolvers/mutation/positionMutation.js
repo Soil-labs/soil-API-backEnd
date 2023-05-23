@@ -53,9 +53,14 @@ module.exports = {
       }
 
       await positionData.save();
+
+      console.log("positionData = " , positionData)
+      // sdf0
+
+
       if (
         !companyData.positions.some(
-          (_pos) => _pos.positionID.toString() === positionData._id.toString()
+          (_pos) => _pos.positionID?.toString() === positionData.companyID?.toString()
         )
       ) {
         const _positions = [
