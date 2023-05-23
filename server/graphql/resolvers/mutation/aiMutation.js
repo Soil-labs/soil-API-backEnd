@@ -301,6 +301,7 @@ module.exports = {
       - You need make really small bullet points of information about the Candidate for every Category
       - Based on the conversation you can make from 0 to 4 bullet points for every Category
       - If no information is found for a category, exclude it from the output, only include information that is found in text
+      - Include up to 6 categories 
 
       For example: 
         <Category 1: Score - title>
