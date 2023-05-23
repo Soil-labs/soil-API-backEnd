@@ -1,0 +1,44 @@
+module.exports = `
+    
+    type Company {
+        _id: ID
+        name: String
+        url: String
+        employees: [EmployeeType]
+        positions: [Position]
+    }
+
+    type EmployeeType {
+        typeT: String
+        user: Members
+    }
+
+    input updateCompanyInput {
+        _id: ID
+        name: String
+    }
+    
+    input updateUrlInput {
+        companyID: ID
+        url: String
+    }
+
+    input EmployeeTypeInput {
+        typeT: String
+        userID: String
+    }
+
+    input findCompanyInput {
+        _id: ID,
+    }
+
+    input findCompaniesInput {
+        _id: [ID],
+    }
+    
+    input addEmployeesCompanyInput {
+        companyID: ID
+        employees: [EmployeeTypeInput]
+    }  
+
+`

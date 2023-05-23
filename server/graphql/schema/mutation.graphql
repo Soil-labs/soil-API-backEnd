@@ -76,13 +76,14 @@ module.exports = `
         addQuestionToEdenAI(fields:addQuestionToEdenAIInput): addQuestionToEdenAIOutput
 
 
-        # ------------- COMPANY MUTATION -----------------
+        # ------------- POSITION MUTATION -----------------
         updatePosition(fields:updatePositionInput): Position
-        addEmployeesPosition(fields:addEmployeesPositionInput): Position
+        updateUrl(fields:updateUrlInput): Position
         addQuestionsToAskPosition(fields:addQuestionsToAskPositionInput): Position
         interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Position
         deleteQuestionsToAskPosition(fields:deleteQuestionsToAskPositionInput): Position
         addCandidatesPosition(fields:addCandidatesPositionInput): Position
+        deletePositionCandidate(fields:deletePositionCandidateInput): Position
         addConvRecruiterToPosition(fields:addConvRecruiterToPositionInput): Position
         updatePositionUserAnswers(fields:updatePositionUserAnswersInput): [Position]
         updatePositionConvRecruiter(fields:updatePositionConvRecruiterInput): [Position]
@@ -90,6 +91,11 @@ module.exports = `
         updateUsersTalentListPosition(fields:updateUsersTalentListPositionInput): Position
         addNodesToPosition(fields:addNodesToPositionInput): Position
 
+
+         # ------------- COMPANY MUTATION -----------------
+        updateCompany(fields:updateCompanyInput): Company
+        updateUrlCompany(fields:updateUrlInput): Company
+        addEmployeesCompany(fields:addEmployeesCompanyInput): Company
 
 
         #  ---------- ROLE MUTATIONS -------
