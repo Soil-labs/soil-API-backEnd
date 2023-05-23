@@ -3,6 +3,7 @@ const { ApolloError } = require("apollo-server-express");
 const { Position } = require("../../../models/positionModel");
 const { Members } = require("../../../models/membersModel");
 const { Node } = require("../../../models/nodeModal");
+const { Company } = require("../../../models/companyModel");
 
 const { Conversation } = require("../../../models/conversationModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");

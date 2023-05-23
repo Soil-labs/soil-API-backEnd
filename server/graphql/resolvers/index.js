@@ -11,7 +11,8 @@ const {
   skillType_member,
   endorseSummaryType,
   matchMembersToSkillOutput,
-  nodesPercentageType,mostRelevantMemberNodeType,
+  nodesPercentageType,
+  mostRelevantMemberNodeType,
   SkillsPercentage,
   matchSkillsToProjectsOutput,
   matchProjectRoles,
@@ -44,7 +45,15 @@ const { KeywordValue } = require("./objectResolvers/aiResolver");
 const { Graph } = require("./objectResolvers/graphVisualResolver");
 const { Rooms } = require("./objectResolvers/roomResolver");
 const { RoleTemplate } = require("./objectResolvers/roleTemplateResolver");
-const { CandidateType,talentListType,talentType,convRecruiterType,NodeDataType,QuestionType } = require("./objectResolvers/positionResolver");
+const {
+  Position,
+  CandidateType,
+  talentListType,
+  talentType,
+  convRecruiterType,
+  NodeDataType,
+  QuestionType,
+} = require("./objectResolvers/positionResolver");
 const { SkillCategory } = require("./objectResolvers/skillCategoryResolver");
 const {
   SkillSubCategory,
@@ -79,7 +88,8 @@ module.exports = {
   Review,
   reviewNode,
   matchMembersToSkillOutput,
-  nodesPercentageType,mostRelevantMemberNodeType,
+  nodesPercentageType,
+  mostRelevantMemberNodeType,
   SkillsPercentage,
   matchSkillsToProjectsOutput,
   matchProjectRoles,
@@ -100,7 +110,13 @@ module.exports = {
   Graph,
   Rooms,
   RoleTemplate,
-  CandidateType,talentListType,talentType,convRecruiterType,NodeDataType,QuestionType,
+  Position,
+  CandidateType,
+  talentListType,
+  talentType,
+  convRecruiterType,
+  NodeDataType,
+  QuestionType,
   SkillCategory,
   SkillSubCategory,
   ProjectUpdate,

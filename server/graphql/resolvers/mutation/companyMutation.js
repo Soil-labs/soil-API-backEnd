@@ -18,7 +18,6 @@ module.exports = {
       } else {
         companyData = await new Company({
           name,
-          companyID,
         });
 
         await companyData.save();
@@ -36,6 +35,7 @@ module.exports = {
       );
     }
   },
+
   updateUrlCompany: async (parent, args, context, info) => {
     const { companyID } = args.fields;
     let { url } = args.fields;
