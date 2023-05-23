@@ -15,7 +15,10 @@ const {
   matchNodesToMembers_AI4,
   setAllMatch_v2,
   matchNodesToMembers_old,
-  matchSkillsToProjects,memberPieChartNodeCategories,memberRadioChartCharacterAttributes,candidateNotesEdenAI,
+  matchSkillsToProjects,
+  memberPieChartNodeCategories,
+  memberRadioChartCharacterAttributes,
+  candidateNotesEdenAI,
   matchNodesToProjectRoles,
   matchNodesToProjectRoles_old,
   members_autocomplete,
@@ -38,16 +41,15 @@ const {
 } = require("./query/nodeQuery");
 
 const {
-  findConversation,findConversations,
+  findConversation,
+  findConversations,
 } = require("./query/conversationQuery");
 
-const {
-  findCompany,findCompanies,
-} = require("./query/companyQuery");
+const { findPosition, findPositions } = require("./query/positionQuery");
 
-const {
-  findQuestionEdenAI,
-} = require("./query/questionsEdenAIQuery");
+const { findCompany, findCompanies } = require("./query/companyQuery");
+
+const { findQuestionEdenAI } = require("./query/questionsEdenAIQuery");
 
 const {
   findProject,
@@ -86,13 +88,23 @@ const {
   findMessage,
   edenGPTreply,
   messageMapKG,
-  messageMapKG_V2,messageMapKG_V3,messageMapKG_V4,messageMapKG_V5,
+  messageMapKG_V2,
+  messageMapKG_V3,
+  messageMapKG_V4,
+  messageMapKG_V5,
   edenGPTreplyMemory,
   edenGPTreplyChatAPI,
-  edenGPTreplyChatAPI_V2,edenGPTreplyChatAPI_V3,
+  edenGPTreplyChatAPI_V2,
+  edenGPTreplyChatAPI_V3,
   edenGPTsearchProfiles,
-  edenGPTsummaryProfile,conversationToSummaryGPT,
-  edenGPTEndorseChatAPI,evaluateAnswerEdenAI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,interviewEdenAI,createProfileExperienceWithChatCVMemory,
+  edenGPTsummaryProfile,
+  conversationToSummaryGPT,
+  edenGPTEndorseChatAPI,
+  evaluateAnswerEdenAI,
+  edenGPTCreateProfileExperienceChatAPI,
+  edenAITalSearchExpirience,
+  interviewEdenAI,
+  createProfileExperienceWithChatCVMemory,
   edenGPTReviewChatAPI,
 } = require("./query/aiQuery");
 
@@ -154,7 +166,10 @@ module.exports = {
     matchNodesToMembers_AI4,
     setAllMatch_v2,
     matchNodesToMembers_old,
-    matchSkillsToProjects,memberPieChartNodeCategories,memberRadioChartCharacterAttributes,candidateNotesEdenAI,
+    matchSkillsToProjects,
+    memberPieChartNodeCategories,
+    memberRadioChartCharacterAttributes,
+    candidateNotesEdenAI,
     matchNodesToProjectRoles,
     matchNodesToProjectRoles_old,
     members_autocomplete,
@@ -174,10 +189,16 @@ module.exports = {
     treeOfRelatedNodes,
 
     // ------------- CONVERSATION QUERY -----------------
-    findConversation,findConversations,
+    findConversation,
+    findConversations,
+
+    // ------------- POSITION QUERY -----------------
+    findPosition,
+    findPositions,
 
     // ------------- COMPANY QUERY -----------------
-    findCompany,findCompanies,
+    findCompany,
+    findCompanies,
 
     // ------------- QUESTIONS EDEN AI QUERY -----------------
     findQuestionEdenAI,
@@ -216,13 +237,23 @@ module.exports = {
     findMessage,
     edenGPTreply,
     messageMapKG,
-    messageMapKG_V2,messageMapKG_V3,messageMapKG_V4,messageMapKG_V5,
+    messageMapKG_V2,
+    messageMapKG_V3,
+    messageMapKG_V4,
+    messageMapKG_V5,
     edenGPTreplyMemory,
     edenGPTreplyChatAPI,
-    edenGPTreplyChatAPI_V2,edenGPTreplyChatAPI_V3,
+    edenGPTreplyChatAPI_V2,
+    edenGPTreplyChatAPI_V3,
     edenGPTsearchProfiles,
-    edenGPTsummaryProfile,conversationToSummaryGPT,
-    edenGPTEndorseChatAPI,evaluateAnswerEdenAI,edenGPTCreateProfileExperienceChatAPI,edenAITalSearchExpirience,createProfileExperienceWithChatCVMemory,interviewEdenAI,
+    edenGPTsummaryProfile,
+    conversationToSummaryGPT,
+    edenGPTEndorseChatAPI,
+    evaluateAnswerEdenAI,
+    edenGPTCreateProfileExperienceChatAPI,
+    edenAITalSearchExpirience,
+    createProfileExperienceWithChatCVMemory,
+    interviewEdenAI,
     edenGPTReviewChatAPI,
 
     //----------- GRAPH VISUAL QUERY ------------------

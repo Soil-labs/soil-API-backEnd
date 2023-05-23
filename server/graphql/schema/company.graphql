@@ -3,47 +3,9 @@ module.exports = `
     type Company {
         _id: ID
         name: String
-        candidatesReadyToDisplay: Boolean
+        url: String
         employees: [EmployeeType]
-        questionsToAsk: [QuestionType]
-        nodes: [NodeDataType]
-        convRecruiter: [convRecruiterType]
-        convRecruiterReadyToDisplay: Boolean
-        talentList: [talentListType]
-        candidates: [CandidateType]
-    }
-
-    type convRecruiterType {
-        user: Members
-        readyToDisplay: Boolean
-        conversation: [conversationType]
-        companyQuestions: [QuestionContentType]
-        roleQuestions: [QuestionContentType]
-        convMemory: [convMemoryType]
-    }
-
-    type convMemoryType {
-        memoryContent: String
-        pineConeID: String
-    }
-
-    type QuestionContentType {
-        question: String,
-        content: String,
-    }
-
-    type talentListType {
-        _id: ID
-        name: String
-        talent: [talentType]
-    }
-
-    type talentType {
-        user: Members
-    }
-
-    type NodeDataType {
-        nodeData: Node
+        positions: [Position]
     }
 
     type EmployeeType {
@@ -51,35 +13,14 @@ module.exports = `
         user: Members
     }
 
-    type QuestionType {
-        question: QuestionsEdenAI
-        bestAnswer: String
-    }
-
-    type CandidateType {
-        user: Members,
-        overallScore: Float,
-        acceptedOrRejected: Boolean,
-        readyToDisplay: Boolean,
-        conversation: [conversationType],
-        summaryQuestions: [SummaryQuestionType]
-    }
-
-    type SummaryQuestionType {
-        questionID: ID,
-        questionContent: String,
-        questionContentSmall: String,
-        answerContent: String,
-        answerContentSmall: String,
-        bestAnswerCompany: String,
-        reason: String,
-        score: Float,
-        subConversationAnswer: [conversationType],
-    }
-
     input updateCompanyInput {
         _id: ID
         name: String
+    }
+    
+    input updateUrlInput {
+        companyID: ID
+        url: String
     }
 
     input EmployeeTypeInput {
@@ -87,85 +28,17 @@ module.exports = `
         userID: String
     }
 
-    input QuestionTypeInput {
-        questionID: ID
-        questionContent: String
-        bestAnswer: String
-    }
-
-    input CandidateTypeInput {
-        userID: ID,
-    }
-
     input findCompanyInput {
-        _id: [ID],
-    }
-
-    input findCompaniesInput {
         _id: ID,
     }
 
+    input findCompaniesInput {
+        _id: [ID],
+    }
+    
     input addEmployeesCompanyInput {
         companyID: ID
         employees: [EmployeeTypeInput]
-    }
-
-    input addQuestionsToAskCompanyInput {
-        companyID: ID
-        questionsToAsk: [QuestionTypeInput]
-    }
-    input deleteQuestionsToAskCompanyInput {
-        companyID: ID
-        questionID: ID
-    }
-
-    input candidatesInput {
-        userID: ID,
-        conversationID: ID,
-        overallScore: Float,
-        acceptedOrRejected: Boolean,
-    }
-
-    input addCandidatesCompanyInput {
-        companyID: ID
-        candidates: [candidatesInput]
-    }
-
-    input addConvRecruiterToCompanyInput {
-        companyID: ID
-        userID: ID
-        conversationID: ID
-    }
-
-    input updateCompanyUserAnswersInput {
-        companyIDs: [ID]
-    }
-
-    input updateCompanyConvRecruiterInput {
-        companyIDs: [ID]
-    }
-
-    input createTalentListCompanyInput {
-        companyID: ID
-        name: String
-        talentListID: ID
-    }
-
-    input updateUsersTalentListCompanyInput {
-        companyID: ID
-        talentListID: ID
-        usersTalentList: [ID]
-    }
-
-    input addNodesToCompanyInput {
-        companyID: ID
-        nodes: [addNodeType]
-    }
-
-    input addNodeType {
-        nodeID: ID
-    }
-
-    
+    }  
 
 `

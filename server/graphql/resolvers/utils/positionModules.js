@@ -80,7 +80,7 @@ async function addQuestionToEdenAIFunc(content) {
         const newQuestion = await new QuestionsEdenAI({
             content: content,
             answeredQuestionByUsers: [],
-            questionOwnedByCompanies: []
+            questionOwnedByPositions: []
         });
 
         const result = await newQuestion.save();
@@ -146,13 +146,13 @@ async function addMultipleQuestionsToEdenAIFunc(questionsToAsk) {
 
 
 
-async function checkAndAddCompanyToMember(usersData, companyID) {
+async function checkAndAddPositionToMember(usersData, positionID) {
   // usersData.forEach(user => {
     for (let i=0;i<usersData.length;i++){
       const user = usersData[i];
-    if (!user.companiesApplied.some(obj => obj.companyID?.toString() == companyID.toString())) {
-      user.companiesApplied.push({
-        companyID: companyID,
+    if (!user.positionsApplied.some(obj => obj.positionID?.toString() == positionID.toString())) {
+      user.positionsApplied.push({
+        positionID: positionID,
       });
       // send updated user data to MongoDB
 
@@ -166,5 +166,5 @@ async function checkAndAddCompanyToMember(usersData, companyID) {
 module.exports = {
     addQuestionToEdenAIFunc,
     addMultipleQuestionsToEdenAIFunc,
-    checkAndAddCompanyToMember,
+    checkAndAddPositionToMember,
 };

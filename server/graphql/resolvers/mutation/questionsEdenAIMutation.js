@@ -16,7 +16,7 @@ module.exports = {
     //   const newQuestion = await new QuestionsEdenAI({
     //     content: content,
     //     answeredQuestionByUsers: [],
-    //     questionOwnedByCompanies: []
+    //     questionOwnedByPositions: []
     // });
 
     // sdf00

@@ -1,6 +1,8 @@
 const { AI } = require("../../../models/aiModel");
 const { Node } = require("../../../models/nodeModal");
 const { Members } = require("../../../models/membersModel");
+const { Position } = require("../../../models/positionModel");
+
 
 
 
@@ -25,6 +27,7 @@ const {
   updateConversation,evaluateAnswerEdenAIFunc,
   modifyQuestionFromCVMemory,
   getMemory,
+  askQuestionAgain,
 } = require("../utils/aiModules");
 
 const { updateAnsweredQuestionFunc,findAndUpdateConversationFunc } = require("../utils/conversationModules");
@@ -856,7 +859,7 @@ module.exports = {
     }
   },
   interviewEdenAI: async (parent, args, context, info) => {
-    const { userID,conversation,unansweredQuestions } = args.fields;
+    const { userID,positionID,conversation,unansweredQuestions } = args.fields;
     let {timesAsked,unansweredQuestionsArr,questionAskingNow,questionAskingI,useMemory,questionAskingID} = args.fields;
     // console.log("Query > interviewEdenAI > args.fields = ", args.fields);
 
@@ -894,7 +897,306 @@ module.exports = {
     console.log("questionAskingNow = " , questionAskingNow)
     console.log("questionAskingID = " , questionAskingID)
     
-    // asdf12
+
+    try {
+
+      // ------------ Find Modified questions ------------
+      let positionData = await Position.findOne({ _id: positionID }).select('_id candidates');
+
+      const candidate = positionData.candidates.find(candidate => candidate.userID.toString() == userID.toString());
+
+      // find inside candidate Array the questionAskingID
+
+      const newQuestion = candidate?.interviewQuestionsForCandidate?.find(question => question?.originalQuestionID?.toString() == questionAskingID.toString());
+
+      console.log("newQuestion = " , newQuestion)
+
+      if (newQuestion?.personalizedContent != undefined)
+        questionAskingNow = newQuestion.personalizedContent
+      // SDF9
+
+      // ------------ Find Modified questions ------------
+
+      // -------------- Prompt of the conversation ------------
+      let prompt_conversation = "Conversation:";
+      let roleN;
+      let startP 
+      if (conversation.length - timesAsked*2>0)
+        startP = conversation.length - timesAsked*2
+      else 
+        startP = 0
+
+      lastMessage = ""
+      for (let i = startP; i < conversation.length; i++) { // only take the part of the conversaiton that is about this quesoitn 
+      // for (let i = 0; i < conversation.length; i++) {
+        roleN = "Person";
+        if (conversation[i].role == "assistant") roleN = "Interviewer";
+        prompt_conversation =
+          prompt_conversation + "\n\n" + roleN + `: "` + conversation[i].content + `"`;
+
+        if (i == conversation.length - 1) {
+          lastMessage = roleN + `: "` + conversation[i].content + `"`;
+        }
+      }
+      printC(prompt_conversation, "1", "prompt_conversation", "r") 
+      // -------------- Prompt of the conversation ------------
+
+
+      if (questionAskingNow != undefined && questionAskingNow != "") {
+
+        // -------------- Ask GPT what to do  ------------
+        promptAskQuestion = `
+        Question: ${questionAskingNow}
+
+          Using the Conversation, is the Person answer the Question?
+          Is the Person answer the Question during the conversation?
+          - YES answer the question
+          - NO didn't answer the question 
+
+          You can only answer (YES, NO)
+
+          Result: 
+        `
+
+        promptQuestionAskedN = prompt_conversation + "\n\n" + promptAskQuestion,
+
+
+        console.log("")
+        console.log("")
+        printC(promptQuestionAskedN, "1", "promptQuestionAskedN", "p");
+
+
+        responseGPTchat = await useGPTchatSimple(promptQuestionAskedN,);
+
+        
+
+        console.log("")
+        console.log("-------------------------")
+        printC(responseGPTchat, "1", "responseGPTchat", "r");
+
+
+        // if statment if on the responseGPTchat there is the word YES or NO put true or false
+        let moveNextQuestionGPT = true;
+        if (responseGPTchat.includes("YES")) moveNextQuestionGPT = true;
+        if (responseGPTchat.includes("NO")) moveNextQuestionGPT = false;
+
+        if (moveNextQuestionGPT == false) {
+          if (timesAsked >=3){ // if you are talking for too long for this quesiton, just move on
+            moveNextQuestionGPT = true
+          }
+        }
+
+        console.log("moveNextQuestionGPT = " , moveNextQuestionGPT)
+        // -------------- Ask GPT what to do  ------------
+
+        //  -------------- Move to next question ------------
+        if (moveNextQuestionGPT == true) {
+
+          if (unansweredQuestionsArr.length == 1){
+            nextQuestion = "NEW TASK: Finish the conversation, close it by saying thank you and that they finish the interview"
+            questionAskingNowA = "Finish the conversation"
+            resT = unansweredQuestionsArr.shift()
+
+          } else {
+            // questionAskingNowA = unansweredQuestions.shift()
+            // nextQuestion = "Next Question to Answer: " + questionAskingNowA
+
+            resT = unansweredQuestionsArr.shift()
+
+
+            const newQuestion = candidate?.interviewQuestionsForCandidate?.find(question => question?.originalQuestionID?.toString() == unansweredQuestionsArr[0].questionID.toString());
+
+            // console.log("newQuestion = " , newQuestion)
+            // sdf9
+
+            if (newQuestion?.personalizedContent != undefined)
+              questionAskingNowA = newQuestion.personalizedContent
+            else 
+              questionAskingNowA = unansweredQuestionsArr[0].questionContent
+
+
+            // console.log("resT ---f-f-f-f-= " , resT) 
+            // questionAskingNowA = unansweredQuestionsArr[0].questionContent
+            nextQuestion = `NEW QUESTION ASK: "` + questionAskingNowA + `"`
+          }
+          timesAsked = 1
+        } else {
+          if (flagFirstTime == true){
+            nextQuestion = "QUESTION ASK: " + questionAskingNow + `"`
+          } else {
+            nextQuestion = "QUESTION ASK AGAIN: " + questionAskingNow + `"`
+          }
+          questionAskingNowA = questionAskingNow
+          
+          timesAsked = timesAsked + 1
+        }
+        
+    } else {
+      if (unansweredQuestionsArr.length == 1){
+        nextQuestion = "NEW TASK: Finish the conversation, close it by saying thank you and that they finish the interview"
+        questionAskingNowA = "Finish the conversation"
+        resT = unansweredQuestionsArr.shift()
+
+      } else {
+        // questionAskingNowA = unansweredQuestions.shift()
+        // nextQuestion = "Next Question to Answer: " + questionAskingNowA
+
+        resT = unansweredQuestionsArr.shift()
+
+        const newQuestion = candidate?.interviewQuestionsForCandidate?.find(question => question?.originalQuestionID?.toString() == unansweredQuestionsArr[0].questionID.toString());
+
+        if (newQuestion?.personalizedContent != undefined)
+          questionAskingNowA = newQuestion.personalizedContent
+        else 
+          questionAskingNowA = unansweredQuestionsArr[0].questionContent
+        // questionAskingNowA = unansweredQuestionsArr[0].questionContent
+        nextQuestion = `NEW QUESITON ASK: "` + questionAskingNowA + `"`
+
+        // unansweredQuestionsArr.shift()
+        
+        timesAsked = timesAsked + 1
+      }
+        
+
+    }
+
+    printC(timesAsked, "2", "timesAsked", "g");
+
+
+    printC(lastMessage, "2", "lastMessage", "y");
+    printC(nextQuestion, "2", "nextQuestion", "y");
+    printC(questionAskingNowA, "2", "questionAskingNowA", "y");
+
+
+    let reply
+    if (timesAsked == 1){
+      // NEW Question
+
+      if (questionAskingNowA == "Finish the conversation"){
+        reply = "Thank you for taking time to talk to me, I will let you know with the results ASAP"
+      } else {
+        reply = questionAskingNowA
+      }
+
+
+
+    } else {
+
+      if (flagFirstTime == true){
+        // NEW Question
+        reply = questionAskingNowA
+      } else {
+        // Ask Again Question
+
+        let askGPT = ""
+
+        askGPT = `You are an Interviewer, you need to reply to the candidate with goal to deeply understand the candidate
+
+        - You have the Conversation between the Interviewer and the Candidate (delimited by <>)            
+
+        < ${prompt_conversation} >
+
+        - The original question that you need to collect information is (delimited by <>) 
+
+        < ${nextQuestion} >
+
+        - your goal is to collect the information from the candidate for this specific question and Job Role
+        - First make a small responded/acknowledgment of the answer with 1-8 words, if it applies
+        - You can only ask 1 question at a time, 
+        - you should use a maximum 1-2 sentence
+        
+        Interviewer Reply: 
+        `
+
+        
+        printC(askGPT, "4", "askGPT", "p")
+
+        reply = await useGPTchatSimple(askGPT);
+      }
+    }
+
+      printC(reply, "4", "reply", "r");
+    //  -------------- Move to next question ------------
+
+
+    conversationID = undefined
+
+    if (conversation.length >=2){
+
+      // ------------- Update the Conversation MEMORY ----------------
+      resultConv = await findAndUpdateConversationFunc(userID,conversation,positionID)
+      // ------------- Update the Conversation MEMORY ----------------
+
+
+
+      //  ------------- Update the Answered Questions ----------------
+      resultConv = await updateAnsweredQuestionFunc(resultConv,conversation,questionAskingNow,questionAskingID,originalTimesAsked)
+      //  ------------- Update the Answered Questions ----------------
+
+      conversationID = resultConv._id
+    }
+
+
+    reply = reply.replace(/"/g, '');
+
+    
+      return {
+        reply: reply,
+        conversationID: conversationID,
+        questionAskingNow: questionAskingNowA,
+        // // unansweredQuestions: unansweredQuestions,
+        timesAsked: timesAsked,
+        unansweredQuestionsArr: unansweredQuestionsArr,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "interviewEdenAI",
+        {
+          component: "aiQuery > interviewEdenAI",
+        }
+      );
+    }
+  },
+  interviewEdenAI_old: async (parent, args, context, info) => {
+    const { userID,positionID,conversation,unansweredQuestions } = args.fields;
+    let {timesAsked,unansweredQuestionsArr,questionAskingNow,questionAskingI,useMemory,questionAskingID} = args.fields;
+    // console.log("Query > interviewEdenAI_old > args.fields = ", args.fields);
+
+   
+    if (useMemory == undefined){
+      useMemory = true // default to true
+    }
+
+    let nextQuestion
+    let questionAskingNowA
+
+    let flagFirstTime = false
+    
+
+    if (timesAsked == undefined || timesAsked == 0) {
+      flagFirstTime = true
+      timesAsked = 1
+    }
+
+    const originalTimesAsked = timesAsked
+
+    unansweredQuestionsArr = await addMultipleQuestionsToEdenAIFunc(unansweredQuestionsArr)
+
+    console.log("unansweredQuestionsArr = " , unansweredQuestionsArr)    
+
+
+    if (questionAskingNow == undefined && unansweredQuestionsArr.length > 0 ) {
+      questionAskingNow = unansweredQuestionsArr[0].questionContent
+    }
+
+    if (questionAskingID == undefined && unansweredQuestionsArr.length > 0 ) {
+      questionAskingID = unansweredQuestionsArr[0].questionID
+    }
+
+    console.log("questionAskingNow = " , questionAskingNow)
+    console.log("questionAskingID = " , questionAskingID)
+    
 
     try {
 
@@ -919,25 +1221,13 @@ module.exports = {
           lastMessage = roleN + `: "` + conversation[i].content + `"`;
         }
       }
-      // console.log("prompt_conversation = \n", prompt_conversation);
-      printC(prompt_conversation, "1", "prompt_conversation", "r")
-      
+      printC(prompt_conversation, "1", "prompt_conversation", "r") 
       // -------------- Prompt of the conversation ------------
+
 
       if (questionAskingNow != undefined && questionAskingNow != "") {
 
         // -------------- Ask GPT what to do  ------------
-        // promptAskQuestion = `
-        // For the Conversation, the question that the Interviewer asked is: ${questionAskingNow}
-
-        //   Is the User 
-        //   1) YES answer the question
-        //   2) NO didn't answer the question 
-
-        //   you can only answer (YES, NO)
-
-        //   Result: 
-        // `
         promptAskQuestion = `
         Question: ${questionAskingNow}
 
@@ -951,7 +1241,6 @@ module.exports = {
           Result: 
         `
 
-
         promptQuestionAskedN = prompt_conversation + "\n\n" + promptAskQuestion,
 
 
@@ -960,9 +1249,7 @@ module.exports = {
         printC(promptQuestionAskedN, "1", "promptQuestionAskedN", "p");
 
 
-        responseGPTchat = await useGPTchatSimple(
-          promptQuestionAskedN,
-          );
+        responseGPTchat = await useGPTchatSimple(promptQuestionAskedN,);
 
         
 
@@ -1040,18 +1327,20 @@ module.exports = {
     printC(timesAsked, "2", "timesAsked", "g");
 
 
-    let askGPT = ""
+    printC(lastMessage, "2", "lastMessage", "y");
+    printC(nextQuestion, "2", "nextQuestion", "y");
+    printC(questionAskingNowA, "2", "questionAskingNowA", "y");
+
 
     let reply
     if (timesAsked == 1){
-
-      // reply = questionAskingNowA
+      // NEW Question
 
       if (questionAskingNowA == "Finish the conversation"){
         reply = "Thank you for taking time to talk to me, I will let you know with the results ASAP"
       } else {
         if (useMemory == true){
-          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,3)
+          reply = await modifyQuestionFromCVMemory(questionAskingNowA,lastMessage,userID,3,positionID)
         } else {
           reply = questionAskingNowA
         }
@@ -1060,82 +1349,22 @@ module.exports = {
     } else {
 
       if (flagFirstTime == true){
-        console.log("useMemory = " , useMemory)
+        // NEW Question
         if (useMemory == true){
-          reply = await modifyQuestionFromCVMemory(questionAskingNowA,userID,3)
+          reply = await modifyQuestionFromCVMemory(questionAskingNowA,lastMessage,userID,3,positionID)
         } else {
           reply = questionAskingNowA
         }
       } else {
+        // Ask Again Question
 
+        let askGPT = ""
 
-        // askGPT = `DIRECTION: You are an Interviewer, you need to reply to the candidate with a small and consise way 
-      
-        //   - if there is a NEW QUESITON ASK always focus on asking the NEW QUESTION and nothing else!
-        //   - if there is a QUESTION ASK AGAIN you can either ask question again or ask more details about it based on the context
-        //   `
-
-        console.log("useMemory = ", useMemory)
         if (useMemory == true){
-          let memoriesCVPrompt = ""
-          if (userID){
-            filter = {
-              label: "CV_user_memory",
-              _id: userID,
-            }
-
-            memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,3)
-          }
-
-          printC(memoriesCVPrompt, "2", "memoriesCVPrompt", "g")
-
-          askGPT = `You are an Interviewer, you need to reply to the candidate with goal to deeply understand the candidate
-
-            - We provide memory within (delimited by <>)
-           - The memory might be completely irrelevant! Don't use it if it doesn't add value
-       
-            < ${memoriesCVPrompt} > 
-
-            - You have the Conversation between the Interviewer and the Candidate (delimited by <>)            
-
-            < ${prompt_conversation} >
-
-            - The original question that you need to collect information is (delimited by <>) 
-
-            < ${nextQuestion} >
-
-            - your goal is to collect the information from the candidate for this specific question
-            - First make a small acknowledgment of the answer with 1-8 words, if it applies
-            - You can only ask 1 question at a time, 
-            - you should use a maximum 1-2 sentence
-            
-            Interviewer Reply: 
-            `
-        } else {
-
-          askGPT = `You are an Interviewer, you need to reply to the candidate with goal to deeply understand the candidate
-
-          - You have the Conversation between the Interviewer and the Candidate (delimited by <>)            
-
-          < ${prompt_conversation} >
-
-          - The original question that you need to collect information is (delimited by <>) 
-
-          < ${nextQuestion} >
-
-          - your goal is to collect the information from the candidate for this specific question
-          - First make a small acknowledgment of the answer with 1-8 words, if it applies
-          - You can only ask 1 question at a time, 
-          - you should use a maximum 1-2 sentence
-          
-          Interviewer Reply: 
-            `
+          askGPT = await askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,userID,2,positionID)
+        }else {
+          askGPT = await askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,userID,0,positionID)
         }
-
-
-        // askGPT += prompt_conversation + "\n\n" + nextQuestion + "\n\n"
-        // askGPT += "\n\n Always ask the question that were requested above!"
-        // askGPT += "\n\n Reply:"
 
         
         printC(askGPT, "4", "askGPT", "p")
@@ -1143,10 +1372,6 @@ module.exports = {
         reply = await useGPTchatSimple(askGPT);
       }
     }
-
-
-
-    
 
       printC(reply, "4", "reply", "r");
     //  -------------- Move to next question ------------
@@ -1170,6 +1395,8 @@ module.exports = {
     }
 
 
+    reply = reply.replace(/"/g, '');
+
     
       return {
         reply: reply,
@@ -1182,9 +1409,9 @@ module.exports = {
     } catch (err) {
       throw new ApolloError(
         err.message,
-        err.extensions?.code || "interviewEdenAI",
+        err.extensions?.code || "interviewEdenAI_old",
         {
-          component: "aiQuery > interviewEdenAI",
+          component: "aiQuery > interviewEdenAI_old",
         }
       );
     }

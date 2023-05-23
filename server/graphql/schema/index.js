@@ -10,6 +10,7 @@ const projectUpdateType = require("./projectUpdate.graphql");
 const skillsType = require("./skills.graphql");
 const nodeType = require("./node.graphql");
 const conversationType = require("./conversation.graphql");
+const positionType = require("./position.graphql");
 const companyType = require("./company.graphql");
 const questionsEdenAI = require("./questionsEdenAI.graphql");
 const SkillCategoryType = require("./skillCategory.graphql");
@@ -23,7 +24,7 @@ const roomType = require("./rooms.graphql");
 const subscription = require("./subscription.graphql");
 const chatType = require("./chat.graphql");
 const aiType = require("./ai.graphql");
-const edenMetricsType = require("./edenMetrics.graphql")
+const edenMetricsType = require("./edenMetrics.graphql");
 
 const typeDefs = gql`
   ${query}
@@ -33,6 +34,7 @@ const typeDefs = gql`
   ${nodeType}
   ${conversationType}
   ${questionsEdenAI}
+  ${positionType}
   ${companyType}
   ${memberType}
   ${endorsementType}

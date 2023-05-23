@@ -1,20 +1,20 @@
 const { Conversation } = require("../../../models/conversationModel");
-const { Company } = require("../../../models/companyModel");
+const { Position } = require("../../../models/positionModel");
 
 const { ApolloError } = require("apollo-server-express");
 
 module.exports = {
-  findCompany: async (parent, args, context, info) => {
+  findPosition: async (parent, args, context, info) => {
     const { _id } = args.fields;
-    console.log("Query > findCompany > args.fields = ", args.fields);
+    console.log("Query > findPosition > args.fields = ", args.fields);
 
     if (!_id) throw new ApolloError("ID is required");
 
     try {
-      // const collection = Company.collection;
+      // const collection = Position.collection;
 
       // // Rename the collection
-      // collection.rename('companies', { dropTarget: true }, (err, result) => {
+      // collection.rename('positions', { dropTarget: true }, (err, result) => {
       //   if (err) {
       //     console.error(err);
       //   } else {
@@ -24,26 +24,26 @@ module.exports = {
 
       // find conversaiotn
       console.log("change = ");
-      let companyData = await Company.findOne({ _id: _id });
-      console.log("change = 1", companyData);
+      let positionData = await Position.findOne({ _id: _id });
+      console.log("change = 1", positionData);
 
-      if (!companyData) throw new ApolloError("Company not found");
+      if (!positionData) throw new ApolloError("Position not found");
 
-      console.log("companyData = ", companyData);
+      console.log("positionData = ", positionData);
       // sdf9
 
-      return companyData;
+      return positionData;
     } catch (err) {
       throw new ApolloError(
         err.message,
-        err.extensions?.code || "findCompany",
-        { component: "companyQuery > findCompany" }
+        err.extensions?.code || "findPosition",
+        { component: "positionQuery > findPosition" }
       );
     }
   },
-  findCompanies: async (parent, args, context, info) => {
+  findPositions: async (parent, args, context, info) => {
     const { _id } = args.fields;
-    console.log("Query > findCompanies > args.fields = ", args.fields);
+    console.log("Query > findPositions > args.fields = ", args.fields);
 
     console.log("eloi is cool = ");
     let searchQuery_and = [];
@@ -61,14 +61,14 @@ module.exports = {
       searchQuery = {};
     }
     try {
-      let companyData = await Company.find(searchQuery);
+      let positionData = await Position.find(searchQuery);
 
-      return companyData;
+      return positionData;
     } catch (err) {
       throw new ApolloError(
         err.message,
-        err.extensions?.code || "findCompanies",
-        { component: "companyQuery > findCompanies" }
+        err.extensions?.code || "findPositions",
+        { component: "positionQuery > findPositions" }
       );
     }
   },

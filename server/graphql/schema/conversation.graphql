@@ -3,7 +3,8 @@ module.exports = `
     type Conversation {
         _id: ID
         userID: String, 
-        convKey: String, 
+        convKey: String,
+        positionID: String, 
 
         #  conv: [messageChat],
         conversation: [conversationType],

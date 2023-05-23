@@ -30,8 +30,8 @@ const memberSchema = mongoose.Schema({
     },
   },
 
-  companiesApplied: [{
-    companyID: mongoose.Schema.ObjectId,
+  positionsApplied: [{
+    positionID: mongoose.Schema.ObjectId,
   }],
 
   

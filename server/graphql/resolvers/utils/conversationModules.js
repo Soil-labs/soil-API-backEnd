@@ -1,7 +1,7 @@
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { Conversation } = require("../../../models/conversationModel");
 const { Members } = require("../../../models/membersModel");
-const { Company } = require("../../../models/companyModel");
+const { Position } = require("../../../models/positionModel");
 
 
 const { printC } = require("../../../printModule");
@@ -92,31 +92,31 @@ async function updateAnsweredQuestionFunc(resultConv,conversation,questionAsking
 
 }
 
-async function updateCompanyInterviewedOfUser(userID) {
+async function updatePositionInterviewedOfUser(userID) {
 
     console.log("userID = " , userID)
 
 
-    userData = await Members.findOne({ _id: userID }).select('_id discordName companiesApplied')
+    userData = await Members.findOne({ _id: userID }).select('_id discordName positionsApplied')
 
     console.log("userData = " , userData)
 
-    companiesAppliedIDs = userData.companiesApplied.map(company => company.companyID)
+    positionsAppliedIDs = userData.positionsApplied.map(position => position.positionID)
 
-    console.log("companiesAppliedIDs = " , companiesAppliedIDs)
+    console.log("positionsAppliedIDs = " , positionsAppliedIDs)
 
-    companiesT = await Company.find({ _id: { $in: companiesAppliedIDs } })
+    positionsT = await Position.find({ _id: { $in: positionsAppliedIDs } })
 
-    console.log("companiesT = " , companiesT)
+    console.log("positionsT = " , positionsT)
 
     
-    for (let i = 0; i < companiesT.length; i++) {
-        const companyData = companiesT[i];
+    for (let i = 0; i < positionsT.length; i++) {
+        const positionData = positionsT[i];
         
-        let candidatesN = await updateEmployees(companyData.candidates, [{userID: userID}],"userID");
+        let candidatesN = await updateEmployees(positionData.candidates, [{userID: userID}],"userID");
 
-        let companyDataN = await Company.findOneAndUpdate(
-            { _id: companyData._id },
+        let positionDataN = await Position.findOneAndUpdate(
+            { _id: positionData._id },
             { 
               candidates: candidatesN,
               candidatesReadyToDisplay: false 
@@ -140,11 +140,13 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
         else return -1
         
       });
-      if (index !== -1) {
-        arr1[index] = {
-          ...employee2,
-          readyToDisplay: false,
-        }
+      if (index != -1) {
+        // arr1[index] = {
+        //   ...employee2,
+        //   readyToDisplay: false,
+        // }
+        arr1[index].readyToDisplay = false
+        arr1[index].userID = employee2.userID
       } else {
         arr1.push({
           ...employee2,
@@ -159,7 +161,7 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
   }
 
 
-async function findAndUpdateConversationFunc(userID,conversation) {
+async function findAndUpdateConversationFunc(userID,conversation,positionID) {
 
     convKey = await concatenateFirstTwoMessages(conversation);
 
@@ -177,6 +179,7 @@ async function findAndUpdateConversationFunc(userID,conversation) {
       existingConversation.conversation = conversation;
       existingConversation.updatedAt = Date.now();
       existingConversation.summaryReady = false;
+      existingConversation.positionID = positionID;
 
       resultConv = await existingConversation.save();
 
@@ -187,6 +190,7 @@ async function findAndUpdateConversationFunc(userID,conversation) {
         convKey,
         userID,
         conversation,
+        positionID,
         summaryReady: false,
         summary: [],
         updatedAt: Date.now(),
@@ -341,5 +345,5 @@ module.exports = {
     updateAnsweredQuestionFunc,
     findAndUpdateConversationFunc,
     findSummaryOfAnswers,
-    updateCompanyInterviewedOfUser,
+    updatePositionInterviewedOfUser,
 };

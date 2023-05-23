@@ -53,17 +53,25 @@ const {
 const { addQuestionToEdenAI } = require("./mutation/questionsEdenAIMutation");
 
 const {
+  updatePosition,
+  updateUrl,
+  addQuestionsToAskPosition,
+  interviewQuestionCreationUser,
+  deleteQuestionsToAskPosition,
+  addCandidatesPosition,
+  deletePositionCandidate,
+  addConvRecruiterToPosition,
+  updatePositionUserAnswers,
+  updatePositionConvRecruiter,
+  createTalentListPosition,
+  updateUsersTalentListPosition,
+  addNodesToPosition,
+} = require("./mutation/positionMutation");
+
+const {
   updateCompany,
+  updateUrlCompany,
   addEmployeesCompany,
-  addQuestionsToAskCompany,
-  deleteQuestionsToAskCompany,
-  addCandidatesCompany,
-  addConvRecruiterToCompany,
-  updateCompanyUserAnswers,
-  updateCompanyConvRecruiter,
-  createTalentListCompany,
-  updateUsersTalentListCompany,
-  addNodesToCompany,
 } = require("./mutation/companyMutation");
 
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
@@ -114,7 +122,6 @@ const {
   addMessage,
   storeLongTermMemory,
   storeLongTermMemorySummary,
-  websiteToMemoryCompany,
   saveCVtoUser,
   autoUpdateUserInfoFromCV,
   addMessages,
@@ -189,18 +196,25 @@ module.exports = {
     // ------------- QUESTION EDEN AI MUTATION -----------------
     addQuestionToEdenAI,
 
+    // ------------- POSITION MUTATION -----------------
+    updatePosition,
+    updateUrl,
+    addQuestionsToAskPosition,
+    interviewQuestionCreationUser,
+    deleteQuestionsToAskPosition,
+    addCandidatesPosition,
+    deletePositionCandidate,
+    addConvRecruiterToPosition,
+    updatePositionUserAnswers,
+    updatePositionConvRecruiter,
+    createTalentListPosition,
+    updateUsersTalentListPosition,
+    addNodesToPosition,
+
     // ------------- COMPANY MUTATION -----------------
     updateCompany,
+    updateUrlCompany,
     addEmployeesCompany,
-    addQuestionsToAskCompany,
-    deleteQuestionsToAskCompany,
-    addCandidatesCompany,
-    addConvRecruiterToCompany,
-    updateCompanyUserAnswers,
-    updateCompanyConvRecruiter,
-    createTalentListCompany,
-    updateUsersTalentListCompany,
-    addNodesToCompany,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,
@@ -255,7 +269,10 @@ module.exports = {
     addMessage,
     storeLongTermMemory,
     storeLongTermMemorySummary,
+<<<<<<< HEAD
     websiteToMemoryCompany,
+=======
+>>>>>>> develop
     saveCVtoUser,
     autoUpdateUserInfoFromCV,
     addMessages,
