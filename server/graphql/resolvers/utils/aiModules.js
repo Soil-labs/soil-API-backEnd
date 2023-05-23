@@ -82,6 +82,8 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
       },
     };
 
+    printC(variables, "1", "variables", "r")
+
     res = await request(
       // "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
       "https://soil-api-backend-kgfromaicron.up.railway.app/graphql",

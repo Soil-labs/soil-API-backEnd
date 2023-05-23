@@ -97,8 +97,10 @@ module.exports = {
 
           console.log("userID,positionID = " , userID,positionID)
 
-          CandidateNotesEdenAIAPICallF(userID,positionID)
-          df0
+          if (userID!=undefined && positionID!=undefined) 
+            CandidateNotesEdenAIAPICallF(userID,positionID)
+          // df0
+
 
           // --------------- Calculate candidateNotesEdenAI ---------------
 

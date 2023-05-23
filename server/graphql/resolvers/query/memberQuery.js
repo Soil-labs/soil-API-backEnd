@@ -2874,7 +2874,8 @@ module.exports = {
         }
       }
 
-      // console.log("categoryObj = " , categoryObj)
+      console.log("allNodes = " , allNodes)
+      // s0
       // console.log("groupObj = " , groupObj)
 
 
@@ -2890,6 +2891,9 @@ module.exports = {
         categoryObj[categoryNow._id].percentage = Math.round((categoryObj[categoryNow._id].numNodes / allNodes) * 100);
       }
 
+      // console.log("categoryObj = " , categoryObj)
+      // s1
+
       for (let i = 0; i < groupData.length; i++) {
         let groupNow = groupData[i];
         groupObj[groupNow._id].name = groupNow.name;
@@ -2899,23 +2903,30 @@ module.exports = {
 
       console.log("categoryObj = " , categoryObj)
       console.log("groupObj = " , groupObj)
+      // s2
 
 
       // groupObj to array
       let groupObjArray = [];
       for (let key in groupObj) {
-        groupObjArray.push({
-          categoryID: key,
-          categoryName: groupObj[key].name,
-          percentage: groupObj[key].percentage,
-          nodes: groupObj[key].nodes
-        });
+
+        if (groupObj[key].percentage != undefined){
+          groupObjArray.push({
+            categoryID: key,
+            categoryName: groupObj[key].name,
+            percentage: groupObj[key].percentage,
+            nodes: groupObj[key].nodes
+          });
+        }
       }
 
       // sort groupObjArray
       groupObjArray.sort((a, b) => {
         return b.percentage - a.percentage;
       });
+
+      // console.log("groupObjArray = " , groupObjArray)
+      // s3
 
       // only take the top 8
       groupObjArray = groupObjArray.slice(0, 8);
@@ -2929,6 +2940,10 @@ module.exports = {
       for (let i = 0; i < groupObjArray.length; i++) {
         groupObjArray[i].percentage = Math.round((groupObjArray[i].percentage / totalPercentage) * 100);
       }
+
+      // console.log("groupObjArray = " , groupObjArray)
+
+      // s4
       
 
 
@@ -3189,31 +3204,31 @@ module.exports = {
       Answer:
       `
 
-      // evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
-      // console.log("evaluateNoteCategories = " , evaluateNoteCategories)
-      
-
-
-      evaluateNoteCategories = ` <Category 1: Personal Details>
-      - 11+ years of experience in Computer Vision, Machine Learning, and Robotics
-      - Focused on front-end engineering using React, Tailwind, and Node.js for 5 years
-      - Has experience in team leadership in the field of machine learning
-      - Strengths include having a growth mindset and being quick to innovate
-      - Weaknesses include needing to work on coding skills, specifically cleaning up the database and creating a better environment for other coders to work with
-      
-      <Category 2: Work Culture>
-      - Has experience in team leadership in the field of machine learning
-      - Has a growth mindset and is quick to innovate
-      - Believes in giving back to the position and helping innovate and change lives
-      - Experience with a challenging project focused on complete innovation
-      
-      <Category 3: Interests>
-      - Skilled in React, GraphQL, Next.js, fine-tuning, PyTorch, TensorFlow, and paper reading
-      - Interested in becoming a team lead and eventually a successful CTO`
-
-
-
+      evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
       console.log("evaluateNoteCategories = " , evaluateNoteCategories)
+      
+
+
+      // evaluateNoteCategories = ` <Category 1: Personal Details>
+      // - 11+ years of experience in Computer Vision, Machine Learning, and Robotics
+      // - Focused on front-end engineering using React, Tailwind, and Node.js for 5 years
+      // - Has experience in team leadership in the field of machine learning
+      // - Strengths include having a growth mindset and being quick to innovate
+      // - Weaknesses include needing to work on coding skills, specifically cleaning up the database and creating a better environment for other coders to work with
+      
+      // <Category 2: Work Culture>
+      // - Has experience in team leadership in the field of machine learning
+      // - Has a growth mindset and is quick to innovate
+      // - Believes in giving back to the position and helping innovate and change lives
+      // - Experience with a challenging project focused on complete innovation
+      
+      // <Category 3: Interests>
+      // - Skilled in React, GraphQL, Next.js, fine-tuning, PyTorch, TensorFlow, and paper reading
+      // - Interested in becoming a team lead and eventually a successful CTO`
+      // console.log("evaluateNoteCategories = " , evaluateNoteCategories)
+
+
+
 
       const regex = /<Category\s+\d+:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
       const categoriesT = [];
