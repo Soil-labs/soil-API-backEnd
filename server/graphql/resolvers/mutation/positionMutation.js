@@ -34,6 +34,13 @@ module.exports = {
 
     try {
       let positionData;
+      let companyData = await Company.findOne({ _id: companyID });
+
+      if (!companyData) {
+        throw new ApolloError("Could not find Company", "updatePosition", {
+          component: "positionMutation > updatePosition",
+        });
+      }
       if (_id) {
         positionData = await Position.findOne({ _id });
 
@@ -43,13 +50,6 @@ module.exports = {
         positionData = await new Position({
           name,
           companyID,
-        });
-      }
-      let companyData = await Company.findOne({ _id: companyID });
-
-      if (!companyData) {
-        throw new ApolloError("Could not find Company", "updatePosition", {
-          component: "positionMutation > updatePosition",
         });
       }
 
