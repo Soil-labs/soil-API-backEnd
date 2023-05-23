@@ -269,10 +269,6 @@ module.exports = {
     addMessage,
     storeLongTermMemory,
     storeLongTermMemorySummary,
-<<<<<<< HEAD
-    websiteToMemoryCompany,
-=======
->>>>>>> develop
     saveCVtoUser,
     autoUpdateUserInfoFromCV,
     addMessages,
