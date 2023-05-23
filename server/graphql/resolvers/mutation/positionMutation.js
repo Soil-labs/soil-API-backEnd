@@ -148,6 +148,8 @@ module.exports = {
         userData = await Members.findOne({ _id: userID}).select('_id discordName');
         if (!userData) throw new ApolloError("User not found", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
 
+        const questionsToAsk = positionData.questionsToAsk
+
 
         const questionsToAskID = questionsToAsk.map((question) => question.questionID)
 
