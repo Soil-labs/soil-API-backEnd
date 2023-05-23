@@ -10,11 +10,11 @@ const { ApolloError } = require("apollo-server-express");
 module.exports = {
   Position: {
     company: async (parent, args, context, info) => {
-      console.log("parent = ", parent);
+      // console.log("parent = ", parent);
       try {
         const companyID = parent.companyID;
         companyData = await Company.findOne({ _id: companyID });
-        console.log("companyData = ", companyData);
+        //   console.log("companyData = ", companyData);
         if (companyData) {
           return companyData;
         }
