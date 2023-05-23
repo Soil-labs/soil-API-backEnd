@@ -11,6 +11,8 @@ const { Skills } = require("../../../models/skillsModel");
 const { driver } = require("../../../../server/neo4j_config");
 const { combineResolvers } = require("graphql-resolvers");
 
+const { printC } = require("../../../printModule");
+
 const {
   matchMembersToProject_neo4j,
   matchMembersToProjectRole_neo4j,
@@ -3204,6 +3206,7 @@ module.exports = {
       Answer:
       `
 
+
       evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
       console.log("evaluateNoteCategories = " , evaluateNoteCategories)
       
@@ -3277,6 +3280,249 @@ module.exports = {
         err.message,
         err.extensions?.code || "candidateNotesEdenAI",
         { component: "memberQuery > candidateNotesEdenAI" }
+      );
+    }
+  },
+  candidateNotesComparePositionEdenAI: async (parent, args, context, info) => {
+    const { memberID,positionID } = args.fields;
+    console.log("Query > candidateNotesComparePositionEdenAI > args.fields = ", args.fields);
+
+    if (!memberID) {
+      throw new ApolloError(
+        "memberID is required",
+        { component: "memberQuery > candidateNotesComparePositionEdenAI" }
+      );
+    }
+
+    if (!positionID) {
+      throw new ApolloError(
+        "positionID is required",
+        { component: "memberQuery > candidateNotesComparePositionEdenAI" }
+      );
+    }
+
+    positionData = await Position.findOne({ _id: positionID }).select('_id name candidates');
+
+
+    // find memberData by memberID
+    memberData = await Members.findOne({ _id: memberID }).select('_id discordName');
+
+
+    if (!memberData) {
+      throw new ApolloError(
+        "member is not found",
+        { component: "memberQuery > candidateNotesComparePositionEdenAI" }
+      );
+    }
+
+    console.log("memberData = " , memberData)
+
+    try {
+
+      let convData = await Conversation.find({ userID: memberID }).select('_id userID conversation');
+
+      console.log("convData = " , convData)
+
+      //only take last conversation 
+      let convNow = convData[convData.length - 1]; 
+      // let convNow = convData[convData.length - 3];
+
+      // translate convNow.conversation to string prompt inside object there is role and content
+      let promptConv = "";
+      for (let i = 0; i < convNow.conversation.length; i++) {
+        let convNowNow = convNow.conversation[i];
+        if (convNowNow.role == "assistant")
+          promptConv = promptConv + "Recruiter: " + convNowNow.content + " \n\n";
+        else
+          promptConv = promptConv + "Candidate" + ": " + convNowNow.content + " \n\n";
+      }
+
+      console.log("promptConv = " , promptConv)
+
+      // sdf0
+
+
+      // const noteCategories = [
+      //   "Personal Details",
+      //   "Work Culture",
+      //   "Interests"
+      // ];
+
+      const noteCategories = [
+        "What skills the candidate have that is interested to the position?", 
+        "What industries the candidate have that is interested to the position? ", 
+        "What special skills the candidate has that is a bonus to this position", 
+        "Does the candidate has potential leadership position", 
+        "What is the average salary that the candidate is insterested in?", 
+        "What education the candidate has that is interested to the position?",
+      ]
+        
+
+      // make noteCategories into a string prompt
+      let promptNoteCategory = "";
+      for (let i = 0; i < noteCategories.length; i++) {
+        promptNoteCategory = promptNoteCategory + "- " + noteCategories[i] + " \n\n";
+      }
+
+      console.log("promptNoteCategory = " , promptNoteCategory)
+
+
+      // --------------- Get Position Comparison content -----------
+      let candidateIdx_ = positionData?.candidates?.findIndex((candidate) => candidate.userID.toString() == memberID.toString());
+
+      console.log("candidateIdx_ = " , candidateIdx_)
+
+      let compareCandidatePositionT = ""
+      
+      if (candidateIdx_!=-1 && candidateIdx_!=undefined) {
+        compareCandidatePositionT = positionData.candidates[candidateIdx_].compareCandidatePosition.CVToPosition.content
+      }
+      
+      console.log("compareCandidatePositionT = " , compareCandidatePositionT)
+      // df0
+      // --------------- Get Position Comparison content -----------
+      
+      
+
+      // promptNoteCategoryUser = `
+      // You have as input a conversation between an Recruiter and a Candidate
+      // Conversation (delimiters <>): <${promptConv}>
+
+
+      // Report of Company for the Candidate for this Position (delimiters <>): <${promptConv}>
+
+
+      // The Recruiter Task is to create some Notes for the Candidate for specific Categories
+      // Categories (delimiters <>): <${promptNoteCategory}>
+
+      // - You need make really small bullet points of information about the Candidate for every Category
+      // - Based on the conversation you can make from 0 to 4 bullet points for every Category
+
+      // For example: 
+      //   <Category 1: title>
+      //     - content
+      //     - content
+      //   <Category 2: title>
+      //     - content
+
+      // Answer:
+      // `
+
+      promptNoteCategoryUser = `
+      You have as input a conversation between an Recruiter and a Candidate
+      Conversation (delimiters <>): <${promptConv}>
+
+
+      Report of Company for the Candidate for this Position (delimiters <>): <${compareCandidatePositionT}>
+
+
+      The Recruiter Task is to create a report for the Candidate based on the Company Report and the Conversation
+
+      - You need make really small bullet points of information about the Candidate for every Category
+      - Based on the conversation you can make from 0 to 4 bullet points for every Category
+      - Score how close is the Candidate to the Position from 0 to 10 for each Category
+
+      For example: 
+        <Category 1: Score - title>
+          - content
+          - content
+        <Category 2: Score - title>
+          - content
+
+      Answer:
+      `
+
+      printC(promptConv, "0", "promptConv", "g")
+      printC(compareCandidatePositionT, "0", "compareCandidatePositionT", "g")
+
+
+      evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
+      printC(evaluateNoteCategories, "1", "evaluateNoteCategories", "b");
+      
+      
+
+
+
+
+//       evaluateNoteCategories = ` <Category 1: 6 - Responsibilities of the Candidate>
+//       - Candidate does not have experience with front-end development, but has experience in solving user problems through user research sessions and implementing changes based on feedback
+//       - Candidate's background in product management, product design, testing, and prototyping could contribute to understanding user needs and solving problems
+//       - Candidate's experience in managing teams and establishing relationships with stakeholders could be applied to collaborating with users and understanding their needs
+      
+// <Category 2: 3 - Skills of the Candidate>
+//       - Candidate does not have any knowledge of the specific front-end development technologies listed in the job role
+//       - Candidate has experience in Scrum and Agile frameworks, leadership, communication, and continuous improvement, which could be valuable in a development role
+      
+// <Category 3: 8 - General info of Company>
+//       - Candidate has worked in tech for 5 years, which aligns with the tech industry background required for the position
+//       - Candidate's background in IT and international relations could be relevant to Soil's marketplace for companies and talent
+      
+// <Category 4: 7 - Values of Company>
+//       - Candidate's experience in volunteering and the Future Leaders Exchange Program aligns with Soil's values of innovation and user discovery
+//       - Candidate's experience in managing teams and collaborating with stakeholders could fit well with Soil's fun and collaborative culture.`
+//       console.log("evaluateNoteCategories = " , evaluateNoteCategories)
+
+
+
+      let scoreAll = 0
+      let nAll = 0
+
+
+      const regex = /<Category\s+\d+:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
+      const categoriesT = [];
+      let result;
+      while ((result = regex.exec(evaluateNoteCategories)) !== null) {
+        let reason_score = result[1].trim()
+
+        printC(reason_score, "0", "reason_score", "y")
+        const match = reason_score.match(/(\d+)\s-\s(.*)/);
+
+        const score = match[1];
+        const title = match[2];
+
+        const category = {
+          categoryName: title,
+          score: parseInt(score)*10,
+          reason: result[2].trim().split('\n').map(detail => detail.trim()),
+        };
+        scoreAll += parseInt(score)*10
+        nAll +=1
+
+        categoriesT.push(category);
+      }
+
+      scoreAll = parseInt(scoreAll/nAll)
+
+      // ------------ Save results to position.candidates Mongo ----------
+      const indexC = positionData.candidates.findIndex(candidate => candidate.userID.toString() == memberID.toString());
+
+
+      console.log("indexC = " , indexC)
+      
+      if (indexC != -1) {
+
+        positionData.candidates[indexC].notesInterview = categoriesT;
+        positionData.candidates[indexC].averageScoreNotesInterview = scoreAll;
+        await positionData.save();
+
+      }
+      // ------------ Save results to position.candidates Mongo ----------
+      
+
+      
+
+      console.log("categoriesT = " , categoriesT)
+
+
+
+      return categoriesT;
+
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "candidateNotesComparePositionEdenAI",
+        { component: "memberQuery > candidateNotesComparePositionEdenAI" }
       );
     }
   },

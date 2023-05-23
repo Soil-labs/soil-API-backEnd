@@ -327,6 +327,16 @@ module.exports = `
         memberID: ID
         positionID: ID
     }
+
+    type candidateNotesComparePositionEdenAIOutput {
+        categoryName: String,
+        score: Float,
+        reason: [String],
+    }
+    input candidateNotesComparePositionEdenAIInput {
+        memberID: ID
+        positionID: ID
+    }
     
     type matchProjectRoles {
         matchPercentage: Float,

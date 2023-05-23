@@ -73,6 +73,7 @@ const positionModel = mongoose.Schema({
       score: Number,
       reason: [String],
     }],
+    averageScoreNotesInterview: Number,
     compareCandidatePosition: {
       CVToPosition: {
         content: String,

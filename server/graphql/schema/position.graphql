@@ -70,6 +70,7 @@ module.exports = `
         summaryQuestions: [SummaryQuestionType]
         interviewQuestionsForCandidate: [interviewQuestionsForCandidateType]
         notesInterview: [notesInterviewType]
+        averageScoreNotesInterview: Float
         compareCandidatePosition: compareCandidatePositionType
     }
 
