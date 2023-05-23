@@ -141,6 +141,14 @@ module.exports = {
 
       try {
 
+        positionData = await Position.findOne({ _id: positionID}).select('_id name candidates questionsToAsk positionsRequirements');
+        if (!positionData) throw new ApolloError("Position not found", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
+
+
+        userData = await Members.findOne({ _id: userID}).select('_id discordName');
+        if (!userData) throw new ApolloError("User not found", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
+
+
         const questionsToAskID = questionsToAsk.map((question) => question.questionID)
 
         questionData = await QuestionsEdenAI.find({ _id: questionsToAskID }).select('_id content');
