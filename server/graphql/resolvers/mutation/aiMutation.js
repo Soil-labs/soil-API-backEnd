@@ -195,9 +195,9 @@ module.exports = {
     const { message, userID } = args.fields;
     console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
 
-    // if (!userID) {
-    //   throw new ApolloError("userID is required");
-    // }
+    if (!userID) {
+      throw new ApolloError("userID is required");
+    }
     try {
       promptMemory = `I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. 
         These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. 
@@ -215,7 +215,7 @@ module.exports = {
         
         Here is the string to extract the information from: """${message}"""`;
 
-      summaryBulletPoints = await useGPTchatSimple(prompt, 0);
+      summaryBulletPoints = await useGPTchatSimple(promptMemory, 0);
 
       jobsArr = summaryBulletPoints
         .replace(/\n/g, "")
@@ -286,137 +286,37 @@ module.exports = {
     const { message, userID } = args.fields;
     console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
 
-    // if (!userID) {
-    //   throw new ApolloError("userID is required");
-    // }
+    if (!userID) {
+      throw new ApolloError("userID is required");
+    }
+
+    stringFromWebsite = message;
     try {
-      // const getCombinedSummary = async (websiteString) => {
-      //   const chunks = websiteString.match(/.{1,4000}/g);
-      //   let combinedSummary = "";
+      promptReport = ` You have as input the Details of a Job Position
+      Job Position (delimiters <>): <${stringFromWebsite}>
 
-      //   for (const chunk of chunks) {
-      //     promptSummary =
-      //       "I am giving you multiple strings extracted a website of a company. Give me a short summary about this company, here is the partial string extracted from the website: " +
-      //       chunk;
-      //     const partialSummaryResponse = await useGPTchatSimple(
-      //       promptSummary,
-      //       0.01
-      //     );
-      //     wholeSummary = combinedSummary += partialSummaryResponse;
-      //     console.log(wholeSummary);
-      //   }
-      //   return combinedSummary;
-      // };
 
-      //Rename this
-      // const responseCombinedSummaries = await getCombinedSummary(message);
+      The Recruiter Task is to create a report for the most important info about what skills, qualifications, education, culture fit, personality type, experience etc. the Candidate should have!
 
-      // promptWholisticSummary =
-      //   "I give you a summary that was extracted and combined from a companies website. Your job is to white a more wholistic summary for this company:  " +
-      //   responseCombinedSummaries;
+      - You need make really small bullet points of information about the Candidate for every Category
+      - Based on the conversation you can make from 0 to 4 bullet points for every Category
+      - If no information is found for a category, exclude it from the output, only include information that is found in text
 
-      // const responseWithWholisticSummary = await useGPTchatSimple(
-      //   promptWholisticSummary,
-      //   0.01
-      // );
+      For example: 
+        <Category 1: Score - title>
+          - content
+          - content
+        <Category 2: Score - title>
+          - content
 
-      const questions = [
-        "What are the vision and goals of the company, and which industry does this company belong to?", // "What is a unique trait of your company?",
-        "What are the core values of your company?",
-        "What are you working on right now?",
-        // "What is your short term plan?",
-        // "What is your long term plan?",
-        // "Where do you see your company in 5 years?",
-        // "What are 3 most important traits of a great employee?",
-        // "What do you expect from your employees?",
-        // "How do you treat your employees? What are the benefits?",
-        // "Are there any unique perks or benefits that employees enjoy while working at your company?",
-        "Do you expect your employees to work remotely or from the office?",
-        // "Tell me about growth and professional development opportunities in your company",
-        // "Why are you hiring people now?",
-      ];
+      Answer:`;
 
-      // let answersFromWebsite = [];
+      const report = await useGPTchatSimple(promptReport, 0);
 
-      // for (let i = 0; i < questions.length; i++) {
-      //   promptAnswerQuestion =
-      //     `I will provide you with a summary that came from the company's website, delineated with """ """.
-      //   """${responseWithWholisticSummary}""". Your job is to answer a question, using this summary. If you don't know the answer just say "DON'T KNOW".
-      //   Here is the question: ` + questions[i];
-
-      //   let answers = await useGPTchatSimple(promptAnswerQuestion, 0);
-
-      //   console.log("answer", answers);
-
-      //   answersFromWebsite.push(answer);
-      // }
-
-      promptAnswerQuestions = `I will give you text extracted from a companies website, delineated with """${message}"""". Your job is to use this text to answer a set of question in this array <${questions}>.Only answer the question if you find the information in the text, if you can't find the information, just say "I DON'T KNOW" and DO NOT use any other phrases except for: "I DON'T KNOW".
-      Also, do not provide the questions in the output, only answers without any labels.
-
-      Example: 
-      1. Some answer that you derived from text.
-      2. Some answer that you derived from text.
-      3. I DON'T KNOW
-      4. Some answer that you derived from text.
-      5. ...
-      
-      `;
-
-      const answers = await useGPTchatSimple(promptAnswerQuestions, 0.05);
-
-      console.log("answer", answers);
-
-      // prompt =
-      //   'I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. I want you to find experiences in the CV and combine them with a very brief and laconic description of what was done there + the skills that were associated with that experience, but don\'t list more than 5 skills per category. Do not list experiences, descriptions, or skills separately, only list them in relation to other things. For categories, include things like job, education, project, internship, and article. Only have those categories in the output if you find them in the string.\n\nFollow this strict format:\n• Category: name: explanation(be very brief, use very short sentenses) : skills(no more than 3-5 skills)\n\nExample (but do not include these examples in the output, also do not include the label category in the output):\n(\n• Job: Facebook: worked at this company for 1 year focusing on frontend and backend: C++, React, Node.js\n)\n\nHere is the string to extract the information from:\n' +
-      //   message;
-
-      // summaryBulletPoints = await useGPTchatSimple(prompt, 0);
-
-      // jobsArr = summaryBulletPoints
-      //   .replace(/\n/g, "")
-      //   .split("•")
-      //   .filter((item) => item.trim() !== "");
-
-      // const getUpserts = async () => {
-      //   for (let i = 0; i < jobsArr.length; i++) {
-      //     let embeddings = await createEmbeddingsGPT(jobsArr[i]);
-      //     console.log("embeddings", embeddings); //
-      //     upsertSum = await upsertEmbedingPineCone({
-      //       text: jobsArr[i],
-      //       embedding: embeddings[0],
-      //       _id: userID,
-      //       label: "CV_user_memory",
-      //     });
-      //     console.log("upsertSum=", upsertSum);
-      //   }
-      // };
-
-      // getUpserts();
-      // embed_summary = await createEmbeddingsGPT(summary);
-
-      // let result = [];
-
-      // previousJobs = () => {
-      //   for (let i = 0; i < jobsArr.length; i += 2) {
-      //     result.push({
-      //       job: jobs Arr[i],
-      //       description: jobsArr[i + 1],
-      //     });
-      //   }
-      //   return JSON.stringify(result);
-      // };
-      // upsertDoc = await upsertEmbedingPineCone({
-      //   text: summary,
-      //   embedding: embed_summary[0],
-      //   _id: userID,
-      //   label: "long_term_memory",
-      // });
-
-      // console.log("upsertDoc = ", upsertDoc);
+      console.log("report", report);
 
       return {
-        message: answers,
+        message: report,
         success: true,
       };
     } catch (err) {
@@ -521,8 +421,6 @@ module.exports = {
           userData.cvInfo.cvPreparationBio = true;
         }
 
-        
-
         // ------- Calculate Summary -------
 
         // -------Calculate Previous Jobs -------
@@ -558,8 +456,7 @@ module.exports = {
         if (userData.cvInfo.cvPreparationNodes != true) {
           // if (true) {
 
-          promptCVtoMap =
-            `I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. 
+          promptCVtoMap = `I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. 
             Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.
             Do not have any other words except for skills. 
 
@@ -568,15 +465,12 @@ module.exports = {
             CV Content (delimiters <>): <${cvContent}>
 
             Skills Result:
-            `
+            `;
 
           textForMapping = await useGPT(promptCVtoMap, 0);
 
-
           printC(textForMapping, "3", "textForMapping", "b");
           // sdf00
-          
-
 
           let nodesN = await MessageMapKG_V4APICallF(textForMapping);
 
@@ -670,7 +564,7 @@ module.exports = {
         
         Here is the string to extract the information from: """${cvContent}"""`;
 
-          summaryBulletPoints = await useGPTchatSimple(prompt, 0);
+          summaryBulletPoints = await useGPTchatSimple(promptMemory, 0);
 
           jobsArr = summaryBulletPoints
             .replace(/\n/g, "")

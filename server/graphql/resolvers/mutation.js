@@ -122,6 +122,7 @@ const {
   addMessage,
   storeLongTermMemory,
   storeLongTermMemorySummary,
+  websiteToMemoryCompany,
   saveCVtoUser,
   autoUpdateUserInfoFromCV,
   addMessages,
@@ -269,6 +270,8 @@ module.exports = {
     addMessage,
     storeLongTermMemory,
     storeLongTermMemorySummary,
+    websiteToMemoryCompany,
+
     saveCVtoUser,
     autoUpdateUserInfoFromCV,
     addMessages,
