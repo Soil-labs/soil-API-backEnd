@@ -297,20 +297,19 @@ module.exports = {
       // );
 
       const questions = [
-        "What does your company do?",
-        "What is a unique trait of your company?",
+        "What are the vision and goals of the company, and which industry does this company belong to?", // "What is a unique trait of your company?",
         "What are the core values of your company?",
         "What are you working on right now?",
-        "What is your short term plan?",
-        "What is your long term plan?",
-        "Where do you see your company in 5 years?",
-        "What are 3 most important traits of a great employee?",
-        "What do you expect from your employees?",
-        "How do you treat your employees? What are the benefits?",
-        "Are there any unique perks or benefits that employees enjoy while working at your company?",
+        // "What is your short term plan?",
+        // "What is your long term plan?",
+        // "Where do you see your company in 5 years?",
+        // "What are 3 most important traits of a great employee?",
+        // "What do you expect from your employees?",
+        // "How do you treat your employees? What are the benefits?",
+        // "Are there any unique perks or benefits that employees enjoy while working at your company?",
         "Do you expect your employees to work remotely or from the office?",
-        "Tell me about growth and professional development opportunities in your company",
-        "Why are you hiring people now?",
+        // "Tell me about growth and professional development opportunities in your company",
+        // "Why are you hiring people now?",
       ];
 
       // let answersFromWebsite = [];
@@ -340,7 +339,7 @@ module.exports = {
       
       `;
 
-      const answers = await useGPTchatSimple(promptAnswerQuestions, 0.05, 500);
+      const answers = await useGPTchatSimple(promptAnswerQuestions, 0.05);
 
       console.log("answer", answers);
 
