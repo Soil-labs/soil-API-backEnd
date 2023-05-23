@@ -54,6 +54,7 @@ const {
   NodeDataType,
   QuestionType,
 } = require("./objectResolvers/positionResolver");
+const { Company } = require("./objectResolvers/companyResolver");
 const { SkillCategory } = require("./objectResolvers/skillCategoryResolver");
 const {
   SkillSubCategory,
@@ -110,6 +111,7 @@ module.exports = {
   Graph,
   Rooms,
   RoleTemplate,
+  Company,
   Position,
   CandidateType,
   talentListType,

@@ -39,22 +39,34 @@ module.exports = {
 
         // update
         if (name) positionData.name = name;
-        await positionData.save();
       } else {
         positionData = await new Position({
           name,
           companyID,
         });
+      }
+      let companyData = await Company.findOne({ _id: companyID });
 
-        await positionData.save();
+      if (!companyData) {
+        throw new ApolloError("Could not find Company", "updatePosition", {
+          component: "positionMutation > updatePosition",
+        });
       }
 
-      const companyData = await Company.findOne({ _id: companyID });
+      await positionData.save();
+      if (!companyData.positions.includes(positionData._id.toString())) {
+        const _positions = [...companyData.positions, positionData._id];
+        await Company.findOneAndUpdate(
+          { _id: companyID },
+          { positions: _positions }
+        );
+        companyData = await Company.findOne({ _id: companyID });
+      }
 
       return {
         _id: positionData._id,
         name: positionData.name,
-        company: companyData,
+        companyID: companyData,
       };
     } catch (err) {
       throw new ApolloError(
