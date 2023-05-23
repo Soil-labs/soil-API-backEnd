@@ -45,11 +45,9 @@ const {
   findConversations,
 } = require("./query/conversationQuery");
 
-const {
-  findPosition,
-  findPositions,
-  deletePositionCandidate,
-} = require("./query/positionQuery");
+const { findPosition, findPositions } = require("./query/positionQuery");
+
+const { findCompany, findCompanies } = require("./query/companyQuery");
 
 const { findQuestionEdenAI } = require("./query/questionsEdenAIQuery");
 
@@ -197,7 +195,10 @@ module.exports = {
     // ------------- POSITION QUERY -----------------
     findPosition,
     findPositions,
-    deletePositionCandidate,
+
+    // ------------- COMPANY QUERY -----------------
+    findCompany,
+    findCompanies,
 
     // ------------- QUESTIONS EDEN AI QUERY -----------------
     findQuestionEdenAI,

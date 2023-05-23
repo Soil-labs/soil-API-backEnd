@@ -66,8 +66,10 @@ module.exports = `
            #  ---------- POSITION QUERY -------
             findPosition(fields:findPositionInput): Position
             findPositions(fields:findPositionsInput): [Position]
-            deletePositionCandidate(fields:deletePositionCandidateInput): CandidateType
 
+           #  ---------- COMPANY QUERY -------
+            findCompany(fields:findCompanyInput): Company
+            findCompanies(fields:findCompaniesInput): [Company]
 
 
            #  ---------- QUESTIONS EDENAI QUERY -------

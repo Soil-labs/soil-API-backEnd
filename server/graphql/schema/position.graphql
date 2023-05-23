@@ -4,6 +4,7 @@ module.exports = `
         _id: ID
         name: String
         url: String
+        company: Company
         candidatesReadyToDisplay: Boolean
         employees: [EmployeeType]
         questionsToAsk: [QuestionType]
@@ -95,6 +96,7 @@ module.exports = `
     input updatePositionInput {
         _id: ID
         name: String
+        companyID: ID
     }
     
     input updateUrlInput {
@@ -118,11 +120,11 @@ module.exports = `
     }
 
     input findPositionInput {
-        _id: [ID],
+        _id: ID,
     }
 
     input findPositionsInput {
-        _id: ID,
+        _id: [ID],
     }
     input deletePositionCandidateInput {
         positionID:  ID,

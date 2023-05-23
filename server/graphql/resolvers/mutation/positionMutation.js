@@ -28,7 +28,7 @@ const { arrayToObj } = require("../utils/endorsementModules");
 
 module.exports = {
   updatePosition: async (parent, args, context, info) => {
-    const { _id, name } = args.fields;
+    const { _id, name, companyID } = args.fields;
     console.log("Mutation > updatePosition > args.fields = ", args.fields);
 
     try {
@@ -42,14 +42,18 @@ module.exports = {
       } else {
         positionData = await new Position({
           name,
+          companyID,
         });
 
         await positionData.save();
       }
 
+      const companyData = await Company.findOne({ _id: companyID });
+
       return {
         _id: positionData._id,
         name: positionData.name,
+        company: companyData,
       };
     } catch (err) {
       throw new ApolloError(
@@ -368,54 +372,6 @@ module.exports = {
       );
     }
   },
-  addEmployeesPosition: async (parent, args, context, info) => {
-    const { positionID, employees } = args.fields;
-    console.log(
-      "Mutation > addEmployeesPosition > args.fields = ",
-      args.fields
-    );
-
-    if (!employees)
-      throw new ApolloError("Employees is required", "addEmployeesPosition", {
-        component: "positionMutation > addEmployeesPosition",
-      });
-
-    if (!positionID)
-      throw new ApolloError("Position ID is required", "addEmployeesPosition", {
-        component: "positionMutation > addEmployeesPosition",
-      });
-
-    positionData = await Position.findOne({ _id: positionID });
-
-    if (!positionData)
-      throw new ApolloError("Position not found", "addEmployeesPosition", {
-        component: "positionMutation > addEmployeesPosition",
-      });
-
-    try {
-      let compEmployees = await updateEmployees(
-        positionData.employees,
-        employees
-      );
-
-      console.log("compEmployees = ", compEmployees);
-
-      // find one and updates
-      let positionDataN = await Position.findOneAndUpdate(
-        { _id: positionID },
-        { employees: compEmployees },
-        { new: true }
-      );
-
-      return positionDataN;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "addEmployeesPosition",
-        { component: "positionMutation > addEmployeesPosition" }
-      );
-    }
-  },
   addQuestionsToAskPosition: async (parent, args, context, info) => {
     const { positionID } = args.fields;
     let { questionsToAsk } = args.fields;
@@ -584,6 +540,48 @@ module.exports = {
         err.message,
         err.extensions?.code || "addCandidatesPosition",
         { component: "positionMutation > addCandidatesPosition" }
+      );
+    }
+  },
+  deletePositionCandidate: async (parent, args, context, info) => {
+    const { positionID, userID } = args.fields;
+    console.log(
+      "Query > deletePositionCandidate > args.fields = ",
+      args.fields
+    );
+
+    if (!positionID) throw new ApolloError("positionID is required");
+
+    if (!userID) throw new ApolloError("userID is required");
+
+    try {
+      let positionData = await Position.findOne({ _id: positionID }).select(
+        "_id candidates"
+      );
+
+      if (!positionData) throw new ApolloError("Position not found");
+
+      console.log("positionData = ", positionData);
+
+      // find the positionData.candidates userID and return it
+
+      // const candidate = positionData.candidates.find(candidate => candidate.userID.toString() == userID.toString());
+      const index = positionData.candidates.findIndex(
+        (candidate) => candidate.userID.toString() == userID.toString()
+      );
+
+      positionData.candidates[index].interviewQuestionsForCandidate = [];
+
+      positionData = await positionData.save();
+
+      // console.log("candidate = " , candidate)
+
+      return positionData.candidates[index];
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "deletePositionCandidate",
+        { component: "positionQuery > deletePositionCandidate" }
       );
     }
   },

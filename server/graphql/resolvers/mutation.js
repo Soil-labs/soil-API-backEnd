@@ -60,6 +60,7 @@ const {
   interviewQuestionCreationUser,
   deleteQuestionsToAskPosition,
   addCandidatesPosition,
+  deletePositionCandidate,
   addConvRecruiterToPosition,
   updatePositionUserAnswers,
   updatePositionConvRecruiter,
@@ -67,6 +68,12 @@ const {
   updateUsersTalentListPosition,
   addNodesToPosition,
 } = require("./mutation/positionMutation");
+
+const {
+  updateCompany,
+  updateUrlCompany,
+  addEmployeesCompany,
+} = require("./mutation/companyMutation");
 
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
 const { updateServer } = require("./mutation/serverMutation");
@@ -193,17 +200,22 @@ module.exports = {
     // ------------- POSITION MUTATION -----------------
     updatePosition,
     updateUrl,
-    addEmployeesPosition,
     addQuestionsToAskPosition,
     interviewQuestionCreationUser,
     deleteQuestionsToAskPosition,
     addCandidatesPosition,
+    deletePositionCandidate,
     addConvRecruiterToPosition,
     updatePositionUserAnswers,
     updatePositionConvRecruiter,
     createTalentListPosition,
     updateUsersTalentListPosition,
     addNodesToPosition,
+
+    // ------------- COMPANY MUTATION -----------------
+    updateCompany,
+    updateUrlCompany,
+    addEmployeesCompany,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,
