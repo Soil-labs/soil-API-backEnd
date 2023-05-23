@@ -37,6 +37,7 @@ module.exports = `
             memberPieChartNodeCategories(fields:memberPieChartNodeCategoriesInput): [memberPieChartNodeCategoriesOutput]
             memberRadioChartCharacterAttributes(fields:memberRadioChartCharacterAttributesInput): [memberRadioChartCharacterAttributesOutput]
             candidateNotesEdenAI(fields:candidateNotesEdenAIInput): [candidateNotesEdenAIOutput]
+            candidateNotesComparePositionEdenAI(fields:candidateNotesComparePositionEdenAIInput): [candidateNotesComparePositionEdenAIOutput]
             matchNodesToProjectRoles(fields:matchNodesToProjectRolesInput): [matchSkillsToProjectsOutput]
             matchNodesToProjectRoles_old(fields:matchNodesToProjectRolesInput): [matchSkillsToProjectsOutput]
 

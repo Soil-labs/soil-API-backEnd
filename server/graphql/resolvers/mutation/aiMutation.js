@@ -357,7 +357,6 @@ module.exports = {
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
 
-        let filterUpdate = {};
 
         // ------- Calculate Summary -------
         if (userData.cvInfo.cvPreparationBio != true) {
@@ -373,10 +372,9 @@ module.exports = {
 
           userData.cvInfo.cvPreparationBio = true;
         }
-
-        
-
         // ------- Calculate Summary -------
+
+
 
         // -------Calculate Previous Jobs -------
         if (userData.cvInfo.cvPreparationPreviousProjects != true) {
@@ -428,9 +426,7 @@ module.exports = {
 
           printC(textForMapping, "3", "textForMapping", "b");
           // sdf00
-          
-
-
+        
           let nodesN = await MessageMapKG_V4APICallF(textForMapping);
 
           printC(nodesN, "3", "nodesN", "b");
