@@ -44,7 +44,6 @@ module.exports = {
       if (_id) {
         positionData = await Position.findOne({ _id });
 
-        // update
         if (name) positionData.name = name;
       } else {
         positionData = await new Position({
