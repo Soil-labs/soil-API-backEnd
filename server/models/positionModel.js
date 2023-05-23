@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-
 const positionModel = mongoose.Schema({
   name: String,
+  url: String,
+  companyID: mongoose.Schema.ObjectId,
   employees: [{
     typeT: String,
     userID: String,

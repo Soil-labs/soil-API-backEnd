@@ -3,8 +3,9 @@ module.exports = `
     type Position {
         _id: ID
         name: String
+        url: String
+        company: Company
         candidatesReadyToDisplay: Boolean
-        employees: [EmployeeType]
         questionsToAsk: [QuestionType]
         positionsRequirements: positionsRequirementsType
         nodes: [NodeDataType]
@@ -51,10 +52,6 @@ module.exports = `
         nodeData: Node
     }
 
-    type EmployeeType {
-        typeT: String
-        user: Members
-    }
 
     type QuestionType {
         question: QuestionsEdenAI
@@ -116,11 +113,12 @@ module.exports = `
     input updatePositionInput {
         _id: ID
         name: String
+        companyID: ID
     }
-
-    input EmployeeTypeInput {
-        typeT: String
-        userID: String
+    
+    input updateUrlInput {
+        positionID: ID
+        url: String
     }
 
     input QuestionTypeInput {
@@ -134,20 +132,15 @@ module.exports = `
     }
 
     input findPositionInput {
-        _id: [ID],
+        _id: ID,
     }
 
     input findPositionsInput {
-        _id: ID,
+        _id: [ID],
     }
     input deletePositionCandidateInput {
         positionID:  ID,
         userID: ID,
-    }
-
-    input addEmployeesPositionInput {
-        positionID: ID
-        employees: [EmployeeTypeInput]
     }
 
     input addQuestionsToAskPositionInput {
