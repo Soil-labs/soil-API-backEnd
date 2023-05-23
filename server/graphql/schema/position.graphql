@@ -6,7 +6,6 @@ module.exports = `
         url: String
         company: Company
         candidatesReadyToDisplay: Boolean
-        employees: [EmployeeType]
         questionsToAsk: [QuestionType]
         nodes: [NodeDataType]
         convRecruiter: [convRecruiterType]
@@ -48,10 +47,6 @@ module.exports = `
         nodeData: Node
     }
 
-    type EmployeeType {
-        typeT: String
-        user: Members
-    }
 
     type QuestionType {
         question: QuestionsEdenAI
@@ -104,11 +99,6 @@ module.exports = `
         url: String
     }
 
-    input EmployeeTypeInput {
-        typeT: String
-        userID: String
-    }
-
     input QuestionTypeInput {
         questionID: ID
         questionContent: String
@@ -129,11 +119,6 @@ module.exports = `
     input deletePositionCandidateInput {
         positionID:  ID,
         userID: ID,
-    }
-
-    input addEmployeesPositionInput {
-        positionID: ID
-        employees: [EmployeeTypeInput]
     }
 
     input addQuestionsToAskPositionInput {
