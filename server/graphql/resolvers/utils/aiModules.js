@@ -282,6 +282,8 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
   let interviewQuestionsForCandidate = []
 
+  questionData = await QuestionsEdenAI.find({ _id: questionsToAskID }).select('_id content');
+
   for (let i=0;i<improvedQuestionsArray.length;i++){
     const improvedQuestion = improvedQuestionsArray[i];
 
@@ -290,8 +292,8 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
 
     interviewQuestionsForCandidate.push({
-      originalQuestionID: questionData[i]._id,
-      originalContent: questionData[i].content,
+      originalQuestionID: questionData[i]?._id,
+      originalContent: questionData[i]?.content,
       personalizedContent: improvedQuestion,
     })
   }
@@ -922,19 +924,21 @@ function chooseAPIkey(chooseAPI="") {
     let apiKey = chooseAPI;
     while (!success && retries < 3) {
       try {
+        console.log("TRY OPENAI = " , apiKey)
         const titleSkillSummaryRes = await onlyGPTchat(prompt, temperature, apiKey);
         success = true;
       } catch (e) {
-        if (e.response.status === 429) {
+        console.log("Error OpenAI = " , e.response.status)
+        // if (e.response.status == 429) {
           // Sleep for a while before trying again
           await new Promise(resolve => setTimeout(resolve, 5000));
           // Switch to the other API key
           apiKey = apiKey === "API 1" ? "API 2" : "API 1";
-        } else {
-          // Handle other exceptions here
-          console.error("Error:", e);
-          break;
-        }
+        // } else {
+        //   // Handle other exceptions here
+        //   console.error("Error:", e);
+        //   break;
+        // }
       }
       retries++;
     }
