@@ -56,6 +56,18 @@ module.exports = `
 
     }
 
+    input websiteToMemoryCompanyInput {
+        message: String
+        userID: ID
+
+    }
+
+    type websiteToMemoryCompanyOutput {
+        success: Boolean
+        message: String
+
+    }
+
     input saveCVtoUserInput {
         cvContent: String
         userID: ID
