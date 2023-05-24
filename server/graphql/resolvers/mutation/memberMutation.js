@@ -4,6 +4,8 @@ const { Skills } = require("../../../models/skillsModel");
 const { Projects } = require("../../../models/projectsModel");
 const { RoleTemplate } = require("../../../models/roleTemplateModal");
 const { EdenMetrics } = require("../../../models/edenMetrics");
+const { Position } = require("../../../models/positionModel");
+
 const axios = require("axios");
 
 const {printC} = require("../../../printModule")
@@ -1364,7 +1366,29 @@ module.exports = {
 
         if (!memberData) throw new ApolloError("memberID not found");
 
-        // console.log("memberData = " , memberData)
+
+        // ------------ Find Positions that is subscribed to ----------
+        let positionsData = await Position.find({
+          "candidates.userID": memberID,
+        }).select('_id candidates')
+
+
+        for (let i = 0; i < positionsData.length; i++) {
+          let positionNow = positionsData[i];
+
+          // find index of the candidate
+          let index_ = positionNow.candidates.findIndex(
+            (x) => x.userID.toString() == memberID.toString()
+          );
+
+
+          // remove the candidate
+          positionNow.candidates.splice(index_, 1);
+
+          await positionNow.save();
+
+        }
+        // ------------ Find Positions that is subscribed to ----------
 
         // get all nodes from memberData.nodes
         let nodesData = await Node.find({
