@@ -319,27 +319,27 @@ module.exports = {
 
       console.log("report", report);
 
-      const regex = /<Category\s+\d+:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
-      const categoriesT = [];
-      let result;
-      while ((result = regex.exec(report)) !== null) {
-        const category = {
-          categoryName: result[1].trim(),
-          score: -1,
-          reason: result[2]
-            .trim()
-            .split("\n")
-            .map((detail) => detail.trim()),
-        };
-        categoriesT.push(result);
-      }
+      // const regex = /<Category\s+\d+:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
+      // const categoriesT = [];
+      // let result;
+      // while ((result = regex.exec(report)) !== null) {
+      //   const category = {
+      //     categoryName: result[1].trim(),
+      //     score: -1,
+      //     reason: result[2]
+      //       .trim()
+      //       .split("\n")
+      //       .map((detail) => detail.trim()),
+      //   };
+      //   categoriesT.push(result);
+      // }
 
-      console.log("categoriesT.join()", categoriesT.join(""));
+      // console.log("categoriesT.join()", categoriesT.join(""));
 
-      reportToString = categoriesT.join("");
+      // reportToString = categoriesT.join("");
 
       return {
-        report: reportToString,
+        report: report,
         success: true,
       };
     } catch (err) {
