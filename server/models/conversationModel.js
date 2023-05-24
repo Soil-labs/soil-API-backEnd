@@ -1,36 +1,44 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-
 const conversationSchema = mongoose.Schema({
-  userID: String, 
+  userID: String,
   convKey: String, // part of first 3 messages concatenated
-  positionID: String, 
+  positionID: String,
 
-  conversation: [{
-    role: String, // user or bot
-    content: String,
-  }],
+  conversation: [
+    {
+      role: String, // user or bot
+      content: String,
+      date: Date,
+    },
+  ],
 
   summaryReady: Boolean,
 
   summary: [String],
-  summary: [{
-    pineConeID: String,
-    content: String,
-  }],
-
-  questionsAnswered: [{
-    questionID: mongoose.Schema.ObjectId,
-    questionContent: String,
-    subConversationAnswer: [{
-      role: String, // user or bot
+  summary: [
+    {
+      pineConeID: String,
       content: String,
-    }],
-    summaryOfAnswer: String,
-    summaryOfAnswerSmall: String,
-  }],
-  
+    },
+  ],
+
+  questionsAnswered: [
+    {
+      questionID: mongoose.Schema.ObjectId,
+      questionContent: String,
+      subConversationAnswer: [
+        {
+          role: String, // user or bot
+          content: String,
+        },
+      ],
+      summaryOfAnswer: String,
+      summaryOfAnswerSmall: String,
+    },
+  ],
+
   updatedAt: Date,
 });
 

@@ -56,6 +56,18 @@ module.exports = `
 
     }
 
+    input websiteToMemoryCompanyInput {
+        message: String
+        userID: ID
+
+    }
+
+    type websiteToMemoryCompanyOutput {
+        success: Boolean
+        message: String
+
+    }
+
     input saveCVtoUserInput {
         cvContent: String
         userID: ID
@@ -200,6 +212,7 @@ module.exports = `
     input messageChat {
         role: String
         content: String
+        date: Date
     }
 
     input edenGPTreplyChatAPIInput {
@@ -302,6 +315,7 @@ module.exports = `
     
     type interviewEdenAIOutput {
         reply: String
+        date: Date
         conversationID: ID
         questionAskingNow: String
         unansweredQuestions: [String]

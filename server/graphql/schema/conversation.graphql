@@ -33,6 +33,7 @@ module.exports = `
     type conversationType {
         role: String
         content: String
+        date: Date
     }
 
     input updateConversationInput {
