@@ -1,5 +1,6 @@
 const { AI } = require("../../../models/aiModel");
 const { Members } = require("../../../models/membersModel");
+const { Position } = require("../../../models/positionModel");
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
 const { Configuration, OpenAIApi } = require("openai");
@@ -292,6 +293,8 @@ module.exports = {
 
     let userData = await Members.findOne({ _id: userID });
 
+    let positionData = await Position.findOne({ _id: positionID }).select('_id candidates');
+
     if (!userData) {
       throw new ApolloError("User not found");
     }
@@ -311,6 +314,22 @@ module.exports = {
         },
         { new: true }
       );
+
+      // ----------------- add candidate to position -----------------
+      let index_ = positionData.candidates.findIndex(
+        (x) => x.userID.toString() == userID.toString()
+      );
+
+      if (index_ == -1) {
+        positionData.candidates.push({
+          userID: userID,
+        })
+
+        await positionData.save();
+      }
+      // ----------------- add candidate to position -----------------
+
+
 
       InterviewQuestionCreationUserAPICallF(positionID, userID, cvContent);
 
