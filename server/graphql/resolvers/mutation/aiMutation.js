@@ -287,11 +287,11 @@ module.exports = {
     const { message, userID } = args.fields;
     console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
 
-    // if (!userID) {
-    //   throw new ApolloError("userID is required");
-    // }
-
+    if (!userID) {
+      throw new ApolloError("userID is required");
+    }
     stringFromWebsite = message;
+
     try {
       promptReport = ` You have as input the Details of a Job Position
       Job Position (delimiters <>): <${stringFromWebsite}>
@@ -301,7 +301,9 @@ module.exports = {
 
       - You need make really small bullet points of information about the Candidate for every Category
       - Based on the conversation you can make from 0 to 4 bullet points for every Category
-      - If no information is found for a category, exclude it from the output, only include information that is found in text
+      - To include information in the output you must first find it in text of <Job Position>
+      - Do not make up fake information, only use what you fine in <Job Position>
+      - If you do not find the information, just skip the category(leave it blank)
       - Include up to 6 categories 
 
       For example: 
@@ -318,7 +320,7 @@ module.exports = {
       console.log("report", report);
 
       return {
-        message: report,
+        report: report,
         success: true,
       };
     } catch (err) {
