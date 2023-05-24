@@ -336,7 +336,7 @@ module.exports = {
   },
   saveCVtoUser: async (parent, args, context, info) => {
     const { cvContent, userID, positionID } = args.fields;
-    console.log("Mutation > saveCVtoUser > args.fields = ", args.fields);
+    // console.log("Mutation > saveCVtoUser > args.fields = ", args.fields);
 
     if (!userID) {
       throw new ApolloError("userID is required");
@@ -395,9 +395,12 @@ module.exports = {
         Main Skills 3 words max:
         Summary 3 sentenses max:: 
       `
-      printC(cvContentPrompt,"3","cvContentPrompt","b")
+      // printC(cvContentPrompt,"3","cvContentPrompt","b")
 
       titleSkillSummaryRes = await useGPTchatSimple(cvContentPrompt,0,"API 2")
+
+
+      printC(titleSkillSummaryRes,"3","titleSkillSummaryRes","b")
 
       const titleRole = titleSkillSummaryRes.match(/Title Role: (.*)/)[1];
       const mainSkills = titleSkillSummaryRes.match(/Main Skills: (.*)/)[1].split(", ");
