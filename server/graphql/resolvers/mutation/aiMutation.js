@@ -24,6 +24,7 @@ const {
   deletePineCone,
   InterviewQuestionCreationUserAPICallF,
   wait,
+  interviewQuestionCreationUserFunc,
 } = require("../utils/aiModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
@@ -411,9 +412,10 @@ module.exports = {
 
 
 
-      const interviewQ = await InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
-
-      console.log("interviewQ = " , interviewQ)
+      // const interviewQ = await InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
+      // console.log("interviewQ = " , interviewQ)
+      // InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
+      interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
 
 
       // await wait(40000);
