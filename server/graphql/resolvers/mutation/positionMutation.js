@@ -198,7 +198,7 @@ module.exports = {
         `
         printC(cvContentPrompt,"3","cvContentPrompt","b")
 
-        cvSummary = await useGPTchatSimple(cvContentPrompt,0)
+        cvSummary = await useGPTchatSimple(cvContentPrompt,0,"API 2")
 
         printC(cvSummary,"2","cvSummary","r")
         // sdf0
@@ -316,7 +316,7 @@ module.exports = {
           Improved QUESTIONS: 
         `
 
-        improvedQuestions = await useGPTchatSimple(promptNewQuestions,0)
+        improvedQuestions = await useGPTchatSimple(promptNewQuestions,0,"API 2")
 
         printC(improvedQuestions,"4","improvedQuestions","r")
 

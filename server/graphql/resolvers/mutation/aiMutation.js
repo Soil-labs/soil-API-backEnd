@@ -299,21 +299,21 @@ module.exports = {
       throw new ApolloError("User not found");
     }
     try {
-      userData = await Members.findOneAndUpdate(
-        { _id: userID },
-        {
-          cvInfo: {
-            ...userData.cvInfo,
-            cvContent: cvContent,
-            cvPreparationDone: false,
-            cvPreparationBio: false,
-            cvPreparationNodes: false,
-            cvPreparationPreviousProjects: false,
-            cvPreparationMemory: false,
-          },
-        },
-        { new: true }
-      );
+      // userData = await Members.findOneAndUpdate(
+      //   { _id: userID },
+      //   {
+      //     cvInfo: {
+      //       ...userData.cvInfo,
+      //       cvContent: cvContent,
+      //       cvPreparationDone: false,
+      //       cvPreparationBio: false,
+      //       cvPreparationNodes: false,
+      //       cvPreparationPreviousProjects: false,
+      //       cvPreparationMemory: false,
+      //     },
+      //   },
+      //   { new: true }
+      // );
 
       // ----------------- add candidate to position -----------------
       let index_ = positionData.candidates.findIndex(
@@ -331,9 +331,9 @@ module.exports = {
 
 
 
-      InterviewQuestionCreationUserAPICallF(positionID, userID, cvContent);
+      await InterviewQuestionCreationUserAPICallF(positionID, userID, cvContent);
 
-      await wait(40000);
+      // await wait(40000);
 
       return {
         success: true,
@@ -538,7 +538,7 @@ module.exports = {
         
         Here is the string to extract the information from: """${cvContent}"""`;
 
-          summaryBulletPoints = await useGPTchatSimple(prompt, 0);
+          summaryBulletPoints = await useGPTchatSimple(promptMemory, 0,"API 2");
 
           jobsArr = summaryBulletPoints
             .replace(/\n/g, "")
