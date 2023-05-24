@@ -317,6 +317,21 @@ module.exports = {
 
       const report = await useGPTchatSimple(promptReport, 0);
 
+      const regex = /<Category\s+\d+:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
+      const categoriesT = [];
+      let result;
+      while ((result = regex.exec(report)) !== null) {
+        const category = {
+          categoryName: result[1].trim(),
+          score: -1,
+          reason: result[2]
+            .trim()
+            .split("\n")
+            .map((detail) => detail.trim()),
+        };
+        categoriesT.push(result);
+      }
+
       console.log("report", report);
 
       return {
@@ -381,11 +396,46 @@ module.exports = {
       }
       // ----------------- add candidate to position -----------------
 
+<<<<<<< Updated upstream
       await InterviewQuestionCreationUserAPICallF(
         positionID,
         userID,
         cvContent
       );
+=======
+      // ----------- CV to Summary -------------
+      let cvContentPrompt = `
+        CV CONTENT (delimiters <>): <${cvContent}>
+
+        - You are a recruiter with task to understand a candidate's CV.
+        - Your goal is to create a Summary of the CV CONTENT
+        - The summary should have 3 sentense
+        - only contain most important skills, education and experience
+
+        Summary: 
+      `;
+      printC(cvContentPrompt, "3", "cvContentPrompt", "b");
+
+      cvSummary = await useGPTchatSimple(cvContentPrompt, 0, "API 2");
+
+      // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
+
+      // cvSummary = `
+      // Ateet Tiwari is a Full Stack Developer with experience in Front-End, Back-End, Database, Messaging Services, and UI Development. He has a strong proficiency in React, Redux, Node, Express, Python, SQL, and MongoDB. Ateet has led initiatives and teams, improved product performance, and designed in-house frameworks and systems. He is a Polygon Fellowship Graduate and has extensive knowledge in web3 development.
+      // `
+
+      printC(cvSummary, "3", "cvSummary", "g");
+
+      // ----------- CV to Summary -------------
+
+      const interviewQ = await InterviewQuestionCreationUserAPICallF(
+        positionID,
+        userID,
+        cvSummary
+      );
+
+      console.log("interviewQ = ", interviewQ);
+>>>>>>> Stashed changes
 
       // await wait(40000);
 
