@@ -384,7 +384,7 @@ module.exports = {
 
       // ----------- CV to Summary -------------
       let cvContentPrompt = `
-        CV CONTENT (delimiters <>): <${cvContent}>
+        CV CONTENT (delimiters <>): <${cvContent.substring(0, 3500)}>
 
         - You are a recruiter with task to understand a candidate's CV.
         - Your goal is to create a Summary of the CV CONTENT
