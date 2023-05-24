@@ -430,7 +430,7 @@ module.exports = {
 
 
 
-      // interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
+      interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
 
 
       await wait(20000);
