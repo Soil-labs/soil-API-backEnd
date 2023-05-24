@@ -283,6 +283,54 @@ module.exports = {
       );
     }
   },
+  websiteToMemoryCompany: async (parent, args, context, info) => {
+    const { message, userID } = args.fields;
+    console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
+
+    // if (!userID) {
+    //   throw new ApolloError("userID is required");
+    // }
+
+    stringFromWebsite = message;
+    try {
+      promptReport = ` You have as input the Details of a Job Position
+      Job Position (delimiters <>): <${stringFromWebsite}>
+
+
+      The Recruiter Task is to create a report for the most important info about what skills, qualifications, education, culture fit, personality type, experience etc. the Candidate should have!
+
+      - You need make really small bullet points of information about the Candidate for every Category
+      - Based on the conversation you can make from 0 to 4 bullet points for every Category
+      - If no information is found for a category, exclude it from the output, only include information that is found in text
+      - Include up to 6 categories 
+
+      For example: 
+        <Category 1: Score - title>
+          - content
+          - content
+        <Category 2: Score - title>
+          - content
+
+      Answer:`;
+
+      const report = await useGPTchatSimple(promptReport, 0);
+
+      console.log("report", report);
+
+      return {
+        message: report,
+        success: true,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "storeLongTermMemory",
+        {
+          component: "aiMutation > storeLongTermMemory",
+        }
+      );
+    }
+  },
   saveCVtoUser: async (parent, args, context, info) => {
     const { cvContent, userID, positionID } = args.fields;
     console.log("Mutation > saveCVtoUser > args.fields = ", args.fields);
@@ -293,7 +341,9 @@ module.exports = {
 
     let userData = await Members.findOne({ _id: userID });
 
-    let positionData = await Position.findOne({ _id: positionID }).select('_id candidates');
+    let positionData = await Position.findOne({ _id: positionID }).select(
+      "_id candidates"
+    );
 
     if (!userData) {
       throw new ApolloError("User not found");
@@ -323,15 +373,17 @@ module.exports = {
       if (index_ == -1) {
         positionData.candidates.push({
           userID: userID,
-        })
+        });
 
         await positionData.save();
       }
       // ----------------- add candidate to position -----------------
 
-
-
-      await InterviewQuestionCreationUserAPICallF(positionID, userID, cvContent);
+      await InterviewQuestionCreationUserAPICallF(
+        positionID,
+        userID,
+        cvContent
+      );
 
       // await wait(40000);
 
@@ -376,7 +428,6 @@ module.exports = {
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
 
-
         // ------- Calculate Summary -------
         if (userData.cvInfo.cvPreparationBio != true) {
           promptSum =
@@ -392,8 +443,6 @@ module.exports = {
           userData.cvInfo.cvPreparationBio = true;
         }
         // ------- Calculate Summary -------
-
-
 
         // -------Calculate Previous Jobs -------
         if (userData.cvInfo.cvPreparationPreviousProjects != true) {
@@ -428,8 +477,7 @@ module.exports = {
         if (userData.cvInfo.cvPreparationNodes != true) {
           // if (true) {
 
-          promptCVtoMap =
-            `I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. 
+          promptCVtoMap = `I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. 
             Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.
             Do not have any other words except for skills. 
 
@@ -438,14 +486,13 @@ module.exports = {
             CV Content (delimiters <>): <${cvContent}>
 
             Skills Result:
-            `
+            `;
 
           textForMapping = await useGPT(promptCVtoMap, 0);
 
-
           printC(textForMapping, "3", "textForMapping", "b");
           // sdf00
-        
+
           let nodesN = await MessageMapKG_V4APICallF(textForMapping);
 
           printC(nodesN, "3", "nodesN", "b");
@@ -538,7 +585,11 @@ module.exports = {
         
         Here is the string to extract the information from: """${cvContent}"""`;
 
-          summaryBulletPoints = await useGPTchatSimple(promptMemory, 0,"API 2");
+          summaryBulletPoints = await useGPTchatSimple(
+            promptMemory,
+            0,
+            "API 2"
+          );
 
           jobsArr = summaryBulletPoints
             .replace(/\n/g, "")
