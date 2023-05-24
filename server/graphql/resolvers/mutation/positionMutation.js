@@ -188,59 +188,97 @@ module.exports = {
 
 
         // ----------- CV to Summary -------------
-        let cvContentPrompt = `
-          CV CONTENT (delimiters <>): <${cvContent}>
+        // let cvContentPrompt = `
+        //   CV CONTENT (delimiters <>): <${cvContent}>
 
-          - You are a recruiter with task to understand a candidate's CV.
-          - Your goal is to create a Summary of the CV CONTENT
+        //   - You are a recruiter with task to understand a candidate's CV.
+        //   - Your goal is to create a Summary of the CV CONTENT
 
-          Summary: 
-        `
-        printC(cvContentPrompt,"3","cvContentPrompt","b")
+        //   Summary: 
+        // `
 
-        cvSummary = await useGPTchatSimple(cvContentPrompt,0,"API 2")
+        // let cvContentPrompt = `
+        //   CV CONTENT (delimiters <>): <${cvContent}>
 
-        printC(cvSummary,"2","cvSummary","r")
+        //   - You are a recruiter with task to understand a candidate's CV.
+        //   - Your goal is to create a Summary of the CV CONTENT
+        //   - The summary should have 3 sentense
+        //   - only contain most important skills, education and experience
+
+        //   Summary: 
+        // `
+        // printC(cvContentPrompt,"3","cvContentPrompt","b")
+
+        // // cvSummary = await useGPTchatSimple(cvContentPrompt,0,"API 2")
+
+        // // ----------- CV to Summary -------------
+
+        // // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
+
+        // cvSummary = `
+        // Ateet Tiwari is a Full Stack Developer with experience in Front-End, Back-End, Database, Messaging Services, and UI Development. He has a strong proficiency in React, Redux, Node, Express, Python, SQL, and MongoDB. Ateet has led initiatives and teams, improved product performance, and designed in-house frameworks and systems. He is a Polygon Fellowship Graduate and has extensive knowledge in web3 development.
+        // `
+
+        cvSummary = cvContent
+
+        // printC(cvSummary,"2","cvSummary","r")
         // sdf0
-        // ----------- CV to Summary -------------
-
-        // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
 
         console.log("----------------------------" )
 
 
         // -------- Create Prompt ---------
         
+        // let promptJOB_CV = `
+        //   JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
+
+        //   USER_CV (delimiters <>) <${cvSummary}>
+
+        //   - Your goal is to collect information from the candidate for the JOB_ROLE.
+        //   - Analyse for each point of the JOB_ROLE if a Candidate has the right CV info or he is missing something, be creative on the ways that the candidate background can be applied on the role
+
+        //   - smallest number of Bullet points with small summary analyzing the JOB_ROLE for this USER CV:
+        // `
         let promptJOB_CV = `
           JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
 
           USER_CV (delimiters <>) <${cvSummary}>
 
           - Your goal is to collect information from the candidate for the JOB_ROLE.
-          - Analyse for each point of the JOB_ROLE if a Candidate has the right CV info or he is missing something, be creative on the ways that the candidate background can be applied on the role
+          - Analyse JOB_ROLE and USER_CV and understand if a Candidate has the right CV info or he is missing something, 
+          - be creative on the ways that the candidate background can be applied on the role
 
-        smallest number of Bullet points with small summary analyzing the JOB_ROLE for this USER CV:
+          - Your task is to create notes on the candidate’s skills, experience, and education to determine if they are a good fit for the JOB_ROLE.
+
+
+          3-6 small Bullet points:
         `
         printC(promptJOB_CV,"3","promptJOB_CV","b")
 
         infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0)
 
-//         infoCandidateForJob = `
-//         - Responsibilities of the Candidate: The candidate must understand user needs and be able to solve their problems.
-//     - Analysis: Lolita's experience in product ownership and stakeholder management shows that she has a strong understanding of user needs and can effectively solve their problems.
-// - Skills of the Candidate: Must have knowledge of front-end development, including GraphQL, Next.js, React, and TailwindCSS.
-//     - Analysis: Lolita's CV does not mention any experience or knowledge in front-end development, so she may not be the best fit for this specific skill requirement.
-// - Responsibilities of the Candidate: The candidate will work independently to innovate and create code.
-//     - Analysis: Lolita's experience in leadership and continuous improvement suggests that she can work independently and innovate, but her lack of experience in front-end development may limit her ability to create code.
-// - General info of Position: Soil is creating a marketplace for positions and talent using AI and blockchain.
-//     - Analysis: No specific relevance to Lolita's CV, but her background in IT and international relations may give her a unique perspective on the use of AI and blockchain in the marketplace.
-// - Values of Position: Soil values innovation and user discovery.
-//     - Analysis: Lolita's experience in product ownership and stakeholder management aligns well with Soil's values of innovation and user discovery.
-// - Values of Position: The position culture is fun and collaborative.
-//     - Analysis: No specific relevance to Lolita's CV, but her experience in leadership and community volunteering may suggest that she can contribute to a fun and collaborative position culture.
-//         `
 
-        printC(infoCandidateForJob,"3","infoCandidateForJob","r")
+        // infoCandidateForJob = `
+        // 1. Can you tell us about a time when you had to understand user needs and solve their problems? How did you approach the situation and what was the outcome?
+        // 2. How familiar are you with GraphQL, Next.js, React, and TailwindCSS? Can you give us an example of a project you worked on using these technologies?
+        // 3. Have you ever worked independently to innovate and create code? Can you tell us about a project where you had to come up with a unique solution?
+        // 4. How do you stay up-to-date with the latest developments in front-end development? Do you have any favorite resources or communities you follow?
+        // 5. Can you tell us about a time when you had to work collaboratively with a team to achieve a common goal? How did you contribute to the team's success?
+        // 6. How do you approach problem-solving and troubleshooting in your work? Can you give us an example of a particularly challenging issue you faced and how you resolved it?
+        // `
+
+        // infoCandidateForJob = `        
+        // - Lolita Mileta's experience as a Lead Scrum Master and Product Owner makes her a strong candidate for the role, as she has experience managing teams and improving feature releases.
+        // - Her skills in Scrum and Agile frameworks, leadership, communication, and planning are all relevant to the responsibilities of the role.
+        // - While her language proficiency may not be directly related to the role, it could be a valuable asset in a collaborative and diverse company culture.
+        // - It is unclear from her CV if she has specific knowledge of GraphQL, Next.js, React, and TailwindCSS, which are required skills for the role.
+        // - However, her experience with continuous improvement suggests that she may be able to quickly learn and adapt to new technologies and tools.
+        // - Overall, Lolita Mileta's experience and skills make her a strong candidate for the role, but further assessment of her technical knowledge may be necessary.
+        // `
+
+        printC(infoCandidateForJob,"3","infoCandidateForJob","p")
+        // sdf0
+
 
 
         // positionData.candidates.compareCandidatePosition.CVToPosition.content = infoCandidateForJob
@@ -319,6 +357,7 @@ module.exports = {
         improvedQuestions = await useGPTchatSimple(promptNewQuestions,0,"API 2")
 
         printC(improvedQuestions,"4","improvedQuestions","r")
+        SDF0
 
 //         improvedQuestions = `1. Can you tell us about your experience working with Machine Learning and Computer Vision, and how it could be useful for understanding user needs and solving their problems in this role?
 // 2. What specific experience do you have leading teams and innovating with cutting-edge technologies, and how do you think it could be valuable for working independently to create code in this role?
