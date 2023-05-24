@@ -245,7 +245,7 @@ async function modifyQuestionFromCVMemory(messageQ,lastMessage,userID,topK = 3,p
 
        printC(promptPlusMemoryV, "1", "promptPlusMemoryV", "p")
 
-      modifiedQuestion = await useGPChatSimple(promptPlusMemoryV);
+      modifiedQuestion = await useGPTchatSimple(promptPlusMemoryV);
 
     // } else {
     //   modifiedQuestion = messageQ
@@ -588,7 +588,7 @@ function chooseAPIkey(chooseAPI="") {
     return response.data.choices[0].message.content;
   }
   
-  async function useGPChatSimple(prompt,temperature=0.7) {
+  async function useGPTchatSimple(prompt,temperature=0.7,chooseAPI = "API 1") {
     
     discussion = [{
       "role": "user",
@@ -597,7 +597,7 @@ function chooseAPIkey(chooseAPI="") {
   
   
     
-    let OPENAI_API_KEY = chooseAPIkey();
+    let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
     response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -1505,7 +1505,7 @@ module.exports = {
     deletePineCone,
     chooseAPIkey,
     useGPTchat,
-    useGPTchatSimple: useGPChatSimple,
+    useGPTchatSimple,
     arrayToObject,
     taskPlanning,
     findAvailTaskPineCone,
