@@ -3,209 +3,203 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 const { ApolloError } = require("apollo-server-express");
 
-const { concatenateFirstTwoMessages,updateQuestionAskedConvoID,updatePositionInterviewedOfUser,findSummaryOfAnswers,findAndUpdateConversationFunc,updateAnsweredQuestionFunc } = require("../utils/conversationModules");
+const {
+  concatenateFirstTwoMessages,
+  updateQuestionAskedConvoID,
+  updatePositionInterviewedOfUser,
+  findSummaryOfAnswers,
+  findAndUpdateConversationFunc,
+  updateAnsweredQuestionFunc,
+} = require("../utils/conversationModules");
 
-const { useGPTchat,useGPTchatSimple,upsertEmbedingPineCone,deletePineCone,CandidateNotesEdenAIAPICallF } = require("../utils/aiModules");
-
+const {
+  useGPTchat,
+  useGPTchatSimple,
+  upsertEmbedingPineCone,
+  deletePineCone,
+  CandidateNotesEdenAIAPICallF,
+} = require("../utils/aiModules");
 
 module.exports = {
   updateConversation: async (parent, args, context, info) => {
-      const { userID,conversation,questionAskingNow,questionAskingID,timesAsked } = args.fields;
-      console.log("Mutation > updateConversation > args.fields = ", args.fields);
+    const {
+      userID,
+      conversation,
+      questionAskingNow,
+      questionAskingID,
+      timesAsked,
+    } = args.fields;
+    console.log("Mutation > updateConversation > args.fields = ", args.fields);
 
-      if (!conversation || conversation.length <2) {
-        throw new ApolloError(
-          "Conversation must be at least 2 messages long",
-          "updateConversation",
-          { component: "conversationMutation > updateConversation" }
-        );
-      }
+    if (!conversation || conversation.length < 2) {
+      throw new ApolloError(
+        "Conversation must be at least 2 messages long",
+        "updateConversation",
+        { component: "conversationMutation > updateConversation" }
+      );
+    }
 
-      if (!userID) {
-        throw new ApolloError(
-          "userID is required",
-          "updateConversation",
-          { component: "conversationMutation > updateConversation" }
-        );
-      }
+    if (!userID) {
+      throw new ApolloError("userID is required", "updateConversation", {
+        component: "conversationMutation > updateConversation",
+      });
+    }
 
-      try {
+    try {
+      // const _conversation = conversation.map((_item) => ({
+      //   ..._item,
+      //   date: _item.date ? _item.date : new Date(),
+      // }));
+      resultConv = await findAndUpdateConversationFunc(userID, conversation);
 
-        resultConv = await findAndUpdateConversationFunc(userID,conversation)
+      //  ------------- Update the Answered Question ----------------
+      resultConv = await updateAnsweredQuestionFunc(
+        resultConv,
+        conversation,
+        questionAskingNow,
+        questionAskingID,
+        timesAsked
+      );
+      //  ------------- Update the Answered Question ----------------
 
-        //  ------------- Update the Answered Question ----------------
-        resultConv = await updateAnsweredQuestionFunc(resultConv,conversation,questionAskingNow,questionAskingID,timesAsked)
-        //  ------------- Update the Answered Question ----------------
+      return resultConv;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updateConversation",
+        { component: "conversationMutation > updateConversation" }
+      );
+    }
+  },
+  updateConvSummaries: async (parent, args, context, info) => {
+    const { _id, convKey } = args.fields;
+    console.log("Query > updateConvSummaries > args.fields = ", args.fields);
 
-        
-        return resultConv
-        
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "updateConversation",
-          { component: "conversationMutation > updateConversation" }
-        );
-      }
-    },
-    updateConvSummaries: async (parent, args, context, info) => {
-      const { _id, convKey} = args.fields;
-      console.log("Query > updateConvSummaries > args.fields = ", args.fields);
-  
-  
-      let searchQuery_and = [];
-      let searchQuery = {};
+    let searchQuery_and = [];
+    let searchQuery = {};
 
-      
+    if (_id) {
+      searchQuery_and.push({ _id: _id });
+    } else if (convKey) {
+      searchQuery_and.push({ convKey: convKey });
+    } else {
+      searchQuery_and.push({ summaryReady: false }); // SOS 🆘 change always to false
+    }
+    if (searchQuery_and.length > 0) {
+      searchQuery = {
+        $and: searchQuery_and,
+      };
+    } else {
+      searchQuery = {};
+    }
 
-      if (_id) {
-        searchQuery_and.push({ _id: _id });
-      } else if (convKey) {
-        searchQuery_and.push({ convKey: convKey });
-      } else {
-        searchQuery_and.push({ summaryReady: false }) // SOS 🆘 change always to false
-      }
-      if (searchQuery_and.length > 0) {
-        searchQuery = {
-          $and: searchQuery_and,
-        };
-      } else {
-        searchQuery = {};
-      }
+    // console.log("searchQuery = " , searchQuery)
 
-      // console.log("searchQuery = " , searchQuery)
-  
-      try {
-  
-        let convData = await Conversation.find(searchQuery);
+    try {
+      let convData = await Conversation.find(searchQuery);
 
+      for (let i = 0; i < convData.length; i++) {
+        convDataNow = convData[i];
 
+        console.log("convDataNow = ", convDataNow);
 
-        
+        // --------------- Calculate candidateNotesEdenAI ---------------
+        const userID = convDataNow.userID;
+        const positionID = convDataNow.positionID;
 
-        
+        console.log("userID,positionID = ", userID, positionID);
 
-        for (let i = 0; i < convData.length; i++) {
-          convDataNow = convData[i];
+        if (userID != undefined && positionID != undefined)
+          CandidateNotesEdenAIAPICallF(userID, positionID);
+        // df0
 
+        // --------------- Calculate candidateNotesEdenAI ---------------
 
-          console.log("convDataNow = " , convDataNow)
+        console.log("convDataNow = ", convDataNow);
 
-          // --------------- Calculate candidateNotesEdenAI ---------------
-          const userID = convDataNow.userID
-          const positionID = convDataNow.positionID
+        await updatePositionInterviewedOfUser(convDataNow.userID);
+        // asdf9
 
-          console.log("userID,positionID = " , userID,positionID)
+        console.log("convDataNow. = ", convDataNow.updatedAt);
 
-          if (userID!=undefined && positionID!=undefined) 
-            CandidateNotesEdenAIAPICallF(userID,positionID)
-          // df0
+        // how many minutes pass from last update
+        const minutesSinceLastUpdate =
+          (Date.now() - convDataNow.updatedAt) / 60000;
 
+        console.log("minutesSinceLastUpdate = ", minutesSinceLastUpdate);
 
-          // --------------- Calculate candidateNotesEdenAI ---------------
+        if (minutesSinceLastUpdate > 2) {
+          // if (true) {
 
+          // ------------------ Delete old summaries from pinecone ------------------
+          deletePineIDs = convDataNow.summary.map((obj) => obj.pineConeID);
+          await deletePineCone(deletePineIDs);
+          // ------------------ Delete old summaries from pinecone ------------------
 
-          console.log("convDataNow = " , convDataNow)
+          let paragraphSummary = await useGPTchat(
+            // "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation. reasult:",
+            // "Please summarize the conversation using bullet points. Focuse on creating consise bullet points. Try to incorporate the keywords that were used during the conversation. reasult:",
+            "Create a summary of the important parts of the conversation \n\n Summary:",
+            convDataNow.conversation.map(({ role, content }) => ({
+              role,
+              content,
+            })), // clean up from any _id etc
+            ""
+          );
 
-          await updatePositionInterviewedOfUser(convDataNow.userID)
+          const promptForBulletS =
+            paragraphSummary +
+            "\n - Focus on Creating the smallest possible number of bullet points \n - Bullet point should exist only if it adds new important information \n\n Create Bullet point Summary:";
+
+          const bulletSummary = await useGPTchatSimple(promptForBulletS);
+
+          // console.log("bulletSummary = " , bulletSummary)
+
+          let splitSummary = bulletSummary.split("- ");
+
+          splitSummary.shift();
+
+          console.log("splitSummary = ", splitSummary);
+          // ---------------- GPT find new Summary ------------
+
+          let summaryArr = [];
+
+          for (let j = 0; j < splitSummary.length; j++) {
+            splitSumNow = splitSummary[j];
+
+            upsertDoc = await upsertEmbedingPineCone({
+              text: splitSumNow,
+              _id: convDataNow.userID,
+              label: "conv_with_user_memory",
+              convKey: convDataNow.convKey,
+            });
+
+            console.log("upsertDoc = ", upsertDoc);
+
+            summaryArr.push({
+              pineConeID: upsertDoc.pineConeID,
+              content: splitSumNow,
+            });
+          }
+
+          convDataNow.summary = summaryArr;
+          convDataNow.summaryReady = true;
+
+          convDataNow = await findSummaryOfAnswers(convDataNow);
+
           // asdf9
 
-
-          console.log("convDataNow. = " , convDataNow.updatedAt)
-
-          // how many minutes pass from last update
-          const minutesSinceLastUpdate = (Date.now() - convDataNow.updatedAt) / 60000;
-
-          console.log("minutesSinceLastUpdate = " , minutesSinceLastUpdate)
-
-          if (minutesSinceLastUpdate > 2) {
-            // if (true) { 
-
-            // ------------------ Delete old summaries from pinecone ------------------
-            deletePineIDs = convDataNow.summary.map(obj => obj.pineConeID)
-            await deletePineCone(deletePineIDs)
-            // ------------------ Delete old summaries from pinecone ------------------
- 
-
-            let paragraphSummary = await useGPTchat(
-              // "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation. reasult:",
-              // "Please summarize the conversation using bullet points. Focuse on creating consise bullet points. Try to incorporate the keywords that were used during the conversation. reasult:",
-              "Create a summary of the important parts of the conversation \n\n Summary:",
-              convDataNow.conversation.map(({ role, content }) => ({ role, content })), // clean up from any _id etc
-              ""
-            )
-
-
-            const promptForBulletS = paragraphSummary + "\n - Focus on Creating the smallest possible number of bullet points \n - Bullet point should exist only if it adds new important information \n\n Create Bullet point Summary:"
-
-            const bulletSummary = await useGPTchatSimple(promptForBulletS)
-
-
-
-            // console.log("bulletSummary = " , bulletSummary) 
-
-            let splitSummary = bulletSummary.split("- ");
-
-            
-
-            splitSummary.shift();
-
-            console.log("splitSummary = " , splitSummary)
-            // ---------------- GPT find new Summary ------------
-
-
-            let summaryArr = [];
-
-            for (let j = 0; j < splitSummary.length; j++) {
-              splitSumNow = splitSummary[j];
-
-
-
-              upsertDoc = await upsertEmbedingPineCone({
-                text: splitSumNow,
-                _id: convDataNow.userID,
-                label: "conv_with_user_memory",
-                convKey: convDataNow.convKey,
-              });
-
-              console.log("upsertDoc = " , upsertDoc)
-
-
-              summaryArr.push({
-                pineConeID: upsertDoc.pineConeID,
-                content: splitSumNow,
-              })
-
-            }
-
-            convDataNow.summary = summaryArr;
-            convDataNow.summaryReady = true;
-
-
-
-            convDataNow = await findSummaryOfAnswers(convDataNow)
-
-            // asdf9
-
-
-            await convDataNow.save();
-
-
-
-          }
+          await convDataNow.save();
         }
-
-
-
-  
-        return convData;
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "updateConvSummaries",
-          { component: "converstaionQuery > updateConvSummaries" }
-        );
       }
-    },
-}
 
+      return convData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updateConvSummaries",
+        { component: "converstaionQuery > updateConvSummaries" }
+      );
+    }
+  },
+};
