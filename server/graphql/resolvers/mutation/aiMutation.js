@@ -388,14 +388,22 @@ module.exports = {
 
         - You are a recruiter with task to understand a candidate's CV.
         - Your goal is to create a Summary of the CV CONTENT
-        - The summary should have 3 sentense
         - only contain most important skills, education and experience
+        - Task is to extract, Title Role, Main Skills, Summary
 
-        Summary: 
+        Title Role 5 words max: 
+        Main Skills 3 words max:
+        Summary 3 sentenses max:: 
       `
       printC(cvContentPrompt,"3","cvContentPrompt","b")
 
-      cvSummary = await useGPTchatSimple(cvContentPrompt,0,"API 2")
+      titleSkillSummaryRes = await useGPTchatSimple(cvContentPrompt,0,"API 2")
+
+      const titleRole = titleSkillSummaryRes.match(/Title Role: (.*)/)[1];
+      const mainSkills = titleSkillSummaryRes.match(/Main Skills: (.*)/)[1].split(", ");
+      const cvSummary = titleSkillSummaryRes.match(/Summary: (.*)/)[1];
+
+
 
       // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
 
@@ -405,6 +413,9 @@ module.exports = {
 
 
       printC(cvSummary,"3","cvSummary","g")
+      printC(titleRole,"3","titleRole","g")
+      printC(mainSkills,"3","mainSkills","g")
+      // sdf0
 
       // ----------- CV to Summary -------------
 
@@ -412,16 +423,23 @@ module.exports = {
 
 
 
+      // OLD Algorithm
       // const interviewQ = await InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
       // console.log("interviewQ = " , interviewQ)
       // InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
-      interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
 
 
-      // await wait(40000);
+
+      // interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
+
+
+      await wait(20000);
 
       return {
         success: true,
+        titleRole: titleRole,
+        mainSkills: mainSkills,
+        cvSummary: cvSummary,
       };
     } catch (err) {
       throw new ApolloError(

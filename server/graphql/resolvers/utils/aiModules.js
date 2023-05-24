@@ -278,7 +278,7 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
   const improvedQuestionsArray = improvedQuestions.split('\n').map((item) => item.replace(/^\d+\.\s*/, ''));
 
-  printC(improvedQuestionsArray,"3","improvedQuestionsArray","r")
+  printC(improvedQuestionsArray,"5","improvedQuestionsArray","r")
 
   let interviewQuestionsForCandidate = []
 
@@ -899,7 +899,59 @@ function chooseAPIkey(chooseAPI="") {
   
   
     
+    // let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
+
+    
+    // response = await axios.post(
+    //   "https://api.openai.com/v1/chat/completions",
+    //   {
+    //     messages: discussion,
+    //     model: "gpt-3.5-turbo",
+    //     temperature: temperature
+    //   },
+    //   {
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       Authorization: `Bearer ${OPENAI_API_KEY}`,
+    //     },
+    //   }
+    // );
+
+    let success = false;
+    let retries = 0;
+    let apiKey = chooseAPI;
+    while (!success && retries < 3) {
+      try {
+        const titleSkillSummaryRes = await onlyGPTchat(prompt, temperature, apiKey);
+        success = true;
+      } catch (e) {
+        if (e.response.status === 429) {
+          // Sleep for a while before trying again
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          // Switch to the other API key
+          apiKey = apiKey === "API 1" ? "API 2" : "API 1";
+        } else {
+          // Handle other exceptions here
+          console.error("Error:", e);
+          break;
+        }
+      }
+      retries++;
+    }
+
+    if (!success) {
+      console.error("Failed to get response from OpenAI API");
+      return;
+    }
+
+    return response.data.choices[0].message.content;
+  }
+
+  async function onlyGPTchat(prompt,temperature=0.7,chooseAPI = "API 1") {
+    
     let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
+
+    
     response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -915,8 +967,10 @@ function chooseAPIkey(chooseAPI="") {
       }
     );
   
-    return response.data.choices[0].message.content;
+    return response
   }
+
+  
 
 const nodes_aiModule = async (nodesID,weightModulesObj,memberObj,filter,membersIDallowObj={}) => {
 

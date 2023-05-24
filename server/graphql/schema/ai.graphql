@@ -77,6 +77,9 @@ module.exports = `
 
     type saveCVtoUserOutput {
         success: Boolean
+        titleRole: String
+        mainSkills: [String]
+        cvSummary: String
     }
 
     input autoUpdateUserInfoFromCVInput {
