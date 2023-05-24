@@ -167,7 +167,7 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
     );
 
     // console.log("res = " , res)
-    console.log("res.interviewQuestionCreationUser", res.interviewQuestionCreationUser);
+    // console.log("res.interviewQuestionCreationUser", res.interviewQuestionCreationUser);
     return res.interviewQuestionCreationUser;
   };
 
