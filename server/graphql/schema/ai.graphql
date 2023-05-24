@@ -200,6 +200,7 @@ module.exports = `
     input messageChat {
         role: String
         content: String
+        date: Date
     }
 
     input edenGPTreplyChatAPIInput {
@@ -302,6 +303,7 @@ module.exports = `
     
     type interviewEdenAIOutput {
         reply: String
+        date: Date
         conversationID: ID
         questionAskingNow: String
         unansweredQuestions: [String]
