@@ -336,8 +336,10 @@ module.exports = {
 
       console.log("categoriesT.join()", categoriesT.join(""));
 
+      reportToString = categoriesT.join("");
+
       return {
-        report: categoriesT.join(""),
+        report: reportToString,
         success: true,
       };
     } catch (err) {
