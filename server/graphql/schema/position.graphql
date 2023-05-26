@@ -73,7 +73,8 @@ module.exports = `
 
     type compareCandidatePositionType {
         CVToPosition: CVToPositionType,
-        CV_ConvoToPosition: CV_ConvoToPositionType,
+        CV_ConvoToPosition: [notesInterviewType],
+        CV_ConvoToPositionAverageScore: Float,
     }
 
     type CVToPositionType {
