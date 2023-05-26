@@ -1066,6 +1066,7 @@ module.exports = {
     const { cvString } = args.fields;
     if (!cvString) throw new ApolloError("The cvString is required");
 
+<<<<<<< Updated upstream
     const prompt = `
     I want you to act as social media expert at writing profile bios. I will give you a string extracted from a CV(resume) delineated with triple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio:
     
@@ -1085,6 +1086,15 @@ module.exports = {
     • The present position that they work in and what they do there
     
     """${cvString}"""`;
+=======
+    prompt =
+      `Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). 
+      Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile.
+       Give me that summary in a bullet point format,do not include the name in the summary. 
+       Keep the bullet points short. Only up to 5 bullet points are allowed. 
+       No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n` +
+      cvString;
+>>>>>>> Stashed changes
 
     summaryOfCV = await useGPT(prompt, 0.2);
 
@@ -1099,6 +1109,7 @@ module.exports = {
   CVtoJobs: async (parent, args, context, info) => {
     const { cvString } = args.fields;
 
+<<<<<<< Updated upstream
     if (!cvString) {
       new ApolloError("The cvString is required");
     }
@@ -1122,6 +1133,22 @@ module.exports = {
        - short description
        - short description
        - short description `;
+=======
+    prompt =
+      `Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). 
+      Your job is to find and give the last 1-3 jobs this person had. Give me those jobs in a bullet point format,
+      do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest 
+      job should go on the top. So there should be only three bullet points. Also take the name of each 
+      position and as a sub bullet point and in your own words, give me 3 very short sentences about that position.   
+      Always use "•" for a bullet point, never this "-". 
+    This is the format(this is just an example, do not use this in the output):
+
+      • Title, company Name (Some Date- Present) (all within one bullet point)   
+      • Sentence 1, Sentence 2, Sentence 3
+
+
+      Here is that string:` + cvString;
+>>>>>>> Stashed changes
 
     responseFromGPT = await useGPT(prompt, 0.7);
 
