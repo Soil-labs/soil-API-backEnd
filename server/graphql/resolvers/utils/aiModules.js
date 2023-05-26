@@ -4,6 +4,7 @@ const { Node } = require("../../../models/nodeModal");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
+const { Conversation } = require("../../../models/conversationModel");
 
 
 const axios = require("axios");
@@ -635,6 +636,27 @@ async function askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,use
 
 }
 
+async function findConversationPrompt(conversationID) {
+  
+  convData = await Conversation.findOne({ _id: conversationID }).select('_id userID conversation');
+
+  if (!convData) {
+    return ""
+  }
+
+  let promptConv = "";
+  for (let i = 0; i < convData.conversation.length; i++) {
+    let convDataNow = convData.conversation[i];
+    if (convDataNow.role == "assistant")
+      promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+    else
+      promptConv = promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
+  }
+
+  return promptConv
+
+}
+
 
 
 async function createEmbeddingsGPT(words_n) {
@@ -682,6 +704,8 @@ async function generateRandomID(numDigit = 8) {
     return id;
   }
   
+
+
 async function deletePineCone(deletePineIDs){
 
     const pinecone = new PineconeClient();
@@ -1884,4 +1908,5 @@ module.exports = {
     askQuestionAgain,
     CandidateNotesEdenAIAPICallF,
     interviewQuestionCreationUserFunc,
+    findConversationPrompt
   };

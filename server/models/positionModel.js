@@ -80,10 +80,12 @@ const positionModel = mongoose.Schema({
         content: String,
         score: Number,
       },
-      CV_ConvoToPosition: {
-        content: String,
+      CV_ConvoToPosition: [{
+        categoryName: String,
         score: Number,
-      },
+        reason: [String],
+      }],
+      CV_ConvoToPositionAverageScore: Number,
     }
   }],
 

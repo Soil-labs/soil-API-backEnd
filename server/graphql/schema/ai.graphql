@@ -58,7 +58,7 @@ module.exports = `
 
     input websiteToMemoryCompanyInput {
         message: String
-        userID: ID
+        positionID: ID
 
     }
 
@@ -66,6 +66,24 @@ module.exports = `
         success: Boolean
         report: String
 
+    }
+
+    input conversationCVPositionToReportInput {
+        memberID: ID
+        positionID: ID
+    }
+
+    type conversationCVPositionToReportOutput {
+        success: Boolean
+        report: String
+        CV_ConvoToPosition: [notesInterviewType2],
+        CV_ConvoToPositionAverageScore: Float,
+    }
+
+    type notesInterviewType2 {
+        categoryName: String,
+        score: Float,
+        reason: [String],
     }
 
     input saveCVtoUserInput {
