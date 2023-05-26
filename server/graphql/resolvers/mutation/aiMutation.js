@@ -287,7 +287,10 @@ module.exports = {
   },
   websiteToMemoryCompany: async (parent, args, context, info) => {
     const { message, positionID } = args.fields;
-    console.log("Mutation > websiteToMemoryCompany > args.fields = ", args.fields);
+    console.log(
+      "Mutation > websiteToMemoryCompany > args.fields = ",
+      args.fields
+    );
 
     if (!positionID) {
       throw new ApolloError("positionID is required");
@@ -299,12 +302,9 @@ module.exports = {
       throw new ApolloError("Position not found");
     }
 
-    printC(positionData,"0","positionData","b")
-
+    printC(positionData, "0", "positionData", "b");
 
     stringFromWebsite = message;
-
-
 
     try {
       promptReport = ` You have as input the Details of a Job Position
@@ -328,16 +328,14 @@ module.exports = {
           - content
 
       Answer:`;
-       let report = await useGPTchatSimple(promptReport, 0);
+      let report = await useGPTchatSimple(promptReport, 0);
 
       console.log("report", report);
-
 
       // update Mongo
       positionData.positionsRequirements.content = report;
 
       await positionData.save();
-
 
       return {
         report: report,
@@ -356,34 +354,27 @@ module.exports = {
 
   conversationCVPositionToReport: async (parent, args, context, info) => {
     const { memberID, positionID } = args.fields;
-    console.log("Mutation > conversationCVPositionToReport > args.fields = ", args.fields);
-
-    
-    
-
-
+    console.log(
+      "Mutation > conversationCVPositionToReport > args.fields = ",
+      args.fields
+    );
 
     try {
-
-
       // if (!positionID) {
       //   throw new ApolloError("positionID is required");
       // }
-  
+
       // positionData = await Position.findOne({ _id: positionID });
-  
+
       // if (!positionData) {
       //   throw new ApolloError("Position not found");
       // }
-  
-      
-      // if (!memberID) {  
+
+      // if (!memberID) {
       //   throw new ApolloError("memberID is required");
       // }
-  
-      // memberData = await Members.findOne({ _id: memberID });
-  
 
+      // memberData = await Members.findOne({ _id: memberID });
 
       // let index_ = positionData?.candidates?.findIndex(
       //   (x) => x.userID.toString() == memberID.toString()
@@ -397,7 +388,6 @@ module.exports = {
 
       // const conversationID = candidateData.conversationID;
 
-
       // const CVToPositionReport = candidateData?.compareCandidatePosition?.CVToPosition?.content
 
       // printC(candidateData,"0","candidateData","b")
@@ -409,14 +399,12 @@ module.exports = {
       // const convoCandidateRecruiterPrompt = await findConversationPrompt(conversationID)
 
       // printC(convoCandidateRecruiterPrompt,"3","convoCandidateRecruiterPrompt","p")
-      
-      
+
       // promptReport = ` You are a Professional Recruiter writing reports to find the best candidate for a Job Position
 
       // Report Candidate CV to Job Position (delimiters <>): <${CVToPositionReport}>
 
       // Conversation of Candidate With Recruiter (delimiters <>): <${convoCandidateRecruiterPrompt}>
-
 
       // Your Task is to create a Report that analyze if this is the right candidate for the Job Position using CV to Job Position and the Conversation
 
@@ -425,7 +413,7 @@ module.exports = {
       // - Include up to 6 categories and nothing else
       // - For Each Category give a Match Score with only a number from 0 to 10 on the SCORE_AREA
 
-      // For example: 
+      // For example:
       //   <Category 1: title - SCORE_AREA >
       //     - content
       //     - content
@@ -433,7 +421,6 @@ module.exports = {
       //     - content
 
       // Categories:`;
-
 
       // let report = await useGPTchatSimple(promptReport, 0);
 
@@ -462,11 +449,8 @@ module.exports = {
 
       // printC(report,"4","report","g")
 
-
       // let scoreAll = 0
       // let nAll = 0
-
-
 
       // const regex = /<Category\s+\d+:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
       // const categoriesT = [];
@@ -502,25 +486,25 @@ module.exports = {
       // console.log("categoriesT = " , categoriesT)
       // // df9
 
-
       // // update Mongo
       // positionData.candidates[index_].compareCandidatePosition.CV_ConvoToPosition = categoriesT
       // positionData.candidates[index_].compareCandidatePosition.CV_ConvoToPositionAverageScore = scoreAll
       // await positionData.save();
 
-      const res = await conversationCVPositionToReportFunc(memberID, positionID)
+      const res = await conversationCVPositionToReportFunc(
+        memberID,
+        positionID
+      );
 
-      report = res.report
-      categoriesT = res.categoriesT
-      scoreAll = res.scoreAll
-
+      report = res.report;
+      categoriesT = res.categoriesT;
+      scoreAll = res.scoreAll;
 
       return {
         report: report,
         success: true,
         CV_ConvoToPosition: categoriesT,
-        CV_ConvoToPositionAverageScore: scoreAll
-
+        CV_ConvoToPositionAverageScore: scoreAll,
       };
     } catch (err) {
       throw new ApolloError(
@@ -695,8 +679,22 @@ module.exports = {
         // -------Calculate Previous Jobs -------
         if (userData.cvInfo.cvPreparationPreviousProjects != true) {
           promptJobs =
-            'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
-            cvContent;
+            `Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). 
+      Your job is to find and give the last(based on dates) 1-3 jobs this person had.
+      Give me those jobs in a bullet point format,do not include the name in the summary. 
+      Only give me the last(based on dates) 3 jobs in descending order, the latest job should go on the top. 
+      So there should be only three bullet points. Also take the name of each 
+      position and as a sub bullet point and in your own words, give me 3 very short sentences about that position.   
+
+
+    This is the format(Use only one bullet point for the job and the second bullet point for 3 sentences):
+      -Do not give a sentence their own bullet point. 
+
+      • Title, company Name (Some Date- Present) (all within one bullet point)   
+      • Sentence, Sentence, Sentence(all within one bullet point)  
+
+
+      Here is that string:` + cvString;
 
           responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
 
@@ -1066,7 +1064,6 @@ module.exports = {
     const { cvString } = args.fields;
     if (!cvString) throw new ApolloError("The cvString is required");
 
-<<<<<<< Updated upstream
     const prompt = `
     I want you to act as social media expert at writing profile bios. I will give you a string extracted from a CV(resume) delineated with triple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio:
     
@@ -1086,15 +1083,6 @@ module.exports = {
     • The present position that they work in and what they do there
     
     """${cvString}"""`;
-=======
-    prompt =
-      `Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). 
-      Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile.
-       Give me that summary in a bullet point format,do not include the name in the summary. 
-       Keep the bullet points short. Only up to 5 bullet points are allowed. 
-       No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n` +
-      cvString;
->>>>>>> Stashed changes
 
     summaryOfCV = await useGPT(prompt, 0.2);
 
@@ -1109,46 +1097,23 @@ module.exports = {
   CVtoJobs: async (parent, args, context, info) => {
     const { cvString } = args.fields;
 
-<<<<<<< Updated upstream
-    if (!cvString) {
-      new ApolloError("The cvString is required");
-    }
-
-    prompt = `
-      Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
-
-      CV(resume), (delimiters <>) ${cvString}
-
-
-      Your job is to find and list the latest 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. 
-      
-      - Only give me up to 3 last jobs. The job that is current (some year - present) should appear first. After that list jobs that have the latest end date.
-      - Give me a dates of when this person started and finished( or presently working)
-      - Also take the name of each position and give 3 short(no more than 80 characters long) descriptions of that position.
-      - Always use "•" for a bullet point, never this "-". 
-
-      This is the format: 
-      •Job Title, Company Name
-      •(start date, end date(or present))
-       - short description
-       - short description
-       - short description `;
-=======
     prompt =
       `Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). 
-      Your job is to find and give the last 1-3 jobs this person had. Give me those jobs in a bullet point format,
-      do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest 
-      job should go on the top. So there should be only three bullet points. Also take the name of each 
+      Your job is to find and give the last(based on dates) 1-3 jobs this person had.
+      Give me those jobs in a bullet point format,do not include the name in the summary. 
+      Only give me the last(based on dates) 3 jobs in descending order, the latest job should go on the top. 
+      So there should be only three bullet points. Also take the name of each 
       position and as a sub bullet point and in your own words, give me 3 very short sentences about that position.   
-      Always use "•" for a bullet point, never this "-". 
-    This is the format(this is just an example, do not use this in the output):
+
+
+    This is the format(Use only one bullet point for the job and the second bullet point for 3 sentences):
+      -Do not give a sentence their own bullet point. 
 
       • Title, company Name (Some Date- Present) (all within one bullet point)   
-      • Sentence 1, Sentence 2, Sentence 3
+      • Sentence, Sentence, Sentence(all within one bullet point)  
 
 
       Here is that string:` + cvString;
->>>>>>> Stashed changes
 
     responseFromGPT = await useGPT(prompt, 0.7);
 
@@ -1166,8 +1131,8 @@ module.exports = {
     previousJobs = () => {
       for (let i = 0; i < jobsArr.length; i += 2) {
         result.push({
-          outside: jobsArr[i],
-          inside: jobsArr[i + 1],
+          title: jobsArr[i],
+          description: jobsArr[i + 1],
         });
       }
       return JSON.stringify(result);
