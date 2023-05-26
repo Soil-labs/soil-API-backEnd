@@ -33,6 +33,160 @@ async function getMemory(messageContent,filter,topK = 3,maxLength = 2000) {
     return memoriesForPrompt
 }
 
+async function conversationCVPositionToReportFunc(memberID,positionID) {
+
+  if (!positionID) {
+    throw new ApolloError("positionID is required");
+  }
+
+  positionData = await Position.findOne({ _id: positionID });
+
+  if (!positionData) {
+    throw new ApolloError("Position not found");
+  }
+
+  
+  if (!memberID) {  
+    throw new ApolloError("memberID is required");
+  }
+
+  memberData = await Members.findOne({ _id: memberID });
+
+
+
+  let index_ = positionData?.candidates?.findIndex(
+    (x) => x.userID.toString() == memberID.toString()
+  );
+
+  if (index_ == undefined || index_ == -1) {
+    throw new ApolloError("Candidate not found");
+  }
+
+  let candidateData = positionData.candidates[index_];
+
+  const conversationID = candidateData.conversationID;
+
+
+  const CVToPositionReport = candidateData?.compareCandidatePosition?.CVToPosition?.content
+
+  printC(candidateData,"0","candidateData","b")
+
+  printC(conversationID,"1","conversationID","b")
+
+  printC(CVToPositionReport,"2","CVToPositionReport","p")
+
+  const convoCandidateRecruiterPrompt = await findConversationPrompt(conversationID)
+
+  printC(convoCandidateRecruiterPrompt,"3","convoCandidateRecruiterPrompt","p")
+  
+  
+  promptReport = ` You are a Professional Recruiter writing reports to find the best candidate for a Job Position
+
+  Report Candidate CV to Job Position (delimiters <>): <${CVToPositionReport}>
+
+  Conversation of Candidate With Recruiter (delimiters <>): <${convoCandidateRecruiterPrompt}>
+
+
+  Your Task is to create a Report that analyze if this is the right candidate for the Job Position using CV to Job Position and the Conversation
+
+  - You need make small bullet points of information about the Candidate for every Category
+  - Do not make up fake information, only use what you have in the CV Report and Conversation
+  - Include up to 6 categories and nothing else
+  - For Each Category give a Match Score with only a number from 0 to 10 on the SCORE_AREA
+
+  For example: 
+    <Category 1: title - SCORE_AREA >
+      - content
+      - content
+    <Category 2: title - SCORE_AREA >
+      - content
+
+  Categories:`;
+
+
+  let report = await useGPTchatSimple(promptReport, 0);
+
+  // report  = `
+  // <Category 1: Relevant Skills - 9>
+  //   - Experience with databases and SQL, which is a required skill for the JOB_ROLE.
+  //   - Worked as a Full Stack Developer, indicating experience with both front-end and back-end systems.
+  //   - Experience with messaging services, which could be useful for conducting systems tests for security and availability.
+  //   - Worked on Web3 projects, indicating an ability to adapt to new technologies and a willingness to learn.
+
+  // <Category 2: Education - 8>
+  //   - B.Tech in CSE, showing a strong educational background in computer science.
+
+  // <Category 3: Team Management - 7>
+  //   - Managed a team of SDE2s and interns, showing strong communication skills and an ability to work in a team environment.
+
+  // <Category 4: Machine Learning - 6>
+  //   - Extensive experience in developing computer vision models for various applications, including object detection and image classification.
+  //   - Background in managing teams and building MLOps procedures.
+
+  // <Category 5: Python Proficiency - 8>
+  //   - Proficient in Python and has used it extensively in developing backend solutions for various applications.
+
+  // <Category 6: Innovation - 5>
+  // `
+
+  printC(report,"4","report","g")
+
+
+  let scoreAll = 0
+  let nAll = 0
+
+
+
+  const regex = /<Category\s+\d+:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
+  const categoriesT = [];
+  let result;
+  while ((result = regex.exec(report)) !== null) {
+    let reason_score = result[1].trim()
+
+    printC(reason_score, "0", "reason_score", "y")
+    // const match = reason_score.match(/(\d+)\s-\s(.*)/);
+    const match = reason_score.match(/(.*) - (\d+)/)
+
+    const title = match[1];
+    const score = match[2];
+
+    //  const score = 0
+    // const title = reason_score;
+
+    // console.log("score,title = " , score,title)
+    // sdf2
+
+    const category = {
+      categoryName: title,
+      score: parseInt(score)*10,
+      reason: result[2].trim().split('\n').map(detail => detail.trim()),
+    };
+    scoreAll += parseInt(score)*10
+    nAll +=1
+
+    categoriesT.push(category);
+  }
+
+  scoreAll = parseInt(scoreAll/nAll)
+  console.log("categoriesT = " , categoriesT)
+  // df9
+
+
+  // update Mongo
+  positionData.candidates[index_].compareCandidatePosition.CV_ConvoToPosition = categoriesT
+  positionData.candidates[index_].compareCandidatePosition.CV_ConvoToPositionAverageScore = scoreAll
+  await positionData.save();
+
+
+  return {
+    success: true,
+    report,
+    categoriesT,
+    scoreAll,
+  }
+
+}
+
 async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
 
@@ -1908,5 +2062,6 @@ module.exports = {
     askQuestionAgain,
     CandidateNotesEdenAIAPICallF,
     interviewQuestionCreationUserFunc,
-    findConversationPrompt
+    findConversationPrompt,
+    conversationCVPositionToReportFunc,
   };

@@ -18,7 +18,11 @@ const {
   upsertEmbedingPineCone,
   deletePineCone,
   CandidateNotesEdenAIAPICallF,
+  conversationCVPositionToReportFunc,
 } = require("../utils/aiModules");
+
+const { printC } = require("../../../printModule");
+
 
 module.exports = {
   updateConversation: async (parent, args, context, info) => {
@@ -93,10 +97,12 @@ module.exports = {
       searchQuery = {};
     }
 
-    // console.log("searchQuery = " , searchQuery)
+    
 
     try {
       let convData = await Conversation.find(searchQuery);
+
+      
 
       for (let i = 0; i < convData.length; i++) {
         convDataNow = convData[i];
@@ -187,9 +193,35 @@ module.exports = {
 
           convDataNow = await findSummaryOfAnswers(convDataNow);
 
-          // asdf9
+          printC(convDataNow,"0","convDataNow","b")
+
 
           await convDataNow.save();
+
+
+
+
+          const positionID = convDataNow.positionID;
+          const userID = convDataNow.userID;
+
+          printC(positionID,"0","positionID","b")
+          printC(userID,"0","userID","b")
+
+          const res = await conversationCVPositionToReportFunc(userID, positionID)
+
+          report = res.report
+          categoriesT = res.categoriesT
+          scoreAll = res.scoreAll
+    
+
+          // printC(report,"0","report","y")
+          // printC(categoriesT,"0","categoriesT","y")
+          // printC(scoreAll,"0","scoreAll","y")
+
+
+
+          // asdf9
+
         }
       }
 
