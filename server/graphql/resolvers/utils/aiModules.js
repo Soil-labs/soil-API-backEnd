@@ -6,6 +6,7 @@ const { Position } = require("../../../models/positionModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { Conversation } = require("../../../models/conversationModel");
 
+const { Configuration, OpenAIApi } = require("openai");
 
 const axios = require("axios");
 const { PineconeClient } = require("@pinecone-database/pinecone");
@@ -89,17 +90,17 @@ async function conversationCVPositionToReportFunc(memberID,positionID) {
 
   Your Task is to create a Report that analyze if this is the right candidate for the Job Position using CV to Job Position and the Conversation
 
-  - You need make small bullet points of information about the Candidate for every Category
+  - You need make really small bullet points of information about the Candidate for every Category
   - Do not make up fake information, only use what you have in the CV Report and Conversation
   - Include up to 6 categories and nothing else
   - For Each Category give a Match Score with only a number from 0 to 10 on the SCORE_AREA
 
   For example: 
     <Category 1: title - SCORE_AREA >
-      - content
-      - content
+      - explanation really small
+      - explanation really small
     <Category 2: title - SCORE_AREA >
-      - content
+      - explanation really small
 
   Categories:`;
 
@@ -238,51 +239,10 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
   } else {
     bestJobRoleMemories = positionData.positionsRequirements.content
   } 
-
-
   
-
-  // printC(bestJobRoleMemories,"3","bestJobRoleMemories","p")
-  // sdf0
-  // ------- Find best Open Job Role Memories ----------
-
-
-  // ----------- CV to Summary -------------
-  // let cvContentPrompt = `
-  //   CV CONTENT (delimiters <>): <${cvContent}>
-
-  //   - You are a recruiter with task to understand a candidate's CV.
-  //   - Your goal is to create a Summary of the CV CONTENT
-
-  //   Summary: 
-  // `
-
-  // let cvContentPrompt = `
-  //   CV CONTENT (delimiters <>): <${cvContent}>
-
-  //   - You are a recruiter with task to understand a candidate's CV.
-  //   - Your goal is to create a Summary of the CV CONTENT
-  //   - The summary should have 3 sentense
-  //   - only contain most important skills, education and experience
-
-  //   Summary: 
-  // `
-  // printC(cvContentPrompt,"3","cvContentPrompt","b")
-
-  // // cvSummary = await useGPTchatSimple(cvContentPrompt,0,"API 2")
-
-  // // ----------- CV to Summary -------------
-
-  // // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
-
-  // cvSummary = `
-  // Ateet Tiwari is a Full Stack Developer with experience in Front-End, Back-End, Database, Messaging Services, and UI Development. He has a strong proficiency in React, Redux, Node, Express, Python, SQL, and MongoDB. Ateet has led initiatives and teams, improved product performance, and designed in-house frameworks and systems. He is a Polygon Fellowship Graduate and has extensive knowledge in web3 development.
-  // `
 
   cvSummary = cvContent
 
-  // printC(cvSummary,"2","cvSummary","r")
-  // sdf0
 
   console.log("----------------------------" )
 
@@ -299,23 +259,37 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
   //   - smallest number of Bullet points with small summary analyzing the JOB_ROLE for this USER CV:
   // `
-  let promptJOB_CV = `
-    JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
+  // let promptJOB_CV = `
+  //   JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
 
+  //   USER_CV (delimiters <>) <${cvSummary}>
+
+  //   - Your goal is to collect information from the candidate for the JOB_ROLE.
+  //   - Analyse JOB_ROLE and USER_CV and understand if a Candidate has the right CV info or he is missing something, 
+  //   - be creative on the ways that the candidate background can be applied on the role
+
+  //   - Your task is to create notes on the candidate’s skills, experience, and education to determine if they are a good fit for the JOB_ROLE.
+
+
+  //   3-6 small Bullet points:
+  // `
+  let promptJOB_CV = `
     USER_CV (delimiters <>) <${cvSummary}>
 
-    - Your goal is to collect information from the candidate for the JOB_ROLE.
-    - Analyse JOB_ROLE and USER_CV and understand if a Candidate has the right CV info or he is missing something, 
-    - be creative on the ways that the candidate background can be applied on the role
-
-    - Your task is to create notes on the candidate’s skills, experience, and education to determine if they are a good fit for the JOB_ROLE.
+    JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
 
 
-    3-6 small Bullet points:
+    - Your goal is to create a professional really critical Report of the candidate USER_CV for the JOB_ROLE.
+    - Report what is missing and what ia a plus for the JOB_ROLE based on the USER_CV
+
+    - Your task is to create a Critical Report on the candidate’s to determine if they are a good fit for the JOB_ROLE.
+
+
+    Report 3-8 bullet points for JOB_ROLE analyzing USER_CV:
   `
   printC(promptJOB_CV,"3","promptJOB_CV","b")
 
-  infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0)
+  infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0,"API 1","davinci")
 
 
   // infoCandidateForJob = `
@@ -328,23 +302,18 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
   // `
 
   // infoCandidateForJob = `        
-  // - Lolita Mileta's experience as a Lead Scrum Master and Product Owner makes her a strong candidate for the role, as she has experience managing teams and improving feature releases.
-  // - Her skills in Scrum and Agile frameworks, leadership, communication, and planning are all relevant to the responsibilities of the role.
-  // - While her language proficiency may not be directly related to the role, it could be a valuable asset in a collaborative and diverse company culture.
-  // - It is unclear from her CV if she has specific knowledge of GraphQL, Next.js, React, and TailwindCSS, which are required skills for the role.
-  // - However, her experience with continuous improvement suggests that she may be able to quickly learn and adapt to new technologies and tools.
-  // - Overall, Lolita Mileta's experience and skills make her a strong candidate for the role, but further assessment of her technical knowledge may be necessary.
+  // - Lolita Mileta has experience in team leadership, Scrum adoption, and facilitating Scrum ceremonies, which are all relevant skills for the JOB_ROLE.
+  // - She has successfully established smooth communication and clear vision for planned tasks, increasing performance by 30%.
+  // - Lolita does not have any specific education requirements mentioned in her CV, which is a plus for the JOB_ROLE.
+  // - Her personality type is well-suited for the JOB_ROLE, as she is a problem solver, analytical thinker, self-motivated, and results-driven.
+  // - Lolita has experience with AWS infrastructure, maintaining TypeScript SDKs and writing documentation, improving observability, monitoring, and alerting for services, and making architectural changes for scaling services.
+  // - She does not have any experience with databases and SQL, cloud experience, programming experience, or TypeScript experience, which are all required skills for the JOB_ROLE.
   // `
 
   printC(infoCandidateForJob,"3","infoCandidateForJob","p")
   // sdf0
 
 
-
-  // positionData.candidates.compareCandidatePosition.CVToPosition.content = infoCandidateForJob
-
-
-  // positionData = await positionData.save();
 
   // ------------ Save the CV to the positionData -------------
   let candidateIdx_ = positionData?.candidates?.findIndex((candidate) => candidate.userID.toString() == userID.toString());
@@ -1069,56 +1038,40 @@ function chooseAPIkey(chooseAPI="") {
     
     return response.data.choices[0].message.content;
   }
-  
-  async function useGPTchatSimple(prompt,temperature=0.7,chooseAPI = "API 1") {
-    
-    discussion = [{
-      "role": "user",
-      "content": prompt
-    }]
-  
-  
-    
-    // let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
 
+  
+  
+  async function useGPTchatSimple(prompt,temperature=0.7,chooseAPI = "API 1",useMode="chatGPT") {
     
-    // response = await axios.post(
-    //   "https://api.openai.com/v1/chat/completions",
-    //   {
-    //     messages: discussion,
-    //     model: "gpt-3.5-turbo",
-    //     temperature: temperature
-    //   },
-    //   {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization: `Bearer ${OPENAI_API_KEY}`,
-    //     },
-    //   }
-    // );
-
     let success = false;
     let retries = 0;
     let apiKey = chooseAPI;
-    while (!success && retries < 3) {
+
+    let extraTimeWait = 0
+
+    let resContent
+    while (!success && retries < 4) {
       try {
-        console.log("TRY OPENAI = " , apiKey)
-        const titleSkillSummaryRes = await onlyGPTchat(prompt, temperature, apiKey);
+        console.log("TRY OPENAI = " , apiKey,useMode)
+
+        if (useMode == "chatGPT")
+          resContent = await onlyGPTchat(prompt, temperature, apiKey);
+        else if (useMode == "davinci"){
+          resContent = await onlyGPTDavinci(prompt, temperature, apiKey);
+        }
         success = true;
       } catch (e) {
-        console.log("Error OpenAI = " , e.response.status)
-        // if (e.response.status == 429) {
-          // Sleep for a while before trying again
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          // Switch to the other API key
-          apiKey = apiKey === "API 1" ? "API 2" : "API 1";
-        // } else {
-        //   // Handle other exceptions here
-        //   console.error("Error:", e);
-        //   break;
-        // }
+        console.log("Error OpenAI = " , e.response)
+
+        // Sleep for a while before trying again
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        // Switch to the other API key
+        apiKey = apiKey === "API 1" ? "API 2" : "API 1";
       }
       retries++;
+
+      extraTimeWait += 2000
     }
 
     if (!success) {
@@ -1126,12 +1079,45 @@ function chooseAPIkey(chooseAPI="") {
       return;
     }
 
-    return response.data.choices[0].message.content;
+    console.log("resContent = " , resContent)
+
+    return resContent;
+  }
+
+  async function onlyGPTDavinci(prompt,temperature=0.7,chooseAPI = "API 1",max_tokens = 3000) {
+    
+    const configuration = new Configuration({
+      apiKey: chooseAPIkey(chooseAPI)
+    });
+
+    const openai = new OpenAIApi(configuration);
+
+      // let model = "text-curie-001";
+      let model = "text-davinci-003";
+      const response = await openai.createCompletion({
+        model,
+        prompt,
+        temperature,
+        max_tokens: max_tokens,
+      });
+    
+      // ----------- Clean up the Results ---------
+      let generatedText = response.data.choices[0].text;
+    
+      // ----------- Clean up the Results ---------
+    
+  
+    return generatedText
   }
 
   async function onlyGPTchat(prompt,temperature=0.7,chooseAPI = "API 1") {
     
     let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
+
+    discussion = [{
+      "role": "user",
+      "content": prompt
+    }]
 
     
     response = await axios.post(
@@ -1148,8 +1134,10 @@ function chooseAPIkey(chooseAPI="") {
         },
       }
     );
+
+    console.log("response.data = " , response.data)
   
-    return response
+    return response.data.choices[0].message.content
   }
 
   
