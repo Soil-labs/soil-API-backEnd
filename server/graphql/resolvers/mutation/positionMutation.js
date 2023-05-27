@@ -1,5 +1,6 @@
 
 const { ApolloError } = require("apollo-server-express");
+const { Company } = require("../../../models/companyModel");
 
 const { Position } = require("../../../models/positionModel");
 const { Members } = require("../../../models/membersModel");
@@ -34,6 +35,7 @@ module.exports = {
     try {
       let positionData;
       let companyData = await Company.findOne({ _id: companyID });
+
 
       if (!companyData) {
         throw new ApolloError("Could not find Company", "updatePosition", {
@@ -1204,6 +1206,9 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
       if (employee2.conversationID){
         arr1[index].conversationID = employee2.conversationID
       }
+      if (employee2.bestAnswer){
+        arr1[index].bestAnswer = employee2.bestAnswer
+      }
     } else {
       arr1.push({
         ...employee2,
@@ -1212,6 +1217,9 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
 
       if (employee2.conversationID){
         arr1[arr1.length - 1].conversationID = employee2.conversationID
+      }
+      if (employee2.bestAnswer){
+        arr1[arr1.length - 1].bestAnswer = employee2.bestAnswer
       }
 
     }
