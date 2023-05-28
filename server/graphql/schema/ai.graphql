@@ -65,6 +65,7 @@ module.exports = `
     type websiteToMemoryCompanyOutput {
         success: Boolean
         report: String
+        nodes: [Node]
 
     }
 

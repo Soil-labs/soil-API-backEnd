@@ -166,7 +166,7 @@ module.exports = {
         "Sumarise this conversation between user and recruiter in order to keep it as a long term memory: \n \n" +
         paragraph;
 
-      summary = await useGPT(prompt, 0.7);
+      summary = await useGPTchatSimple(prompt, 0.7);
       // summary = "The conversation between the user and recruiter was about finding a Designer for the user's position. The desired skills for the designer were the ability to work well in a team, and proficiency in Figma and wireframe design. The user's position is working with a web3 NFT marketplace."
 
       embed_summary = await createEmbeddingsGPT(summary);
@@ -330,10 +330,59 @@ module.exports = {
       Answer:`;
        let report = await useGPTchatSimple(promptReport, 0);
 
-      console.log("report", report);
+      // let report = "Category 1: Skills>\n- Experience with databases and SQL\n- Cloud experience, preferably with AWS\n- Programming experience\n- TypeScript experience is a plus\n\n<Category 2: Qualifications>\n- Experience building and maintaining backend systems\n- Experience with infrastructure improvements and scaling\n- Experience troubleshooting production issues and conducting root cause analysis\n- Experience conducting systems tests for security, performance, and availability\n\n<Category 3: Education>\n- No specific education requirements mentioned\n\n<Category 4: Culture Fit>\n- Team player\n- Willingness to work on everything on the backend side\n- Strong communication skills\n- Ability to work in a fast-paced environment\n\n<Category 5: Personality Type>\n- Detail-oriented\n- Problem solver\n- Self-motivated\n- Adaptable\n\n<Category 6: Experience>\n- Experience maintaining and improving infrastructure in AWS\n- Experience maintaining TypeScript SDKs and writing internal and public documentation\n- No specific years of experience mentioned\n- Experience with observability, monitoring, and alerting for services"
+
+      printC(report, "0", "report", "b");
+
+
+      // ---------------------- Map Nodes from Position text ---------------------
+      promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
+            Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.
+            Do not have any other words except for skills. 
+
+            Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
+            
+            Job Position (delimiters <>): <${report}>
+
+            Skills Result:
+            `;
+
+
+
+      let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
+
+      // let mapSkillText = `
+      // Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.
+      // `
+
+
+      printC(mapSkillText, "1", "mapSkillText", "g");
+
+      let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
+
+      printC(nodesN, "3", "nodesN", "p");
+
+      nodeSave = nodesN.map((obj) => {
+        return {
+          _id: obj.nodeID,
+        };
+      });
+
+      nodeIDs = nodeSave.map((obj) => {
+        
+        return {
+          nodeID: obj._id
+        }
+      });
+
+      printC(nodeSave, "4", "nodeSave", "r");
+
+
+      // ---------------------- Map Nodes from Position text ---------------------
 
 
       // update Mongo
+      positionData.nodes = nodeIDs;
       positionData.positionsRequirements.content = report;
 
       await positionData.save();
@@ -589,7 +638,7 @@ module.exports = {
             Skills Result:
             `;
 
-          textForMapping = await useGPT(promptCVtoMap, 0);
+          textForMapping = await useGPTchatSimple(promptCVtoMap, 0);
 
           printC(textForMapping, "3", "textForMapping", "b");
           // sdf00
@@ -939,7 +988,7 @@ module.exports = {
     
     """${cvString}"""`;
 
-    summaryOfCV = await useGPT(prompt, 0.2);
+    summaryOfCV = await useGPTchatSimple(prompt, 0.2);
 
     try {
       return {
@@ -976,7 +1025,7 @@ module.exports = {
        - short description
        - short description `;
 
-    responseFromGPT = await useGPT(prompt, 0.7);
+    responseFromGPT = await useGPTchatSimple(prompt, 0.7);
 
     console.log("responseFromGPT", responseFromGPT);
 
@@ -1050,7 +1099,7 @@ module.exports = {
       "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentenses. Make it as dese as possible with just listing the skills.\nDo not have any other words except for skills. \n\nExaple output: Skills: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
       message;
 
-    responseFromGPT = await useGPT(prompt, 0.7);
+    responseFromGPT = await useGPTchatSimple(prompt, 0.7);
     // console.log("responseFromGPT", responseFromGPT);
     console.log("MessageMapKG_V2APICall", MessageMapKG_V2APICall);
 
