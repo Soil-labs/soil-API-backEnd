@@ -26,6 +26,7 @@ const {
   wait,
   interviewQuestionCreationUserFunc,
   conversationCVPositionToReportFunc,
+  reportPassFailCVPositionConversationFunc,
 } = require("../utils/aiModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
@@ -307,25 +308,47 @@ module.exports = {
 
 
     try {
+      // promptReport = ` You have as input the Details of a Job Position
+      // Job Position (delimiters <>): <${stringFromWebsite}>
+
+
+      // The Recruiter Task is to create a report for the most important info about what skills, qualifications, education, culture fit, personality type, experience etc. the Candidate should have!
+
+      // - You need make really small bullet points of information about the Candidate for every Category
+      // - Based on the conversation you can make from 0 to 4 bullet points for every Category
+      // - To include information in the output you must first find it in text of <Job Position>
+      // - Do not make up fake information, only use what you fine in <Job Position>
+      // - If you do not find the information, just skip the category(leave it blank)
+      // - Include up to 6 categories 
+
+      // For example: 
+      //   <Category 1: title>
+      //     - content
+      //     - content
+      //   <Category 2: title>
+      //     - content
+
+      // Answer:`;
+
       promptReport = ` You have as input the Details of a Job Position
       Job Position (delimiters <>): <${stringFromWebsite}>
 
 
-      The Recruiter Task is to create a report for the most important info about what skills, qualifications, education, culture fit, personality type, experience etc. the Candidate should have!
+      The Recruiter Task is to create a report for the most important categories and subCategories the Candidate should have and will be evaluated!
 
-      - You need make really small bullet points of information about the Candidate for every Category
-      - Based on the conversation you can make from 0 to 4 bullet points for every Category
-      - To include information in the output you must first find it in text of <Job Position>
-      - Do not make up fake information, only use what you fine in <Job Position>
-      - If you do not find the information, just skip the category(leave it blank)
-      - Include up to 6 categories 
+
+      - Every Category can have from  1 to 4 bullet points
+      - To include information in the output you must first find it in text of <Job Position> Do not make up fake information
+      - Include 3-6 categories 
+      - You need make really small bullet points maximum 15 words about what the Candidate should have to pass on every Category
+      - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc. 
 
       For example: 
         <Category 1: title>
-          - content
-          - content
+          - b1: small content max 15 words
+          - b2: small content max 15 words
         <Category 2: title>
-          - content
+          - b3: small content max 15 words
 
       Answer:`;
        let report = await useGPTchatSimple(promptReport, 0);
@@ -333,11 +356,14 @@ module.exports = {
       // let report = "Category 1: Skills>\n- Experience with databases and SQL\n- Cloud experience, preferably with AWS\n- Programming experience\n- TypeScript experience is a plus\n\n<Category 2: Qualifications>\n- Experience building and maintaining backend systems\n- Experience with infrastructure improvements and scaling\n- Experience troubleshooting production issues and conducting root cause analysis\n- Experience conducting systems tests for security, performance, and availability\n\n<Category 3: Education>\n- No specific education requirements mentioned\n\n<Category 4: Culture Fit>\n- Team player\n- Willingness to work on everything on the backend side\n- Strong communication skills\n- Ability to work in a fast-paced environment\n\n<Category 5: Personality Type>\n- Detail-oriented\n- Problem solver\n- Self-motivated\n- Adaptable\n\n<Category 6: Experience>\n- Experience maintaining and improving infrastructure in AWS\n- Experience maintaining TypeScript SDKs and writing internal and public documentation\n- No specific years of experience mentioned\n- Experience with observability, monitoring, and alerting for services"
 
       printC(report, "0", "report", "b");
+      // sdf9
+      positionData.positionsRequirements.content = report;
+
 
 
       // ---------------------- Map Nodes from Position text ---------------------
       promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
-            Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.
+            dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
             Do not have any other words except for skills. 
 
             Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
@@ -350,26 +376,19 @@ module.exports = {
 
 
       let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
-
-      // let mapSkillText = `
-      // Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.
-      // `
-
-
+      // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
       printC(mapSkillText, "1", "mapSkillText", "g");
 
       let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
-
       printC(nodesN, "3", "nodesN", "p");
 
+      
       nodeSave = nodesN.map((obj) => {
         return {
           _id: obj.nodeID,
         };
       });
-
       nodeIDs = nodeSave.map((obj) => {
-        
         return {
           nodeID: obj._id
         }
@@ -377,14 +396,11 @@ module.exports = {
 
       printC(nodeSave, "4", "nodeSave", "r");
 
-
+      positionData.nodes = nodeIDs;
       // ---------------------- Map Nodes from Position text ---------------------
 
 
       // update Mongo
-      positionData.nodes = nodeIDs;
-      positionData.positionsRequirements.content = report;
-
       await positionData.save();
 
 
@@ -410,7 +426,8 @@ module.exports = {
     try {
 
 
-      const res = await conversationCVPositionToReportFunc(memberID, positionID)
+      // const res = await conversationCVPositionToReportFunc(memberID, positionID)
+      const res = await reportPassFailCVPositionConversationFunc(memberID, positionID)
 
       report = res.report
       categoriesT = res.categoriesT

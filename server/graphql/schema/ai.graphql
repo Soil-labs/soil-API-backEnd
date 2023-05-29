@@ -79,6 +79,15 @@ module.exports = `
         report: String
         CV_ConvoToPosition: [notesInterviewType2],
         CV_ConvoToPositionAverageScore: Float,
+        reportPassFail: [reportPassFailType],
+    }
+
+    type reportPassFailType {
+        categoryName: String,
+        title: String,
+        score: Int,
+        reason: String,
+        IDb: String,
     }
 
     type notesInterviewType2 {
