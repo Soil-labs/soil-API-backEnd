@@ -142,7 +142,7 @@ module.exports = {
           deletePineIDs = convDataNow.summary.map((obj) => obj.pineConeID);
           await deletePineCone(deletePineIDs);
           // ------------------ Delete old summaries from pinecone ------------------
-
+ 
           let paragraphSummary = await useGPTchat(
             // "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation. reasult:",
             // "Please summarize the conversation using bullet points. Focuse on creating consise bullet points. Try to incorporate the keywords that were used during the conversation. reasult:",
