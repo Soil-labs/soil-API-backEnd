@@ -358,6 +358,9 @@ Category 1:
 
   printC(merged,"4","merged","r")
   
+  // find Average Score
+  let scoreAll = 0
+  let nAll = 0
 
   // transform to array
   const reportPoints = [];
@@ -369,7 +372,14 @@ Category 1:
       score: merged[id].score,
       reason: merged[id].reason,
     });
+
+    if (merged[id].score != undefined && merged[id].score != null && merged[id].score != "N/A"){
+      scoreAll += merged[id].score
+      nAll +=1
+    }
   }
+
+  scoreAll = parseInt(scoreAll/nAll)
 
   printC(reportPoints,"6","reportPoints","b")
 
@@ -380,6 +390,7 @@ Category 1:
 
   // update Mongo
   positionData.candidates[index_].compareCandidatePosition.reportPassFail = reportPoints
+  positionData.candidates[index_].compareCandidatePosition.CV_ConvoToPositionAverageScore = scoreAll
   await positionData.save();
 
 
