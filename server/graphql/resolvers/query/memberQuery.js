@@ -935,10 +935,10 @@ module.exports = {
   },
   matchPrepareNode_AI4: async (parent, args, context, info) => {
     const { nodeID, serverID, find, weightSkills,distancePenalty } = args.fields;
-    console.log(
-      "Query > matchPrepareNode_AI4 > args.fields = ",
-      args.fields
-    );
+    // console.log(
+    //   "Query > matchPrepareNode_AI4 > args.fields = ",
+    //   args.fields
+    // );
 
     if (!nodeID) throw new ApolloError("node is required");
 
@@ -956,12 +956,12 @@ module.exports = {
         "-subNodes -relatedNodes -aboveNodes"
       );
 
-      console.log("nodeData = " , nodeData)
+      // console.log("nodeData = " , nodeData)
 
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
       let match_v2 = nodeData.match_v2;
-      console.log("match_v2 = " , match_v2)
+      // console.log("match_v2 = " , match_v2)
 
       matchRelativePosition_gl = {};
       typeNeo = find;
@@ -981,8 +981,8 @@ module.exports = {
 
       // check if there is something new that we need to include
       for (const [key, value] of Object.entries(result_matchRelat)) {
-        console.log("key = " , key)
-        console.log("value = " , value)
+        // console.log("key = " , key)
+        // console.log("value = " , value)
         // asdf2
         if (matchRelativePosition_gl[key] === undefined) {
           matchRelativePosition_gl[key] = {
@@ -1564,7 +1564,7 @@ module.exports = {
       new_max_m = 20;
       new_min_m = 100;
 
-      console.log("nodeData = ", nodeData);
+      // console.log("nodeData = ", nodeData);
 
       memberIDs = [];
 
@@ -2480,7 +2480,7 @@ module.exports = {
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
 
-      console.log("nodeData = ", nodeData);
+      // console.log("nodeData = ", nodeData);
 
       for (let i = 0; i < nodeData.length; i++) {
         // loop on the nodes
@@ -2835,7 +2835,7 @@ module.exports = {
 
       nodeData = await Node.find({ _id: nodeIDs }).select('_id name categoryNodes groupNodes');
 
-      console.log("nodeData = " , nodeData)
+      // console.log("nodeData = " , nodeData)
 
 
       let categoryObj = {};

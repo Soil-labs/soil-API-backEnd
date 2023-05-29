@@ -108,13 +108,13 @@ module.exports = {
       for (let i = 0; i < convData.length; i++) {
         convDataNow = convData[i];
 
-        console.log("convDataNow = ", convDataNow);
+        // console.log("convDataNow = ", convDataNow);
 
         // --------------- Calculate candidateNotesEdenAI ---------------
         const userID = convDataNow.userID;
         const positionID = convDataNow.positionID;
 
-        console.log("userID,positionID = ", userID, positionID);
+        // console.log("userID,positionID = ", userID, positionID);
 
         if (userID != undefined && positionID != undefined)
           CandidateNotesEdenAIAPICallF(userID, positionID);
@@ -122,18 +122,21 @@ module.exports = {
 
         // --------------- Calculate candidateNotesEdenAI ---------------
 
-        console.log("convDataNow = ", convDataNow);
+        // console.log("convDataNow = ", convDataNow);
 
         await updatePositionInterviewedOfUser(convDataNow.userID);
         // asdf9
 
-        console.log("convDataNow. = ", convDataNow.updatedAt);
+        // console.log("convDataNow. = ", convDataNow.updatedAt);
+
+        printC( convDataNow.updatedAt,"0"," convDataNow.updatedAt","b")
 
         // how many minutes pass from last update
         const minutesSinceLastUpdate =
           (Date.now() - convDataNow.updatedAt) / 60000;
 
-        console.log("minutesSinceLastUpdate = ", minutesSinceLastUpdate);
+        // console.log("minutesSinceLastUpdate = ", minutesSinceLastUpdate);
+        printC(minutesSinceLastUpdate,"1","minutesSinceLastUpdate","b")
 
         if (minutesSinceLastUpdate > 2) {
           // if (true) {
@@ -166,7 +169,7 @@ module.exports = {
 
           splitSummary.shift();
 
-          console.log("splitSummary = ", splitSummary);
+          // console.log("splitSummary = ", splitSummary);
           // ---------------- GPT find new Summary ------------
 
           let summaryArr = [];
@@ -181,7 +184,7 @@ module.exports = {
               convKey: convDataNow.convKey,
             });
 
-            console.log("upsertDoc = ", upsertDoc);
+            // console.log("upsertDoc = ", upsertDoc);
 
             summaryArr.push({
               pineConeID: upsertDoc.pineConeID,
@@ -194,7 +197,7 @@ module.exports = {
 
           convDataNow = await findSummaryOfAnswers(convDataNow);
 
-          printC(convDataNow,"0","convDataNow","b")
+          // printC(convDataNow,"0","convDataNow","b")
 
 
           await convDataNow.save();
@@ -205,8 +208,8 @@ module.exports = {
           const positionID = convDataNow.positionID;
           const userID = convDataNow.userID;
 
-          printC(positionID,"0","positionID","b")
-          printC(userID,"0","userID","b")
+          printC(positionID,"2","positionID","y")
+          printC(userID,"3","userID","y")
 
           // const res = await conversationCVPositionToReportFunc(userID, positionID)
           const res = await reportPassFailCVPositionConversationFunc(userID, positionID)
@@ -216,7 +219,7 @@ module.exports = {
           scoreAll = res.scoreAll
     
 
-          // printC(report,"0","report","y")
+          printC(report,"4","report","g")
           // printC(categoriesT,"0","categoriesT","y")
           // printC(scoreAll,"0","scoreAll","y")
 

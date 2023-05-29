@@ -332,6 +332,8 @@ Category 1:
   printC(report,"4","report","g")
 
 
+  report = report.replace(/N\/A/g, "0"); // if you dont know something make it as zero score
+
   const regexScores = /- (\w+): (\d+) - (.+)/g;
   const scores = {};
 
