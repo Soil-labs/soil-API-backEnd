@@ -19,6 +19,7 @@ const {
   deletePineCone,
   CandidateNotesEdenAIAPICallF,
   conversationCVPositionToReportFunc,
+  reportPassFailCVPositionConversationFunc,
 } = require("../utils/aiModules");
 
 const { printC } = require("../../../printModule");
@@ -207,7 +208,8 @@ module.exports = {
           printC(positionID,"0","positionID","b")
           printC(userID,"0","userID","b")
 
-          const res = await conversationCVPositionToReportFunc(userID, positionID)
+          // const res = await conversationCVPositionToReportFunc(userID, positionID)
+          const res = await reportPassFailCVPositionConversationFunc(userID, positionID)
 
           report = res.report
           categoriesT = res.categoriesT
