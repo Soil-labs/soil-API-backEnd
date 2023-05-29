@@ -379,7 +379,7 @@ Category 1:
     }
   }
 
-  scoreAll = parseInt(scoreAll/nAll)
+  scoreAll = parseInt(scoreAll/nAll)*10
 
   printC(reportPoints,"6","reportPoints","b")
 

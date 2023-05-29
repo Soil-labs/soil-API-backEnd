@@ -78,7 +78,7 @@ module.exports = {
   },
   updateConvSummaries: async (parent, args, context, info) => {
     const { _id, convKey } = args.fields;
-    console.log("Query > updateConvSummaries > args.fields = ", args.fields);
+    // console.log("Query > updateConvSummaries > args.fields = ", args.fields);
 
     let searchQuery_and = [];
     let searchQuery = {};
@@ -138,7 +138,7 @@ module.exports = {
         // console.log("minutesSinceLastUpdate = ", minutesSinceLastUpdate);
         printC(minutesSinceLastUpdate,"1","minutesSinceLastUpdate","b")
 
-        if (minutesSinceLastUpdate > 2) {
+        if (minutesSinceLastUpdate > 0.5) {
           // if (true) {
 
           // ------------------ Delete old summaries from pinecone ------------------
