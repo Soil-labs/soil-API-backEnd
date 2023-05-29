@@ -188,6 +188,209 @@ async function conversationCVPositionToReportFunc(memberID,positionID) {
 
 }
 
+async function reportPassFailCVPositionConversationFunc(memberID,positionID) {
+
+  if (!positionID) {
+    throw new ApolloError("positionID is required");
+  }
+
+  positionData = await Position.findOne({ _id: positionID });
+
+  if (!positionData) {
+    throw new ApolloError("Position not found");
+  }
+
+  
+  if (!memberID) {  
+    throw new ApolloError("memberID is required");
+  }
+
+  memberData = await Members.findOne({ _id: memberID });
+
+
+
+  let index_ = positionData?.candidates?.findIndex(
+    (x) => x.userID.toString() == memberID.toString()
+  );
+
+  if (index_ == undefined || index_ == -1) {
+    throw new ApolloError("Candidate not found");
+  }
+
+  const positionsRequirements = positionData?.positionsRequirements?.content
+  printC(positionsRequirements,"3","positionsRequirements","g")
+  
+  // ---------------- Create Object for Position Report ----------------
+  const regexT = /<(.+)>((?:\n\s*- \w+: .+)*)/g;
+  const regexB = /- (\w+): (.+)/g;
+
+  const categories = {};
+
+  let matchT;
+  while ((matchT = regexT.exec(positionsRequirements)) !== null) {
+    const categoryTitle = matchT[1];
+    const categoryRequirements = matchT[2];
+    const requirements = {};
+
+    let matchB;
+    while ((matchB = regexB.exec(categoryRequirements)) !== null) {
+      const id = matchB[1];
+      const title = matchB[2];
+      requirements[id] = title;
+
+      categories[id] = {
+        categoryName: categoryTitle,
+        title: title,
+      }
+    }
+
+    // categories[categoryTitle] = requirements;
+  }
+
+
+  printC(categories,"4","categories","g")
+  // ---------------- Create Object for Position Report ----------------
+
+
+
+  let candidateData = positionData.candidates[index_];
+
+  const conversationID = candidateData.conversationID;
+
+
+  const CVToPositionReport = candidateData?.compareCandidatePosition?.CVToPosition?.content
+
+
+
+
+
+  printC(candidateData,"0","candidateData","b")
+
+  printC(conversationID,"1","conversationID","b")
+
+  printC(CVToPositionReport,"2","CVToPositionReport","p")
+
+  // sd0
+
+  const convoCandidateRecruiterPrompt = await findConversationPrompt(conversationID)
+
+  printC(convoCandidateRecruiterPrompt,"3","convoCandidateRecruiterPrompt","p")
+  
+  
+  promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
+
+  Report Candidate CV to Job Position (delimiters <>): <${CVToPositionReport}>
+
+  Conversation of Candidate With Recruiter (delimiters <>): <${convoCandidateRecruiterPrompt}>
+
+  Requirements of Job Position (delimiters <>): <${positionsRequirements}>
+
+
+ 
+  Your Task is to Score each of the Job Requirements based on the CV and the Conversation to find the right candidate for the Job Position 
+
+  - You need to Score the Bullet points overall from 0 to 10 for each ID
+   - For each bullet point ONLY give ID, really small reason max 10 words and score
+   - Give exactly the same number of bullet points(IDs)
+ 
+
+For example: 
+Category 1:
+      - ID: Score - A really small reason      
+      - ID: Score - A really small reason
+
+  Only Output the ID, Scores, really small reason:`;
+
+
+  printC(promptReport,"4","promptReport","y")
+  
+  let report = await useGPTchatSimple(promptReport, 0);
+
+  // printC(report,"4","report","g")
+
+  // sdf12
+
+//   report  = `
+//   <Category 1: Education>
+//   - b1: 10 - MS in Computer Science, Engineering, Math, Science or related field. PhD preferred.
+
+// <Category 2: Experience>
+//   - b2: 10 - Over 11 years of experience in Computer Vision, Machine Learning, and Robotics.
+//   - b3: 10 - Proven track record of excellence in applying Machine Learning techniques for solving difficult real world problems.
+
+// <Category 3: Skills>
+//   - b4: 10 - Experience with cutting-edge technologies such as Pytorch, TensorFlow, and CUDA.
+  
+// <Category 4: Job Responsibilities>
+//   - b5: 10 - Experience in leading teams and managing projects.
+//   - b5: 10 - Experience in applying Deep Learning techniques to challenging real world problems.
+  
+// <Category 5: Diversity and Inclusion>
+//   - b6: 10 - Equal Opportunity Employer and a good fit for the culture.
+//   `
+
+  printC(report,"4","report","g")
+
+
+  const regexScores = /- (\w+): (\d+) - (.+)/g;
+  const scores = {};
+
+
+  while ((match = regexScores.exec(report))) {
+    const id = match[1];
+    const score = parseInt(match[2]);
+    const reason = match[3];
+    scores[id] = { score, reason };
+  }
+
+  printC(scores,"4","scores","g")
+  printC(categories,"4","categories","b")
+
+  // df9
+  
+  const merged = {};
+  
+  for (const id in categories) {
+    merged[id] = { ...categories[id], ...scores[id] };
+  }
+
+  printC(merged,"4","merged","r")
+  
+
+  // transform to array
+  const reportPoints = [];
+  for (const id in merged) {
+    reportPoints.push({
+      IDb: id,
+      categoryName: merged[id].categoryName,
+      title: merged[id].title,
+      score: merged[id].score,
+      reason: merged[id].reason,
+    });
+  }
+
+  printC(reportPoints,"6","reportPoints","b")
+
+
+  printC(index_,"6","index_","b")
+  console.log("index_ = " , index_)
+  // sdf3
+
+  // update Mongo
+  positionData.candidates[index_].compareCandidatePosition.reportPassFail = reportPoints
+  await positionData.save();
+
+
+  return {
+    success: true,
+    report,
+    // categoriesT,
+    // scoreAll,
+    reportPassFail: reportPoints,
+  }
+
+}
+
 async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
 
@@ -2052,4 +2255,5 @@ module.exports = {
     interviewQuestionCreationUserFunc,
     findConversationPrompt,
     conversationCVPositionToReportFunc,
+    reportPassFailCVPositionConversationFunc,
   };

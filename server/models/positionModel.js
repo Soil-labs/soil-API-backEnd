@@ -86,6 +86,13 @@ const positionModel = mongoose.Schema({
         reason: [String],
       }],
       CV_ConvoToPositionAverageScore: Number,
+      reportPassFail: [{
+        categoryName: String,
+        title: String,
+        score: Number,
+        reason: String,
+        IDb: String,
+      }]
     }
   }],
 
