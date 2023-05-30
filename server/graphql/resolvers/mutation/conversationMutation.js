@@ -138,7 +138,7 @@ module.exports = {
         // console.log("minutesSinceLastUpdate = ", minutesSinceLastUpdate);
         printC(minutesSinceLastUpdate,"1","minutesSinceLastUpdate","b")
 
-        if (minutesSinceLastUpdate > 0.5) {
+        if (minutesSinceLastUpdate > 1.2) {
           // if (true) {
 
           // ------------------ Delete old summaries from pinecone ------------------

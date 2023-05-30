@@ -3169,15 +3169,15 @@ module.exports = {
 
 
       const noteCategories = [
-        "Personal Details",
-        "Work Culture",
-        "Interests"
+        "Key information about candidate",
+        "Personality Traits",
+        "General Interests"
       ];
 
       // make noteCategories into a string prompt
       let promptNoteCategory = "";
       for (let i = 0; i < noteCategories.length; i++) {
-        promptNoteCategory = promptNoteCategory + "- " + noteCategories[i] + " \n\n";
+        promptNoteCategory = promptNoteCategory + "Category " + parseInt(i+1) +  ": " + noteCategories[i] + " \n\n";
       }
 
       console.log("promptNoteCategory = " , promptNoteCategory)
@@ -3189,26 +3189,26 @@ module.exports = {
 
       Conversation is inside <>: <${promptConv}>
 
-      The Recruiter is trying to create some Notes for the Candidate for some Categories
+      The Recruiter is trying to create Notes for the Candidate for specific Categories
 
       Categories are inside <>: <${promptNoteCategory}>
 
-      - You need make really small bullet points of information about the Candidate for every Category
-      - Based on the conversation you can make from 0 to 4 bullet points for every Category
+      - You need make small bullet points of information maximum 10 words about the Candidate for every each Category
+      - Based on the conversation you can make from 2 to 4 bullet points for every Category
 
       For example: 
         <Category 1: title>
-          - content
-          - content
-        <Category 2: title>
-          - content
+          - content 10 words
 
-      Answer:
+      categories and content with 10 words for each content:
       `
 
+      printC(promptNoteCategoryUser, "0", "promptNoteCategoryUser", "b")
 
-      evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
-      console.log("evaluateNoteCategories = " , evaluateNoteCategories)
+      evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser,0)
+      printC(evaluateNoteCategories, "1", "evaluateNoteCategories", "p")
+      // sdf9
+
       
 
 
