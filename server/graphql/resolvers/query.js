@@ -42,7 +42,7 @@ const {
   findConversations,
 } = require("./query/conversationQuery");
 
-const { findPosition, findPositions } = require("./query/positionQuery");
+const { findPosition, findPositions,findUserTalentListPosition } = require("./query/positionQuery");
 
 const { findCompany, findCompanies } = require("./query/companyQuery");
 
@@ -188,7 +188,7 @@ module.exports = {
 
     // ------------- POSITION QUERY -----------------
     findPosition,
-    findPositions,
+    findPositions,findUserTalentListPosition,
 
     // ------------- COMPANY QUERY -----------------
     findCompany,

@@ -148,6 +148,11 @@ module.exports = `
     input findPositionsInput {
         _id: [ID],
     }
+
+    input findUserTalentListPositionInput {
+        _id: ID,
+    }
+
     input deletePositionCandidateInput {
         positionID:  ID,
         userID: ID,

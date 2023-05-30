@@ -72,4 +72,27 @@ module.exports = {
       );
     }
   },
+  findUserTalentListPosition: async (parent, args, context, info) => {
+    const { _id } = args.fields;
+    console.log("Query > findUserTalentListPosition > args.fields = ", args.fields);
+
+
+    try {
+      let positionData = await Position.findOne({"talentList._id": _id}).select('_id name talentList');
+
+     
+      // find the talentList _id
+      talentListData = positionData.talentList.find(talentList => talentList._id.toString() == _id.toString());
+      // positionData.
+
+
+      return talentListData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findUserTalentListPosition",
+        { component: "positionQuery > findUserTalentListPosition" }
+      );
+    }
+  },
 };
