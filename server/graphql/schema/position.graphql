@@ -63,6 +63,7 @@ module.exports = `
         overallScore: Float,
         acceptedOrRejected: Boolean,
         readyToDisplay: Boolean,
+        conversationID: ID,
         conversation: [conversationType],
         summaryQuestions: [SummaryQuestionType]
         interviewQuestionsForCandidate: [interviewQuestionsForCandidateType]
