@@ -1,5 +1,6 @@
 const { AI } = require("../../../models/aiModel");
 const { Members } = require("../../../models/membersModel");
+const { Position } = require("../../../models/positionModel");
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
 const { Configuration, OpenAIApi } = require("openai");
@@ -19,7 +20,13 @@ const { printC } = require("../../../printModule");
 const {
   useGPTchatSimple,
   MessageMapKG_V2APICallF,
+  MessageMapKG_V4APICallF,
   deletePineCone,
+  findConversationPrompt,
+  wait,
+  interviewQuestionCreationUserFunc,
+  conversationCVPositionToReportFunc,
+  reportPassFailCVPositionConversationFunc,
 } = require("../utils/aiModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
@@ -160,8 +167,8 @@ module.exports = {
         "Sumarise this conversation between user and recruiter in order to keep it as a long term memory: \n \n" +
         paragraph;
 
-      summary = await useGPT(prompt, 0.7);
-      // summary = "The conversation between the user and recruiter was about finding a Designer for the user's company. The desired skills for the designer were the ability to work well in a team, and proficiency in Figma and wireframe design. The user's company is working with a web3 NFT marketplace."
+      summary = await useGPTchatSimple(prompt, 0.7);
+      // summary = "The conversation between the user and recruiter was about finding a Designer for the user's position. The desired skills for the designer were the ability to work well in a team, and proficiency in Figma and wireframe design. The user's position is working with a web3 NFT marketplace."
 
       embed_summary = await createEmbeddingsGPT(summary);
 
@@ -196,16 +203,36 @@ module.exports = {
       throw new ApolloError("userID is required");
     }
     try {
-      prompt =
-        'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
-        message;
+      promptMemory = `I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. 
+        These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. 
+        I want you to find experiences in the CV and combine them with a description of what was done there + the skills that were associated with that experience. 
+        
+        Never have a bullet point for skills in the output, do not list skills as a separate category. 
+        Do not list experiences, descriptions, or skills separately, only list them in relation to other things. For categories, include job, education(make sure to include the highest level of education(Bachelors < Masters < Ph.D )), project, internship (take your time and make sure that this is not a job, make sure that it is actually an internship), and published article. 
+        If an internship was not found, do not include it as an output, just skip it(DO NOT output: (• Internship: None found), just leave it blank), this would apply to any category that was not found in text. 
+        Only list categories in the output if you find them in the text. If a category is not found in the text, do not have a output it as a bullet-point.
+        
+        Follow this strict format (each category should be limited to 200 characters, do not go beyond 200 character limit for each category):
+        • Category: name: explanation: skills (limit 6 skills per category, do not go beyond 6 skills per category)
+         Example (but do not include these examples in the output, also do not include the label category in the output) Delimiters<>:
+          <• Job: Facebook: worked at this position for 1 year focusing on frontend and backend: C++, React, Node.js>
+        
+        Here is the string to extract the information from: """${message}"""`;
 
-      summaryBulletPoints = await useGPT(prompt, 0.7);
+      summaryBulletPoints = await useGPTchatSimple(prompt, 0);
 
       jobsArr = summaryBulletPoints
         .replace(/\n/g, "")
         .split("•")
         .filter((item) => item.trim() !== "");
+
+      for (let i = 0; i < jobsArr.length; i++) {
+        if (jobsArr[i].includes("Skills:")) {
+          jobsArr.splice(i, 1);
+        }
+      }
+
+      console.log("jobsArr", jobsArr);
 
       const getUpserts = async () => {
         for (let i = 0; i < jobsArr.length; i++) {
@@ -222,6 +249,7 @@ module.exports = {
       };
 
       getUpserts();
+
       // embed_summary = await createEmbeddingsGPT(summary);
 
       // let result = [];
@@ -258,9 +286,175 @@ module.exports = {
       );
     }
   },
+  websiteToMemoryCompany: async (parent, args, context, info) => {
+    const { message, positionID } = args.fields;
+    console.log("Mutation > websiteToMemoryCompany > args.fields = ", args.fields);
+
+    if (!positionID) {
+      throw new ApolloError("positionID is required");
+    }
+
+    positionData = await Position.findOne({ _id: positionID });
+
+    if (!positionData) {
+      throw new ApolloError("Position not found");
+    }
+
+    printC(positionData,"0","positionData","b")
+
+
+    stringFromWebsite = message;
+
+
+
+    try {
+      // promptReport = ` You have as input the Details of a Job Position
+      // Job Position (delimiters <>): <${stringFromWebsite}>
+
+
+      // The Recruiter Task is to create a report for the most important info about what skills, qualifications, education, culture fit, personality type, experience etc. the Candidate should have!
+
+      // - You need make really small bullet points of information about the Candidate for every Category
+      // - Based on the conversation you can make from 0 to 4 bullet points for every Category
+      // - To include information in the output you must first find it in text of <Job Position>
+      // - Do not make up fake information, only use what you fine in <Job Position>
+      // - If you do not find the information, just skip the category(leave it blank)
+      // - Include up to 6 categories 
+
+      // For example: 
+      //   <Category 1: title>
+      //     - content
+      //     - content
+      //   <Category 2: title>
+      //     - content
+
+      // Answer:`;
+
+      promptReport = ` You have as input the Details of a Job Position
+      Job Position (delimiters <>): <${stringFromWebsite}>
+
+
+      The Recruiter Task is to create a report for the most important categories and subCategories the Candidate should have and will be evaluated!
+
+
+      - Every Category can have from  1 to 4 bullet points
+      - To include information in the output you must first find it in text of <Job Position> Do not make up fake information
+      - Include 3-6 categories 
+      - You need make really small bullet points maximum 15 words about what the Candidate should have to pass on every Category
+      - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc. 
+
+      For example: 
+        <Category 1: title>
+          - b1: small content max 15 words
+          - b2: small content max 15 words
+        <Category 2: title>
+          - b3: small content max 15 words
+
+      Answer:`;
+       let report = await useGPTchatSimple(promptReport, 0);
+
+      // let report = "Category 1: Skills>\n- Experience with databases and SQL\n- Cloud experience, preferably with AWS\n- Programming experience\n- TypeScript experience is a plus\n\n<Category 2: Qualifications>\n- Experience building and maintaining backend systems\n- Experience with infrastructure improvements and scaling\n- Experience troubleshooting production issues and conducting root cause analysis\n- Experience conducting systems tests for security, performance, and availability\n\n<Category 3: Education>\n- No specific education requirements mentioned\n\n<Category 4: Culture Fit>\n- Team player\n- Willingness to work on everything on the backend side\n- Strong communication skills\n- Ability to work in a fast-paced environment\n\n<Category 5: Personality Type>\n- Detail-oriented\n- Problem solver\n- Self-motivated\n- Adaptable\n\n<Category 6: Experience>\n- Experience maintaining and improving infrastructure in AWS\n- Experience maintaining TypeScript SDKs and writing internal and public documentation\n- No specific years of experience mentioned\n- Experience with observability, monitoring, and alerting for services"
+
+      printC(report, "0", "report", "b");
+      // sdf9
+      positionData.positionsRequirements.content = report;
+
+
+
+      // ---------------------- Map Nodes from Position text ---------------------
+      promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
+            dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
+            Do not have any other words except for skills. 
+
+            Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
+            
+            Job Position (delimiters <>): <${report}>
+
+            Skills Result:
+            `;
+
+
+
+      let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
+      // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
+      printC(mapSkillText, "1", "mapSkillText", "g");
+
+      let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
+      printC(nodesN, "3", "nodesN", "p");
+
+      
+      nodeSave = nodesN.map((obj) => {
+        return {
+          _id: obj.nodeID,
+        };
+      });
+      nodeIDs = nodeSave.map((obj) => {
+        return {
+          nodeID: obj._id
+        }
+      });
+
+      printC(nodeSave, "4", "nodeSave", "r");
+
+      positionData.nodes = nodeIDs;
+      // ---------------------- Map Nodes from Position text ---------------------
+
+
+      // update Mongo
+      await positionData.save();
+
+
+      return {
+        report: report,
+        success: true,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "websiteToMemoryCompany",
+        {
+          component: "aiMutation > websiteToMemoryCompany",
+        }
+      );
+    }
+  },
+
+  conversationCVPositionToReport: async (parent, args, context, info) => {
+    const { memberID, positionID } = args.fields;
+    console.log("Mutation > conversationCVPositionToReport > args.fields = ", args.fields);
+
+    try {
+
+
+      // const res = await conversationCVPositionToReportFunc(memberID, positionID)
+      const res = await reportPassFailCVPositionConversationFunc(memberID, positionID)
+
+      report = res.report
+      categoriesT = res.categoriesT
+      scoreAll = res.scoreAll
+
+
+      return {
+        report: report,
+        success: true,
+        CV_ConvoToPosition: categoriesT,
+        CV_ConvoToPositionAverageScore: scoreAll
+
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "conversationCVPositionToReport",
+        {
+          component: "aiMutation > conversationCVPositionToReport",
+        }
+      );
+    }
+  },
+
   saveCVtoUser: async (parent, args, context, info) => {
-    const { cvContent, userID } = args.fields;
-    console.log("Mutation > saveCVtoUser > args.fields = ", args.fields);
+    const { cvContent, userID, positionID } = args.fields;
+    // console.log("Mutation > saveCVtoUser > args.fields = ", args.fields);
 
     if (!userID) {
       throw new ApolloError("userID is required");
@@ -268,11 +462,14 @@ module.exports = {
 
     let userData = await Members.findOne({ _id: userID });
 
+    let positionData = await Position.findOne({ _id: positionID }).select(
+      "_id candidates"
+    );
+
     if (!userData) {
       throw new ApolloError("User not found");
     }
     try {
-      // save userData to DB
       userData = await Members.findOneAndUpdate(
         { _id: userID },
         {
@@ -283,14 +480,82 @@ module.exports = {
             cvPreparationBio: false,
             cvPreparationNodes: false,
             cvPreparationPreviousProjects: false,
-            cvPreparationMemory: false,
+            // cvPreparationMemory: false,
           },
         },
         { new: true }
       );
 
+      // ----------------- add candidate to position -----------------
+      let index_ = positionData.candidates.findIndex(
+        (x) => x.userID.toString() == userID.toString()
+      );
+
+      if (index_ == -1) {
+        positionData.candidates.push({
+          userID: userID,
+        });
+
+        await positionData.save();
+      }
+      // ----------------- add candidate to position -----------------
+
+      // ----------- CV to Summary -------------
+      let cvContentPrompt = `
+        CV CONTENT (delimiters <>): <${cvContent.substring(0, 3500)}>
+
+        - You are a recruiter with task to understand a candidate's CV.
+        - Your goal is to create a Summary of the CV CONTENT
+        - only contain most important skills, education and experience
+        - Task is to extract, Title Role, Main Skills, Summary
+
+        Title Role 5 words max: 
+        Main Skills 3 words max:
+        Summary 3 sentenses max:: 
+      `;
+      // printC(cvContentPrompt,"3","cvContentPrompt","b")
+
+      titleSkillSummaryRes = await useGPTchatSimple(
+        cvContentPrompt,
+        0,
+        "API 2"
+      );
+
+      printC(titleSkillSummaryRes, "3", "titleSkillSummaryRes", "b");
+
+      const titleRole = titleSkillSummaryRes.match(/Title Role: (.*)/)[1];
+      const mainSkills = titleSkillSummaryRes
+        .match(/Main Skills: (.*)/)[1]
+        .split(", ");
+      const cvSummary = titleSkillSummaryRes.match(/Summary: (.*)/)[1];
+
+      // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
+
+      // cvSummary = `
+      // Ateet Tiwari is a Full Stack Developer with experience in Front-End, Back-End, Database, Messaging Services, and UI Development. He has a strong proficiency in React, Redux, Node, Express, Python, SQL, and MongoDB. Ateet has led initiatives and teams, improved product performance, and designed in-house frameworks and systems. He is a Polygon Fellowship Graduate and has extensive knowledge in web3 development.
+      // `
+
+      printC(cvSummary, "3", "cvSummary", "g");
+      printC(titleRole, "3", "titleRole", "g");
+      printC(mainSkills, "3", "mainSkills", "g");
+      // sdf0
+
+      // ----------- CV to Summary -------------
+
+      // OLD Algorithm
+      // const interviewQ = await InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
+      // console.log("interviewQ = " , interviewQ)
+      // InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
+
+      interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
+
+      await wait(20000);
+
       return {
         success: true,
+        titleRole: titleRole,
+        mainSkills: mainSkills,
+        cvSummary: cvSummary,
       };
     } catch (err) {
       throw new ApolloError(
@@ -323,19 +588,17 @@ module.exports = {
         });
       }
 
-      // for (let i=0;i<usersData.length;i++) {
-      if (usersData.length > 0) {
+      for (let i = 0; i < usersData.length; i++) {
+        // if (usersData.length > 0) {
         // SOS 🆘 delete - only test one user at a time
         let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
 
-        let filterUpdate = {};
-
         // ------- Calculate Summary -------
         if (userData.cvInfo.cvPreparationBio != true) {
           promptSum =
-            'Act as social media profile expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to give me a summary of that CV that would be suited for the bio section of a social media profile. Give me that summary in a bullet point format,do not include the name in the summary. Keep the bullet points short. Only up to 5 bullet points are allowed. No more than 5 bullet points. Always use "•" for a bullet point, never this "-". Here is that string: \n\n' +
+            `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
             cvContent;
 
           summaryOfCV = await useGPTchatSimple(promptSum);
@@ -346,7 +609,6 @@ module.exports = {
 
           userData.cvInfo.cvPreparationBio = true;
         }
-
         // ------- Calculate Summary -------
 
         // -------Calculate Previous Jobs -------
@@ -378,77 +640,27 @@ module.exports = {
         }
         // -------Calculate Previous Jobs -------
 
-        // // ----------- Calculate and Save Memory ------------
-        // if (userData.cvInfo.cvPreparationMemory != true) {
-
-        //   // ------------ Delete previous memory ------------
-        //   if (userData.cvInfo?.cvMemory?.length >0) {
-        //     deletePineIDs = userData.cvInfo.cvMemory.map(obj => obj.pineConeID)
-        //     await deletePineCone(deletePineIDs)
-        //   }
-        //   // ------------ Delete previous memory ------------
-
-        //   promptMemory =
-        //   'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
-        //   cvContent;
-
-        //   summaryBulletPoints = await useGPTchatSimple(promptMemory, 0.7);
-
-        //   sumBulletSplit = summaryBulletPoints
-        //     .replace(/\n/g, "")
-        //     .split("•")
-        //     .filter((item) => item.trim() !== "");
-
-        //   let cvMemory = [];
-
-        //   for (let i = 0; i < sumBulletSplit.length; i++) {
-
-        //     // -------------- Sent to PineCone --------------
-        //     let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
-
-        //     upsertSum = await upsertEmbedingPineCone({
-        //       text: sumBulletSplit[i],
-        //       embedding: embeddings[0],
-        //       _id: userData._id,
-        //       label: "CV_user_memory",
-        //     });
-        //     printC(upsertSum,"2","upsertSum","y")
-        //     // -------------- Sent to PineCone --------------
-
-        //     cvMemory.push({
-        //       memoryContent: sumBulletSplit[i],
-        //       pineConeID: upsertSum.id_message,
-        //     })
-
-        //     printC(sumBulletSplit[i],"2","sumBulletSplit[i]","p")
-        //   }
-
-        //   filterUpdate = {
-        //     ...filterUpdate,
-        //     cvInfo: {
-        //       ...userData.cvInfo,
-        //       ...filterUpdate.cvInfo,
-        //       cvMemory: cvMemory,
-        //       cvPreparationMemory: true,
-        //     },
-        //   }
-
-        //   userData.cvInfo.cvMemory = cvMemory;
-
-        //   userData.cvInfo.cvPreparationMemory = true;
-
-        // // ----------- Calculate and Save Memory ------------
-
         // -------------- Map Nodes from CV--------------
         if (userData.cvInfo.cvPreparationNodes != true) {
           // if (true) {
 
-          promptCVtoMap =
-            "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.\nDo not have any other words except for skills. \n\nExaple output: Skills: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
-            cvContent;
+          promptCVtoMap = `I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. 
+            Keep the paragrpah small and you dont need to have complete sentences. Make it as dense as possible with just listing the skills.
+            Do not have any other words except for skills. 
 
-          textForMapping = await useGPT(promptCVtoMap, 0.7);
-          let nodesN = await MessageMapKG_V2APICallF(textForMapping);
+            Exaple output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
+            
+            CV Content (delimiters <>): <${cvContent}>
+
+            Skills Result:
+            `;
+
+          textForMapping = await useGPTchatSimple(promptCVtoMap, 0);
+
+          printC(textForMapping, "3", "textForMapping", "b");
+          // sdf00
+
+          let nodesN = await MessageMapKG_V4APICallF(textForMapping);
 
           printC(nodesN, "3", "nodesN", "b");
 
@@ -507,9 +719,7 @@ module.exports = {
         });
       }
 
-      // for (let i=0;i<usersData.length;i++) {
-      if (usersData.length > 0) {
-        // SOS 🆘 delete - only test one user at a time
+      for (let i = 0; i < usersData.length; i++) {
         let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
@@ -525,16 +735,40 @@ module.exports = {
           }
           // ------------ Delete previous memory ------------
 
-          promptMemory =
-            'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give 10 most important facts from that CV. Give me that summary  in a bullet point format.  There should be no more and no less than  10 bullet points. Always give 10 bullet points.  Always use "•" for a bullet point, never this "-". \n\n\nHere is that string: \n\n' +
-            cvContent;
+          promptMemory = `I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. 
+        These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. 
+        I want you to find experiences in the CV and combine them with a description of what was done there + the skills that were associated with that experience. 
+        
+        Never have a bullet point for skills in the output, do not list skills as a separate category. 
+        Do not list experiences, descriptions, or skills separately, only list them in relation to other things. 
+        For categories, include job, education(make sure to include the highest level of education(Bachelors < Masters < Ph.D )), project, internship (take your time and make sure that this is not a job, make sure that it is actually an internship), and published article. 
+        If an internship was not found, do not include it as an output, just skip it(DO NOT output: (• Internship: None found), just leave it blank), this would apply to any category that was not found in text. 
+        Only list categories in the output if you find them in the text. If a category is not found in the text, do not have a output it as a bullet-point.
+        
+        Follow this strict format (each category should be limited to 200 characters, do not go beyond 200 character limit for each category):
+        • Category: name: explanation: skills (limit 6 skills per category, do not go beyond 6 skills per category)
+         Example (but do not include these examples in the output, also do not include the label category in the output) Delimiters<>:
+          <• Job: Facebook: worked at this position for 1 year focusing on frontend and backend: C++, React, Node.js>
+        
+        Here is the string to extract the information from: """${cvContent}"""`;
 
-          summaryBulletPoints = await useGPTchatSimple(promptMemory, 0.7);
+          summaryBulletPoints = await useGPTchatSimple(
+            promptMemory,
+            0,
+            "API 2"
+          );
 
-          sumBulletSplit = summaryBulletPoints
+          jobsArr = summaryBulletPoints
             .replace(/\n/g, "")
             .split("•")
             .filter((item) => item.trim() !== "");
+
+          //occasionally gpt outputs skills as a separate problem, the for loop gets rid of those skills in case they do appear
+          for (let i = 0; i < jobsArr.length; i++) {
+            if (jobsArr[i].includes("Skills:")) {
+              jobsArr.splice(i, 1);
+            }
+          }
 
           let cvMemory = [];
 
@@ -590,7 +824,7 @@ module.exports = {
       let model = "text-davinci-003";
       const reason = {
         project:
-          "You are a successful ceo of a company wih 10 years of experience. You talk elegant and descriptive language. Give a description of a project based on this information:  ",
+          "You are a successful ceo of a position wih 10 years of experience. You talk elegant and descriptive language. Give a description of a project based on this information:  ",
         skill: "Give a description of a skill named: ",
         role: "Give a description of role with a name of: ",
       };
@@ -754,7 +988,7 @@ module.exports = {
     const prompt = `
     I want you to act as social media expert at writing profile bios. I will give you a string extracted from a CV(resume) delineated with triple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio:
     
-    Pick the most impressive achievements(highest education and the most recent company in the CV) and list them in 2 bullet points(no more than 2).
+    Pick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).
     
     Follow this structure which has 2 parts. First part is 2 sentences. Second part is two bullet points
     (Example:
@@ -767,11 +1001,11 @@ module.exports = {
     
     Part 2(do not include Part 2 in the response):
     • Highest level of education(bachelor's < Masters < Ph.D)(list only the highest education and only list that one)
-    • The present company that they work in and what they do there
+    • The present position that they work in and what they do there
     
     """${cvString}"""`;
 
-    summaryOfCV = await useGPT(prompt, 0.2);
+    summaryOfCV = await useGPTchatSimple(prompt, 0.2);
 
     try {
       return {
@@ -783,26 +1017,49 @@ module.exports = {
   },
   CVtoJobs: async (parent, args, context, info) => {
     const { cvString } = args.fields;
-    if (!cvString) throw new ApolloError("The cvString is required");
 
-    prompt =
-      'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
-      cvString;
+    if (!cvString) {
+      new ApolloError("The cvString is required");
+    }
 
-    responseFromGPT = await useGPT(prompt, 0.7);
+    prompt = `
+      Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
+
+      CV(resume), (delimiters <>) ${cvString}
+
+
+      Your job is to find and list the latest 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. 
+      
+      - Only give me up to 3 last jobs. The job that is current (some year - present) should appear first. After that list jobs that have the latest end date.
+      - Give me a dates of when this person started and finished( or presently working)
+      - Also take the name of each position and give 3 short(no more than 80 characters long) descriptions of that position.
+      - Always use "•" for a bullet point, never this "-". 
+
+      This is the format: 
+      •Job Title, Company Name
+      •(start date, end date(or present))
+       - short description
+       - short description
+       - short description `;
+
+    responseFromGPT = await useGPTchatSimple(prompt, 0.7);
+
+    console.log("responseFromGPT", responseFromGPT);
 
     jobsArr = responseFromGPT
       .replace(/\n/g, "")
       .split("•")
       .filter((item) => item.trim() !== "");
 
+    console.log("jobsArr", jobsArr);
+
     let result = [];
 
     previousJobs = () => {
       for (let i = 0; i < jobsArr.length; i += 2) {
         result.push({
-          job: jobsArr[i],
-          description: jobsArr[i + 1],
+          outside: jobsArr[i],
+          inside: jobsArr[i + 1],
         });
       }
       return JSON.stringify(result);
@@ -859,7 +1116,7 @@ module.exports = {
       "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentenses. Make it as dese as possible with just listing the skills.\nDo not have any other words except for skills. \n\nExaple output: Skills: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
       message;
 
-    responseFromGPT = await useGPT(prompt, 0.7);
+    responseFromGPT = await useGPTchatSimple(prompt, 0.7);
     // console.log("responseFromGPT", responseFromGPT);
     console.log("MessageMapKG_V2APICall", MessageMapKG_V2APICall);
 
@@ -1219,14 +1476,14 @@ function mapRange(input, inputMin, inputMax, outputMin, outputMax) {
   );
 }
 
-async function useGPT(prompt, temperature = 0.7) {
+async function useGPT(prompt, temperature = 0.7, max_tokens = 256) {
   // let model = "text-curie-001";
   let model = "text-davinci-003";
   const response = await openai.createCompletion({
     model,
     prompt,
     temperature,
-    max_tokens: 256,
+    max_tokens: max_tokens,
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,

@@ -76,14 +76,26 @@ module.exports = `
         addQuestionToEdenAI(fields:addQuestionToEdenAIInput): addQuestionToEdenAIOutput
 
 
-        # ------------- COMPANY MUTATION -----------------
-        updateCompany(fields:updateCompanyInput): Company
-        addEmployeesCompany(fields:addEmployeesCompanyInput): Company
-        addQuestionsToAskCompany(fields:addQuestionsToAskCompanyInput): Company
-        deleteQuestionsToAskCompany(fields:deleteQuestionsToAskCompanyInput): Company
-        addCandidatesCompany(fields:addCandidatesCompanyInput): Company
-        updateCompanyUserAnswers(fields:updateCompanyUserAnswersInput): [Company]
+        # ------------- POSITION MUTATION -----------------
+        updatePosition(fields:updatePositionInput): Position
+        updateUrl(fields:updateUrlInput): Position
+        addQuestionsToAskPosition(fields:addQuestionsToAskPositionInput): Position
+        interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Position
+        deleteQuestionsToAskPosition(fields:deleteQuestionsToAskPositionInput): Position
+        addCandidatesPosition(fields:addCandidatesPositionInput): Position
+        deletePositionCandidate(fields:deletePositionCandidateInput): Position
+        addConvRecruiterToPosition(fields:addConvRecruiterToPositionInput): Position
+        updatePositionUserAnswers(fields:updatePositionUserAnswersInput): [Position]
+        updatePositionConvRecruiter(fields:updatePositionConvRecruiterInput): [Position]
+        createTalentListPosition(fields:createTalentListPositionInput): Position
+        updateUsersTalentListPosition(fields:updateUsersTalentListPositionInput): Position
+        addNodesToPosition(fields:addNodesToPositionInput): Position
 
+
+         # ------------- COMPANY MUTATION -----------------
+        updateCompany(fields:updateCompanyInput): Company
+        updateUrlCompany(fields:updateUrlInput): Company
+        addEmployeesCompany(fields:addEmployeesCompanyInput): Company
 
 
         #  ---------- ROLE MUTATIONS -------
@@ -129,6 +141,8 @@ module.exports = `
         addMessage(fields: addMessageInput): AI
         storeLongTermMemory(fields: storeLongTermMemoryInput): storeLongTermMemoryOutput
         storeLongTermMemorySummary(fields: storeLongTermMemorySummaryInput): storeLongTermMemorySummaryOutput
+        websiteToMemoryCompany(fields: websiteToMemoryCompanyInput): websiteToMemoryCompanyOutput
+        conversationCVPositionToReport(fields: conversationCVPositionToReportInput): conversationCVPositionToReportOutput
         saveCVtoUser(fields: saveCVtoUserInput): saveCVtoUserOutput
         autoUpdateUserInfoFromCV(fields: autoUpdateUserInfoFromCVInput): autoUpdateUserInfoFromCVOutput
         autoUpdateMemoryFromCV(fields: autoUpdateMemoryFromCVInput): autoUpdateMemoryFromCVOutput

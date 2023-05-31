@@ -56,14 +56,58 @@ module.exports = `
 
     }
 
+    input websiteToMemoryCompanyInput {
+        message: String
+        positionID: ID
+
+    }
+
+    type websiteToMemoryCompanyOutput {
+        success: Boolean
+        report: String
+        nodes: [Node]
+
+    }
+
+    input conversationCVPositionToReportInput {
+        memberID: ID
+        positionID: ID
+    }
+
+    type conversationCVPositionToReportOutput {
+        success: Boolean
+        report: String
+        CV_ConvoToPosition: [notesInterviewType2],
+        CV_ConvoToPositionAverageScore: Float,
+        reportPassFail: [reportPassFailType],
+    }
+
+    type reportPassFailType {
+        categoryName: String,
+        title: String,
+        score: Int,
+        reason: String,
+        IDb: String,
+    }
+
+    type notesInterviewType2 {
+        categoryName: String,
+        score: Float,
+        reason: [String],
+    }
+
     input saveCVtoUserInput {
         cvContent: String
         userID: ID
+        positionID: ID
 
     }
 
     type saveCVtoUserOutput {
         success: Boolean
+        titleRole: String
+        mainSkills: [String]
+        cvSummary: String
     }
 
     input autoUpdateUserInfoFromCVInput {
@@ -199,6 +243,7 @@ module.exports = `
     input messageChat {
         role: String
         content: String
+        date: Date
     }
 
     input edenGPTreplyChatAPIInput {
@@ -288,7 +333,8 @@ module.exports = `
 
     input interviewEdenAIInput {
         userID: ID
-        companyID: ID
+        positionID: ID
+        useMemory: Boolean
         conversation: [messageChat]
         unansweredQuestions: [String]
         unansweredQuestionsArr: [unansweredQuestionsInput]
@@ -300,6 +346,8 @@ module.exports = `
     
     type interviewEdenAIOutput {
         reply: String
+        date: Date
+        conversationID: ID
         questionAskingNow: String
         unansweredQuestions: [String]
         unansweredQuestionsArr: [unansweredQuestionsType]

@@ -4,6 +4,8 @@ const { Skills } = require("../../../models/skillsModel");
 const { Projects } = require("../../../models/projectsModel");
 const { RoleTemplate } = require("../../../models/roleTemplateModal");
 const { EdenMetrics } = require("../../../models/edenMetrics");
+const { Position } = require("../../../models/positionModel");
+
 const axios = require("axios");
 
 const {printC} = require("../../../printModule")
@@ -824,7 +826,6 @@ module.exports = {
         );
       }
     },
-  // ),
   deleteNodesFromMember: 
   // combineResolvers(
   //   IsAuthenticated,
@@ -1365,7 +1366,29 @@ module.exports = {
 
         if (!memberData) throw new ApolloError("memberID not found");
 
-        // console.log("memberData = " , memberData)
+
+        // ------------ Find Positions that is subscribed to ----------
+        let positionsData = await Position.find({
+          "candidates.userID": memberID,
+        }).select('_id candidates')
+
+
+        for (let i = 0; i < positionsData.length; i++) {
+          let positionNow = positionsData[i];
+
+          // find index of the candidate
+          let index_ = positionNow.candidates.findIndex(
+            (x) => x.userID.toString() == memberID.toString()
+          );
+
+
+          // remove the candidate
+          positionNow.candidates.splice(index_, 1);
+
+          await positionNow.save();
+
+        }
+        // ------------ Find Positions that is subscribed to ----------
 
         // get all nodes from memberData.nodes
         let nodesData = await Node.find({
@@ -2485,7 +2508,7 @@ module.exports = {
 
         for (let i=0;i<3;i++){
           // for (let i=0;i<Math.floor(Math.random() * 2) + 2;i++){
-          let promptT = expertiseInterestPrompt + "\n" + "Give me 1 title, real company name and description (only 1 paragraph with 2 sentences) of a job that he did in his past, be creative with the title of the position. Example: \n Title: programming at Soil Corp \n Description: main programmer that was working on...  \n Result:"
+          let promptT = expertiseInterestPrompt + "\n" + "Give me 1 title, real position name and description (only 1 paragraph with 2 sentences) of a job that he did in his past, be creative with the title of the position. Example: \n Title: programming at Soil Corp \n Description: main programmer that was working on...  \n Result:"
 
           const jobData = await useGPTchat(promptT)
           

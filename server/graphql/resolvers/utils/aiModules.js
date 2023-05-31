@@ -2,6 +2,11 @@
 
 const { Node } = require("../../../models/nodeModal");
 const { Members } = require("../../../models/membersModel");
+const { Position } = require("../../../models/positionModel");
+const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
+const { Conversation } = require("../../../models/conversationModel");
+
+const { Configuration, OpenAIApi } = require("openai");
 
 const axios = require("axios");
 const { PineconeClient } = require("@pinecone-database/pinecone");
@@ -11,14 +16,661 @@ const { request, gql} = require('graphql-request');
 const { printC } = require("../../../printModule");
 
 
-async function getMemory(messageContent,filter,topK = 3) {
+async function getMemory(messageContent,filter,topK = 3,maxLength = 2000) {
 
     memories = await findBestEmbedings(messageContent, filter, (topK = topK));
 
+    // printC(memories, "1", "memories", "r")
 
-    const memoriesForPrompt = memories.map((memory) => memory.metadata.text).join("•");
+    const memoriesForPrompt = memories.map((memory) => {
+
+      let myString = memory.metadata.text;
+      myString = myString.length > 150 ? myString.substring(0, 150) : myString;
+
+
+      return myString
+    }).join("\n - ");
 
     return memoriesForPrompt
+}
+
+async function conversationCVPositionToReportFunc(memberID,positionID) {
+
+  if (!positionID) {
+    throw new ApolloError("positionID is required");
+  }
+
+  positionData = await Position.findOne({ _id: positionID });
+
+  if (!positionData) {
+    throw new ApolloError("Position not found");
+  }
+
+  
+  if (!memberID) {  
+    throw new ApolloError("memberID is required");
+  }
+
+  memberData = await Members.findOne({ _id: memberID });
+
+
+
+  let index_ = positionData?.candidates?.findIndex(
+    (x) => x.userID.toString() == memberID.toString()
+  );
+
+  if (index_ == undefined || index_ == -1) {
+    throw new ApolloError("Candidate not found");
+  }
+
+  let candidateData = positionData.candidates[index_];
+
+  const conversationID = candidateData.conversationID;
+
+
+  const CVToPositionReport = candidateData?.compareCandidatePosition?.CVToPosition?.content
+
+  printC(candidateData,"0","candidateData","b")
+
+  printC(conversationID,"1","conversationID","b")
+
+  printC(CVToPositionReport,"2","CVToPositionReport","p")
+
+  const convoCandidateRecruiterPrompt = await findConversationPrompt(conversationID)
+
+  printC(convoCandidateRecruiterPrompt,"3","convoCandidateRecruiterPrompt","p")
+  
+  
+  promptReport = ` You are a Professional Recruiter writing reports to find the best candidate for a Job Position
+
+  Report Candidate CV to Job Position (delimiters <>): <${CVToPositionReport}>
+
+  Conversation of Candidate With Recruiter (delimiters <>): <${convoCandidateRecruiterPrompt}>
+
+
+  Your Task is to create a Report that analyze if this is the right candidate for the Job Position using CV to Job Position and the Conversation
+
+  - You need make really small bullet points of information about the Candidate for every Category
+  - Do not make up fake information, only use what you have in the CV Report and Conversation
+  - Include up to 6 categories and nothing else
+  - For Each Category give a Match Score with only a number from 0 to 10 on the SCORE_AREA
+
+  For example: 
+    <Category 1: title - SCORE_AREA >
+      - explanation really small
+      - explanation really small
+    <Category 2: title - SCORE_AREA >
+      - explanation really small
+
+  Categories:`;
+
+
+  let report = await useGPTchatSimple(promptReport, 0);
+
+  // report  = `
+  // <Category 1: Relevant Skills - 9>
+  //   - Experience with databases and SQL, which is a required skill for the JOB_ROLE.
+  //   - Worked as a Full Stack Developer, indicating experience with both front-end and back-end systems.
+  //   - Experience with messaging services, which could be useful for conducting systems tests for security and availability.
+  //   - Worked on Web3 projects, indicating an ability to adapt to new technologies and a willingness to learn.
+
+  // <Category 2: Education - 8>
+  //   - B.Tech in CSE, showing a strong educational background in computer science.
+
+  // <Category 3: Team Management - 7>
+  //   - Managed a team of SDE2s and interns, showing strong communication skills and an ability to work in a team environment.
+
+  // <Category 4: Machine Learning - 6>
+  //   - Extensive experience in developing computer vision models for various applications, including object detection and image classification.
+  //   - Background in managing teams and building MLOps procedures.
+
+  // <Category 5: Python Proficiency - 8>
+  //   - Proficient in Python and has used it extensively in developing backend solutions for various applications.
+
+  // <Category 6: Innovation - 5>
+  // `
+
+  printC(report,"4","report","g")
+
+
+  let scoreAll = 0
+  let nAll = 0
+
+
+
+  const regex = /<Category\s+\d+:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
+  const categoriesT = [];
+  let result;
+  while ((result = regex.exec(report)) !== null) {
+    let reason_score = result[1].trim()
+
+    printC(reason_score, "0", "reason_score", "y")
+    // const match = reason_score.match(/(\d+)\s-\s(.*)/);
+    const match = reason_score.match(/(.*) - (\d+)/)
+
+    const title = match[1];
+    const score = match[2];
+
+    //  const score = 0
+    // const title = reason_score;
+
+    // console.log("score,title = " , score,title)
+    // sdf2
+
+    const category = {
+      categoryName: title,
+      score: parseInt(score)*10,
+      reason: result[2].trim().split('\n').map(detail => detail.trim()),
+    };
+    scoreAll += parseInt(score)*10
+    nAll +=1
+
+    categoriesT.push(category);
+  }
+
+  scoreAll = parseInt(scoreAll/nAll)
+  console.log("categoriesT = " , categoriesT)
+  // df9
+
+
+  // update Mongo
+  positionData.candidates[index_].compareCandidatePosition.CV_ConvoToPosition = categoriesT
+  positionData.candidates[index_].compareCandidatePosition.CV_ConvoToPositionAverageScore = scoreAll
+  await positionData.save();
+
+
+  return {
+    success: true,
+    report,
+    categoriesT,
+    scoreAll,
+  }
+
+}
+
+async function reportPassFailCVPositionConversationFunc(memberID,positionID) {
+
+  if (!positionID) {
+    throw new ApolloError("positionID is required");
+  }
+
+  positionData = await Position.findOne({ _id: positionID });
+
+  if (!positionData) {
+    throw new ApolloError("Position not found");
+  }
+
+  
+  if (!memberID) {  
+    throw new ApolloError("memberID is required");
+  }
+
+  memberData = await Members.findOne({ _id: memberID });
+
+
+
+  let index_ = positionData?.candidates?.findIndex(
+    (x) => x.userID.toString() == memberID.toString()
+  );
+
+  if (index_ == undefined || index_ == -1) {
+    throw new ApolloError("Candidate not found");
+  }
+
+  const positionsRequirements = positionData?.positionsRequirements?.content
+  printC(positionsRequirements,"3","positionsRequirements","g")
+  
+  // ---------------- Create Object for Position Report ----------------
+  const regexT = /<(.+)>((?:\n\s*- \w+: .+)*)/g;
+  const regexB = /- (\w+): (.+)/g;
+
+  const categories = {};
+
+  let matchT;
+  while ((matchT = regexT.exec(positionsRequirements)) !== null) {
+    const categoryTitle = matchT[1];
+    const categoryRequirements = matchT[2];
+    const requirements = {};
+
+    let matchB;
+    while ((matchB = regexB.exec(categoryRequirements)) !== null) {
+      const id = matchB[1];
+      const title = matchB[2];
+      requirements[id] = title;
+
+      categories[id] = {
+        categoryName: categoryTitle,
+        title: title,
+      }
+    }
+
+    // categories[categoryTitle] = requirements;
+  }
+
+
+  printC(categories,"4","categories","g")
+  // ---------------- Create Object for Position Report ----------------
+
+
+
+  let candidateData = positionData.candidates[index_];
+
+  const conversationID = candidateData.conversationID;
+
+
+  const CVToPositionReport = candidateData?.compareCandidatePosition?.CVToPosition?.content
+
+
+
+
+
+  printC(candidateData,"0","candidateData","b")
+
+  printC(conversationID,"1","conversationID","b")
+
+  printC(CVToPositionReport,"2","CVToPositionReport","p")
+
+  // sd0
+
+  const convoCandidateRecruiterPrompt = await findConversationPrompt(conversationID)
+
+  printC(convoCandidateRecruiterPrompt,"3","convoCandidateRecruiterPrompt","p")
+  
+  
+  promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
+
+  Report Candidate CV to Job Position (delimiters <>): <${CVToPositionReport}>
+
+  Conversation of Candidate With Recruiter (delimiters <>): <${convoCandidateRecruiterPrompt}>
+
+  Requirements of Job Position (delimiters <>): <${positionsRequirements}>
+
+
+ 
+  Your Task is to Score each of the Job Requirements based on the CV and the Conversation to find the right candidate for the Job Position 
+
+  - You need to Score the Bullet points overall from 0 to 10 for each ID
+   - For each bullet point ONLY give ID, really small reason max 10 words and score
+   - Give exactly the same number of bullet points(IDs)
+ 
+
+For example: 
+Category 1:
+      - ID: Score - A really small reason      
+      - ID: Score - A really small reason
+
+  Only Output the ID, Scores, really small reason:`;
+
+
+  printC(promptReport,"4","promptReport","y")
+  
+  let report = await useGPTchatSimple(promptReport, 0);
+
+  // printC(report,"4","report","g")
+
+  // sdf12
+
+//   report  = `
+//   <Category 1: Education>
+//   - b1: 10 - MS in Computer Science, Engineering, Math, Science or related field. PhD preferred.
+
+// <Category 2: Experience>
+//   - b2: 10 - Over 11 years of experience in Computer Vision, Machine Learning, and Robotics.
+//   - b3: 10 - Proven track record of excellence in applying Machine Learning techniques for solving difficult real world problems.
+
+// <Category 3: Skills>
+//   - b4: 10 - Experience with cutting-edge technologies such as Pytorch, TensorFlow, and CUDA.
+  
+// <Category 4: Job Responsibilities>
+//   - b5: 10 - Experience in leading teams and managing projects.
+//   - b5: 10 - Experience in applying Deep Learning techniques to challenging real world problems.
+  
+// <Category 5: Diversity and Inclusion>
+//   - b6: 10 - Equal Opportunity Employer and a good fit for the culture.
+//   `
+
+  printC(report,"4","report","g")
+
+
+  report = report.replace(/N\/A/g, "0"); // if you dont know something make it as zero score
+
+  const regexScores = /- (\w+): (\d+) - (.+)/g;
+  const scores = {};
+
+
+  while ((match = regexScores.exec(report))) {
+    const id = match[1];
+    const score = parseInt(match[2]);
+    const reason = match[3];
+    scores[id] = { score, reason };
+  }
+
+  printC(scores,"4","scores","g")
+  printC(categories,"4","categories","b")
+
+  // df9
+  
+  const merged = {};
+  
+  for (const id in categories) {
+    merged[id] = { ...categories[id], ...scores[id] };
+  }
+
+  printC(merged,"4","merged","r")
+  
+  // find Average Score
+  let scoreAll = 0
+  let nAll = 0
+
+  // transform to array
+  const reportPoints = [];
+  for (const id in merged) {
+    reportPoints.push({
+      IDb: id,
+      categoryName: merged[id].categoryName,
+      title: merged[id].title,
+      score: merged[id].score,
+      reason: merged[id].reason,
+    });
+
+    if (merged[id].score != undefined && merged[id].score != null && merged[id].score != "N/A"){
+      scoreAll += merged[id].score
+      nAll +=1
+    }
+  }
+
+  scoreAll = parseInt(scoreAll/nAll)*10
+
+  printC(reportPoints,"6","reportPoints","b")
+
+
+  printC(index_,"6","index_","b")
+  console.log("index_ = " , index_)
+  // sdf3
+
+  // update Mongo
+  positionData.candidates[index_].compareCandidatePosition.reportPassFail = reportPoints
+  positionData.candidates[index_].compareCandidatePosition.CV_ConvoToPositionAverageScore = scoreAll
+  await positionData.save();
+
+
+  return {
+    success: true,
+    report,
+    // categoriesT,
+    // scoreAll,
+    reportPassFail: reportPoints,
+  }
+
+}
+
+async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
+
+
+  positionData = await Position.findOne({ _id: positionID}).select('_id name candidates questionsToAsk positionsRequirements');
+  if (!positionData) throw new ApolloError("Position not found", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
+
+
+  userData = await Members.findOne({ _id: userID}).select('_id discordName');
+  if (!userData) throw new ApolloError("User not found", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
+
+
+  const questionsToAsk = positionData.questionsToAsk
+
+  const questionsToAskID = questionsToAsk.map((question) => question.questionID)
+
+  questionData = await QuestionsEdenAI.find({ _id: questionsToAskID }).select('_id content');
+
+  printC(questionData,"1","questionData","b")
+
+  questionsThatWereAsked = ''
+
+
+
+  const questionNow = questionData[0];
+
+  // ------- Find best Open Job Role Memories ----------
+
+  // console.log("positionData?.positionsRequirements = " , positionData?.positionsRequirements?.content)
+  // console.log(Object.keys(positionData?.positionsRequirements))
+
+  let bestJobRoleMemories = ""
+  if (positionData?.positionsRequirements?.content == undefined) {
+    filter = {
+      label: "Company_TrainEdenAI_memory",
+      _id: positionID,
+    };
+
+    bestJobRoleMemories = await getMemory(
+      questionNow.content,
+      filter,
+      (topK = 6),
+      250
+    );
+
+    
+    positionData.positionsRequirements.content = bestJobRoleMemories
+
+    positionData = await positionData.save();
+  } else {
+    bestJobRoleMemories = positionData.positionsRequirements.content
+  } 
+  
+
+  cvSummary = cvContent
+
+
+  console.log("----------------------------" )
+
+
+  // -------- Create Prompt ---------
+  
+  // let promptJOB_CV = `
+  //   JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
+
+  //   USER_CV (delimiters <>) <${cvSummary}>
+
+  //   - Your goal is to collect information from the candidate for the JOB_ROLE.
+  //   - Analyse for each point of the JOB_ROLE if a Candidate has the right CV info or he is missing something, be creative on the ways that the candidate background can be applied on the role
+
+  //   - smallest number of Bullet points with small summary analyzing the JOB_ROLE for this USER CV:
+  // `
+  // let promptJOB_CV = `
+  //   JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
+
+  //   USER_CV (delimiters <>) <${cvSummary}>
+
+  //   - Your goal is to collect information from the candidate for the JOB_ROLE.
+  //   - Analyse JOB_ROLE and USER_CV and understand if a Candidate has the right CV info or he is missing something, 
+  //   - be creative on the ways that the candidate background can be applied on the role
+
+  //   - Your task is to create notes on the candidate’s skills, experience, and education to determine if they are a good fit for the JOB_ROLE.
+
+
+  //   3-6 small Bullet points:
+  // `
+  let promptJOB_CV = `
+    USER_CV (delimiters <>) <${cvSummary}>
+
+    JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
+
+
+    - Your goal is to create a professional really critical Report of the candidate USER_CV for the JOB_ROLE.
+    - Report what is missing and what ia a plus for the JOB_ROLE based on the USER_CV
+
+    - Your task is to create a Critical Report on the candidate’s to determine if they are a good fit for the JOB_ROLE.
+
+
+    Report 3-8 bullet points for JOB_ROLE analyzing USER_CV:
+  `
+  printC(promptJOB_CV,"3","promptJOB_CV","b")
+
+  infoCandidateForJob = await useGPTchatSimple(promptJOB_CV,0,"API 1","davinci")
+
+
+  // infoCandidateForJob = `
+  // 1. Can you tell us about a time when you had to understand user needs and solve their problems? How did you approach the situation and what was the outcome?
+  // 2. How familiar are you with GraphQL, Next.js, React, and TailwindCSS? Can you give us an example of a project you worked on using these technologies?
+  // 3. Have you ever worked independently to innovate and create code? Can you tell us about a project where you had to come up with a unique solution?
+  // 4. How do you stay up-to-date with the latest developments in front-end development? Do you have any favorite resources or communities you follow?
+  // 5. Can you tell us about a time when you had to work collaboratively with a team to achieve a common goal? How did you contribute to the team's success?
+  // 6. How do you approach problem-solving and troubleshooting in your work? Can you give us an example of a particularly challenging issue you faced and how you resolved it?
+  // `
+
+  // infoCandidateForJob = `        
+  // - Lolita Mileta has experience in team leadership, Scrum adoption, and facilitating Scrum ceremonies, which are all relevant skills for the JOB_ROLE.
+  // - She has successfully established smooth communication and clear vision for planned tasks, increasing performance by 30%.
+  // - Lolita does not have any specific education requirements mentioned in her CV, which is a plus for the JOB_ROLE.
+  // - Her personality type is well-suited for the JOB_ROLE, as she is a problem solver, analytical thinker, self-motivated, and results-driven.
+  // - Lolita has experience with AWS infrastructure, maintaining TypeScript SDKs and writing documentation, improving observability, monitoring, and alerting for services, and making architectural changes for scaling services.
+  // - She does not have any experience with databases and SQL, cloud experience, programming experience, or TypeScript experience, which are all required skills for the JOB_ROLE.
+  // `
+
+  printC(infoCandidateForJob,"3","infoCandidateForJob","p")
+  // sdf0
+
+
+
+  // ------------ Save the CV to the positionData -------------
+  let candidateIdx_ = positionData?.candidates?.findIndex((candidate) => candidate.userID.toString() == userID.toString());
+  if (candidateIdx_!=-1 && candidateIdx_!=undefined) {
+    positionData.candidates[candidateIdx_].compareCandidatePosition.CVToPosition.content = infoCandidateForJob
+    await positionData.save();
+  }
+  else {
+    positionData?.candidates?.push({
+      userID: userID,
+      compareCandidatePosition: {
+        CVToPosition: {
+          content: infoCandidateForJob,
+        }
+      },
+    })
+    await positionData.save();
+  }
+  // ------------ Save the CV to the positionData -------------
+
+
+
+  // sdf
+
+  // sdf
+  // -------- Create Prompt ---------
+
+  
+  questionsPrompt = ""
+  for (let i=0;i<questionData.length;i++){
+    const questionNow = questionData[i];
+
+
+    questionsPrompt += ` ${i+1}. ${questionNow.content} \n`
+  }
+
+  printC(questionsPrompt,"3","questionsPrompt","b")
+
+  // infoCandidateForJob = `
+  // - Responsibilities of the Candidate: The candidate must understand user needs and be able to solve their problems.
+  // - Analysis: While Miltiadis has experience in developing solutions for various projects, there is no specific mention of understanding user needs and solving their problems. However, his expertise in computer vision and deep learning can be applied to create innovative solutions for user problems.
+  // - Skills of the Candidate: Must have knowledge of front-end development, including GraphQL, Next.js, React, and TailwindCSS.
+  // - Analysis: Miltiadis' CV does not mention any experience or knowledge in front-end development technologies like GraphQL, Next.js, React, and TailwindCSS. Therefore, he may not be the ideal candidate for this specific skill set.
+  // - Responsibilities of the Candidate: The candidate will work independently to innovate and create code.
+  // - Analysis: Miltiadis has over 11 years of experience in computer vision, machine learning, and robotics, and has worked on various projects independently. Therefore, he has the necessary experience to work independently and innovate to create code.
+  // - General info of Position: Soil is creating a marketplace for positions and talent using AI and blockchain.
+  // - Analysis: There is no specific mention of Miltiadis' experience in AI and blockchain technologies. However, his expertise in computer vision and deep learning can be applied to create innovative solutions for Soil's marketplace.
+  // - Values of Position: Soil values innovation and user discovery.
+  // - Analysis: Miltiadis has a passion for optimized software development and research, and has worked on various projects related to sequence models, robotics, and autonomous OCR dictating systems for blind people. Therefore, he has the necessary experience to contribute to Soil's value of innovation and user discovery.
+  // - Values of Position: The position culture is fun and collaborative.
+  // - Analysis: There is no specific mention of Miltiadis' experience in a`
+
+
+  let promptNewQuestions = `
+    NOTES for this Job Role and User CV (delimiters <>): <${infoCandidateForJob}>
+
+    QUESTIONS (delimiters <>) <${questionsPrompt}>
+
+   
+    - You can improve each of the QUESTINOS using any of the NOTES
+    - you can only ask 1 question at a time
+    - You should stay really close to the meaning of the QUESTIONS!
+    - You should use as many facts from the NOTES related to the CV of the candidate to make it relevant
+    - If from NOTES candidate don't have some skills, ask them directly if they do i the Improved QUESTIONS
+    
+    
+    Improved QUESTIONS: 
+  `
+
+  improvedQuestions = await useGPTchatSimple(promptNewQuestions,0,"API 2")
+
+  printC(improvedQuestions,"4","improvedQuestions","r")
+  // SDF0
+
+//         improvedQuestions = `1. Can you tell us about your experience working with Machine Learning and Computer Vision, and how it could be useful for understanding user needs and solving their problems in this role?
+// 2. What specific experience do you have leading teams and innovating with cutting-edge technologies, and how do you think it could be valuable for working independently to create code in this role?
+// 3. Do you have experience with GraphQL, Next.js, React, and TailwindCSS, which are required for this role?
+// 4. What other technical skills do you have that could be helpful in this position?
+// 5. How comfortable are you with UI implementation, and what experience do you have in this area?
+// 6. Would you be willing to join Soil 🌱 as a contributor, given that the position is not yet financially secure?
+// 7. Do you share Eden's vision of using AI and blockchain to create context and trust and connect the right person to the right opportunity?
+// 8. What specifically interests you about joining Soil 🌱, and how do you think you could contribute to the position's mission?
+// 9. What are your long-term career goals, and how do you see this role fitting into them?`
+
+
+
+  const improvedQuestionsArray = improvedQuestions.split('\n').map((item) => item.replace(/^\d+\.\s*/, ''));
+
+  printC(improvedQuestionsArray,"5","improvedQuestionsArray","r")
+
+  let interviewQuestionsForCandidate = []
+
+  questionData = await QuestionsEdenAI.find({ _id: questionsToAskID }).select('_id content');
+
+  for (let i=0;i<improvedQuestionsArray.length;i++){
+    const improvedQuestion = improvedQuestionsArray[i];
+
+    
+    printC(questionData[i],"5","questionData[i]","y")
+
+
+    interviewQuestionsForCandidate.push({
+      originalQuestionID: questionData[i]?._id,
+      originalContent: questionData[i]?.content,
+      personalizedContent: improvedQuestion,
+    })
+  }
+
+  printC(interviewQuestionsForCandidate,"3","interviewQuestionsForCandidate","r")
+
+  // find the idx what candidate you will update from the positionData
+
+  printC(userID,"5","userID","y")
+  printC(positionID,"5","positionID","y")
+
+  positionData2 = await Position.findOne({ _id: positionID}).select('_id name candidates');
+  printC(positionData2?.candidates?.length,"5","positionData2.candidates.length","y")
+
+  // sf0
+  let candidateIdx = positionData2?.candidates?.findIndex((candidate) => candidate.userID.toString() == userID.toString());
+
+  printC(candidateIdx,"3","candidateIdx","r")
+
+  if (candidateIdx!=-1 && candidateIdx!=undefined) {
+    positionData2.candidates[candidateIdx].interviewQuestionsForCandidate = interviewQuestionsForCandidate
+
+  } else {
+    positionData2?.candidates?.push({
+      userID: userID,
+      interviewQuestionsForCandidate: interviewQuestionsForCandidate,
+    })
+
+  }
+
+  if (positionData2){
+    positionData2 = await positionData2.save();
+  }
+
+
+  return positionData2
+ 
 }
 
 const MessageMapKG_V2APICallF = async (textToMap) => {
@@ -56,53 +708,294 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
   };
 
 
-async function modifyQuestionFromCVMemory(messageQ,userID,topK = 3) {
+  const CandidateNotesEdenAIAPICallF = async (memberID,positionID) => {
+    const query = gql`
+      query candidateNotesEdenAI($fields: candidateNotesEdenAIInput) {
+        candidateNotesEdenAI(fields: $fields) {
+          categoryName
+          score
+          reason
+        }
+      }
+    `;
 
-    // -------------- Connect Memory to question ------------
-    const filter = {
-        label: "CV_user_memory",
-      };
-      if (userID) {
-        filter._id = userID;
+    const variables = {
+      fields: {
+        memberID: memberID,
+        positionID: positionID,
+      },
+    };
+
+    printC(variables, "1", "variables", "r")
+
+    res = await request(
+      // "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+      "https://soil-api-backend-kgfromaicron.up.railway.app/graphql",
+      query,
+      variables
+    );
+
+    
+    return res.candidateNotesEdenAI;
+  };
+
+
+  const MessageMapKG_V4APICallF = async (textToMap) => {
+    const query = gql`
+      query messageMapKG_V4($fields: messageMapKG_V4Input) {
+        messageMapKG_V4(fields: $fields) {
+          keywords {
+            keyword
+            confidence
+            nodeID
+            node {
+              _id
+              name
+            }
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      fields: {
+        message: textToMap,
+      },
+    };
+
+    res = await request(
+      "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+      query,
+      variables
+    );
+
+    // console.log("res = " , res)
+    // console.log("res.messageMapKG_V4", res.messageMapKG_V4);
+    return res.messageMapKG_V4.keywords;
+  };
+
+  const InterviewQuestionCreationUserAPICallF = async (positionID,userID,cvContent) => {
+    const mutation = gql`
+      mutation interviewQuestionCreationUser($fields: interviewQuestionCreationUserInput) {
+        interviewQuestionCreationUser(fields: $fields) {
+          _id
+          name
+          candidates {
+            user {
+              _id
+              discordName
+            }
+            interviewQuestionsForCandidate {
+              originalQuestionID
+              originalContent
+              personalizedContent
+            }
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      fields: {
+        positionID: positionID,
+        userID: userID,
+        cvContent: cvContent,
+      },
+    };
+
+    res = await request(
+      // "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+      "https://soil-api-backend-kgfromaicron.up.railway.app/graphql",
+      mutation,
+      variables
+    );
+
+    // console.log("res = " , res)
+    // console.log("res.interviewQuestionCreationUser", res.interviewQuestionCreationUser);
+    return res.interviewQuestionCreationUser;
+  };
+
+
+async function modifyQuestionFromCVMemory(messageQ,lastMessage,userID,topK = 3,positionID=undefined) {
+
+
+    // -------------- Connect Memory Position Training to question ------------
+    let finalMemoriesPositionTrainingPrompt = ""
+    let memoriesPositionTrainingPrompt = ""
+    if (positionID != undefined){
+      filter = {
+        label: "Company_TrainEdenAI_memory",
+        _id: positionID,
       }
 
-      const memoriesPrompt = await getMemory(messageQ,filter,topK)
-      printC(filter, "1", "filter", "p")
-      printC(memories, "1", "memories", "r")
+      memoriesPositionTrainingPrompt = await getMemory(messageQ + "\n\n" + lastMessage,filter,topK)
 
-    //   ONLY IF IT MAKE SENSE Modify the questionAskingNow by using MEMORY and asking a more specific question based on that memory
+      finalMemoriesPositionTrainingPrompt = `
+      Job Role is given (delimited by <>) 
 
-    let modifiedQuestion = ""
-    if (memoriesPrompt != ""){
+      Job Role: < ${memoriesPositionTrainingPrompt}`
 
-      const promptPlusMemoryV = `Question Asking now: ${messageQ}
 
-      - ONLY IF IT MAKE SENSE Modify the questionAskingNow by using MEMORY and asking a more specific question based on that memory
-      - it should still stay true the the original question
-       
-       MEMORY(delimited by triple quotes): 
+      printC(finalMemoriesPositionTrainingPrompt, "2", "finalMemoriesPositionTrainingPrompt", "g")
+    }
+    // -------------- Connect Memory Position Training to question ------------
 
-       """ ${memoriesPrompt} """ 
 
-       Create a simple question for the candidate to answer
-       
+    // -------------- Connect Memory CV to question ------------
+    if (topK > 0 && userID){
+      filter = {
+        label: "CV_user_memory",
+        _id: userID,
+      }
+  
+      let memoriesCVPrompt
+      if (memoriesPositionTrainingPrompt != "")
+        memoriesCVPrompt = await getMemory(messageQ + "\n\n" + lastMessage + "\n\n" + memoriesPositionTrainingPrompt,filter,topK)
+      else 
+        memoriesCVPrompt = await getMemory(messageQ + "\n\n" + lastMessage,filter,topK)
+  
+      
+  
+      printC(memoriesCVPrompt, "2", "memoriesCVPrompt", "g")
+  
+      finalMemoriesCVPrompt = `
+      Memory is given within (delimited by <>)
+      - The memory might be completely irrelevant! Don't use it if it doesn't add value
+  
+      Memory: < ${memoriesCVPrompt} > `
+  
+      
+    } 
+    // -------------- Connect Memory CV to question ------------
+
+
+    // let modifiedQuestion = ""
+    // if (memoriesPrompt != ""){
+
+      const promptPlusMemoryV = `QuestionAsking: ${messageQ}
+
+
+      ${finalMemoriesPositionTrainingPrompt}
+
+      ${finalMemoriesCVPrompt}
+
+      - your goal is to collect the information from the candidate for this specific question and Job Role
+      - First make a small responded/acknowledgment of the answer with 1-8 words, if it applies
+      - You can only ask 1 question at a time, 
+      - you should use a maximum 1-2 sentence
+      
+      Interviewer Reply: 
        `;
 
        printC(promptPlusMemoryV, "1", "promptPlusMemoryV", "p")
 
-      modifiedQuestion = await useGPChatSimple(promptPlusMemoryV);
+      modifiedQuestion = await useGPTchatSimple(promptPlusMemoryV);
 
-    } else {
-      modifiedQuestion = messageQ
-    }
+    // } else {
+    //   modifiedQuestion = messageQ
+    // }
 
     printC(modifiedQuestion, "5", "modifiedQuestion", "g")
 
 
-    // -------------- Connect Memory to question ------------
 
     return modifiedQuestion
 }
+
+async function askQuestionAgain(prompt_conversation,nextQuestion,lastMessage,userID,topK,positionID=undefined) {
+
+  let finalMemoriesPositionTrainingPrompt = ""
+  let memoriesPositionTrainingPrompt = ""
+  if (positionID != undefined){
+    filter = {
+      label: "Company_TrainEdenAI_memory",
+      _id: positionID,
+    }
+
+    memoriesPositionTrainingPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,topK)
+
+    finalMemoriesPositionTrainingPrompt = `
+    Job Role is given (delimited by <>) 
+
+    Job Role: < ${memoriesPositionTrainingPrompt}`
+
+
+    printC(finalMemoriesPositionTrainingPrompt, "2", "finalMemoriesPositionTrainingPrompt", "g")
+  }
+
+  let finalMemoriesCVPrompt = ""
+
+  if (topK > 0 && userID){
+    filter = {
+      label: "CV_user_memory",
+      _id: userID,
+    }
+
+    let memoriesCVPrompt
+    if (memoriesPositionTrainingPrompt != "")
+      memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage + "\n\n" + memoriesPositionTrainingPrompt,filter,topK)
+    else 
+      memoriesCVPrompt = await getMemory(nextQuestion + "\n\n" + lastMessage,filter,topK)
+
+    
+
+    printC(memoriesCVPrompt, "2", "memoriesCVPrompt", "g")
+
+    finalMemoriesCVPrompt = `
+    Memory is given within (delimited by <>)
+    - The memory might be completely irrelevant! Don't use it if it doesn't add value
+
+    Memory: < ${memoriesCVPrompt} > `
+
+    
+  } 
+
+  askGPT = `You are an Interviewer, you need to reply to the candidate with goal to deeply understand the candidate
+
+      ${finalMemoriesPositionTrainingPrompt}
+
+      ${finalMemoriesCVPrompt}
+
+      - You have the Conversation between the Interviewer and the Candidate (delimited by <>)            
+
+      < ${prompt_conversation} >
+
+      - The original question that you need to collect information is (delimited by <>) 
+
+      < ${nextQuestion} >
+
+      - your goal is to collect the information from the candidate for this specific question and Job Role
+      - First make a small responded/acknowledgment of the answer with 1-8 words, if it applies
+      - You can only ask 1 question at a time, 
+      - you should use a maximum 1-2 sentence
+      
+      Interviewer Reply: 
+      `
+  return (askGPT)
+
+}
+
+async function findConversationPrompt(conversationID) {
+  
+  convData = await Conversation.findOne({ _id: conversationID }).select('_id userID conversation');
+
+  if (!convData) {
+    return ""
+  }
+
+  let promptConv = "";
+  for (let i = 0; i < convData.conversation.length; i++) {
+    let convDataNow = convData.conversation[i];
+    if (convDataNow.role == "assistant")
+      promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+    else
+      promptConv = promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
+  }
+
+  return promptConv
+
+}
+
 
 
 async function createEmbeddingsGPT(words_n) {
@@ -150,6 +1043,8 @@ async function generateRandomID(numDigit = 8) {
     return id;
   }
   
+
+
 async function deletePineCone(deletePineIDs){
 
     const pinecone = new PineconeClient();
@@ -359,23 +1254,94 @@ function chooseAPIkey(chooseAPI="") {
     
     return response.data.choices[0].message.content;
   }
+
   
-  async function useGPChatSimple(prompt,temperature=0.7) {
+  
+  async function useGPTchatSimple(prompt,temperature=0.7,chooseAPI = "API 1",useMode="chatGPT") {
     
+    let success = false;
+    let retries = 0;
+    let apiKey = chooseAPI;
+
+    let extraTimeWait = 0
+
+    let resContent
+    while (!success && retries < 4) {
+      try {
+        console.log("TRY OPENAI = " , apiKey,useMode)
+
+        if (useMode == "chatGPT")
+          resContent = await onlyGPTchat(prompt, temperature, apiKey);
+        else if (useMode == "davinci"){
+          resContent = await onlyGPTDavinci(prompt, temperature, apiKey);
+        }
+        success = true;
+      } catch (e) {
+        console.log("Error OpenAI = " , e.response)
+
+        // Sleep for a while before trying again
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        // Switch to the other API key
+        apiKey = apiKey === "API 1" ? "API 2" : "API 1";
+      }
+      retries++;
+
+      extraTimeWait += 2000
+    }
+
+    if (!success) {
+      console.error("Failed to get response from OpenAI API");
+      return;
+    }
+
+    console.log("resContent = " , resContent)
+
+    return resContent;
+  }
+
+  async function onlyGPTDavinci(prompt,temperature=0.7,chooseAPI = "API 1",max_tokens = 3000) {
+    
+    const configuration = new Configuration({
+      apiKey: chooseAPIkey(chooseAPI)
+    });
+
+    const openai = new OpenAIApi(configuration);
+
+      // let model = "text-curie-001";
+      let model = "text-davinci-003";
+      const response = await openai.createCompletion({
+        model,
+        prompt,
+        temperature,
+        max_tokens: max_tokens,
+      });
+    
+      // ----------- Clean up the Results ---------
+      let generatedText = response.data.choices[0].text;
+    
+      // ----------- Clean up the Results ---------
+    
+  
+    return generatedText
+  }
+
+  async function onlyGPTchat(prompt,temperature=0.7,chooseAPI = "API 1") {
+    
+    let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
+
     discussion = [{
       "role": "user",
       "content": prompt
     }]
-  
-  
+
     
-    let OPENAI_API_KEY = chooseAPIkey();
     response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
         messages: discussion,
         model: "gpt-3.5-turbo",
-        temperature: temperature,
+        temperature: temperature
       },
       {
         headers: {
@@ -384,11 +1350,15 @@ function chooseAPIkey(chooseAPI="") {
         },
       }
     );
+
+    console.log("response.data = " , response.data)
   
-    return response.data.choices[0].message.content;
+    return response.data.choices[0].message.content
   }
 
-const nodes_aiModule = async (nodesID,weightModulesObj,memberObj,filter) => {
+  
+
+const nodes_aiModule = async (nodesID,weightModulesObj,memberObj,filter,membersIDallowObj={}) => {
 
     
 
@@ -400,10 +1370,9 @@ const nodes_aiModule = async (nodesID,weightModulesObj,memberObj,filter) => {
     if (!nodeData) throw new ApolloError("Node Don't exist");
 
 
-    memberObj = await nodesFindMembers(nodeData,memberObj)
+    memberObj = await nodesFindMembers(nodeData,memberObj,membersIDallowObj)
 
-    console.log("memberObj = " , memberObj)
-    // sdf0
+    
 
 
     // console.log("memberObj = " , memberObj)
@@ -412,7 +1381,10 @@ const nodes_aiModule = async (nodesID,weightModulesObj,memberObj,filter) => {
     // }
     // sdf00
 
-    memberObj = await findMemberAndFilter(memberObj)
+    // memberObj = await findMemberAndFilter(memberObj)
+
+    console.log("memberObj = " , memberObj)
+    // sdf0
 
     // console.log("memberObj = " , memberObj)
     // sdf2
@@ -816,7 +1788,7 @@ const distanceFromFilter = async (memberObj,filter) => {
     return memberObj
 }
 
-const nodesFindMembers = async (nodeData,memberObj) => {
+const nodesFindMembers = async (nodeData,memberObj,membersIDallowObj={}) => {
 
     memberIDs = [];
 
@@ -828,10 +1800,15 @@ const nodesFindMembers = async (nodeData,memberObj) => {
         let node = nodeData[i];
 
         console.log(" = --->> tora tt0", node._id, match_v2.length)
+        // console.log(" = --->> tora tt0", match_v2)
+        const tstID = match_v2.map((item) => item.nodeResID);
 
-        memberObj = await nodeScoreMembersMap(match_v2,node,memberObj)
+        console.log("tstID = " , tstID)
+
+        memberObj = await nodeScoreMembersMap(match_v2,node,memberObj,membersIDallowObj)
 
     }
+    // sd9
 
     console.log(" = --->> tora 3",memberObj )
     // sdf
@@ -841,12 +1818,15 @@ const nodesFindMembers = async (nodeData,memberObj) => {
     return memberObj
 }
 
-const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
+const nodeScoreMembersMap = async (match_v2,node,memberObj,membersIDallowObj={}) => {
 
     let nodeID = node._id;
 
     max_S = -1
     min_S = 100000000
+
+    // console.log("membersIDallowObj = " , membersIDallowObj)
+    // sdf0
 
     newMin_nodeMember = 0.2
     newMax_nodeMember = 1
@@ -856,15 +1836,18 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
         if (! (match_v2[j].type == "Member")) continue;
 
         let memberID = match_v2[j].nodeResID;
+
+
+        if (membersIDallowObj[memberID] == undefined && membersIDallowObj["all"] != true) continue;
+
+        console.log("memberID = " , memberID)
+
         let scoreUser = match_v2[j].wh_sum;
 
         // ------------- Find all connected nodes -------------
         let conn_node = match_v2[j].conn_node_wh;
         let conn_nodeIDs = conn_node.map((item) => item.nodeConnID);
 
-        // console.log("scoreUser = " , scoreUser)
-        // console.log("conn_node = " , conn_node)
-        // asdf2
         // ------------- Find all connected nodes -------------
 
         if (scoreUser > max_S) max_S = scoreUser;
@@ -933,6 +1916,16 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
         if (! (match_v2[j].type == "Member")) continue;
 
         let memberID = match_v2[j].nodeResID;
+
+
+
+
+        if (membersIDallowObj[memberID] == undefined && membersIDallowObj["all"] != true) continue;
+
+        console.log("Dokeratorinolari = " , memberID)
+
+
+
         let scoreUser = match_v2[j].wh_sum;
 
         let scoreUserMap = mapValue(scoreUser, min_S, max_S, newMin_nodeMember, newMax_nodeMember);
@@ -952,7 +1945,7 @@ const nodeScoreMembersMap = async (match_v2,node,memberObj) => {
 
         
     }
-    console.log(" = --->> tora 2",memberObj )
+    // console.log(" = --->> tora 2",memberObj )
 
     // ---------- Map Score [0,1]-----------
     // sfaf6
@@ -1240,10 +2233,12 @@ function nodeToMaxScore(x) {
 }
 
 
-
-
+async function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 module.exports = {
+    wait,
     nodes_aiModule,
     totalScore_aiModule,
     showObject,
@@ -1252,7 +2247,7 @@ module.exports = {
     deletePineCone,
     chooseAPIkey,
     useGPTchat,
-    useGPTchatSimple: useGPChatSimple,
+    useGPTchatSimple,
     arrayToObject,
     taskPlanning,
     findAvailTaskPineCone,
@@ -1265,4 +2260,13 @@ module.exports = {
     getMemory,
     modifyQuestionFromCVMemory,
     MessageMapKG_V2APICallF,
+    MessageMapKG_V4APICallF,
+    InterviewQuestionCreationUserAPICallF,
+    createEmbeddingsGPT,
+    askQuestionAgain,
+    CandidateNotesEdenAIAPICallF,
+    interviewQuestionCreationUserFunc,
+    findConversationPrompt,
+    conversationCVPositionToReportFunc,
+    reportPassFailCVPositionConversationFunc,
   };

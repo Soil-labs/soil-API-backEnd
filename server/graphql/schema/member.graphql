@@ -12,7 +12,7 @@ module.exports = `
 
         onbording: onboardingType
 
-        companiesApplied: [companiesAppliedType]
+        positionsApplied: [positionsAppliedType]
 
         cvInfo: cvInfoType
 
@@ -77,8 +77,8 @@ module.exports = `
         preferences: preferencesType
     }
 
-    type companiesAppliedType {
-        companyID: ID
+    type positionsAppliedType {
+        positionID: ID
     }
 
     type cvInfoType {
@@ -300,6 +300,43 @@ module.exports = `
         commonSkills: [Skills]
         projectRoles: [matchProjectRoles]
     }
+
+    type memberPieChartNodeCategoriesOutput {
+        categoryName: String,
+        percentage: Float,
+        nodes: [Node]
+    }
+    input memberPieChartNodeCategoriesInput {
+        memberID: ID
+    }
+
+    type memberRadioChartCharacterAttributesOutput {
+        attributeName: String,
+        score: Float,
+        reason: String,
+    }
+    input memberRadioChartCharacterAttributesInput {
+        memberID: ID
+    }
+    type candidateNotesEdenAIOutput {
+        categoryName: String,
+        score: Float,
+        reason: [String],
+    }
+    input candidateNotesEdenAIInput {
+        memberID: ID
+        positionID: ID
+    }
+
+    type candidateNotesComparePositionEdenAIOutput {
+        categoryName: String,
+        score: Float,
+        reason: [String],
+    }
+    input candidateNotesComparePositionEdenAIInput {
+        memberID: ID
+        positionID: ID
+    }
     
     type matchProjectRoles {
         matchPercentage: Float,
@@ -438,6 +475,7 @@ module.exports = `
 
     input matchNodesToMembers_AI4Input {
         nodesID: [ID]
+        membersIDallow: [ID]
         budget: budgetInputT
         experienceLevel: Int
         availability: availabilityInput

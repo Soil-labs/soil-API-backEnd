@@ -39,7 +39,7 @@ module.exports = {
   findNodes: async (parent, args, context, info) => {
     const { _id, name, names, node, recalculate_en, show_match_v2, selectedNodes } =
       args.fields;
-    console.log("Query > findNode > args.fields = ", args.fields);
+    // console.log("Query > findNode > args.fields = ", args.fields);
 
     let searchQuery_and = [];
 

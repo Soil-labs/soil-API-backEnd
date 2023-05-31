@@ -13,12 +13,13 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const token = async ({ body }, res) => {
   try {
     const { accessToken } = body;
-
+    console.log("start accessing the token here ", accessToken)
     // Verify the token from Google and extract user information
     const ticket = await client.verifyIdToken({
       idToken: accessToken,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
+    console.log("the ticket is ", ticket)
 
     if (!accessToken) throw new Error("Invalid Token supplied");
     // const authResponse = await axios
@@ -34,6 +35,7 @@ const token = async ({ body }, res) => {
     //let { user } = authResponse?.data;
 
     const payload = ticket.getPayload();
+    console.log("payload is ", payload)
     const userid = payload["sub"];
     const email = payload["email"];
     const name = payload["name"];
@@ -49,7 +51,7 @@ const token = async ({ body }, res) => {
         _id: userid,
         discordName: name,
         discordAvatar: picture,
-        discriminator: user.discriminator,
+        //discriminator: user.discriminator,
         registeredAt: new Date(),
       };
       dbUser = await new Members(fields);
@@ -66,7 +68,7 @@ const token = async ({ body }, res) => {
     //await retrieveAndMergeServersUserIsIn(accessToken, dbUser);
 
     // Check if user is an operator
-    let userAccess = null;
+    let userAccess;
     if (OPERATORS.includes(dbUser.id)) {
       userAccess = ACCESS_LEVELS.OPERATOR_ACCESS;
     } else {
@@ -75,7 +77,7 @@ const token = async ({ body }, res) => {
 
     const token = jwt.sign(
       {
-        _id: dbUser.id,
+        _id: dbUser._id,
         discordName: name,
         accessLevel: userAccess,
       },
@@ -87,6 +89,7 @@ const token = async ({ body }, res) => {
 
     res.json({ edenToken: token });
   } catch (error) {
+    console.log("the error is ", error)
     res.status(500).send({ error: error.message });
   }
 };

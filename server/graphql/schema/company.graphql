@@ -3,10 +3,9 @@ module.exports = `
     type Company {
         _id: ID
         name: String
-        candidatesReadyToDisplay: Boolean
+        url: String
         employees: [EmployeeType]
-        questionsToAsk: [QuestionType]
-        candidates: [CandidateType]
+        positions: [Position]
     }
 
     type EmployeeType {
@@ -14,33 +13,14 @@ module.exports = `
         user: Members
     }
 
-    type QuestionType {
-        question: QuestionsEdenAI
-        bestAnswer: String
-    }
-
-    type CandidateType {
-        user: Members,
-        overallScore: Float,
-        acceptedOrRejected: Boolean,
-        readyToDisplay: Boolean,
-        summaryQuestions: [SummaryQuestionType]
-    }
-
-    type SummaryQuestionType {
-        questionID: ID,
-        questionContent: String,
-        questionContentSmall: String,
-        answerContent: String,
-        answerContentSmall: String,
-        bestAnswerCompany: String,
-        reason: String,
-        score: Float,
-    }
-
     input updateCompanyInput {
         _id: ID
         name: String
+    }
+    
+    input updateUrlInput {
+        companyID: ID
+        url: String
     }
 
     input EmployeeTypeInput {
@@ -48,53 +28,17 @@ module.exports = `
         userID: String
     }
 
-    input QuestionTypeInput {
-        questionID: ID
-        questionContent: String
-        bestAnswer: String
-    }
-
-    input CandidateTypeInput {
-        userID: ID,
-    }
-
     input findCompanyInput {
-        _id: [ID],
-    }
-
-    input findCompaniesInput {
         _id: ID,
     }
 
+    input findCompaniesInput {
+        _id: [ID],
+    }
+    
     input addEmployeesCompanyInput {
         companyID: ID
         employees: [EmployeeTypeInput]
-    }
-
-    input addQuestionsToAskCompanyInput {
-        companyID: ID
-        questionsToAsk: [QuestionTypeInput]
-    }
-    input deleteQuestionsToAskCompanyInput {
-        companyID: ID
-        questionID: ID
-    }
-
-    input candidatesInput {
-        userID: ID,
-        overallScore: Float,
-        acceptedOrRejected: Boolean,
-    }
-
-    input addCandidatesCompanyInput {
-        companyID: ID
-        candidates: [candidatesInput]
-    }
-
-    input updateCompanyUserAnswersInput {
-        companyIDs: [ID]
-    }
-
-    
+    }  
 
 `
