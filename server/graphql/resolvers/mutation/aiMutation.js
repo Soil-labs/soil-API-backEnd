@@ -572,8 +572,8 @@ module.exports = {
       if (userIDs)
         usersData = await Members.find({
           _id: userIDs,
-          "cvInfo.cvPreparationDone": { $ne: true },
-          "cvInfo.cvContent": { $ne: null },
+          // "cvInfo.cvPreparationDone": { $ne: true },
+          // "cvInfo.cvContent": { $ne: null },
         });
       else {
         usersData = await Members.find({
@@ -590,7 +590,7 @@ module.exports = {
         let cvContent = userData.cvInfo.cvContent;
 
         // ------- Calculate Summary -------
-        if (userData.cvInfo.cvPreparationBio != true) {
+        // if (userData.cvInfo.cvPreparationBio != true) {
           promptSum =
             `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
             cvContent;
@@ -602,15 +602,15 @@ module.exports = {
           userData.bio = summaryOfCV;
 
           userData.cvInfo.cvPreparationBio = true;
-        }
+        // }
         // ------- Calculate Summary -------
 
         // -------Calculate Previous Jobs -------
-        if (userData.cvInfo.cvPreparationPreviousProjects != true) {
+        // if (userData.cvInfo.cvPreparationPreviousProjects != true) {
           promptJobs = `
           Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
     
-          CV(resume), (delimiters <>: <${cvString}>
+          CV(resume), (delimiters <>: <${cvContent}>
     
     
           Your job is to find and list the latest 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. 
@@ -631,6 +631,9 @@ module.exports = {
 
           responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
 
+          console.log("responseFromGPT = " , responseFromGPT)
+          asdf0
+
           jobsArr = responseFromGPT
             .replace(/\n/g, "")
             .split("•")
@@ -649,7 +652,7 @@ module.exports = {
           userData.previousProjects = result;
 
           userData.cvInfo.cvPreparationPreviousProjects = true;
-        }
+        // }
         // -------Calculate Previous Jobs -------
 
         // -------------- Map Nodes from CV--------------
