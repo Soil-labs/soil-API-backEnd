@@ -607,23 +607,27 @@ module.exports = {
 
         // -------Calculate Previous Jobs -------
         if (userData.cvInfo.cvPreparationPreviousProjects != true) {
-          promptJobs =
-            `Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). 
-    Your job is to find and give the last(based on dates) 1-3 jobs this person had.
-    Give me those jobs in a bullet point format,do not include the name in the summary. 
-    Only give me the last(based on dates) 3 jobs in descending order, the latest job should go on the top. 
-    So there should be only three bullet points. Also take the name of each 
-    position and as a sub bullet point and in your own words, give me 3 very short sentences about that position.   
-
-
-  This is the format(Use only one bullet point for the job and the second bullet point for 3 sentences):
-    -Do not give a sentence their own bullet point. 
-
-    • Title, company Name (Some Date- Present) (all within one bullet point)   
-    • Sentence, Sentence, Sentence(all within one bullet point)  
-
-
-    Here is that string:` + cvString;
+          promptJobs = `
+          Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
+    
+          CV(resume), (delimiters <>: <${cvString}>
+    
+    
+          Your job is to find and list the latest 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. 
+          
+          - Only give me up to 3 last jobs. The job that is current (some year - present) should appear first. After that list jobs that have the latest end date.
+          - Give me a dates of when this person started and finished( or presently working). This concludes the first bullet point. 
+          - As a separate bullet point take the name of each position and give 3 short(no more than 80 characters long) descriptions of that position.
+          - Job Title, Company Name, and the dates should be in one bullet point. The 3 short description should be in their own separate bullet point
+          - Always use "•" for a bullet point, never this "-". 
+    
+          This is the format: 
+    
+          • Job Title, Company Name, (start date, end date(or present)) 
+    
+          • * short description
+            * short description
+            * short description `;
 
           responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
 
@@ -1033,23 +1037,25 @@ module.exports = {
     prompt = `
       Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
 
-      CV(resume), (delimiters <>) ${cvString}
+      CV(resume), (delimiters <>: <${cvString}>
 
 
       Your job is to find and list the latest 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. 
       
       - Only give me up to 3 last jobs. The job that is current (some year - present) should appear first. After that list jobs that have the latest end date.
-      - Give me a dates of when this person started and finished( or presently working)
-      - Also take the name of each position and give 3 short(no more than 80 characters long) descriptions of that position.
+      - Give me a dates of when this person started and finished( or presently working). This concludes the first bullet point. 
+      - As a separate bullet point take the name of each position and give 3 short(no more than 80 characters long) descriptions of that position.
+      - Job Title, Company Name, and the dates should be in one bullet point. The 3 short description should be in their own separate bullet point
       - Always use "•" for a bullet point, never this "-". 
 
       This is the format: 
-      •Job Title, Company Name, (start date, end date(or present))
-      • - short description
-        - short description
-        - short description `;
 
-    responseFromGPT = await useGPTchatSimple(prompt, 0.7);
+      • Job Title, Company Name, (start date, end date(or present)) 
+
+      • * short description
+        * short description
+        * short description `;
+    responseFromGPT = await useGPTchatSimple(prompt, 0);
 
     console.log("responseFromGPT", responseFromGPT);
 
@@ -1065,8 +1071,8 @@ module.exports = {
     previousJobs = () => {
       for (let i = 0; i < jobsArr.length; i += 2) {
         result.push({
-          outside: jobsArr[i],
-          inside: jobsArr[i + 1],
+          title: jobsArr[i],
+          description: jobsArr[i + 1],
         });
       }
       return JSON.stringify(result);
