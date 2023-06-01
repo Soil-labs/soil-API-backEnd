@@ -4,6 +4,7 @@ require("dotenv").config();
 const companyModel = mongoose.Schema({
   name: String,
   url: String,
+  slug: String,
   employees: [
     {
       typeT: String,

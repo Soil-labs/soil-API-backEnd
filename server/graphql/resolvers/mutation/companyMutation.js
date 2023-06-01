@@ -4,7 +4,7 @@ const { Company } = require("../../../models/companyModel");
 
 module.exports = {
   updateCompany: async (parent, args, context, info) => {
-    const { _id, name } = args.fields;
+    const { _id, name, slug } = args.fields;
     console.log("Mutation > updateCompany > args.fields = ", args.fields);
 
     try {
@@ -14,10 +14,21 @@ module.exports = {
 
         // update
         if (name) companyData.name = name;
+        if (slug) companyData.slug = slug;
         await companyData.save();
       } else {
+        const companyWithSameSlug = await Company.findOne({ slug: slug });
+        if (companyWithSameSlug) {
+          throw new ApolloError(
+            "Company with same slug already exists",
+            "updateCompany",
+            { component: "companyMutation > updateCompany" }
+          );
+        }
+
         companyData = await new Company({
           name,
+          slug,
         });
 
         await companyData.save();
@@ -26,6 +37,7 @@ module.exports = {
       return {
         _id: companyData._id,
         name: companyData.name,
+        slug: companyData.slug,
       };
     } catch (err) {
       throw new ApolloError(
