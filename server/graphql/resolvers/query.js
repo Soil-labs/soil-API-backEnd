@@ -15,7 +15,11 @@ const {
   matchNodesToMembers_AI4,
   setAllMatch_v2,
   matchNodesToMembers_old,
-  matchSkillsToProjects,memberPieChartNodeCategories,memberRadioChartCharacterAttributes,candidateNotesEdenAI,candidateNotesComparePositionEdenAI,
+  matchSkillsToProjects,
+  memberPieChartNodeCategories,
+  memberRadioChartCharacterAttributes,
+  candidateNotesEdenAI,
+  candidateNotesComparePositionEdenAI,
   matchNodesToProjectRoles,
   matchNodesToProjectRoles_old,
   members_autocomplete,
@@ -42,9 +46,17 @@ const {
   findConversations,
 } = require("./query/conversationQuery");
 
-const { findPosition, findPositions,findUserTalentListPosition } = require("./query/positionQuery");
+const {
+  findPosition,
+  findPositions,
+  findUserTalentListPosition,
+} = require("./query/positionQuery");
 
-const { findCompany, findCompanies } = require("./query/companyQuery");
+const {
+  findCompany,
+  findCompanies,
+  findCompanyFromSlug,
+} = require("./query/companyQuery");
 
 const { findQuestionEdenAI } = require("./query/questionsEdenAIQuery");
 
@@ -163,7 +175,11 @@ module.exports = {
     matchNodesToMembers_AI4,
     setAllMatch_v2,
     matchNodesToMembers_old,
-    matchSkillsToProjects,memberPieChartNodeCategories,memberRadioChartCharacterAttributes,candidateNotesEdenAI,candidateNotesComparePositionEdenAI,
+    matchSkillsToProjects,
+    memberPieChartNodeCategories,
+    memberRadioChartCharacterAttributes,
+    candidateNotesEdenAI,
+    candidateNotesComparePositionEdenAI,
     matchNodesToProjectRoles,
     matchNodesToProjectRoles_old,
     members_autocomplete,
@@ -188,11 +204,13 @@ module.exports = {
 
     // ------------- POSITION QUERY -----------------
     findPosition,
-    findPositions,findUserTalentListPosition,
+    findPositions,
+    findUserTalentListPosition,
 
     // ------------- COMPANY QUERY -----------------
     findCompany,
     findCompanies,
+    findCompanyFromSlug,
 
     // ------------- QUESTIONS EDEN AI QUERY -----------------
     findQuestionEdenAI,

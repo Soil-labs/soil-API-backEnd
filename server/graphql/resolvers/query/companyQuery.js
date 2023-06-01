@@ -72,4 +72,28 @@ module.exports = {
       );
     }
   },
+  findCompanyFromSlug: async (parent, args, context, info) => {
+    const { slug } = args.fields;
+    console.log("Query > findCompany > args.fields = ", args.fields);
+
+    if (!slug) throw new ApolloError("slug is required");
+
+    try {
+      console.log("change = ");
+      let companyData = await Company.findOne({ slug: slug });
+      console.log("change = 1", companyData);
+
+      if (!companyData) throw new ApolloError("Company not found");
+
+      console.log("companyData = ", companyData);
+
+      return companyData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findCompany",
+        { component: "companyQuery > findCompany" }
+      );
+    }
+  },
 };
