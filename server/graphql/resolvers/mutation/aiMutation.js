@@ -591,67 +591,101 @@ module.exports = {
 
         // ------- Calculate Summary -------
         // if (userData.cvInfo.cvPreparationBio != true) {
-          promptSum =
-            `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
-            cvContent;
+        promptSum =
+          `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
+          cvContent;
 
-          summaryOfCV = await useGPTchatSimple(promptSum);
+        summaryOfCV = await useGPTchatSimple(promptSum);
 
-          printC(summaryOfCV, "0", "summaryOfCV", "b");
+        printC(summaryOfCV, "0", "summaryOfCV", "b");
 
-          userData.bio = summaryOfCV;
+        userData.bio = summaryOfCV;
 
-          userData.cvInfo.cvPreparationBio = true;
+        userData.cvInfo.cvPreparationBio = true;
         // }
         // ------- Calculate Summary -------
 
         // -------Calculate Previous Jobs -------
         // if (userData.cvInfo.cvPreparationPreviousProjects != true) {
-          promptJobs = `
+
+        promptJobs = `
           Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
     
           CV(resume), (delimiters <>: <${cvContent}>
     
     
-          Your job is to find and list the latest 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. 
+          Your job is to find and list the latest 1-3 this person had. Give me those jobs in a array of objects format,do not include the name in the summary. 
           
           - Only give me up to 3 last jobs. The job that is current (some year - present) should appear first. After that list jobs that have the latest end date.
           - Give me a dates of when this person started and finished( or presently working). This concludes the first bullet point. 
-          - As a separate bullet point take the name of each position and give 3 short(no more than 80 characters long) descriptions of that position.
-          - Job Title, Company Name, and the dates should be in one bullet point. The 3 short description should be in their own separate bullet point
           - Always use "•" for a bullet point, never this "-". 
     
           This is the format: 
+
+          [
+            {
+              "title": "Job Title, Company Name",
+              "description": (start date, end date(or present))   • short description  • short description • short description
+                            
+            }
+          ]
     
-          • Job Title, Company Name, (start date, end date(or present)) 
-    
-          • * short description
-            * short description
-            * short description `;
+         `;
 
-          responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
+        responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
+        console.log("responseFromGPT = ", responseFromGPT);
 
-          console.log("responseFromGPT = " , responseFromGPT)
-          asdf0
+        let modifiedResult = responseFromGPT.replace(/\\n|\n/g, "");
 
-          jobsArr = responseFromGPT
-            .replace(/\n/g, "")
-            .split("•")
-            .filter((item) => item.trim() !== "");
+        result = JSON.parse(modifiedResult);
 
-          let result = [];
+        printC(result, "2", "y");
+        // result = JSON.parse(modifiedResult);
 
-          for (let i = 0; i < jobsArr.length; i += 2) {
-            result.push({
-              title: jobsArr[i],
-              description: jobsArr[i + 1],
-            });
-          }
-          printC(result, "1", "result", "g");
+        // let stringArray = responseFromGPT.split("\n\n"); // Split the string by double newline.
 
-          userData.previousProjects = result;
+        // let result = stringArray.map((entry) => {
+        //   // Map each entry into an object.
+        //   let lines = entry.split("\n"); // Split each entry by newline.
+        //   let title = lines[1].trim(); // The title is the second line of each entry.
+        //   let description = lines
+        //     .slice(2)
+        //     .map((line) => line.replace("*", "•"))
+        //     .join("\n"); // The description is the rest, with "*" replaced with "•".
+        //   return { title, description };
+        // });
 
-          userData.cvInfo.cvPreparationPreviousProjects = true;
+        // jobsArr = responseFromGPT
+        //   .replace(/\n/g, "")
+        //   .split("•")
+        //   .filter((item) => item.trim() !== "");
+
+        // console.log("jobsArr", jobsArr);
+
+        // let result = [];
+
+        // for (let i = 0; i < jobsArr.length; i += 2) {
+        //   description = jobsArr[i + 1];
+
+        //   console.log("jobsArr[i]", jobsArr[i]);
+        //   description = description
+        //     .trim()
+        //     .split("    - ")
+        //     .map((item) => item.trim())
+        //     .filter((item) => item !== "");
+
+        //   description = "• " + description.join(" • ");
+        //   console.log("description", description);
+        //   result.push({
+        //     title: jobsArr[i],
+        //     description: description,
+        //   });
+        // }
+        printC(result, "1", "result", "g");
+
+        userData.previousProjects = result;
+
+        userData.cvInfo.cvPreparationPreviousProjects = true;
         // }
         // -------Calculate Previous Jobs -------
 
