@@ -606,9 +606,8 @@ module.exports = {
         // ------- Calculate Summary -------
 
         // -------Calculate Previous Jobs -------
-        // if (userData.cvInfo.cvPreparationPreviousProjects != true) {
-
-        promptJobs = `
+        if (userData.cvInfo.cvPreparationPreviousProjects != true) {
+          promptJobs = `
           Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
     
           CV(resume), (delimiters <>: <${cvContent}>
@@ -632,55 +631,21 @@ module.exports = {
     
          `;
 
-        responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
-        console.log("responseFromGPT = ", responseFromGPT);
+          responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
+          console.log("responseFromGPT = ", responseFromGPT);
 
-        let modifiedResult = responseFromGPT.replace(/\\n|\n/g, "");
+          let modifiedResult = responseFromGPT.replace(/\\n|\n/g, "");
+
+          result = JSON.parse(modifiedResult);
+
+          printC(result, "2", "y");
+
+          printC(result, "1", "result", "g");
 
         result = JSON.parse(modifiedResult);
 
         printC(result, "2", "y");
-        // result = JSON.parse(modifiedResult);
-
-        // let stringArray = responseFromGPT.split("\n\n"); // Split the string by double newline.
-
-        // let result = stringArray.map((entry) => {
-        //   // Map each entry into an object.
-        //   let lines = entry.split("\n"); // Split each entry by newline.
-        //   let title = lines[1].trim(); // The title is the second line of each entry.
-        //   let description = lines
-        //     .slice(2)
-        //     .map((line) => line.replace("*", "•"))
-        //     .join("\n"); // The description is the rest, with "*" replaced with "•".
-        //   return { title, description };
-        // });
-
-        // jobsArr = responseFromGPT
-        //   .replace(/\n/g, "")
-        //   .split("•")
-        //   .filter((item) => item.trim() !== "");
-
-        // console.log("jobsArr", jobsArr);
-
-        // let result = [];
-
-        // for (let i = 0; i < jobsArr.length; i += 2) {
-        //   description = jobsArr[i + 1];
-
-        //   console.log("jobsArr[i]", jobsArr[i]);
-        //   description = description
-        //     .trim()
-        //     .split("    - ")
-        //     .map((item) => item.trim())
-        //     .filter((item) => item !== "");
-
-        //   description = "• " + description.join(" • ");
-        //   console.log("description", description);
-        //   result.push({
-        //     title: jobsArr[i],
-        //     description: description,
-        //   });
-        // }
+        
         printC(result, "1", "result", "g");
 
         userData.previousProjects = result;
