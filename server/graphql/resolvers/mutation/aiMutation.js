@@ -578,8 +578,8 @@ module.exports = {
       if (userIDs)
         usersData = await Members.find({
           _id: userIDs,
-          "cvInfo.cvPreparationDone": { $ne: true },
-          "cvInfo.cvContent": { $ne: null },
+          // "cvInfo.cvPreparationDone": { $ne: true },
+          // "cvInfo.cvContent": { $ne: null },
         });
       else {
         usersData = await Members.find({
@@ -596,43 +596,56 @@ module.exports = {
         let cvContent = userData.cvInfo.cvContent;
 
         // ------- Calculate Summary -------
-        if (userData.cvInfo.cvPreparationBio != true) {
-          promptSum =
-            `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
-            cvContent;
+        // if (userData.cvInfo.cvPreparationBio != true) {
+        promptSum =
+          `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
+          cvContent;
 
-          summaryOfCV = await useGPTchatSimple(promptSum);
+        summaryOfCV = await useGPTchatSimple(promptSum);
 
-          printC(summaryOfCV, "0", "summaryOfCV", "b");
+        printC(summaryOfCV, "0", "summaryOfCV", "b");
 
-          userData.bio = summaryOfCV;
+        userData.bio = summaryOfCV;
 
-          userData.cvInfo.cvPreparationBio = true;
-        }
+        userData.cvInfo.cvPreparationBio = true;
+        // }
         // ------- Calculate Summary -------
 
         // -------Calculate Previous Jobs -------
         if (userData.cvInfo.cvPreparationPreviousProjects != true) {
-          promptJobs =
-            'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
-            cvContent;
+          promptJobs = `
+          Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
+    
+          CV(resume), (delimiters <>: <${cvContent}>
+    
+    
+          Your job is to find and list the latest 1-3 this person had. Give me those jobs in a array of objects format,do not include the name in the summary. 
+          
+          - Only give me up to 3 last jobs. The job that is current (some year - present) should appear first. After that list jobs that have the latest end date.
+          - Give me a dates of when this person started and finished( or presently working). This concludes the first bullet point. 
+          - Always use "•" for a bullet point, never this "-". 
+    
+          This is the format: 
+
+          [
+            {
+              "title": "Job Title, Company Name",
+              "description": (start date, end date(or present))   • short description  • short description • short description
+                            
+            }
+          ]
+    
+         `;
+
 
           responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
+          console.log("responseFromGPT = ", responseFromGPT);
 
-          jobsArr = responseFromGPT
-            .replace(/\n/g, "")
-            .split("•")
-            .filter((item) => item.trim() !== "");
+          let modifiedResult = responseFromGPT.replace(/\\n|\n/g, "");
 
-          let result = [];
+          result = JSON.parse(modifiedResult);
 
-          for (let i = 0; i < jobsArr.length; i += 2) {
-            result.push({
-              title: jobsArr[i],
-              description: jobsArr[i + 1],
-            });
-          }
-          printC(result, "1", "result", "g");
+          result = JSON.parse(modifiedResult);
 
           userData.previousProjects = result;
 
