@@ -642,16 +642,56 @@ module.exports = {
 
           printC(result, "1", "result", "g");
 
-        result = JSON.parse(modifiedResult);
+          result = JSON.parse(modifiedResult);
 
-        printC(result, "2", "y");
-        
-        printC(result, "1", "result", "g");
+          printC(result, "2", "y");
+          // result = JSON.parse(modifiedResult);
 
-        userData.previousProjects = result;
+          // let stringArray = responseFromGPT.split("\n\n"); // Split the string by double newline.
 
-        userData.cvInfo.cvPreparationPreviousProjects = true;
-        // }
+          // let result = stringArray.map((entry) => {
+          //   // Map each entry into an object.
+          //   let lines = entry.split("\n"); // Split each entry by newline.
+          //   let title = lines[1].trim(); // The title is the second line of each entry.
+          //   let description = lines
+          //     .slice(2)
+          //     .map((line) => line.replace("*", "•"))
+          //     .join("\n"); // The description is the rest, with "*" replaced with "•".
+          //   return { title, description };
+          // });
+
+          // jobsArr = responseFromGPT
+          //   .replace(/\n/g, "")
+          //   .split("•")
+          //   .filter((item) => item.trim() !== "");
+
+          // console.log("jobsArr", jobsArr);
+
+          // let result = [];
+
+          // for (let i = 0; i < jobsArr.length; i += 2) {
+          //   description = jobsArr[i + 1];
+
+          //   console.log("jobsArr[i]", jobsArr[i]);
+          //   description = description
+          //     .trim()
+          //     .split("    - ")
+          //     .map((item) => item.trim())
+          //     .filter((item) => item !== "");
+
+          //   description = "• " + description.join(" • ");
+          //   console.log("description", description);
+          //   result.push({
+          //     title: jobsArr[i],
+          //     description: description,
+          //   });
+          // }
+          printC(result, "1", "result", "g");
+
+          userData.previousProjects = result;
+
+          userData.cvInfo.cvPreparationPreviousProjects = true;
+        }
         // -------Calculate Previous Jobs -------
 
         // -------------- Map Nodes from CV--------------
