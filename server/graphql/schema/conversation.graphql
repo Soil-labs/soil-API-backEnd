@@ -5,6 +5,7 @@ module.exports = `
         userID: String, 
         convKey: String,
         positionID: String, 
+        positionTrainEdenAI: Boolean,
 
         #  conv: [messageChat],
         conversation: [conversationType],

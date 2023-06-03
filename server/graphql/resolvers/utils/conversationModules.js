@@ -158,7 +158,7 @@ async function updateEmployees(arr1, arr2, compareKey = "userID") {
   return arr1;
 }
 
-async function findAndUpdateConversationFunc(userID, conversation, positionID) {
+async function findAndUpdateConversationFunc(userID, conversation, positionID,positionTrainEdenAI) {
   convKey = await concatenateFirstTwoMessages(conversation);
 
   // check if already exist using userID and convKey
@@ -176,6 +176,8 @@ async function findAndUpdateConversationFunc(userID, conversation, positionID) {
     existingConversation.updatedAt = Date.now();
     existingConversation.summaryReady = false;
     existingConversation.positionID = positionID;
+    existingConversation.positionTrainEdenAI = positionTrainEdenAI;
+
 
     resultConv = await existingConversation.save();
   } else {
@@ -184,6 +186,7 @@ async function findAndUpdateConversationFunc(userID, conversation, positionID) {
       userID,
       conversation,
       positionID,
+      positionTrainEdenAI,
       summaryReady: false,
       summary: [],
       updatedAt: Date.now(),
