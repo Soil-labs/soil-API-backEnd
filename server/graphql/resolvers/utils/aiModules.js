@@ -34,6 +34,184 @@ async function getMemory(messageContent,filter,topK = 3,maxLength = 2000) {
     return memoriesForPrompt
 }
 
+async function positionTextToExtraQuestionsFunc(questionData,positionText, positionID) {
+
+
+  if (!positionID) {
+    throw new ApolloError("positionID is required");
+  }
+
+  positionData = await Position.findOne({ _id: positionID }).select('_id interviewQuestionsForPosition');
+
+  if (!positionData) {
+    throw new ApolloError("Position not found");
+  }
+
+
+  questionsPrompt = ""
+  for (let i=0;i<questionData.length;i++){
+    const questionNow = questionData[i];
+
+
+    questionsPrompt += ` ${i+1}. ${questionNow.content} \n`
+  }
+
+  printC(questionsPrompt,"3","questionsPrompt","b")
+
+
+
+  let promptNewQuestions = `
+    REQUIREMENTS of Job Position (delimiters <>): <${positionText}>
+
+    QUESTIONS (delimiters <>) <${questionsPrompt}>
+
+  
+    - You can improve each of the QUESTION using any of the REQUIREMENTS
+    - you can only ask 1 question at a time
+    - You should stay really close to the meaning of the QUESTIONS!
+    - You should use as many facts from the REQUIREMENTS to make it relevant
+    
+    
+    Improved QUESTIONS: 
+  `
+
+  printC(promptNewQuestions,"3","promptNewQuestions","b")
+  // s0
+
+  improvedQuestions = await useGPTchatSimple(promptNewQuestions,0,"API 2")
+
+//   improvedQuestions = `
+//   1. How does the technical expertise of the candidates you're looking for align with the company's focus on databases, SQL, and Cloud (preferably AWS) in achieving its overall business goals?
+// 2. What are the specific responsibilities for the backend development roles you're hiring for, and how do they relate to maintaining and improving infrastructure in AWS using Pulumi TypeScript IaC?
+// 3. What are the key technical skills and attributes you're looking for in a candidate, particularly in terms of experience with programming languages such as javascript or python, familiarity with continuous integration tools and services, and the ability to scale services through architectural changes and infrastructure improvements?
+// 4. Is there a preferred timeline for filling these positions, and are there any deadlines or milestones we should be aware of, given the importance of excellent English communication skills, a strong work ethic, and a collaborative/cooperative attitude in the roles you're hiring for?
+// `
+  printC(improvedQuestions,"4","improvedQuestions","r")
+  // sdf0
+
+  const improvedQuestionsArray_ = improvedQuestions.split('\n').map((item) => item.replace(/^\d+\.\s*/, ''));
+
+
+  const improvedQuestionsArray = improvedQuestionsArray_.filter(element => element != "");
+
+  printC(improvedQuestionsArray,"5","improvedQuestionsArray","p")
+
+
+  let interviewQuestionsForCandidate = []
+
+
+  for (let i=0;i<improvedQuestionsArray.length;i++){
+    const improvedQuestion = improvedQuestionsArray[i];
+
+    
+    printC(questionData[i],"5","questionData[i]","y")
+
+
+    interviewQuestionsForCandidate.push({
+      originalQuestionID: questionData[i]?.questionID,
+      originalContent: questionData[i]?.content,
+      personalizedContent: improvedQuestion.replace(/^\s*\d+\.\s*/, ''),
+    })
+  }
+
+
+  return interviewQuestionsForCandidate
+  
+}
+
+async function positionTextAndConvoToReportCriteriaFunc(positionID) {
+
+  
+  positionData = await Position.findOne({ _id: positionID }).select('_id positionsRequirements content');
+
+  if (!positionData) {
+    throw new ApolloError("Position not found");
+  }
+
+  positionsRequirements = positionData.positionsRequirements.originalContent;
+  // printC(positionsRequirements,"0","positionsRequirements","b")
+
+  positionsRequirements = positionsRequirements.replace(/b\d+:\s/g, "");
+  printC(positionsRequirements,"0.5","positionsRequirements","b")
+  // sdf9
+
+
+  let convData_ = await Conversation.find({ 
+    $and:[
+      {positionID: positionID},
+      {positionTrainEdenAI: true},
+    ]
+ }).select('_id positionID conversation');
+
+  printC(convData_,"1","convData","p")
+
+
+  let convData = convData_.pop();
+
+  let promptConv = "";
+  for (let i = 0; i < convData.conversation.length; i++) {
+    let convDataNow = convData.conversation[i];
+    if (convDataNow.role == "assistant")
+      promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+    else
+      promptConv = promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
+  }
+
+  printC(promptConv,"2","promptConv","b")
+
+
+  promptReport = ` You are a professional Recruiter, have as input the Details of a Job Position and the Conversation with the Company Representation
+  Job Position (delimiters <>): <${positionsRequirements}>
+
+  Conversation with the Company for Position (delimiters <>): <${promptConv}>
+
+
+  Your Task is to create a report for the most important categories and subCategories the Candidate should have and will be evaluated!
+
+
+  - Every Category can have from  1 to 4 bullet points
+  - To include information in the output you must first find it in text of <Job Position> and <Conversation with the Company Representation> Do not make up fake information
+  - Include 4-8 categories 
+  - You need make really small bullet points maximum 15 words about what the Candidate should have to pass on every Category
+  - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc. 
+  - Add parts of the Conversation to the report in a Category if it is relevant!
+
+  For example: 
+    <Category 1: title>
+      - b1: small content max 15 words
+      - b2: small content max 15 words
+    <Category 2: title>
+      - b3: small content max 15 words
+
+  Answer:`;
+   let report = await useGPTchatSimple(promptReport, 0);
+
+
+  // - Create the minimum number of categories by creating smart titles and smart unique bullet points 
+
+  // let report = "Category 1: Skills>\n- Experience with databases and SQL\n- Cloud experience, preferably with AWS\n- Programming experience\n- TypeScript experience is a plus\n\n<Category 2: Qualifications>\n- Experience building and maintaining backend systems\n- Experience with infrastructure improvements and scaling\n- Experience troubleshooting production issues and conducting root cause analysis\n- Experience conducting systems tests for security, performance, and availability\n\n<Category 3: Education>\n- No specific education requirements mentioned\n\n<Category 4: Culture Fit>\n- Team player\n- Willingness to work on everything on the backend side\n- Strong communication skills\n- Ability to work in a fast-paced environment\n\n<Category 5: Personality Type>\n- Detail-oriented\n- Problem solver\n- Self-motivated\n- Adaptable\n\n<Category 6: Experience>\n- Experience maintaining and improving infrastructure in AWS\n- Experience maintaining TypeScript SDKs and writing internal and public documentation\n- No specific years of experience mentioned\n- Experience with observability, monitoring, and alerting for services"
+
+  printC(report, "3", "report", "g");
+
+
+
+  return report
+}
+
+async function findInterviewQuestion(positionData,candidate, questionAskingID,positionTrainEdenAI) {
+
+  let newQuestion
+  if (positionTrainEdenAI == true){
+    newQuestion = positionData?.interviewQuestionsForPosition?.find((question) => question?.originalQuestionID?.toString() == questionAskingID.toString());
+
+  } else{
+    console.log("change = " )
+    newQuestion = candidate?.interviewQuestionsForCandidate?.find((question) => question?.originalQuestionID?.toString() == questionAskingID.toString());
+  }
+  return newQuestion;
+
+}
+
 async function conversationCVPositionToReportFunc(memberID,positionID) {
 
   if (!positionID) {
@@ -2269,4 +2447,7 @@ module.exports = {
     findConversationPrompt,
     conversationCVPositionToReportFunc,
     reportPassFailCVPositionConversationFunc,
+    findInterviewQuestion,
+    positionTextAndConvoToReportCriteriaFunc,
+    positionTextToExtraQuestionsFunc,
   };

@@ -85,8 +85,15 @@ module.exports = {
       talentListData = positionData.talentList.find(talentList => talentList._id.toString() == _id.toString());
       // positionData.
 
+      let talentListData_ = {
+        ...talentListData._doc,
+        positionID: positionData._id,
+      }
 
-      return talentListData;
+      // console.log("talentListData_ = " , talentListData_)
+
+
+      return talentListData_
     } catch (err) {
       throw new ApolloError(
         err.message,

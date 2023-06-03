@@ -10,7 +10,7 @@ module.exports = `
 
 
     input addQuestionToEdenAIInput {
-        content: ID
+        content: String
     }
 
     type addQuestionToEdenAIOutput {

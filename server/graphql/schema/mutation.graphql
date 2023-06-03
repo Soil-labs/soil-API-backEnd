@@ -142,7 +142,9 @@ module.exports = `
         storeLongTermMemory(fields: storeLongTermMemoryInput): storeLongTermMemoryOutput
         storeLongTermMemorySummary(fields: storeLongTermMemorySummaryInput): storeLongTermMemorySummaryOutput
         websiteToMemoryCompany(fields: websiteToMemoryCompanyInput): websiteToMemoryCompanyOutput
+        positionTextToExtraQuestions(fields: positionTextToExtraQuestionsInput): positionTextToExtraQuestionsOutput
         conversationCVPositionToReport(fields: conversationCVPositionToReportInput): conversationCVPositionToReportOutput
+        positionTextAndConvoToReportCriteria(fields: positionTextAndConvoToReportCriteriaInput): positionTextAndConvoToReportCriteriaOutput
         saveCVtoUser(fields: saveCVtoUserInput): saveCVtoUserOutput
         autoUpdateUserInfoFromCV(fields: autoUpdateUserInfoFromCVInput): autoUpdateUserInfoFromCVOutput
         autoUpdateMemoryFromCV(fields: autoUpdateMemoryFromCVInput): autoUpdateMemoryFromCVOutput

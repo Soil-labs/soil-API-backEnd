@@ -1,6 +1,8 @@
 const { AI } = require("../../../models/aiModel");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
+const { Conversation } = require("../../../models/conversationModel");
+
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
 const { Configuration, OpenAIApi } = require("openai");
@@ -27,6 +29,8 @@ const {
   interviewQuestionCreationUserFunc,
   conversationCVPositionToReportFunc,
   reportPassFailCVPositionConversationFunc,
+  positionTextAndConvoToReportCriteriaFunc,
+  positionTextToExtraQuestionsFunc,
 } = require("../utils/aiModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
@@ -357,7 +361,7 @@ module.exports = {
 
       printC(report, "0", "report", "b");
       // sdf9
-      positionData.positionsRequirements.content = report;
+      
 
 
 
@@ -378,7 +382,7 @@ module.exports = {
       let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
       // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
       printC(mapSkillText, "1", "mapSkillText", "g");
-
+ 
       let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
       printC(nodesN, "3", "nodesN", "p");
 
@@ -396,8 +400,36 @@ module.exports = {
 
       printC(nodeSave, "4", "nodeSave", "r");
 
-      positionData.nodes = nodeIDs;
       // ---------------------- Map Nodes from Position text ---------------------
+
+
+      
+      // --------------- positionText to Questions ---------------
+
+      questionData = [{
+        questionID: "6478a3df3bbea5508ea72af7",
+        content: "What are your companys overall business goals and how does your hiring process align with them?",
+      },{
+        questionID: "6478a4183bbea5508ea72af9",
+        content: "What specific roles are you looking to fill and what are the job responsibilities for each?",
+      },{
+        questionID: "6478a4753bbea5508ea72afb",
+        content: "What are the key skills, qualifications, and attributes you're looking for in a candidate?",
+      },{
+        questionID: "6478a49f3bbea5508ea72afd",
+        content: "What is the preferred timeline for filling these positions, and are there any deadlines or milestones we should be aware of?",
+      }]
+
+      const interviewQuestionsForCandidate = await positionTextToExtraQuestionsFunc(questionData,stringFromWebsite,positionID);
+
+
+
+      // --------------- positionText to Questions ---------------
+
+      positionData.nodes = nodeIDs;
+      positionData.interviewQuestionsForPosition = interviewQuestionsForCandidate;
+      positionData.positionsRequirements.content = report;
+      positionData.positionsRequirements.originalContent = stringFromWebsite;
 
 
       // update Mongo
@@ -414,6 +446,56 @@ module.exports = {
         err.extensions?.code || "websiteToMemoryCompany",
         {
           component: "aiMutation > websiteToMemoryCompany",
+        }
+      );
+    }
+  },
+  positionTextToExtraQuestions: async (parent, args, context, info) => {
+    const { positionText, positionID } = args.fields;
+    console.log("Mutation > positionTextToExtraQuestions > args.fields = ", args.fields);
+
+    
+
+    questionData = [{
+      questionID: "6478a3df3bbea5508ea72af7",
+      content: "What are your companys overall business goals and how does your hiring process align with them?",
+    },{
+      questionID: "6478a4183bbea5508ea72af9",
+      content: "What specific roles are you looking to fill and what are the job responsibilities for each?",
+    },{
+      questionID: "6478a4753bbea5508ea72afb",
+      content: "What are the key skills, qualifications, and attributes you're looking for in a candidate?",
+    },{
+      questionID: "6478a49f3bbea5508ea72afd",
+      content: "What is the preferred timeline for filling these positions, and are there any deadlines or milestones we should be aware of?",
+    }]
+
+
+
+    try {
+
+
+      const interviewQuestionsForCandidate = await positionTextToExtraQuestionsFunc(questionData,positionText,positionID);
+
+      printC(interviewQuestionsForCandidate,"3","interviewQuestionsForCandidate","r")
+
+      sd0
+
+      positionData.interviewQuestionsForPosition = interviewQuestionsForCandidate;
+
+      await positionData.save();
+
+      
+      return {
+        success: true,
+        questions: interviewQuestionsForCandidate
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "positionTextToExtraQuestions",
+        {
+          component: "aiMutation > positionTextToExtraQuestions",
         }
       );
     }
@@ -447,6 +529,49 @@ module.exports = {
         err.extensions?.code || "conversationCVPositionToReport",
         {
           component: "aiMutation > conversationCVPositionToReport",
+        }
+      );
+    }
+  },
+
+  positionTextAndConvoToReportCriteria: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
+    console.log("Mutation > positionTextAndConvoToReportCriteria > args.fields = ", args.fields);
+
+    try {
+
+      // --------------- Report ---------
+      const report = await positionTextAndConvoToReportCriteriaFunc(positionID)
+
+
+      console.log("report = " , report)
+
+      positionData.positionsRequirements.content = report;
+      // --------------- Report ---------
+
+
+    
+
+
+      await positionData.save();
+
+
+
+
+      // sdf0
+
+
+      return {
+        success: true,
+        report: report,
+
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "positionTextAndConvoToReportCriteria",
+        {
+          component: "aiMutation > positionTextAndConvoToReportCriteria",
         }
       );
     }

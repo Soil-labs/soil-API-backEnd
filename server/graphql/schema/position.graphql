@@ -9,6 +9,7 @@ module.exports = `
         questionsToAsk: [QuestionType]
         positionsRequirements: positionsRequirementsType
         nodes: [NodeDataType]
+        interviewQuestionsForPosition: [interviewQuestionsForCandidateType]
         convRecruiter: [convRecruiterType]
         convRecruiterReadyToDisplay: Boolean
         talentList: [talentListType]
@@ -16,6 +17,7 @@ module.exports = `
     }
 
     type positionsRequirementsType { 
+        originalContent: String
         content: String
     }
 
@@ -41,6 +43,7 @@ module.exports = `
     type talentListType {
         _id: ID
         name: String
+        positionID: ID
         talent: [talentType]
     }
 
