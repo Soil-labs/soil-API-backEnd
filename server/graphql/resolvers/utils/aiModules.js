@@ -69,7 +69,8 @@ async function positionTextToExtraQuestionsFunc(questionData,positionText, posit
     - You can improve each of the QUESTION using any of the REQUIREMENTS
     - you can only ask 1 question at a time
     - You should stay really close to the meaning of the QUESTIONS!
-    - You should use as many facts from the REQUIREMENTS to make it relevant
+    - make the question simple light and too the point 
+    - only ask the question don't add were you found the info or anything else
     
     
     Improved QUESTIONS: 
