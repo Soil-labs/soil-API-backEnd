@@ -988,6 +988,8 @@ module.exports = {
           prompt_conversation + "\n\n" + promptAskQuestion),
           console.log("");
         console.log("");
+
+
         printC(promptQuestionAskedN, "1", "promptQuestionAskedN", "p");
 
         responseGPTchat = await useGPTchatSimple(promptQuestionAskedN);
@@ -1008,7 +1010,7 @@ module.exports = {
           }
         }
 
-        console.log("moveNextQuestionGPT = ", moveNextQuestionGPT);
+        printC(moveNextQuestionGPT, "1", "moveNextQuestionGPT", "b")
         // -------------- Ask GPT what to do  ------------
 
         //  -------------- Move to next question ------------
@@ -1022,12 +1024,18 @@ module.exports = {
             // questionAskingNowA = unansweredQuestions.shift()
             // nextQuestion = "Next Question to Answer: " + questionAskingNowA
 
+            printC(unansweredQuestionsArr, "1", "unansweredQuestionsArr", "b")
+
             resT = unansweredQuestionsArr.shift();
+
+            printC(unansweredQuestionsArr, "1", "unansweredQuestionsArr", "b")
+
+            questionAskingID = unansweredQuestionsArr[0].questionID;
 
             newQuestion = await findInterviewQuestion(positionData,candidate, questionAskingID,positionTrainEdenAI)
 
 
-            // console.log("newQuestion = " , newQuestion)
+            console.log("newQuestion = " , newQuestion)
             // sdf9
 
             if (newQuestion?.personalizedContent != undefined)
@@ -1061,6 +1069,7 @@ module.exports = {
 
           resT = unansweredQuestionsArr.shift();
 
+          questionAskingID = unansweredQuestionsArr[0].questionID;
 
           newQuestion = await findInterviewQuestion(positionData,candidate, questionAskingID,positionTrainEdenAI)
 

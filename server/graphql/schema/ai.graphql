@@ -66,6 +66,7 @@ module.exports = `
         success: Boolean
         report: String
         nodes: [Node]
+        interviewQuestionsForPosition: [interviewQuestionsForCandidateType]
 
     }
 
@@ -100,6 +101,22 @@ module.exports = `
     type positionTextAndConvoToReportCriteriaOutput {
         success: Boolean
         report: String
+    }
+
+    input positionSuggestQuestionsAskCandidateInput {
+        positionID: ID
+    }
+
+    
+
+    type positionSuggestQuestionsAskCandidateOutput {
+        success: Boolean
+        questionSuggest: [questionSuggestType]
+    }
+
+    type questionSuggestType {
+        question: String
+        IDCriteria: ID
     }
 
     type reportPassFailType {

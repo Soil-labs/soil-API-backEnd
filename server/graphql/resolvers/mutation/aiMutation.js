@@ -365,47 +365,47 @@ module.exports = {
 
 
 
-      // ---------------------- Map Nodes from Position text ---------------------
-      promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
-            dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
-            Do not have any other words except for skills. 
+      // // ---------------------- Map Nodes from Position text ---------------------
+      // promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
+      //       dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
+      //       Do not have any other words except for skills. 
 
-            Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
+      //       Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
             
-            Job Position (delimiters <>): <${report}>
+      //       Job Position (delimiters <>): <${report}>
 
-            Skills Result:
-            `;
+      //       Skills Result:
+      //       `;
 
-
-
-      let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
-      // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
-      printC(mapSkillText, "1", "mapSkillText", "g");
+      // let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
+      // // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
+      // printC(mapSkillText, "1", "mapSkillText", "g");
  
-      let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
-      printC(nodesN, "3", "nodesN", "p");
+      // let nodeIDs
+      // try {
+      //   let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
+      //   printC(nodesN, "3", "nodesN", "p");
 
-      
-      nodeSave = nodesN.map((obj) => {
-        return {
-          _id: obj.nodeID,
-        };
-      });
-      nodeIDs = nodeSave.map((obj) => {
-        return {
-          nodeID: obj._id
-        }
-      });
-
-      printC(nodeSave, "4", "nodeSave", "r");
-
-      // ---------------------- Map Nodes from Position text ---------------------
+      //   nodeSave = nodesN.map((obj) => {
+      //     return {
+      //       _id: obj.nodeID,
+      //     };
+      //   });
+      //   nodeIDs = nodeSave.map((obj) => {
+      //     return {
+      //       nodeID: obj._id
+      //     }
+      //   });
+  
+      //   printC(nodeSave, "4", "nodeSave", "r");
+      // } catch (err) {
+      //   console.log("didn't create nodes = " )
+      // }
+      // // ---------------------- Map Nodes from Position text ---------------------
 
 
       
       // --------------- positionText to Questions ---------------
-
       questionData = [{
         questionID: "6478a3df3bbea5508ea72af7",
         content: "What are your companys overall business goals and how does your hiring process align with them?",
@@ -421,12 +421,11 @@ module.exports = {
       }]
 
       const interviewQuestionsForCandidate = await positionTextToExtraQuestionsFunc(questionData,stringFromWebsite,positionID);
-
-
-
       // --------------- positionText to Questions ---------------
 
-      positionData.nodes = nodeIDs;
+      // if (nodeIDs){
+      //   positionData. nodes = nodeIDs;  
+      // }
       positionData.interviewQuestionsForPosition = interviewQuestionsForCandidate;
       positionData.positionsRequirements.content = report;
       positionData.positionsRequirements.originalContent = stringFromWebsite;
@@ -439,6 +438,8 @@ module.exports = {
       return {
         report: report,
         success: true,
+        interviewQuestionsForPosition: interviewQuestionsForCandidate,
+        
       };
     } catch (err) {
       throw new ApolloError(
@@ -479,7 +480,7 @@ module.exports = {
 
       printC(interviewQuestionsForCandidate,"3","interviewQuestionsForCandidate","r")
 
-      sd0
+      // sd0
 
       positionData.interviewQuestionsForPosition = interviewQuestionsForCandidate;
 
@@ -572,6 +573,113 @@ module.exports = {
         err.extensions?.code || "positionTextAndConvoToReportCriteria",
         {
           component: "aiMutation > positionTextAndConvoToReportCriteria",
+        }
+      );
+    }
+  },
+
+  positionSuggestQuestionsAskCandidate: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
+    console.log("Mutation > positionSuggestQuestionsAskCandidate > args.fields = ", args.fields);
+
+    try {
+
+      if (!positionID) {
+        throw new ApolloError("positionID is required");
+      }
+    
+      positionData = await Position.findOne({ _id: positionID }).select('_id positionsRequirements');
+    
+      if (!positionData) {
+        throw new ApolloError("Position not found");
+      }
+
+      positionsRequirements = positionData.positionsRequirements.content
+
+
+      let promptNewQuestions = `
+        REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
+
+      
+        
+        - you can only ask 1 question at a time
+        - You should stay really close to the context of the REQUIREMENTS Job Position, and try to cover most of the requirements!
+        - Your goal is to ask the best questions in order to understand if the Candidate is a good fit for the Job Position
+        - Your task is to suggest MAXIMUM 9 questions for the Recruiter to ask the Candidate, you can combine bullet points and use them with any way that you want
+
+        Example:
+         1. Question
+         2. Question
+        
+        Questions:
+      `
+
+      printC(promptNewQuestions,"3","promptNewQuestions","b")
+      // s0
+
+      questionsSuggest = await useGPTchatSimple(promptNewQuestions,0,"API 2")
+
+      // questionsSuggest = `1. Do you have a Bachelor's, Master's or PhD in machine learning, statistics, applied mathematics, or computer science? (b1)
+      // 2. Can you provide examples of groundbreaking machine learning or data projects that you have led and implemented? (b4)
+      // 3. Have you worked with cloud engineering before? If so, can you provide examples? (b2)
+      // 4. Are you familiar with statistical Machine Learning and/or Deep Learning, particularly in Computer Vision? (b3)
+      // 5. Have you worked with Data Engineering before, including connecting to new data sources, storing data in the Cloud, and transforming and cleaning data? (b5)
+      // 6. Are you proficient in Python and familiar with at least one Cloud framework (e.g., AWS, GCP or Azure) as well as machine learning and deep learning frameworks such as TensorFlow or PyTorch? (b6)
+      // 7. Can you provide examples of your experience interacting with diverse customers and strong business analyst skills? (b7)
+      // 8. Are you comfortable working in an interdisciplinary and agile environment? (b8)
+      // 9. Are you fluent in English both written and spoken? (b9)
+      // `      
+      // questionsSuggest =  `
+      // 1. Can you give an example of a time when you had to use your strong organizational skills to successfully complete a project?
+      // 2. Have you worked in a team environment before? Can you give an example of a successful teamwork experience?
+      // 3. How do you handle communication and cooperation with team members who may have different working styles or personalities?
+      // 4. Can you tell us about a time when you had to motivate yourself to learn a new skill or take on a new responsibility?
+      // 5. How familiar are you with Scrum and Kanban methodologies? Can you give an example of how you have used them in a project?
+      // 6. Have you worked with Python before? Can you give an example of a project you have completed using Python?
+      // 7. How comfortable are you with using Unix and Linux command line? Can you give an example of a task you have completed using these systems?
+      // 8. Can you explain your knowledge of telecom protocols, IP, and networking? Have you worked with these technologies before?
+      // 9. Are you able to commit to at least 4-5 hours per working day for this position? How do you plan to balance your other commitments with this job?
+      // `
+
+
+      printC(questionsSuggest,"3","questionsSuggest","b")
+
+      const regex = /(\d+)\.\s+(.*)/g;
+      const questionsArray = [];
+      
+      let match;
+      while ((match = regex.exec(questionsSuggest)) !== null) {
+        const questionObject = {
+          question: match[2],
+        };
+        questionsArray.push(questionObject);
+      }
+      
+      
+
+      printC(questionsArray,"3","questionsArray","b")
+
+      
+      // sdf0
+    
+
+
+      // await positionData.save();
+
+
+
+
+      return {
+        success: true,
+        questionSuggest: questionsArray,
+
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "positionSuggestQuestionsAskCandidate",
+        {
+          component: "aiMutation > positionSuggestQuestionsAskCandidate",
         }
       );
     }
