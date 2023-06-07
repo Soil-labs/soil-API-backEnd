@@ -187,6 +187,13 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
   Answer:`;
    let report = await useGPTchatSimple(promptReport, 0);
 
+   let idCounter = 1;
+
+   report = report.replace(/(-\s+b\d+:)/g, (match) => {
+     return match.replace(/\d+/, idCounter++);
+   });
+
+
 
   // - Create the minimum number of categories by creating smart titles and smart unique bullet points 
 
@@ -396,8 +403,12 @@ async function reportPassFailCVPositionConversationFunc(memberID,positionID) {
     throw new ApolloError("Candidate not found");
   }
 
-  const positionsRequirements = positionData?.positionsRequirements?.content
+  let positionsRequirements = positionData?.positionsRequirements?.content
   printC(positionsRequirements,"3","positionsRequirements","g")
+
+
+
+  // sdf0
   
   // ---------------- Create Object for Position Report ----------------
   const regexT = /<(.+)>((?:\n\s*- \w+: .+)*)/g;
@@ -437,7 +448,7 @@ async function reportPassFailCVPositionConversationFunc(memberID,positionID) {
   const conversationID = candidateData.conversationID;
 
 
-  const CVToPositionReport = candidateData?.compareCandidatePosition?.CVToPosition?.content
+  let CVToPositionReport = candidateData?.compareCandidatePosition?.CVToPosition?.content
 
 
 
@@ -449,11 +460,14 @@ async function reportPassFailCVPositionConversationFunc(memberID,positionID) {
 
   printC(CVToPositionReport,"2","CVToPositionReport","p")
 
+
   // sd0
 
   const convoCandidateRecruiterPrompt = await findConversationPrompt(conversationID)
 
   printC(convoCandidateRecruiterPrompt,"3","convoCandidateRecruiterPrompt","p")
+
+  
   
   
   promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
@@ -585,6 +599,7 @@ Category 1:
 
 async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
+  try {
 
   positionData = await Position.findOne({ _id: positionID}).select('_id name candidates questionsToAsk positionsRequirements');
   if (!positionData) throw new ApolloError("Position not found", "interviewQuestionCreationUser", { component: "positionMutation > interviewQuestionCreationUser" });
@@ -596,11 +611,27 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
   const questionsToAsk = positionData.questionsToAsk
 
+  
+
   const questionsToAskID = questionsToAsk.map((question) => question.questionID)
 
-  questionData = await QuestionsEdenAI.find({ _id: questionsToAskID }).select('_id content');
+  printC(questionsToAskID,"0","questionsToAskID","b")
 
-  printC(questionData,"1","questionData","b")
+  const questionData_ = await QuestionsEdenAI.find({ _id:  questionsToAskID  }).select('_id content');
+
+  const questionDataMap = {};
+  questionData_.forEach(question => {
+    questionDataMap[question._id] = question;
+  });
+
+  let questionData = questionsToAskID.map(id => questionDataMap[id]);
+
+  // console.log(questionData);
+
+
+  printC(questionData,"0","questionData","b")
+  // sdf9
+
 
   questionsThatWereAsked = ''
 
@@ -641,7 +672,9 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
   console.log("----------------------------" )
 
+  printC(cvSummary,"2","cvSummary","b")
 
+  // asfd9
   // -------- Create Prompt ---------
   
   // let promptJOB_CV = `
@@ -668,6 +701,9 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
   //   3-6 small Bullet points:
   // `
+
+
+
   let promptJOB_CV = `
     USER_CV (delimiters <>) <${cvSummary}>
 
@@ -747,6 +783,8 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
   printC(questionsPrompt,"3","questionsPrompt","b")
 
+  // sdf0
+
   // infoCandidateForJob = `
   // - Responsibilities of the Candidate: The candidate must understand user needs and be able to solve their problems.
   // - Analysis: While Miltiadis has experience in developing solutions for various projects, there is no specific mention of understanding user needs and solving their problems. However, his expertise in computer vision and deep learning can be applied to create innovative solutions for user problems.
@@ -780,18 +818,18 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
   improvedQuestions = await useGPTchatSimple(promptNewQuestions,0,"API 2")
 
-  printC(improvedQuestions,"4","improvedQuestions","r")
+  // printC(improvedQuestions,"4","improvedQuestions","r")
   // SDF0
 
-//         improvedQuestions = `1. Can you tell us about your experience working with Machine Learning and Computer Vision, and how it could be useful for understanding user needs and solving their problems in this role?
-// 2. What specific experience do you have leading teams and innovating with cutting-edge technologies, and how do you think it could be valuable for working independently to create code in this role?
-// 3. Do you have experience with GraphQL, Next.js, React, and TailwindCSS, which are required for this role?
-// 4. What other technical skills do you have that could be helpful in this position?
-// 5. How comfortable are you with UI implementation, and what experience do you have in this area?
-// 6. Would you be willing to join Soil 🌱 as a contributor, given that the position is not yet financially secure?
-// 7. Do you share Eden's vision of using AI and blockchain to create context and trust and connect the right person to the right opportunity?
-// 8. What specifically interests you about joining Soil 🌱, and how do you think you could contribute to the position's mission?
-// 9. What are your long-term career goals, and how do you see this role fitting into them?`
+        // improvedQuestions = `1. Can you provide examples of web UI applications you have built using TypeScript and React? How did you approach understanding user needs and solving their problems during the development process?
+        // 2. How familiar are you with GraphQL and have you used it in any of your previous projects? Can you give an example of how you integrated GraphQL into a React application?
+        // 3. Have you worked with Next.js before? If so, can you give an example of a project you have built using it and how it improved the performance of the application?
+        // 4. Do you have any experience with REST, SQL, or NoSQL databases? Can you give an example of how you integrated a database into a React application?
+        // 5. Have you worked with Java, Scala, Kubernetes, Helm, or containerization before? If not, are you willing to learn and integrate these technologies into your development process?
+        // 6. Can you describe a time when you took ownership of a project and what the outcome was? How did you approach problem-solving and collaborating with team members during the project?
+        // 7. How do you stay updated with industry trends and developments? Can you give examples of any resources or communities you follow to stay informed?
+        // 8. Can you give an example of a time when you had to work independently and in a team to complete a project? How did you balance your individual responsibilities with collaborating with team members?
+        // 9. How do you approach code reviews and what is your process for giving and receiving feedback? Can you give an example of a time when you received constructive feedback and how you implemented it into your work?`
 
 
 
@@ -801,7 +839,7 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
   let interviewQuestionsForCandidate = []
 
-  questionData = await QuestionsEdenAI.find({ _id: questionsToAskID }).select('_id content');
+  // questionData = await QuestionsEdenAI.find({ _id: questionsToAskID }).select('_id content');
 
   for (let i=0;i<improvedQuestionsArray.length;i++){
     const improvedQuestion = improvedQuestionsArray[i];
@@ -818,6 +856,8 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
   }
 
   printC(interviewQuestionsForCandidate,"3","interviewQuestionsForCandidate","r")
+
+  // sdf0
 
   // find the idx what candidate you will update from the positionData
 
@@ -846,9 +886,14 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
   if (positionData2){
     positionData2 = await positionData2.save();
   }
-
-
+  
   return positionData2
+
+} catch (err) {
+  console.log("err = " , err)
+}
+
+
  
 }
 

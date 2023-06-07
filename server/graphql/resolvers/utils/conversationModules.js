@@ -205,9 +205,49 @@ async function findSummaryOfAnswers(convDataNow) {
 
   printC(questionsAnswered, "0", "questionsAnswered", "b");
 
+  const positionID = convDataNow.positionID;
+  const userID = convDataNow.userID;
+
+  console.log("positionID,userID = " , positionID,userID)
+
+
+
+  positionData = await Position.findOne({ _id: convDataNow.positionID}).select('_id name candidates');
+
+  if (positionData){
+    let index_ = positionData.candidates.findIndex(
+      (x) => x.userID.toString() == userID.toString()
+    );
+
+    // console.log("index_ = " , index_)
+
+    if (index_ != -1) {
+
+      for (let i=0;i<positionData.candidates[index_]?.interviewQuestionsForCandidate.length;i++){
+        if (i<questionsAnswered.length){
+          printC(i, "0", "i", "y")
+          printC(positionData.candidates[index_]?.interviewQuestionsForCandidate[i], "0", "positionData.candidates[index_]?.interviewQuestionsForCandidate[i]", "y")
+          questionsAnswered[i].questionContent = positionData.candidates[index_]?.interviewQuestionsForCandidate[i]?.personalizedContent
+        }
+      }
+
+    }
+
+    printC(questionsAnswered, "0", "questionsAnswered", "g");
+    // sdf00
+  }
+
+
+
+
   for (let i = 0; i < questionsAnswered.length; i++) {
     const subConversationAnswer = questionsAnswered[i].subConversationAnswer;
     const questionContent = questionsAnswered[i].questionContent;
+
+    printC(questionsAnswered[i], "1", "questionsAnswered[i]", "y");
+
+    // sdf2
+
 
     // from subConversationAnswer array of objects (role,content) create a string of the conversation for prompt
     let conversationString = "";
@@ -231,12 +271,15 @@ async function findSummaryOfAnswers(convDataNow) {
 
         - Create the SUMMARY that answers to the QUESTION, based on the CONVERSATION above
         - the SUMMARY should be as small as possible with only 1-2 sentences
-        - If there is no answer you can create say, <User didn't answer the question>
+        - only write positive information
 
         SUMMARY:
         `;
 
     printC(promptForSummaryAnswer, "2", "promptForSummaryAnswer", "p");
+
+    // sdf00
+
 
     const summaryAnswer = await useGPTchatSimple(promptForSummaryAnswer);
 
@@ -259,6 +302,9 @@ async function findSummaryOfAnswers(convDataNow) {
     convDataNow.questionsAnswered[i].summaryOfAnswer = summaryAnswer;
     convDataNow.questionsAnswered[i].summaryOfAnswerSmall = summaryAnswerSmall;
   }
+
+  printC(convDataNow, "0", "convDataNow", "g");
+  // ss
 
   return convDataNow;
 }
