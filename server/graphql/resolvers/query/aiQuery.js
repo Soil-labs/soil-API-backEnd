@@ -915,6 +915,7 @@ module.exports = {
 
     console.log("questionAskingNow = ", questionAskingNow);
     console.log("questionAskingID = ", questionAskingID);
+    // ads23
 
     try {
       // ------------ Find Modified questions ------------
@@ -932,11 +933,14 @@ module.exports = {
       
       printC(newQuestion, "1", "newQuestion", "b");
 
-      // asdf0
+      // asdf09
 
 
-      if (newQuestion?.personalizedContent != undefined)
-        questionAskingNow = newQuestion.personalizedContent;
+      if (newQuestion?.personalizedContent != undefined) 
+        questionAskingNow = newQuestion.personalizedContent; 
+
+    //     console.log("questionAskingNow = ", questionAskingNow);
+    // ads23
 
       // ------------ Find Modified questions ------------
 
@@ -1048,6 +1052,10 @@ module.exports = {
           }
           timesAsked = 1;
         } else {
+
+          // printC(questionAskingNow, "1", "questionAskingNow", "b")
+          // sadf0
+
           if (flagFirstTime == true) {
             nextQuestion = "QUESTION ASK: " + questionAskingNow + `"`;
           } else {

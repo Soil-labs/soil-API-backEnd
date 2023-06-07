@@ -359,8 +359,19 @@ module.exports = {
 
       // let report = "Category 1: Skills>\n- Experience with databases and SQL\n- Cloud experience, preferably with AWS\n- Programming experience\n- TypeScript experience is a plus\n\n<Category 2: Qualifications>\n- Experience building and maintaining backend systems\n- Experience with infrastructure improvements and scaling\n- Experience troubleshooting production issues and conducting root cause analysis\n- Experience conducting systems tests for security, performance, and availability\n\n<Category 3: Education>\n- No specific education requirements mentioned\n\n<Category 4: Culture Fit>\n- Team player\n- Willingness to work on everything on the backend side\n- Strong communication skills\n- Ability to work in a fast-paced environment\n\n<Category 5: Personality Type>\n- Detail-oriented\n- Problem solver\n- Self-motivated\n- Adaptable\n\n<Category 6: Experience>\n- Experience maintaining and improving infrastructure in AWS\n- Experience maintaining TypeScript SDKs and writing internal and public documentation\n- No specific years of experience mentioned\n- Experience with observability, monitoring, and alerting for services"
 
+
+
       printC(report, "0", "report", "b");
       // sdf9
+
+      let idCounter = 1;
+
+      report = report.replace(/(-\s+b\d+:)/g, (match) => {
+        return match.replace(/\d+/, idCounter++);
+      });
+
+      printC(report, "0", "report", "g");
+
       
 
 
@@ -480,7 +491,7 @@ module.exports = {
 
       printC(interviewQuestionsForCandidate,"3","interviewQuestionsForCandidate","r")
 
-      // sd0
+      sd0
 
       positionData.interviewQuestionsForPosition = interviewQuestionsForCandidate;
 
@@ -768,9 +779,9 @@ module.exports = {
       // Ateet Tiwari is a Full Stack Developer with experience in Front-End, Back-End, Database, Messaging Services, and UI Development. He has a strong proficiency in React, Redux, Node, Express, Python, SQL, and MongoDB. Ateet has led initiatives and teams, improved product performance, and designed in-house frameworks and systems. He is a Polygon Fellowship Graduate and has extensive knowledge in web3 development.
       // `
 
-      printC(cvSummary, "3", "cvSummary", "g");
-      printC(titleRole, "3", "titleRole", "g");
-      printC(mainSkills, "3", "mainSkills", "g");
+      // printC(cvSummary, "3", "cvSummary", "g");
+      // printC(titleRole, "3", "titleRole", "g");
+      // printC(mainSkills, "3", "mainSkills", "g");
       // sdf0
 
       // ----------- CV to Summary -------------
@@ -781,8 +792,9 @@ module.exports = {
       // InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
 
       interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
+      // sdf00
 
-      await wait(20000);
+      await wait(30000);
 
       return {
         success: true,
