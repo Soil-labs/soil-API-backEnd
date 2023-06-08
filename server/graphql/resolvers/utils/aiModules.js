@@ -172,10 +172,10 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
 
   - Every Category can have from  1 to 4 bullet points
   - To include information in the output you must first find it in text of <Job Position> and <Conversation with the Company Representation> Do not make up fake information
-  - Include 4-8 categories 
   - You need make really small bullet points maximum 15 words about what the Candidate should have to pass on every Category
   - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc. 
   - Add parts of the Conversation to the report in a Category if it is relevant!
+  - Include 2-4 categories from Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
 
   For example: 
     <Category 1: title>
@@ -822,11 +822,9 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
     QUESTIONS (delimiters <>) <${questionsPrompt}>
 
    
-    - You can improve each of the QUESTINOS using any of the NOTES
+    - Task is to improved some of the questions using facts from NOTES to make it relevant
+    - the Improved QUESTIONS should have exactly the same order as the original QUESTIONS and exactly the same meaning with the original QUESTIONS
     - you can only ask 1 question at a time
-    - You should use facts from the NOTES related to the CV of the candidate to make it relevant
-    - You should be 100% sure that you ask exactly the meaning of the QUESTIONS!
-    - the Improved QUESTIONS should have exactly the same order as the original QUESTIONS
     
     Improved QUESTIONS: 
   `
@@ -835,7 +833,7 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
 
   printC(improvedQuestions,"3","improvedQuestions","p")
 
-  // dfs00
+  dfs00
 
   // printC(improvedQuestions,"4","improvedQuestions","r")
   // SDF0

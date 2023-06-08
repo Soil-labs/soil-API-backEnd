@@ -343,7 +343,7 @@ module.exports = {
 
       - Every Category can have from  1 to 4 bullet points
       - To include information in the output you must first find it in text of <Job Position> Do not make up fake information
-      - Include 3-6 categories 
+      - Include 2-4 categories from Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
       - You need make really small bullet points maximum 15 words about what the Candidate should have to pass on every Category
       - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc. 
 
@@ -362,7 +362,6 @@ module.exports = {
 
 
       printC(report, "0", "report", "b");
-      // sdf9
 
       let idCounter = 1;
 
@@ -370,7 +369,9 @@ module.exports = {
         return match.replace(/\d+/, idCounter++);
       });
 
-      printC(report, "0", "report", "g");
+      printC(report, "1", "report", "g");
+      // sdf9
+
 
       
 
@@ -791,7 +792,7 @@ module.exports = {
       // console.log("interviewQ = " , interviewQ)
       // InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
 
-      interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
+      await interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
       // sdf00
 
       await wait(30000);
