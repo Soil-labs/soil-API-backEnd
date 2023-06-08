@@ -800,23 +800,42 @@ async function interviewQuestionCreationUserFunc(positionID,userID,cvContent) {
   // - Analysis: There is no specific mention of Miltiadis' experience in a`
 
 
+  // let promptNewQuestions = `
+  //   NOTES for this Job Role and User CV (delimiters <>): <${infoCandidateForJob}>
+
+  //   QUESTIONS (delimiters <>) <${questionsPrompt}>
+
+   
+  //   - You can improve each of the QUESTINOS using any of the NOTES
+  //   - you can only ask 1 question at a time
+  //   - You should stay really close to the meaning of the QUESTIONS!
+  //   - You should use as many facts from the NOTES related to the CV of the candidate to make it relevant
+  //   - If from NOTES candidate don't have some skills, ask them directly if they do i the Improved QUESTIONS
+    
+    
+  //   Improved QUESTIONS: 
+  // `
+
   let promptNewQuestions = `
-    NOTES for this Job Role and User CV (delimiters <>): <${infoCandidateForJob}>
+    NOTES for this Job Role for User CV (delimiters <>): <${infoCandidateForJob}>
 
     QUESTIONS (delimiters <>) <${questionsPrompt}>
 
    
     - You can improve each of the QUESTINOS using any of the NOTES
     - you can only ask 1 question at a time
-    - You should stay really close to the meaning of the QUESTIONS!
-    - You should use as many facts from the NOTES related to the CV of the candidate to make it relevant
-    - If from NOTES candidate don't have some skills, ask them directly if they do i the Improved QUESTIONS
-    
+    - You should use facts from the NOTES related to the CV of the candidate to make it relevant
+    - You should be 100% sure that you ask exactly the meaning of the QUESTIONS!
+    - the Improved QUESTIONS should have exactly the same order as the original QUESTIONS
     
     Improved QUESTIONS: 
   `
 
   improvedQuestions = await useGPTchatSimple(promptNewQuestions,0,"API 2")
+
+  printC(improvedQuestions,"3","improvedQuestions","p")
+
+  // dfs00
 
   // printC(improvedQuestions,"4","improvedQuestions","r")
   // SDF0
@@ -965,37 +984,42 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
 
 
   const MessageMapKG_V4APICallF = async (textToMap) => {
-    const query = gql`
-      query messageMapKG_V4($fields: messageMapKG_V4Input) {
-        messageMapKG_V4(fields: $fields) {
-          keywords {
-            keyword
-            confidence
-            nodeID
-            node {
-              _id
-              name
+
+    try {
+      const query = gql`
+        query messageMapKG_V4($fields: messageMapKG_V4Input) {
+          messageMapKG_V4(fields: $fields) {
+            keywords {
+              keyword
+              confidence
+              nodeID
+              node {
+                _id
+                name
+              }
             }
           }
         }
-      }
-    `;
+      `;
 
-    const variables = {
-      fields: {
-        message: textToMap,
-      },
-    };
+      const variables = {
+        fields: {
+          message: textToMap,
+        },
+      };
 
-    res = await request(
-      "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
-      query,
-      variables
-    );
+      res = await request(
+        "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+        query,
+        variables
+      );
 
-    // console.log("res = " , res)
-    // console.log("res.messageMapKG_V4", res.messageMapKG_V4);
-    return res.messageMapKG_V4.keywords;
+      // console.log("res = " , res)
+      // console.log("res.messageMapKG_V4", res.messageMapKG_V4);
+      return res.messageMapKG_V4.keywords;
+    } catch (err) {
+      console.log("err  message Map = " , err)
+    }
   };
 
   const InterviewQuestionCreationUserAPICallF = async (positionID,userID,cvContent) => {
