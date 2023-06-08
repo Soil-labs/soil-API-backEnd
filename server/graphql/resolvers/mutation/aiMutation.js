@@ -757,7 +757,7 @@ module.exports = {
         Main Skills 3 words max:
         Summary 3 sentenses max:: 
       `;
-      // printC(cvContentPrompt,"3","cvContentPrompt","b")
+      printC(cvContentPrompt,"3","cvContentPrompt","b")
 
       titleSkillSummaryRes = await useGPTchatSimple(
         cvContentPrompt,
@@ -905,7 +905,13 @@ module.exports = {
           printC(textForMapping, "3", "textForMapping", "b");
           // sdf00
 
-          let nodesN = await MessageMapKG_V4APICallF(textForMapping);
+
+          let nodesN
+          try {
+            nodesN = await MessageMapKG_V4APICallF(textForMapping);
+          } catch (err) {
+            console.log("Map Nodes err = " , err)
+          }
 
           printC(nodesN, "3", "nodesN", "b");
 
