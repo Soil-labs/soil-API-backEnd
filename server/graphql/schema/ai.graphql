@@ -126,6 +126,7 @@ module.exports = `
     type questionSuggestType {
         question: String
         IDCriteria: ID
+        category: String
     }
 
     type reportPassFailType {
