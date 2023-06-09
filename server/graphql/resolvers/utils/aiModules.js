@@ -6,6 +6,9 @@ const { Conversation } = require("../../../models/conversationModel");
 
 const { Configuration, OpenAIApi } = require("openai");
 
+const { ChatOpenAI } = require("langchain/chat_models/openai");
+const { HumanChatMessage } = require("langchain/schema");
+
 const axios = require("axios");
 const { PineconeClient } = require("@pinecone-database/pinecone");
 
