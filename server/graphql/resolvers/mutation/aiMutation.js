@@ -792,7 +792,7 @@ module.exports = {
       // console.log("interviewQ = " , interviewQ)
       // InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
 
-      await interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
+      interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
       // sdf00
 
       await wait(30000);
