@@ -887,11 +887,17 @@ module.exports = {
           responseFromGPT = await useGPTchatSimple(promptJobs, 0.05,'API 2');
           console.log("responseFromGPT = ", responseFromGPT);
 
-          let modifiedResult = responseFromGPT.replace(/\\n|\n/g, "");
+          // let modifiedResult = responseFromGPT.replace(/\\n|\n/g, "");
 
-          result = JSON.parse(modifiedResult);
+          // modifiedResult = JSON.parse(modifiedResult.replace(/\((.*?)\)/g, '"$1"'));
 
-          result = JSON.parse(modifiedResult);
+
+          printC(responseFromGPT, "0", "responseFromGPT", "b")
+
+          result = JSON.parse(responseFromGPT);
+          // result = JSON.parse(modifiedResult);
+
+          console.log("result = " , result)
 
           userData.previousProjects = result;
 
@@ -913,6 +919,9 @@ module.exports = {
 
             Skills Result:
             `;
+
+            printC(promptCVtoMap, "3", "promptCVtoMap", "b")
+
 
           textForMapping = await useGPTchatSimple(promptCVtoMap, 0);
 
