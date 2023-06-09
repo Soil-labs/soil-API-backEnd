@@ -884,7 +884,7 @@ module.exports = {
          `;
 
 
-          responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
+          responseFromGPT = await useGPTchatSimple(promptJobs, 0.05,'API 2');
           console.log("responseFromGPT = ", responseFromGPT);
 
           let modifiedResult = responseFromGPT.replace(/\\n|\n/g, "");
@@ -909,7 +909,7 @@ module.exports = {
 
             Exaple output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
             
-            CV Content (delimiters <>): <${cvContent}>
+            CV Content (delimiters <>): <${cvContent.substring(0, 3500)}>
 
             Skills Result:
             `;
