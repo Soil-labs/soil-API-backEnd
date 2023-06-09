@@ -31,6 +31,7 @@ const {
   reportPassFailCVPositionConversationFunc,
   positionTextAndConvoToReportCriteriaFunc,
   positionTextToExtraQuestionsFunc,
+  useShaleAPI,
 } = require("../utils/aiModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
@@ -292,7 +293,10 @@ module.exports = {
   },
   websiteToMemoryCompany: async (parent, args, context, info) => {
     const { message, positionID } = args.fields;
-    console.log("Mutation > websiteToMemoryCompany > args.fields = ", args.fields);
+    console.log(
+      "Mutation > websiteToMemoryCompany > args.fields = ",
+      args.fields
+    );
 
     if (!positionID) {
       throw new ApolloError("positionID is required");
@@ -304,17 +308,13 @@ module.exports = {
       throw new ApolloError("Position not found");
     }
 
-    printC(positionData,"0","positionData","b")
-
+    printC(positionData, "0", "positionData", "b");
 
     stringFromWebsite = message;
-
-
 
     try {
       // promptReport = ` You have as input the Details of a Job Position
       // Job Position (delimiters <>): <${stringFromWebsite}>
-
 
       // The Recruiter Task is to create a report for the most important info about what skills, qualifications, education, culture fit, personality type, experience etc. the Candidate should have!
 
@@ -323,9 +323,9 @@ module.exports = {
       // - To include information in the output you must first find it in text of <Job Position>
       // - Do not make up fake information, only use what you fine in <Job Position>
       // - If you do not find the information, just skip the category(leave it blank)
-      // - Include up to 6 categories 
+      // - Include up to 6 categories
 
-      // For example: 
+      // For example:
       //   <Category 1: title>
       //     - content
       //     - content
@@ -355,11 +355,9 @@ module.exports = {
           - b3: small content max 15 words
 
       Answer:`;
-       let report = await useGPTchatSimple(promptReport, 0);
+      let report = await useGPTchatSimple(promptReport, 0);
 
       // let report = "Category 1: Skills>\n- Experience with databases and SQL\n- Cloud experience, preferably with AWS\n- Programming experience\n- TypeScript experience is a plus\n\n<Category 2: Qualifications>\n- Experience building and maintaining backend systems\n- Experience with infrastructure improvements and scaling\n- Experience troubleshooting production issues and conducting root cause analysis\n- Experience conducting systems tests for security, performance, and availability\n\n<Category 3: Education>\n- No specific education requirements mentioned\n\n<Category 4: Culture Fit>\n- Team player\n- Willingness to work on everything on the backend side\n- Strong communication skills\n- Ability to work in a fast-paced environment\n\n<Category 5: Personality Type>\n- Detail-oriented\n- Problem solver\n- Self-motivated\n- Adaptable\n\n<Category 6: Experience>\n- Experience maintaining and improving infrastructure in AWS\n- Experience maintaining TypeScript SDKs and writing internal and public documentation\n- No specific years of experience mentioned\n- Experience with observability, monitoring, and alerting for services"
-
-
 
       printC(report, "0", "report", "b");
 
@@ -372,18 +370,13 @@ module.exports = {
       printC(report, "1", "report", "g");
       // sdf9
 
-
-      
-
-
-
       // // ---------------------- Map Nodes from Position text ---------------------
-      // promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
+      // promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph.
       //       dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
-      //       Do not have any other words except for skills. 
+      //       Do not have any other words except for skills.
 
       //       Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
-            
+
       //       Job Position (delimiters <>): <${report}>
 
       //       Skills Result:
@@ -392,7 +385,7 @@ module.exports = {
       // let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
       // // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
       // printC(mapSkillText, "1", "mapSkillText", "g");
- 
+
       // let nodeIDs
       // try {
       //   let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
@@ -408,50 +401,60 @@ module.exports = {
       //       nodeID: obj._id
       //     }
       //   });
-  
+
       //   printC(nodeSave, "4", "nodeSave", "r");
       // } catch (err) {
       //   console.log("didn't create nodes = " )
       // }
       // // ---------------------- Map Nodes from Position text ---------------------
 
-
-      
       // --------------- positionText to Questions ---------------
-      questionData = [{
-        questionID: "6478a3df3bbea5508ea72af7",
-        content: "What are your companys overall business goals and how does your hiring process align with them?",
-      },{
-        questionID: "6478a4183bbea5508ea72af9",
-        content: "What specific roles are you looking to fill and what are the job responsibilities for each?",
-      },{
-        questionID: "6478a4753bbea5508ea72afb",
-        content: "What are the key skills, qualifications, and attributes you're looking for in a candidate?",
-      },{
-        questionID: "6478a49f3bbea5508ea72afd",
-        content: "What is the preferred timeline for filling these positions, and are there any deadlines or milestones we should be aware of?",
-      }]
+      questionData = [
+        {
+          questionID: "6478a3df3bbea5508ea72af7",
+          content:
+            "What are your companys overall business goals and how does your hiring process align with them?",
+        },
+        {
+          questionID: "6478a4183bbea5508ea72af9",
+          content:
+            "What specific roles are you looking to fill and what are the job responsibilities for each?",
+        },
+        {
+          questionID: "6478a4753bbea5508ea72afb",
+          content:
+            "What are the key skills, qualifications, and attributes you're looking for in a candidate?",
+        },
+        {
+          questionID: "6478a49f3bbea5508ea72afd",
+          content:
+            "What is the preferred timeline for filling these positions, and are there any deadlines or milestones we should be aware of?",
+        },
+      ];
 
-      const interviewQuestionsForCandidate = await positionTextToExtraQuestionsFunc(questionData,stringFromWebsite,positionID);
+      const interviewQuestionsForCandidate =
+        await positionTextToExtraQuestionsFunc(
+          questionData,
+          stringFromWebsite,
+          positionID
+        );
       // --------------- positionText to Questions ---------------
 
       // if (nodeIDs){
-      //   positionData. nodes = nodeIDs;  
+      //   positionData. nodes = nodeIDs;
       // }
-      positionData.interviewQuestionsForPosition = interviewQuestionsForCandidate;
+      positionData.interviewQuestionsForPosition =
+        interviewQuestionsForCandidate;
       positionData.positionsRequirements.content = report;
       positionData.positionsRequirements.originalContent = stringFromWebsite;
 
-
       // update Mongo
       await positionData.save();
-
 
       return {
         report: report,
         success: true,
         interviewQuestionsForPosition: interviewQuestionsForCandidate,
-        
       };
     } catch (err) {
       throw new ApolloError(
@@ -465,43 +468,59 @@ module.exports = {
   },
   positionTextToExtraQuestions: async (parent, args, context, info) => {
     const { positionText, positionID } = args.fields;
-    console.log("Mutation > positionTextToExtraQuestions > args.fields = ", args.fields);
+    console.log(
+      "Mutation > positionTextToExtraQuestions > args.fields = ",
+      args.fields
+    );
 
-    
-
-    questionData = [{
-      questionID: "6478a3df3bbea5508ea72af7",
-      content: "What are your companys overall business goals and how does your hiring process align with them?",
-    },{
-      questionID: "6478a4183bbea5508ea72af9",
-      content: "What specific roles are you looking to fill and what are the job responsibilities for each?",
-    },{
-      questionID: "6478a4753bbea5508ea72afb",
-      content: "What are the key skills, qualifications, and attributes you're looking for in a candidate?",
-    },{
-      questionID: "6478a49f3bbea5508ea72afd",
-      content: "What is the preferred timeline for filling these positions, and are there any deadlines or milestones we should be aware of?",
-    }]
-
-
+    questionData = [
+      {
+        questionID: "6478a3df3bbea5508ea72af7",
+        content:
+          "What are your companys overall business goals and how does your hiring process align with them?",
+      },
+      {
+        questionID: "6478a4183bbea5508ea72af9",
+        content:
+          "What specific roles are you looking to fill and what are the job responsibilities for each?",
+      },
+      {
+        questionID: "6478a4753bbea5508ea72afb",
+        content:
+          "What are the key skills, qualifications, and attributes you're looking for in a candidate?",
+      },
+      {
+        questionID: "6478a49f3bbea5508ea72afd",
+        content:
+          "What is the preferred timeline for filling these positions, and are there any deadlines or milestones we should be aware of?",
+      },
+    ];
 
     try {
+      const interviewQuestionsForCandidate =
+        await positionTextToExtraQuestionsFunc(
+          questionData,
+          positionText,
+          positionID
+        );
 
+      printC(
+        interviewQuestionsForCandidate,
+        "3",
+        "interviewQuestionsForCandidate",
+        "r"
+      );
 
-      const interviewQuestionsForCandidate = await positionTextToExtraQuestionsFunc(questionData,positionText,positionID);
+      sd0;
 
-      printC(interviewQuestionsForCandidate,"3","interviewQuestionsForCandidate","r")
-
-      sd0
-
-      positionData.interviewQuestionsForPosition = interviewQuestionsForCandidate;
+      positionData.interviewQuestionsForPosition =
+        interviewQuestionsForCandidate;
 
       await positionData.save();
 
-      
       return {
         success: true,
-        questions: interviewQuestionsForCandidate
+        questions: interviewQuestionsForCandidate,
       };
     } catch (err) {
       throw new ApolloError(
@@ -516,25 +535,27 @@ module.exports = {
 
   conversationCVPositionToReport: async (parent, args, context, info) => {
     const { memberID, positionID } = args.fields;
-    console.log("Mutation > conversationCVPositionToReport > args.fields = ", args.fields);
+    console.log(
+      "Mutation > conversationCVPositionToReport > args.fields = ",
+      args.fields
+    );
 
     try {
-
-
       // const res = await conversationCVPositionToReportFunc(memberID, positionID)
-      const res = await reportPassFailCVPositionConversationFunc(memberID, positionID)
+      const res = await reportPassFailCVPositionConversationFunc(
+        memberID,
+        positionID
+      );
 
-      report = res.report
-      categoriesT = res.categoriesT
-      scoreAll = res.scoreAll
-
+      report = res.report;
+      categoriesT = res.categoriesT;
+      scoreAll = res.scoreAll;
 
       return {
         report: report,
         success: true,
         CV_ConvoToPosition: categoriesT,
-        CV_ConvoToPositionAverageScore: scoreAll
-
+        CV_ConvoToPositionAverageScore: scoreAll,
       };
     } catch (err) {
       throw new ApolloError(
@@ -549,35 +570,27 @@ module.exports = {
 
   positionTextAndConvoToReportCriteria: async (parent, args, context, info) => {
     const { positionID } = args.fields;
-    console.log("Mutation > positionTextAndConvoToReportCriteria > args.fields = ", args.fields);
+    console.log(
+      "Mutation > positionTextAndConvoToReportCriteria > args.fields = ",
+      args.fields
+    );
 
     try {
-
       // --------------- Report ---------
-      const report = await positionTextAndConvoToReportCriteriaFunc(positionID)
+      const report = await positionTextAndConvoToReportCriteriaFunc(positionID);
 
-
-      console.log("report = " , report)
+      console.log("report = ", report);
 
       positionData.positionsRequirements.content = report;
       // --------------- Report ---------
 
-
-    
-
-
       await positionData.save();
 
-
-
-
       // sdf0
-
 
       return {
         success: true,
         report: report,
-
       };
     } catch (err) {
       throw new ApolloError(
@@ -590,24 +603,45 @@ module.exports = {
     }
   },
 
-  positionSuggestQuestionsAskCandidate: async (parent, args, context, info) => {
-    const { positionID } = args.fields;
-    console.log("Mutation > positionSuggestQuestionsAskCandidate > args.fields = ", args.fields);
+  shaleAPI: async (parent, args, context, info) => {
+    const { textForShale } = args.fields;
+
+    if (!textForShale) {
+      new ApolloError("The textForShale is required");
+    }
 
     try {
+      res = await useShaleAPI(textForShale, (temperature = 0));
+      console.log("res+++++++++", res);
+      return {
+        outputForShale: res.text,
+      };
+    } catch (err) {
+      throw new ApolloError(err.message);
+    }
+  },
 
+  positionSuggestQuestionsAskCandidate: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
+    console.log(
+      "Mutation > positionSuggestQuestionsAskCandidate > args.fields = ",
+      args.fields
+    );
+
+    try {
       if (!positionID) {
         throw new ApolloError("positionID is required");
       }
-    
-      positionData = await Position.findOne({ _id: positionID }).select('_id positionsRequirements');
-    
+
+      positionData = await Position.findOne({ _id: positionID }).select(
+        "_id positionsRequirements"
+      );
+
       if (!positionData) {
         throw new ApolloError("Position not found");
       }
 
-      positionsRequirements = positionData.positionsRequirements.content
-
+      positionsRequirements = positionData.positionsRequirements.content;
 
       let promptNewQuestions = `
         REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
@@ -625,7 +659,7 @@ module.exports = {
          2. Question - Category
         
         Questions:
-      `
+      `;
 
       printC(promptNewQuestions,"3","promptNewQuestions","b")
 
@@ -653,8 +687,8 @@ module.exports = {
       // 9. Are you able to commit to at least 4-5 hours per working day for this position? How do you plan to balance your other commitments with this job?
       // `
 
+      printC(questionsSuggest, "3", "questionsSuggest", "b");
 
-      printC(questionsSuggest,"3","questionsSuggest","b")
 
 
       // const regex = /(\d+)\.\s+(.*)/g;
@@ -677,26 +711,20 @@ module.exports = {
           category: match[3].split('/')[0].trim(),
         };
         questionsArray.push(questionObject);
+
       }      
 
       printC(questionsArray,"3","questionsArray","b")
       // s0
 
 
-      
       // sdf0
-    
-
 
       // await positionData.save();
-
-
-
 
       return {
         success: true,
         questionSuggest: questionsArray,
-
       };
     } catch (err) {
       throw new ApolloError(
@@ -770,7 +798,7 @@ module.exports = {
         Main Skills 3 words max:
         Summary 3 sentenses max:: 
       `;
-      printC(cvContentPrompt,"3","cvContentPrompt","b")
+      printC(cvContentPrompt, "3", "cvContentPrompt", "b");
 
       titleSkillSummaryRes = await useGPTchatSimple(
         cvContentPrompt,
@@ -873,28 +901,26 @@ module.exports = {
         // if (userData.cvInfo.cvPreparationPreviousProjects != true) {
         //   promptJobs = `
         //   Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
-    
+
         //   CV(resume), (delimiters <>: <${cvContent}>
-    
-    
-        //   Your job is to find and list the latest 1-3 this person had. Give me those jobs in a array of objects format,do not include the name in the summary. 
-          
+
+        //   Your job is to find and list the latest 1-3 this person had. Give me those jobs in a array of objects format,do not include the name in the summary.
+
         //   - Only give me up to 3 last jobs. The job that is current (some year - present) should appear first. After that list jobs that have the latest end date.
-        //   - Give me a dates of when this person started and finished( or presently working). This concludes the first bullet point. 
-        //   - Always use "•" for a bullet point, never this "-". 
-    
-        //   This is the format: 
+        //   - Give me a dates of when this person started and finished( or presently working). This concludes the first bullet point.
+        //   - Always use "•" for a bullet point, never this "-".
+
+        //   This is the format:
 
         //   [
         //     {
         //       "title": "Job Title, Company Name",
         //       "description": (start date, end date(or present))   • short description  • short description • short description
-                            
+
         //     }
         //   ]
-    
-        //  `;
 
+        //  `;
 
         //   responseFromGPT = await useGPTchatSimple(promptJobs, 0.05,'API 2');
         //   console.log("responseFromGPT = ", responseFromGPT);
@@ -902,7 +928,6 @@ module.exports = {
         //   // let modifiedResult = responseFromGPT.replace(/\\n|\n/g, "");
 
         //   // modifiedResult = JSON.parse(modifiedResult.replace(/\((.*?)\)/g, '"$1"'));
-
 
         //   printC(responseFromGPT, "0", "responseFromGPT", "b")
 
@@ -922,7 +947,7 @@ module.exports = {
             'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
             cvContent;
 
-          responseFromGPT = await useGPTchatSimple(promptJobs, 0.05,'API 2');
+          responseFromGPT = await useGPTchatSimple(promptJobs, 0.05, "API 2");
 
           jobsArr = responseFromGPT
             .replace(/\n/g, "")
@@ -960,20 +985,18 @@ module.exports = {
             Skills Result:
             `;
 
-            printC(promptCVtoMap, "3", "promptCVtoMap", "b")
-
+          printC(promptCVtoMap, "3", "promptCVtoMap", "b");
 
           textForMapping = await useGPTchatSimple(promptCVtoMap, 0);
 
           printC(textForMapping, "3", "textForMapping", "b");
           // sdf00
 
-
-          let nodesN
+          let nodesN;
           try {
             nodesN = await MessageMapKG_V4APICallF(textForMapping);
           } catch (err) {
-            console.log("Map Nodes err = " , err)
+            console.log("Map Nodes err = ", err);
           }
 
           printC(nodesN, "3", "nodesN", "b");

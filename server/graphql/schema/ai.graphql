@@ -103,6 +103,15 @@ module.exports = `
         report: String
     }
 
+    input shaleAPIInput {
+        textForShale: String
+    }
+
+    type shaleAPIOutput {
+        outputForShale: String,
+    }
+    
+
     input positionSuggestQuestionsAskCandidateInput {
         positionID: ID
     }
