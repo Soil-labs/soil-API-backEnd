@@ -857,41 +857,75 @@ module.exports = {
         // }
         // ------- Calculate Summary -------
 
+        // // -------Calculate Previous Jobs -------
+        // if (userData.cvInfo.cvPreparationPreviousProjects != true) {
+        //   promptJobs = `
+        //   Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
+    
+        //   CV(resume), (delimiters <>: <${cvContent}>
+    
+    
+        //   Your job is to find and list the latest 1-3 this person had. Give me those jobs in a array of objects format,do not include the name in the summary. 
+          
+        //   - Only give me up to 3 last jobs. The job that is current (some year - present) should appear first. After that list jobs that have the latest end date.
+        //   - Give me a dates of when this person started and finished( or presently working). This concludes the first bullet point. 
+        //   - Always use "•" for a bullet point, never this "-". 
+    
+        //   This is the format: 
+
+        //   [
+        //     {
+        //       "title": "Job Title, Company Name",
+        //       "description": (start date, end date(or present))   • short description  • short description • short description
+                            
+        //     }
+        //   ]
+    
+        //  `;
+
+
+        //   responseFromGPT = await useGPTchatSimple(promptJobs, 0.05,'API 2');
+        //   console.log("responseFromGPT = ", responseFromGPT);
+
+        //   // let modifiedResult = responseFromGPT.replace(/\\n|\n/g, "");
+
+        //   // modifiedResult = JSON.parse(modifiedResult.replace(/\((.*?)\)/g, '"$1"'));
+
+
+        //   printC(responseFromGPT, "0", "responseFromGPT", "b")
+
+        //   result = JSON.parse(responseFromGPT);
+        //   // result = JSON.parse(modifiedResult);
+
+        //   console.log("result = " , result)
+
+        //   userData.previousProjects = result;
+
+        //   userData.cvInfo.cvPreparationPreviousProjects = true;
+        // }
+        // // -------Calculate Previous Jobs -------
         // -------Calculate Previous Jobs -------
         if (userData.cvInfo.cvPreparationPreviousProjects != true) {
-          promptJobs = `
-          Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
-    
-          CV(resume), (delimiters <>: <${cvContent}>
-    
-    
-          Your job is to find and list the latest 1-3 this person had. Give me those jobs in a array of objects format,do not include the name in the summary. 
-          
-          - Only give me up to 3 last jobs. The job that is current (some year - present) should appear first. After that list jobs that have the latest end date.
-          - Give me a dates of when this person started and finished( or presently working). This concludes the first bullet point. 
-          - Always use "•" for a bullet point, never this "-". 
-    
-          This is the format: 
-
-          [
-            {
-              "title": "Job Title, Company Name",
-              "description": (start date, end date(or present))   • short description  • short description • short description
-                            
-            }
-          ]
-    
-         `;
-
+          promptJobs =
+            'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
+            cvContent;
 
           responseFromGPT = await useGPTchatSimple(promptJobs, 0.05,'API 2');
-          console.log("responseFromGPT = ", responseFromGPT);
 
-          let modifiedResult = responseFromGPT.replace(/\\n|\n/g, "");
+          jobsArr = responseFromGPT
+            .replace(/\n/g, "")
+            .split("•")
+            .filter((item) => item.trim() !== "");
 
-          result = JSON.parse(modifiedResult);
+          let result = [];
 
-          result = JSON.parse(modifiedResult);
+          for (let i = 0; i < jobsArr.length; i += 2) {
+            result.push({
+              title: jobsArr[i],
+              description: jobsArr[i + 1],
+            });
+          }
+          printC(result, "1", "result", "g");
 
           userData.previousProjects = result;
 
@@ -913,6 +947,9 @@ module.exports = {
 
             Skills Result:
             `;
+
+            printC(promptCVtoMap, "3", "promptCVtoMap", "b")
+
 
           textForMapping = await useGPTchatSimple(promptCVtoMap, 0);
 
