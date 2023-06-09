@@ -618,29 +618,29 @@ module.exports = {
         - You should stay really close to the context of the REQUIREMENTS Job Position, and try to cover most of the requirements!
         - Your goal is to ask the best questions in order to understand if the Candidate is a good fit for the Job Position
         - Your task is to suggest MAXIMUM 9 questions for the Recruiter to ask the Candidate, you can combine bullet points and use them with any way that you want
+        - For every question add only one of this categories < Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills >
 
         Example:
-         1. Question
-         2. Question
+         1. Question - Category
+         2. Question - Category
         
         Questions:
       `
 
       printC(promptNewQuestions,"3","promptNewQuestions","b")
-      // s0
 
-      questionsSuggest = await useGPTchatSimple(promptNewQuestions,0,"API 2")
+      // questionsSuggest = await useGPTchatSimple(promptNewQuestions,0,"API 2")
 
-      // questionsSuggest = `1. Do you have a Bachelor's, Master's or PhD in machine learning, statistics, applied mathematics, or computer science? (b1)
-      // 2. Can you provide examples of groundbreaking machine learning or data projects that you have led and implemented? (b4)
-      // 3. Have you worked with cloud engineering before? If so, can you provide examples? (b2)
-      // 4. Are you familiar with statistical Machine Learning and/or Deep Learning, particularly in Computer Vision? (b3)
-      // 5. Have you worked with Data Engineering before, including connecting to new data sources, storing data in the Cloud, and transforming and cleaning data? (b5)
-      // 6. Are you proficient in Python and familiar with at least one Cloud framework (e.g., AWS, GCP or Azure) as well as machine learning and deep learning frameworks such as TensorFlow or PyTorch? (b6)
-      // 7. Can you provide examples of your experience interacting with diverse customers and strong business analyst skills? (b7)
-      // 8. Are you comfortable working in an interdisciplinary and agile environment? (b8)
-      // 9. Are you fluent in English both written and spoken? (b9)
-      // `      
+      questionsSuggest = ` 1. Can you provide examples of machine learning or data projects you have led and implemented? - Experience
+      2. What machine learning and deep learning frameworks are you proficient in? - Skills
+      3. What is your level of experience with cloud engineering and creating ML solutions in the cloud? - Skills/Industry Knowledge
+      4. Can you explain your experience with Natural Language Processing or Computer Vision? - Industry Knowledge
+      5. What is your highest level of education in machine learning, statistics, applied mathematics, or computer science? - Education
+      6. Have you worked in the pharmaceutical industry before? If so, can you provide examples of your experience? - Industry Knowledge
+      7. How do you approach problem-solving and analyzing data? - Experience
+      8. Can you describe your communication skills and experience presenting results and outlining solutions to business stakeholders? - Communication Skills
+      9. Are you passionate about scaling up and deploying AI & Data solutions? How do you stay up to date with industry advancements? - Culture Fit/Industry Knowledge
+      `      
       // questionsSuggest =  `
       // 1. Can you give an example of a time when you had to use your strong organizational skills to successfully complete a project?
       // 2. Have you worked in a team environment before? Can you give an example of a successful teamwork experience?
@@ -656,20 +656,32 @@ module.exports = {
 
       printC(questionsSuggest,"3","questionsSuggest","b")
 
-      const regex = /(\d+)\.\s+(.*)/g;
-      const questionsArray = [];
+
+      // const regex = /(\d+)\.\s+(.*)/g;
+      // const questionsArray = [];
       
+      // let match;
+      // while ((match = regex.exec(questionsSuggest)) !== null) {
+      //   const questionObject = {
+      //     question: match[2],
+      //   };
+      //   questionsArray.push(questionObject);
+      // }
+      const regex = /(\d+)\.\s+(.*)\s+-\s+(.*)/g;
+      const questionsArray = [];
+
       let match;
       while ((match = regex.exec(questionsSuggest)) !== null) {
         const questionObject = {
           question: match[2],
+          category: match[3].split('/')[0].trim(),
         };
         questionsArray.push(questionObject);
-      }
-      
-      
+      }      
 
       printC(questionsArray,"3","questionsArray","b")
+      // s0
+
 
       
       // sdf0
