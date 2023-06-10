@@ -145,7 +145,6 @@ module.exports = `
         positionTextToExtraQuestions(fields: positionTextToExtraQuestionsInput): positionTextToExtraQuestionsOutput
         conversationCVPositionToReport(fields: conversationCVPositionToReportInput): conversationCVPositionToReportOutput
         positionTextAndConvoToReportCriteria(fields: positionTextAndConvoToReportCriteriaInput): positionTextAndConvoToReportCriteriaOutput
-        shaleAPI(fields: shaleAPIInput): shaleAPIOutput
         positionSuggestQuestionsAskCandidate(fields: positionSuggestQuestionsAskCandidateInput): positionSuggestQuestionsAskCandidateOutput
         saveCVtoUser(fields: saveCVtoUserInput): saveCVtoUserOutput
         autoUpdateUserInfoFromCV(fields: autoUpdateUserInfoFromCVInput): autoUpdateUserInfoFromCVOutput
