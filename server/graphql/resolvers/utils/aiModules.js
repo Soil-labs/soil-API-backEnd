@@ -6,9 +6,6 @@ const { Conversation } = require("../../../models/conversationModel");
 
 const { Configuration, OpenAIApi } = require("openai");
 
-const { ChatOpenAI } = require("langchain/chat_models/openai");
-const { HumanChatMessage } = require("langchain/schema");
-
 const axios = require("axios");
 const { PineconeClient } = require("@pinecone-database/pinecone");
 
@@ -428,8 +425,9 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
     regexT = /^(\w+):/gm;
     regexB = /- (\w+): (.+)/g;
 
-    console.log("change = 11");
-
+    
+    console.log("change = 11")
+    
     while ((matchT = regexT.exec(positionsRequirements)) !== null) {
       const categoryTitle = matchT[1];
       const categoryRequirements = positionsRequirements.substring(
@@ -438,6 +436,7 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
       regexB.lastIndex = 0;
       const requirements = {};
 
+    
       let matchB;
       while ((matchB = regexB.exec(categoryRequirements)) !== null) {
         const id = matchB[1];
@@ -447,14 +446,19 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
         categories[id] = {
           categoryName: categoryTitle,
           title: title,
-        };
-      }
-    }
 
+        }
+      }
+      
+    }
+    
     console.log(categories);
+    
+
   }
 
-  printC(categories, "5", "categories", "g");
+
+  printC(categories,"5","categories","g")
   // ---------------- Create Object for Position Report ----------------
 
   let candidateData = positionData.candidates[index_];
