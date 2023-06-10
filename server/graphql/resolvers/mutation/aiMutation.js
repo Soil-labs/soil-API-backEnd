@@ -629,18 +629,18 @@ module.exports = {
 
       printC(promptNewQuestions,"3","promptNewQuestions","b")
 
-      // questionsSuggest = await useGPTchatSimple(promptNewQuestions,0,"API 2")
+      questionsSuggest = await useGPTchatSimple(promptNewQuestions,0,"API 2")
 
-      questionsSuggest = ` 1. Can you provide examples of machine learning or data projects you have led and implemented? - Experience
-      2. What machine learning and deep learning frameworks are you proficient in? - Skills
-      3. What is your level of experience with cloud engineering and creating ML solutions in the cloud? - Skills/Industry Knowledge
-      4. Can you explain your experience with Natural Language Processing or Computer Vision? - Industry Knowledge
-      5. What is your highest level of education in machine learning, statistics, applied mathematics, or computer science? - Education
-      6. Have you worked in the pharmaceutical industry before? If so, can you provide examples of your experience? - Industry Knowledge
-      7. How do you approach problem-solving and analyzing data? - Experience
-      8. Can you describe your communication skills and experience presenting results and outlining solutions to business stakeholders? - Communication Skills
-      9. Are you passionate about scaling up and deploying AI & Data solutions? How do you stay up to date with industry advancements? - Culture Fit/Industry Knowledge
-      `      
+      // questionsSuggest = ` 1. Can you provide examples of machine learning or data projects you have led and implemented? - Experience
+      // 2. What machine learning and deep learning frameworks are you proficient in? - Skills
+      // 3. What is your level of experience with cloud engineering and creating ML solutions in the cloud? - Skills/Industry Knowledge
+      // 4. Can you explain your experience with Natural Language Processing or Computer Vision? - Industry Knowledge
+      // 5. What is your highest level of education in machine learning, statistics, applied mathematics, or computer science? - Education
+      // 6. Have you worked in the pharmaceutical industry before? If so, can you provide examples of your experience? - Industry Knowledge
+      // 7. How do you approach problem-solving and analyzing data? - Experience
+      // 8. Can you describe your communication skills and experience presenting results and outlining solutions to business stakeholders? - Communication Skills
+      // 9. Are you passionate about scaling up and deploying AI & Data solutions? How do you stay up to date with industry advancements? - Culture Fit/Industry Knowledge
+      // `      
       // questionsSuggest =  `
       // 1. Can you give an example of a time when you had to use your strong organizational skills to successfully complete a project?
       // 2. Have you worked in a team environment before? Can you give an example of a successful teamwork experience?
