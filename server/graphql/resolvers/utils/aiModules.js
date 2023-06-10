@@ -411,8 +411,8 @@ async function reportPassFailCVPositionConversationFunc(memberID,positionID) {
   // sdf0
   
   // ---------------- Create Object for Position Report ----------------
-  const regexT = /<(.+)>((?:\n\s*- \w+: .+)*)/g;
-  const regexB = /- (\w+): (.+)/g;
+  let regexT = /<(.+)>((?:\n\s*- \w+: .+)*)/g;
+  let regexB = /- (\w+): (.+)/g;
 
   const categories = {};
 
@@ -433,12 +433,43 @@ async function reportPassFailCVPositionConversationFunc(memberID,positionID) {
         title: title,
       }
     }
+  }
 
-    // categories[categoryTitle] = requirements;
+  if (Object.keys(categories).length == 0) {
+    regexT = /^(\w+):/gm;
+    regexB = /- (\w+): (.+)/g;
+    
+    
+    while ((matchT = regexT.exec(positionsRequirements)) !== null) {
+      const categoryTitle = matchT[1];
+      const categoryRequirements = positionsRequirements.substring(
+        regexT.lastIndex
+      );
+      regexB.lastIndex = 0;
+      const requirements = {};
+    
+      let matchB;
+      while ((matchB = regexB.exec(categoryRequirements)) !== null) {
+        const id = matchB[1];
+        const title = matchB[2];
+        requirements[id] = title;
+
+        categories[id] = {
+          categoryName: categoryTitle,
+          title: title,
+        }
+      }
+      
+    }
+    
+    console.log(categories);
+    
+
   }
 
 
   printC(categories,"4","categories","g")
+  // sd0
   // ---------------- Create Object for Position Report ----------------
 
 
