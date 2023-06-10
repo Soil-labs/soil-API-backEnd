@@ -454,6 +454,7 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
   }
 
 
+  printC(categories,"5","categories","g")
   // ---------------- Create Object for Position Report ----------------
 
   let candidateData = positionData.candidates[index_];
