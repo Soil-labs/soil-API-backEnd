@@ -425,6 +425,7 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
     regexT = /^(\w+):/gm;
     regexB = /- (\w+): (.+)/g;
     
+    console.log("change = 11")
     
     while ((matchT = regexT.exec(positionsRequirements)) !== null) {
       const categoryTitle = matchT[1];
