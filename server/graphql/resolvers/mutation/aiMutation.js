@@ -377,43 +377,43 @@ module.exports = {
 
 
 
-      // // ---------------------- Map Nodes from Position text ---------------------
-      // promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
-      //       dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
-      //       Do not have any other words except for skills. 
+      // ---------------------- Map Nodes from Position text ---------------------
+      promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
+            dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
+            Do not have any other words except for skills. 
 
-      //       Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
+            Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
             
-      //       Job Position (delimiters <>): <${report}>
+            Job Position (delimiters <>): <${report}>
 
-      //       Skills Result:
-      //       `;
+            Skills Result:
+            `;
 
-      // let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
-      // // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
-      // printC(mapSkillText, "1", "mapSkillText", "g");
+      let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
+      // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
+      printC(mapSkillText, "1", "mapSkillText", "g");
  
-      // let nodeIDs
-      // try {
-      //   let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
-      //   printC(nodesN, "3", "nodesN", "p");
+      let nodeIDs
+      try {
+        let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
+        printC(nodesN, "3", "nodesN", "p");
 
-      //   nodeSave = nodesN.map((obj) => {
-      //     return {
-      //       _id: obj.nodeID,
-      //     };
-      //   });
-      //   nodeIDs = nodeSave.map((obj) => {
-      //     return {
-      //       nodeID: obj._id
-      //     }
-      //   });
+        nodeSave = nodesN.map((obj) => {
+          return {
+            _id: obj.nodeID,
+          };
+        });
+        nodeIDs = nodeSave.map((obj) => {
+          return {
+            nodeID: obj._id
+          }
+        });
   
-      //   printC(nodeSave, "4", "nodeSave", "r");
-      // } catch (err) {
-      //   console.log("didn't create nodes = " )
-      // }
-      // // ---------------------- Map Nodes from Position text ---------------------
+        printC(nodeSave, "4", "nodeSave", "r");
+      } catch (err) {
+        console.log("didn't create nodes = " )
+      }
+      // ---------------------- Map Nodes from Position text ---------------------
 
 
       
@@ -435,9 +435,9 @@ module.exports = {
       const interviewQuestionsForCandidate = await positionTextToExtraQuestionsFunc(questionData,stringFromWebsite,positionID);
       // --------------- positionText to Questions ---------------
 
-      // if (nodeIDs){
-      //   positionData. nodes = nodeIDs;  
-      // }
+      if (nodeIDs){
+        positionData. nodes = nodeIDs;  
+      }
       positionData.interviewQuestionsForPosition = interviewQuestionsForCandidate;
       positionData.positionsRequirements.content = report;
       positionData.positionsRequirements.originalContent = stringFromWebsite;
