@@ -1894,6 +1894,131 @@ const sortArray_aiModule = async (memberObj) => {
   return memberArray;
 };
 
+
+const sortArrayRelevantNodes_aiModule = async (memberObj) => {
+  memberArray = [];
+
+  let minScore = 110
+  let maxScore = -1
+  for (const [memberID, member] of Object.entries(memberObj)) {
+    let score = member.total.score;
+
+    // console.log("member = " , member)
+
+    totalScoreFromNodes = 0;
+    totalScoreFromNodesCount = 0;
+    
+
+    // -------------- Add Nodes --------------
+    nodesPercentage = [];
+    for (const [nodeID, node] of Object.entries(member.nodes)) {
+      // console.log("node = " , node)
+      nodesPercentage.push({
+        nodeID: nodeID,
+        totalPercentage: parseInt(node.score * 100),
+        conn_nodeIDs: node.conn_nodeIDs,
+      });
+
+      // console.log("node.conn_nodeObj = " , member._id,node.conn_nodeObj)
+
+      let mostRelevantMemberNodes = [];
+
+      for (const [conn_nodeID, conn_nodeObj] of Object.entries(
+        node.conn_nodeObj
+      )) {
+        // console.log("conn_nodeObj = " , conn_nodeObj)
+        mostRelevantMemberNodes.push({
+          nodeID: conn_nodeID,
+          totalPercentage: conn_nodeObj.scoreOriginal * 100,
+        });
+      }
+
+      mostRelevantMemberNodes.sort((a, b) =>
+        a.totalPercentage > b.totalPercentage ? -1 : 1
+      );
+
+      // take only the first 3 and calcualte the total persentage out of the addition of this 3
+      let totalPercentage = 0;
+      for (let i = 0; i < mostRelevantMemberNodes.length; i++) {
+        if (i < 3) {
+          totalPercentage += mostRelevantMemberNodes[i].totalPercentage;
+        }
+      }
+
+      if (totalPercentage> 100 ) totalPercentage = 100
+
+      nodesPercentage[nodesPercentage.length - 1].totalPercentage = parseInt( 
+        totalPercentage
+      );
+
+      totalScoreFromNodes += parseInt(totalPercentage);
+      totalScoreFromNodesCount++;
+
+      nodesPercentage[nodesPercentage.length - 1].mostRelevantMemberNodes =
+        mostRelevantMemberNodes;
+    }
+
+    nodesPercentage.sort((a, b) =>
+      a.totalPercentage > b.totalPercentage ? -1 : 1
+    );
+    // -------------- Add Nodes --------------
+
+    let scoreNowU = parseInt(totalScoreFromNodes/totalScoreFromNodesCount)
+
+    if (scoreNowU > maxScore) maxScore = scoreNowU
+    if (scoreNowU < minScore) minScore = scoreNowU
+
+    memberArray.push({
+      memberID: memberID,
+      matchPercentage: {
+        // totalPercentage: parseInt(score),
+        totalPercentage: scoreNowU,
+        realTotalPercentage: member.total.scoreOriginalBeforeMap,
+      },
+      nodesPercentage: nodesPercentage,
+    });
+  }
+
+  // random number from 95 to 100
+  let randomNumMax = Math.floor(Math.random() * (100 - 95 + 1) + 95);
+
+  // random number from 20 to 35
+  let randomNumMin = Math.floor(Math.random() * (35 - 20 + 1) + 20);
+
+  for (let i = 0; i < memberArray.length; i++) {
+    let member = memberArray[i];
+
+    let totalPercentageNow = member.matchPercentage.totalPercentage;
+
+    totalPercentageNow = mapValue(totalPercentageNow, minScore, maxScore, randomNumMin, randomNumMax)
+
+    member.matchPercentage.totalPercentage = parseInt(totalPercentageNow)
+  }
+
+  
+  // for (let i = 0; i < memberArray.length; i++) {
+  //   let member = memberArray[i];
+    
+  //   let nodesPercentage = member.nodesPercentage;
+  //   for (let j = 0; j < nodesPercentage.length; j++) {
+  //     let node = nodesPercentage[j];
+  //     let mostRelevantMemberNodes = node.mostRelevantMemberNodes;
+  //   }
+  // }
+
+  // sdf
+
+  // console.log("memberArray = " , memberArray)
+
+  memberArray.sort((a, b) =>
+    a.matchPercentage.totalPercentage > b.matchPercentage.totalPercentage
+      ? -1
+      : 1
+  );
+
+  return memberArray;
+};
+
 const membersScoreMap = async (memberObj, weightModulesObj) => {
   let max_S = -1;
   let min_S = 100000000;
@@ -2616,4 +2741,5 @@ module.exports = {
   findInterviewQuestion,
   positionTextAndConvoToReportCriteriaFunc,
   positionTextToExtraQuestionsFunc,
+  sortArrayRelevantNodes_aiModule,
 };

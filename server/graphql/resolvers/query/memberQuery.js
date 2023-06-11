@@ -26,7 +26,7 @@ const {
 const { ApolloError } = require("apollo-server-express");
 const { IsAuthenticated } = require("../../../utils/authorization");
 
-const {nodes_aiModule,totalScore_aiModule,showObject,sortArray_aiModule,arrayToObject,useGPTchatSimple} = require("../utils/aiModules")
+const {nodes_aiModule,totalScore_aiModule,showObject,sortArray_aiModule,sortArrayRelevantNodes_aiModule,arrayToObject,useGPTchatSimple} = require("../utils/aiModules")
 
 function mapRange(input, inputMin, inputMax, outputMin, outputMax) {
   return (
@@ -1494,7 +1494,8 @@ module.exports = {
       console.log("memberObj = " , memberObj)
 
 
-      memberArray = await sortArray_aiModule(memberObj)
+      // memberArray = await sortArray_aiModule(memberObj)
+      memberArray = await sortArrayRelevantNodes_aiModule(memberObj)
 
 
       // await showObject(memberObj,"memberObj")
