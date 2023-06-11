@@ -424,6 +424,7 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
   if (Object.keys(categories).length == 0) {
     regexT = /^(\w+):/gm;
     regexB = /- (\w+): (.+)/g;
+
     
     console.log("change = 11")
     
@@ -434,6 +435,7 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
       );
       regexB.lastIndex = 0;
       const requirements = {};
+
     
       let matchB;
       while ((matchB = regexB.exec(categoryRequirements)) !== null) {
@@ -444,6 +446,7 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
         categories[id] = {
           categoryName: categoryTitle,
           title: title,
+
         }
       }
       
