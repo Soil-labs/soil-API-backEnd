@@ -496,8 +496,9 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
   Your Task is to Score each of the Job Requirements based on the CV and the Conversation to find the right candidate for the Job Position 
 
   - You need to Score the Bullet points overall from 0 to 10 for each ID
-   - For each bullet point ONLY give ID, really small reason max 10 words and score
-   - Give exactly the same number of bullet points(IDs)
+  - 10 = Perfect Match, -1 = Miss Information, 1 = No experience on this bullet point
+  - For each bullet point ONLY give ID, really small reason max 13 words and score
+  - Give exactly the same number of bullet points(IDs)
  
 
 For example: 
@@ -535,6 +536,8 @@ Category 1:
   //   `
 
   printC(report, "4", "report", "g");
+
+  // sdf0
 
   report = report.replace(/N\/A/g, "0"); // if you dont know something make it as zero score
 
@@ -627,6 +630,7 @@ async function interviewQuestionCreationUserFunc(
         { component: "positionMutation > interviewQuestionCreationUser" }
       );
 
+      printC(positionData.candidates,"0","positionData.candidates","b")
     userData = await Members.findOne({ _id: userID }).select("_id discordName");
     if (!userData)
       throw new ApolloError("User not found", "interviewQuestionCreationUser", {
@@ -752,14 +756,14 @@ async function interviewQuestionCreationUserFunc(
     // 6. How do you approach problem-solving and troubleshooting in your work? Can you give us an example of a particularly challenging issue you faced and how you resolved it?
     // `
 
-    // infoCandidateForJob = `
-    // - Lolita Mileta has experience in team leadership, Scrum adoption, and facilitating Scrum ceremonies, which are all relevant skills for the JOB_ROLE.
-    // - She has successfully established smooth communication and clear vision for planned tasks, increasing performance by 30%.
-    // - Lolita does not have any specific education requirements mentioned in her CV, which is a plus for the JOB_ROLE.
-    // - Her personality type is well-suited for the JOB_ROLE, as she is a problem solver, analytical thinker, self-motivated, and results-driven.
-    // - Lolita has experience with AWS infrastructure, maintaining TypeScript SDKs and writing documentation, improving observability, monitoring, and alerting for services, and making architectural changes for scaling services.
-    // - She does not have any experience with databases and SQL, cloud experience, programming experience, or TypeScript experience, which are all required skills for the JOB_ROLE.
-    // `
+    // infoCandidateForJob = `  - The candidate has 5+ years of experience in developing scalable and robust applications using Java, Spring, and Kubernetes, which is a plus for the JOB_ROLE.
+    // - The candidate is proficient in building RESTful APIs, working with NoSQL and SQL databases, and deploying applications on Google Cloud Platform (GCP) using Helm, which is a plus for the JOB_ROLE.
+    // - The candidate has a proven track record of collaborating with cross-functional teams and delivering high-quality software solutions, which is a plus for the JOB_ROLE.
+    // - The candidate does not have experience with React or Vue frameworks, which is a missing requirement for the JOB_ROLE.
+    // - The candidate does not have proficiency in TypeScript, React, GraphQL, and TailWindCSS, which is a missing requirement for the JOB_ROLE.
+    // - The candidate does not have experience with CloudFlare Workers and custom-built platforms, which is a missing requirement for the JOB_ROLE.
+    // - The candidate does not have knowledge of web performance optimization best practices, which is a missing requirement for the JOB_ROLE.
+    //  - The candidate does not have understanding of Nord Security's goal to shape a more secure and peaceful online future, which is a missing requirement for the JOB_ROLE.`
 
     printC(infoCandidateForJob, "3", "infoCandidateForJob", "p");
     // sdf0
@@ -845,28 +849,27 @@ async function interviewQuestionCreationUserFunc(
 
     improvedQuestions = await useGPTchatSimple(promptNewQuestions, 0, "API 2");
 
+    improvedQuestions = improvedQuestions.replace(/^\s*[\r\n]/gm, '');
+
+
+    // improvedQuestions = `1. Can you provide examples of scalable front-end web applications you have developed using Java, Spring, and Kubernetes? 
+    // 2. How proficient are you in building RESTful APIs and working with NoSQL and SQL databases, as well as deploying applications on Google Cloud Platform (GCP) using Helm? 
+    // 3. Have you worked with CloudFlare Workers or custom-built platforms before? If so, can you provide examples of how you have utilized them in your projects? 
+    // 4. How do you stay up to date with web performance optimization best practices, and can you provide examples of how you have implemented them in your previous projects? 
+    // 5. Can you describe a time when you had to mentor others on your team in developing high-quality software solutions, and how did you approach the situation? 
+    // 6. How do you ensure that the user interfaces you design and develop align with Nord Security's goal to shape a more secure and peaceful online future? 
+    // 7. Can you provide examples of user-friendly and accessible security products you have created, and how did you ensure they were both secure and easy to use? 
+    // 8. How do you prioritize professional growth and development in your career, and what steps do you take to continue learning and improving your skills? 
+    // 9. How do you prioritize your health and wellbeing, and what steps do you take to maintain them while working in a demanding technical role?`
+
     printC(improvedQuestions, "3", "improvedQuestions", "p");
-
-    // dfs00
-
-    // printC(improvedQuestions,"4","improvedQuestions","r")
-    // SDF0
-
-    // improvedQuestions = `1. Can you provide examples of web UI applications you have built using TypeScript and React? How did you approach understanding user needs and solving their problems during the development process?
-    // 2. How familiar are you with GraphQL and have you used it in any of your previous projects? Can you give an example of how you integrated GraphQL into a React application?
-    // 3. Have you worked with Next.js before? If so, can you give an example of a project you have built using it and how it improved the performance of the application?
-    // 4. Do you have any experience with REST, SQL, or NoSQL databases? Can you give an example of how you integrated a database into a React application?
-    // 5. Have you worked with Java, Scala, Kubernetes, Helm, or containerization before? If not, are you willing to learn and integrate these technologies into your development process?
-    // 6. Can you describe a time when you took ownership of a project and what the outcome was? How did you approach problem-solving and collaborating with team members during the project?
-    // 7. How do you stay updated with industry trends and developments? Can you give examples of any resources or communities you follow to stay informed?
-    // 8. Can you give an example of a time when you had to work independently and in a team to complete a project? How did you balance your individual responsibilities with collaborating with team members?
-    // 9. How do you approach code reviews and what is your process for giving and receiving feedback? Can you give an example of a time when you received constructive feedback and how you implemented it into your work?`
 
     const improvedQuestionsArray = improvedQuestions
       .split("\n")
-      .map((item) => item.replace(/^\d+\.\s*/, ""));
+      .map((item) => item.trim().replace(/^\d+\.\s*/, ''));
 
     printC(improvedQuestionsArray, "5", "improvedQuestionsArray", "r");
+    // sd0
 
     let interviewQuestionsForCandidate = [];
 
@@ -890,6 +893,7 @@ async function interviewQuestionCreationUserFunc(
       "interviewQuestionsForCandidate",
       "r"
     );
+    // dfs00
 
     // sdf0
 
@@ -901,12 +905,6 @@ async function interviewQuestionCreationUserFunc(
     positionData2 = await Position.findOne({ _id: positionID }).select(
       "_id name candidates"
     );
-    printC(
-      positionData2?.candidates?.length,
-      "5",
-      "positionData2.candidates.length",
-      "y"
-    );
 
     // sf0
     let candidateIdx = positionData2?.candidates?.findIndex(
@@ -915,6 +913,7 @@ async function interviewQuestionCreationUserFunc(
 
     printC(candidateIdx, "3", "candidateIdx", "r");
 
+    // asd00
     if (candidateIdx != -1 && candidateIdx != undefined) {
       positionData2.candidates[candidateIdx].interviewQuestionsForCandidate =
         interviewQuestionsForCandidate;
@@ -924,6 +923,9 @@ async function interviewQuestionCreationUserFunc(
         interviewQuestionsForCandidate: interviewQuestionsForCandidate,
       });
     }
+
+    // printC(positionData2, "3", "positionData2", "r");
+    // tsimi00
 
     if (positionData2) {
       positionData2 = await positionData2.save();
