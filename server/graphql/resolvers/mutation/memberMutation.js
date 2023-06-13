@@ -296,12 +296,13 @@ module.exports = {
       }
     }
   ),
-  updateMember: combineResolvers(
-    IsAuthenticated,
+  updateMember: 
+  // combineResolvers(
+  //   IsAuthenticated,
     async (parent, args, { user }, info) => {
       const {
         discordName,
-        // _id,
+        _id,
         discordAvatar,
         discriminator,
         bio,
@@ -321,6 +322,9 @@ module.exports = {
       } = args.fields;
 
       let { skills } = args.fields;
+      
+      user = await Members.findOne({ _id: _id });
+      console.log("user = " , user)
 
       console.log("Mutation > updateMember > args.fields = ", args.fields);
 
@@ -691,8 +695,8 @@ module.exports = {
           { component: "tmemberQuery > findMember" }
         );
       }
-    }
-  ),
+    },
+  // ),
 
   addNodesToMember: 
   // combineResolvers(

@@ -778,6 +778,10 @@ module.exports = {
         "API 2"
       );
 
+      // titleSkillSummaryRes = `Title Role: Skilled Software Engineer
+      // Main Skills: Java, Spring, Kubernetes
+      // Summary: Highly skilled software engineer with 5+ years of experience in developing scalable and robust applications using Java, Spring, and Kubernetes. Proficient in building RESTful APIs, working with NoSQL and SQL databases, and deploying applications on Google Cloud Platform (GCP) using Helm. Proven track record of collaborating with cross-functional teams and delivering high-quality software solutions.`
+
       printC(titleSkillSummaryRes, "3", "titleSkillSummaryRes", "b");
 
       const titleRole = titleSkillSummaryRes.match(/Title Role: (.*)/)[1];
@@ -792,9 +796,9 @@ module.exports = {
       // Ateet Tiwari is a Full Stack Developer with experience in Front-End, Back-End, Database, Messaging Services, and UI Development. He has a strong proficiency in React, Redux, Node, Express, Python, SQL, and MongoDB. Ateet has led initiatives and teams, improved product performance, and designed in-house frameworks and systems. He is a Polygon Fellowship Graduate and has extensive knowledge in web3 development.
       // `
 
-      // printC(cvSummary, "3", "cvSummary", "g");
-      // printC(titleRole, "3", "titleRole", "g");
-      // printC(mainSkills, "3", "mainSkills", "g");
+      printC(cvSummary, "3", "cvSummary", "g");
+      printC(titleRole, "3", "titleRole", "g");
+      printC(mainSkills, "3", "mainSkills", "g");
       // sdf0
 
       // ----------- CV to Summary -------------
