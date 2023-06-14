@@ -1,6 +1,8 @@
 const { AI } = require("../../../models/aiModel");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
+const { Conversation } = require("../../../models/conversationModel");
+
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
 const { Configuration, OpenAIApi } = require("openai");
@@ -27,6 +29,8 @@ const {
   interviewQuestionCreationUserFunc,
   conversationCVPositionToReportFunc,
   reportPassFailCVPositionConversationFunc,
+  positionTextAndConvoToReportCriteriaFunc,
+  positionTextToExtraQuestionsFunc,
 } = require("../utils/aiModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
@@ -338,7 +342,7 @@ module.exports = {
 
       - Every Category can have from  1 to 4 bullet points
       - To include information in the output you must first find it in text of <Job Position> Do not make up fake information
-      - Include 3-6 categories 
+      - Include 2-4 categories from Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
       - You need make really small bullet points maximum 15 words about what the Candidate should have to pass on every Category
       - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc. 
 
@@ -354,9 +358,21 @@ module.exports = {
 
       // let report = "Category 1: Skills>\n- Experience with databases and SQL\n- Cloud experience, preferably with AWS\n- Programming experience\n- TypeScript experience is a plus\n\n<Category 2: Qualifications>\n- Experience building and maintaining backend systems\n- Experience with infrastructure improvements and scaling\n- Experience troubleshooting production issues and conducting root cause analysis\n- Experience conducting systems tests for security, performance, and availability\n\n<Category 3: Education>\n- No specific education requirements mentioned\n\n<Category 4: Culture Fit>\n- Team player\n- Willingness to work on everything on the backend side\n- Strong communication skills\n- Ability to work in a fast-paced environment\n\n<Category 5: Personality Type>\n- Detail-oriented\n- Problem solver\n- Self-motivated\n- Adaptable\n\n<Category 6: Experience>\n- Experience maintaining and improving infrastructure in AWS\n- Experience maintaining TypeScript SDKs and writing internal and public documentation\n- No specific years of experience mentioned\n- Experience with observability, monitoring, and alerting for services"
 
+
+
       printC(report, "0", "report", "b");
+
+      let idCounter = 1;
+
+      report = report.replace(/(-\s+b\d+:)/g, (match) => {
+        return match.replace(/\d+/, idCounter++);
+      });
+
+      printC(report, "1", "report", "g");
       // sdf9
-      positionData.positionsRequirements.content = report;
+
+
+      
 
       // ---------------------- Map Nodes from Position text ---------------------
       promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
@@ -373,25 +389,56 @@ module.exports = {
       let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
       // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
       printC(mapSkillText, "1", "mapSkillText", "g");
+ 
+      let nodeIDs
+      try {
+        let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
+        printC(nodesN, "3", "nodesN", "p");
 
-      let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
-      printC(nodesN, "3", "nodesN", "p");
 
-      nodeSave = nodesN.map((obj) => {
-        return {
-          _id: obj.nodeID,
-        };
-      });
-      nodeIDs = nodeSave.map((obj) => {
-        return {
-          nodeID: obj._id,
-        };
-      });
-
-      printC(nodeSave, "4", "nodeSave", "r");
-
-      positionData.nodes = nodeIDs;
+        nodeSave = nodesN.map((obj) => {
+          return {
+            _id: obj.nodeID,
+          };
+        });
+        nodeIDs = nodeSave.map((obj) => {
+          return {
+            nodeID: obj._id
+          }
+        });
+  
+        printC(nodeSave, "4", "nodeSave", "r");
+      } catch (err) {
+        console.log("didn't create nodes = " )
+      }
       // ---------------------- Map Nodes from Position text ---------------------
+
+
+      
+      // --------------- positionText to Questions ---------------
+      questionData = [{
+        questionID: "6478a3df3bbea5508ea72af7",
+        content: "What are your companys overall business goals and how does your hiring process align with them?",
+      },{
+        questionID: "6478a4183bbea5508ea72af9",
+        content: "What specific roles are you looking to fill and what are the job responsibilities for each?",
+      },{
+        questionID: "6478a4753bbea5508ea72afb",
+        content: "What are the key skills, qualifications, and attributes you're looking for in a candidate?",
+      },{
+        questionID: "6478a49f3bbea5508ea72afd",
+        content: "What is the preferred timeline for filling these positions, and are there any deadlines or milestones we should be aware of?",
+      }]
+
+      const interviewQuestionsForCandidate = await positionTextToExtraQuestionsFunc(questionData,stringFromWebsite,positionID);
+      // --------------- positionText to Questions ---------------
+
+      if (nodeIDs){
+        positionData. nodes = nodeIDs;  
+      }
+      positionData.interviewQuestionsForPosition = interviewQuestionsForCandidate;
+      positionData.positionsRequirements.content = report;
+      positionData.positionsRequirements.originalContent = stringFromWebsite;
 
       // update Mongo
       await positionData.save();
@@ -399,6 +446,8 @@ module.exports = {
       return {
         report: report,
         success: true,
+        interviewQuestionsForPosition: interviewQuestionsForCandidate,
+        
       };
     } catch (err) {
       throw new ApolloError(
@@ -406,6 +455,56 @@ module.exports = {
         err.extensions?.code || "websiteToMemoryCompany",
         {
           component: "aiMutation > websiteToMemoryCompany",
+        }
+      );
+    }
+  },
+  positionTextToExtraQuestions: async (parent, args, context, info) => {
+    const { positionText, positionID } = args.fields;
+    console.log("Mutation > positionTextToExtraQuestions > args.fields = ", args.fields);
+
+    
+
+    questionData = [{
+      questionID: "6478a3df3bbea5508ea72af7",
+      content: "What are your companys overall business goals and how does your hiring process align with them?",
+    },{
+      questionID: "6478a4183bbea5508ea72af9",
+      content: "What specific roles are you looking to fill and what are the job responsibilities for each?",
+    },{
+      questionID: "6478a4753bbea5508ea72afb",
+      content: "What are the key skills, qualifications, and attributes you're looking for in a candidate?",
+    },{
+      questionID: "6478a49f3bbea5508ea72afd",
+      content: "What is the preferred timeline for filling these positions, and are there any deadlines or milestones we should be aware of?",
+    }]
+
+
+
+    try {
+
+
+      const interviewQuestionsForCandidate = await positionTextToExtraQuestionsFunc(questionData,positionText,positionID);
+
+      printC(interviewQuestionsForCandidate,"3","interviewQuestionsForCandidate","r")
+
+      sd0
+
+      positionData.interviewQuestionsForPosition = interviewQuestionsForCandidate;
+
+      await positionData.save();
+
+      
+      return {
+        success: true,
+        questions: interviewQuestionsForCandidate
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "positionTextToExtraQuestions",
+        {
+          component: "aiMutation > positionTextToExtraQuestions",
         }
       );
     }
@@ -441,6 +540,168 @@ module.exports = {
         err.extensions?.code || "conversationCVPositionToReport",
         {
           component: "aiMutation > conversationCVPositionToReport",
+        }
+      );
+    }
+  },
+
+  positionTextAndConvoToReportCriteria: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
+    console.log("Mutation > positionTextAndConvoToReportCriteria > args.fields = ", args.fields);
+
+    try {
+
+      // --------------- Report ---------
+      const report = await positionTextAndConvoToReportCriteriaFunc(positionID)
+
+
+      console.log("report = " , report)
+
+      positionData.positionsRequirements.content = report;
+      // --------------- Report ---------
+
+
+    
+
+
+      await positionData.save();
+
+
+
+
+      // sdf0
+
+
+      return {
+        success: true,
+        report: report,
+
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "positionTextAndConvoToReportCriteria",
+        {
+          component: "aiMutation > positionTextAndConvoToReportCriteria",
+        }
+      );
+    }
+  },
+
+  positionSuggestQuestionsAskCandidate: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
+    console.log("Mutation > positionSuggestQuestionsAskCandidate > args.fields = ", args.fields);
+
+    try {
+
+      if (!positionID) {
+        throw new ApolloError("positionID is required");
+      }
+    
+      positionData = await Position.findOne({ _id: positionID }).select('_id positionsRequirements');
+    
+      if (!positionData) {
+        throw new ApolloError("Position not found");
+      }
+
+      positionsRequirements = positionData.positionsRequirements.content
+
+
+      let promptNewQuestions = `
+        REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
+
+      
+        
+        - you can only ask 1 question at a time
+        - You should stay really close to the context of the REQUIREMENTS Job Position, and try to cover most of the requirements!
+        - Your goal is to ask the best questions in order to understand if the Candidate is a good fit for the Job Position
+        - Your task is to suggest MAXIMUM 9 questions for the Recruiter to ask the Candidate, you can combine bullet points and use them with any way that you want
+        - For every question add only one of this categories < Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills >
+
+        Example:
+         1. Question - Category
+         2. Question - Category
+        
+        Questions:
+      `
+
+      printC(promptNewQuestions,"3","promptNewQuestions","b")
+
+      questionsSuggest = await useGPTchatSimple(promptNewQuestions,0,"API 2")
+
+      // questionsSuggest = ` 1. Can you provide examples of machine learning or data projects you have led and implemented? - Experience
+      // 2. What machine learning and deep learning frameworks are you proficient in? - Skills
+      // 3. What is your level of experience with cloud engineering and creating ML solutions in the cloud? - Skills/Industry Knowledge
+      // 4. Can you explain your experience with Natural Language Processing or Computer Vision? - Industry Knowledge
+      // 5. What is your highest level of education in machine learning, statistics, applied mathematics, or computer science? - Education
+      // 6. Have you worked in the pharmaceutical industry before? If so, can you provide examples of your experience? - Industry Knowledge
+      // 7. How do you approach problem-solving and analyzing data? - Experience
+      // 8. Can you describe your communication skills and experience presenting results and outlining solutions to business stakeholders? - Communication Skills
+      // 9. Are you passionate about scaling up and deploying AI & Data solutions? How do you stay up to date with industry advancements? - Culture Fit/Industry Knowledge
+      // `      
+      // questionsSuggest =  `
+      // 1. Can you give an example of a time when you had to use your strong organizational skills to successfully complete a project?
+      // 2. Have you worked in a team environment before? Can you give an example of a successful teamwork experience?
+      // 3. How do you handle communication and cooperation with team members who may have different working styles or personalities?
+      // 4. Can you tell us about a time when you had to motivate yourself to learn a new skill or take on a new responsibility?
+      // 5. How familiar are you with Scrum and Kanban methodologies? Can you give an example of how you have used them in a project?
+      // 6. Have you worked with Python before? Can you give an example of a project you have completed using Python?
+      // 7. How comfortable are you with using Unix and Linux command line? Can you give an example of a task you have completed using these systems?
+      // 8. Can you explain your knowledge of telecom protocols, IP, and networking? Have you worked with these technologies before?
+      // 9. Are you able to commit to at least 4-5 hours per working day for this position? How do you plan to balance your other commitments with this job?
+      // `
+
+
+      printC(questionsSuggest,"3","questionsSuggest","b")
+
+
+      // const regex = /(\d+)\.\s+(.*)/g;
+      // const questionsArray = [];
+      
+      // let match;
+      // while ((match = regex.exec(questionsSuggest)) !== null) {
+      //   const questionObject = {
+      //     question: match[2],
+      //   };
+      //   questionsArray.push(questionObject);
+      // }
+      const regex = /(\d+)\.\s+(.*)\s+-\s+(.*)/g;
+      const questionsArray = [];
+
+      let match;
+      while ((match = regex.exec(questionsSuggest)) !== null) {
+        const questionObject = {
+          question: match[2],
+          category: match[3].split('/')[0].trim(),
+        };
+        questionsArray.push(questionObject);
+      }      
+
+      printC(questionsArray,"3","questionsArray","b")
+      // s0
+
+
+      
+      // sdf0
+    
+
+
+      // await positionData.save();
+
+
+
+
+      return {
+        success: true,
+        questionSuggest: questionsArray,
+
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "positionSuggestQuestionsAskCandidate",
+        {
+          component: "aiMutation > positionSuggestQuestionsAskCandidate",
         }
       );
     }
@@ -507,13 +768,17 @@ module.exports = {
         Main Skills 3 words max:
         Summary 3 sentenses max:: 
       `;
-      // printC(cvContentPrompt,"3","cvContentPrompt","b")
+      printC(cvContentPrompt,"3","cvContentPrompt","b")
 
       titleSkillSummaryRes = await useGPTchatSimple(
         cvContentPrompt,
         0,
         "API 2"
       );
+
+      // titleSkillSummaryRes = `Title Role: Skilled Software Engineer
+      // Main Skills: Java, Spring, Kubernetes
+      // Summary: Highly skilled software engineer with 5+ years of experience in developing scalable and robust applications using Java, Spring, and Kubernetes. Proficient in building RESTful APIs, working with NoSQL and SQL databases, and deploying applications on Google Cloud Platform (GCP) using Helm. Proven track record of collaborating with cross-functional teams and delivering high-quality software solutions.`
 
       printC(titleSkillSummaryRes, "3", "titleSkillSummaryRes", "b");
 
@@ -542,8 +807,9 @@ module.exports = {
       // InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
 
       interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
+      // sdf00
 
-      await wait(20000);
+      await wait(30000);
 
       return {
         success: true,
@@ -609,7 +875,7 @@ module.exports = {
         if (true) {
           promptJobs = `
           Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
-    
+
           CV(resume), (delimiters <>: <${cvContent}>
     
     
@@ -619,17 +885,19 @@ module.exports = {
           - Give me a dates of when this person started and finished( or presently working). This concludes the first bullet point. 
           - Always use "•" for a bullet point, never this "-". 
     
-          This is the format: 
+           This is the format: 
 
           [
             {
               "title": "Job Title, Company Name",
               "description": "start date, end date(or present)   • short description  • short description • short description"
+
                             
-            }
-          ]
+             }
+           ]
     
-         `;
+          `;
+
 
           responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
           console.log("responseFromGPT = ", responseFromGPT);
@@ -638,7 +906,40 @@ module.exports = {
 
           printC("modifiedResult", modifiedResult);
 
-          result = JSON.parse(modifiedResult);
+        //   printC(responseFromGPT, "0", "responseFromGPT", "b")
+
+        //   result = JSON.parse(responseFromGPT);
+        //   // result = JSON.parse(modifiedResult);
+
+        //   console.log("result = " , result)
+
+        //   userData.previousProjects = result;
+
+        //   userData.cvInfo.cvPreparationPreviousProjects = true;
+        // }
+        // // -------Calculate Previous Jobs -------
+        // -------Calculate Previous Jobs -------
+        if (userData.cvInfo.cvPreparationPreviousProjects != true) {
+          promptJobs =
+            'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
+            cvContent;
+
+          responseFromGPT = await useGPTchatSimple(promptJobs, 0.05,'API 2');
+
+          jobsArr = responseFromGPT
+            .replace(/\n/g, "")
+            .split("•")
+            .filter((item) => item.trim() !== "");
+
+          let result = [];
+
+          for (let i = 0; i < jobsArr.length; i += 2) {
+            result.push({
+              title: jobsArr[i],
+              description: jobsArr[i + 1],
+            });
+          }
+          printC(result, "1", "result", "g");
 
           userData.previousProjects = result;
 
@@ -656,17 +957,26 @@ module.exports = {
 
             Exaple output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
             
-            CV Content (delimiters <>): <${cvContent}>
+            CV Content (delimiters <>): <${cvContent.substring(0, 3500)}>
 
             Skills Result:
             `;
+
+            printC(promptCVtoMap, "3", "promptCVtoMap", "b")
+
 
           textForMapping = await useGPTchatSimple(promptCVtoMap, 0);
 
           printC(textForMapping, "3", "textForMapping", "b");
           // sdf00
 
-          let nodesN = await MessageMapKG_V4APICallF(textForMapping);
+
+          let nodesN
+          try {
+            nodesN = await MessageMapKG_V4APICallF(textForMapping);
+          } catch (err) {
+            console.log("Map Nodes err = " , err)
+          }
 
           printC(nodesN, "3", "nodesN", "b");
 

@@ -66,7 +66,19 @@ module.exports = `
         success: Boolean
         report: String
         nodes: [Node]
+        interviewQuestionsForPosition: [interviewQuestionsForCandidateType]
 
+    }
+
+    input positionTextToExtraQuestionsInput {
+        positionText: String
+        positionID: ID
+
+    }
+
+    type positionTextToExtraQuestionsOutput {
+        success: Boolean
+        questions: [interviewQuestionsForCandidateType]
     }
 
     input conversationCVPositionToReportInput {
@@ -80,6 +92,32 @@ module.exports = `
         CV_ConvoToPosition: [notesInterviewType2],
         CV_ConvoToPositionAverageScore: Float,
         reportPassFail: [reportPassFailType],
+    }
+
+    input positionTextAndConvoToReportCriteriaInput {
+        positionID: ID
+    }
+
+    type positionTextAndConvoToReportCriteriaOutput {
+        success: Boolean
+        report: String
+    }
+
+    input positionSuggestQuestionsAskCandidateInput {
+        positionID: ID
+    }
+
+    
+
+    type positionSuggestQuestionsAskCandidateOutput {
+        success: Boolean
+        questionSuggest: [questionSuggestType]
+    }
+
+    type questionSuggestType {
+        question: String
+        IDCriteria: ID
+        category: String
     }
 
     type reportPassFailType {
@@ -334,6 +372,7 @@ module.exports = `
     input interviewEdenAIInput {
         userID: ID
         positionID: ID
+        positionTrainEdenAI: Boolean
         useMemory: Boolean
         conversation: [messageChat]
         unansweredQuestions: [String]

@@ -9,7 +9,6 @@ module.exports = `
         questionsToAsk: [QuestionType]
         positionsRequirements: positionsRequirementsType
         nodes: [NodeDataType]
-        interviewQuestionsForPosition: [interviewQuestionsForCandidateType]
         convRecruiter: [convRecruiterType]
         convRecruiterReadyToDisplay: Boolean
         talentList: [talentListType]
@@ -17,7 +16,6 @@ module.exports = `
     }
 
     type positionsRequirementsType { 
-        originalContent: String
         content: String
     }
 
@@ -43,7 +41,6 @@ module.exports = `
     type talentListType {
         _id: ID
         name: String
-        positionID: ID
         talent: [talentType]
     }
 
@@ -66,7 +63,6 @@ module.exports = `
         overallScore: Float,
         acceptedOrRejected: Boolean,
         readyToDisplay: Boolean,
-        conversationID: ID,
         conversation: [conversationType],
         summaryQuestions: [SummaryQuestionType]
         interviewQuestionsForCandidate: [interviewQuestionsForCandidateType]
@@ -152,11 +148,6 @@ module.exports = `
     input findPositionsInput {
         _id: [ID],
     }
-
-    input findUserTalentListPositionInput {
-        _id: ID,
-    }
-
     input deletePositionCandidateInput {
         positionID:  ID,
         userID: ID,

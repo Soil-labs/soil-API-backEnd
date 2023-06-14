@@ -26,6 +26,7 @@ const {
   modifyQuestionFromCVMemory,
   getMemory,
   askQuestionAgain,
+  findInterviewQuestion,
 } = require("../utils/aiModules");
 
 const {
@@ -867,7 +868,7 @@ module.exports = {
     }
   },
   interviewEdenAI: async (parent, args, context, info) => {
-    const { userID, positionID, conversation, unansweredQuestions } =
+    const { userID, positionID, positionTrainEdenAI, conversation, unansweredQuestions } =
       args.fields;
     let {
       timesAsked,
@@ -878,6 +879,8 @@ module.exports = {
       questionAskingID,
     } = args.fields;
     // console.log("Query > interviewEdenAI > args.fields = ", args.fields);
+
+
 
     if (useMemory == undefined) {
       useMemory = true; // default to true
@@ -893,13 +896,16 @@ module.exports = {
       timesAsked = 1;
     }
 
-    const originalTimesAsked = timesAsked;
+
 
     unansweredQuestionsArr = await addMultipleQuestionsToEdenAIFunc(
       unansweredQuestionsArr
     );
 
-    console.log("unansweredQuestionsArr = ", unansweredQuestionsArr);
+    
+    printC(unansweredQuestionsArr, "0", "unansweredQuestionsArr", "b");
+
+    // sdf
 
     if (questionAskingNow == undefined && unansweredQuestionsArr.length > 0) {
       questionAskingNow = unansweredQuestionsArr[0].questionContent;
@@ -911,30 +917,37 @@ module.exports = {
 
     console.log("questionAskingNow = ", questionAskingNow);
     console.log("questionAskingID = ", questionAskingID);
+    // ads23
+
+
+    let originalQuestionAsking = questionAskingNow;
+    let originalQuestionAskingID = questionAskingID;
+    const originalTimesAsked = timesAsked;
 
     try {
       // ------------ Find Modified questions ------------
       let positionData = await Position.findOne({ _id: positionID }).select(
-        "_id candidates"
+        "_id candidates interviewQuestionsForPosition"
       );
 
       const candidate = positionData.candidates.find(
         (candidate) => candidate.userID.toString() == userID.toString()
       );
 
-      // find inside candidate Array the questionAskingID
+  
+      newQuestion = await findInterviewQuestion(positionData,candidate, questionAskingID,positionTrainEdenAI)
 
-      const newQuestion = candidate?.interviewQuestionsForCandidate?.find(
-        (question) =>
-          question?.originalQuestionID?.toString() ==
-          questionAskingID.toString()
-      );
+      
+      printC(newQuestion, "1", "newQuestion", "b");
 
-      console.log("newQuestion = ", newQuestion);
+      // asdf09
 
-      if (newQuestion?.personalizedContent != undefined)
-        questionAskingNow = newQuestion.personalizedContent;
-      // SDF9
+
+      if (newQuestion?.personalizedContent != undefined) 
+        questionAskingNow = newQuestion.personalizedContent; 
+
+    //     console.log("questionAskingNow = ", questionAskingNow);
+    // ads23
 
       // ------------ Find Modified questions ------------
 
@@ -986,6 +999,8 @@ module.exports = {
           prompt_conversation + "\n\n" + promptAskQuestion),
           console.log("");
         console.log("");
+
+
         printC(promptQuestionAskedN, "1", "promptQuestionAskedN", "p");
 
         responseGPTchat = await useGPTchatSimple(promptQuestionAskedN);
@@ -1006,7 +1021,7 @@ module.exports = {
           }
         }
 
-        console.log("moveNextQuestionGPT = ", moveNextQuestionGPT);
+        printC(moveNextQuestionGPT, "1", "moveNextQuestionGPT", "b")
         // -------------- Ask GPT what to do  ------------
 
         //  -------------- Move to next question ------------
@@ -1020,15 +1035,18 @@ module.exports = {
             // questionAskingNowA = unansweredQuestions.shift()
             // nextQuestion = "Next Question to Answer: " + questionAskingNowA
 
+            printC(unansweredQuestionsArr, "1", "unansweredQuestionsArr", "b")
+
             resT = unansweredQuestionsArr.shift();
 
-            const newQuestion = candidate?.interviewQuestionsForCandidate?.find(
-              (question) =>
-                question?.originalQuestionID?.toString() ==
-                unansweredQuestionsArr[0].questionID.toString()
-            );
+            printC(unansweredQuestionsArr, "1", "unansweredQuestionsArr", "b")
 
-            // console.log("newQuestion = " , newQuestion)
+            questionAskingID = unansweredQuestionsArr[0].questionID;
+
+            newQuestion = await findInterviewQuestion(positionData,candidate, questionAskingID,positionTrainEdenAI)
+
+
+            console.log("newQuestion = " , newQuestion)
             // sdf9
 
             if (newQuestion?.personalizedContent != undefined)
@@ -1041,6 +1059,10 @@ module.exports = {
           }
           timesAsked = 1;
         } else {
+
+          // printC(questionAskingNow, "1", "questionAskingNow", "b")
+          // sadf0
+
           if (flagFirstTime == true) {
             nextQuestion = "QUESTION ASK: " + questionAskingNow + `"`;
           } else {
@@ -1062,17 +1084,16 @@ module.exports = {
 
           resT = unansweredQuestionsArr.shift();
 
-          const newQuestion = candidate?.interviewQuestionsForCandidate?.find(
-            (question) =>
-              question?.originalQuestionID?.toString() ==
-              unansweredQuestionsArr[0].questionID.toString()
-          );
+          questionAskingID = unansweredQuestionsArr[0].questionID;
+
+          newQuestion = await findInterviewQuestion(positionData,candidate, questionAskingID,positionTrainEdenAI)
+
 
           if (newQuestion?.personalizedContent != undefined)
             questionAskingNowA = newQuestion.personalizedContent;
           else questionAskingNowA = unansweredQuestionsArr[0].questionContent;
           // questionAskingNowA = unansweredQuestionsArr[0].questionContent
-          nextQuestion = `NEW QUESITON ASK: "` + questionAskingNowA + `"`;
+          nextQuestion = `NEW QUESTION ASK: "` + questionAskingNowA + `"`;
 
           // unansweredQuestionsArr.shift()
 
@@ -1136,29 +1157,54 @@ module.exports = {
 
       const newDate = new Date();
       if (conversation.length >= 2) {
-        // ------------- Update the Conversation MEMORY ----------------
-        const _conversation = conversation.map((_item) => ({
-          ..._item,
-          date: _item.date ? _item.date : newDate,
-        }));
-        resultConv = await findAndUpdateConversationFunc(
-          userID,
-          _conversation,
-          positionID
-        );
-        // ------------- Update the Conversation MEMORY ----------------
 
-        //  ------------- Update the Answered Questions ----------------
-        resultConv = await updateAnsweredQuestionFunc(
-          resultConv,
-          conversation,
-          questionAskingNow,
-          questionAskingID,
-          originalTimesAsked
-        );
-        //  ------------- Update the Answered Questions ----------------
+        if (positionTrainEdenAI == true){ // If EdenAI is talking to the company employ for training Eden
 
-        conversationID = resultConv._id;
+          // ------------- Update the Conversation MEMORY ----------------
+          const _conversation = conversation.map((_item) => ({
+            ..._item,
+            date: _item.date ? _item.date : newDate,
+          }));
+          resultConv = await findAndUpdateConversationFunc(
+            userID,
+            _conversation,
+            positionID,
+            positionTrainEdenAI,
+          );
+          // ------------- Update the Conversation MEMORY ----------------
+
+
+        } else { // If Eden is talking to the candidate on an interview 
+            // ------------- Update the Conversation MEMORY ----------------
+            const _conversation = conversation.map((_item) => ({
+              ..._item,
+              date: _item.date ? _item.date : newDate,
+            }));
+            resultConv = await findAndUpdateConversationFunc(
+              userID,
+              _conversation,
+              positionID
+            );
+            // ------------- Update the Conversation MEMORY ----------------
+
+            console.log("originalQuestionAsking,originalQuestionAskingID,originalTimesAsked = " , originalQuestionAsking,
+              originalQuestionAskingID,
+              originalTimesAsked,)
+            //  ------------- Update the Answered Questions ----------------
+            resultConv = await updateAnsweredQuestionFunc(
+              resultConv,
+              conversation,
+              originalQuestionAsking,
+              originalQuestionAskingID,
+              originalTimesAsked,
+            );
+            //  ------------- Update the Answered Questions ----------------
+
+            printC(originalTimesAsked, "4", "originalTimesAsked --- SSOS", "y");
+
+
+            conversationID = resultConv._id;
+        }
       }
 
       reply = reply.replace(/"/g, "");
@@ -1433,11 +1479,13 @@ module.exports = {
         resultConv = await updateAnsweredQuestionFunc(
           resultConv,
           conversation,
-          questionAskingNow,
-          questionAskingID,
+          originalQuestionAsking,
+          originalQuestionAskingID,
           originalTimesAsked
         );
         //  ------------- Update the Answered Questions ----------------
+
+
 
         conversationID = resultConv._id;
       }
