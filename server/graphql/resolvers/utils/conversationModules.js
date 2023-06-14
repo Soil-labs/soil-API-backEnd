@@ -283,7 +283,9 @@ async function findSummaryOfAnswers(convDataNow) {
     // sdf00
 
 
-    const summaryAnswer = await useGPTchatSimple(promptForSummaryAnswer);
+    // const summaryAnswer = await useGPTchatSimple(promptForSummaryAnswer);
+
+    const summaryAnswer = conversationString
 
     printC(summaryAnswer, "2", "summaryAnswer", "g");
 
