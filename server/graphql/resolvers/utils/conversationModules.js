@@ -252,9 +252,12 @@ async function findSummaryOfAnswers(convDataNow) {
     // from subConversationAnswer array of objects (role,content) create a string of the conversation for prompt
     let conversationString = "";
     for (let j = 0; j < subConversationAnswer.length; j++) {
+      roleN = "Candidate";
+      if (subConversationAnswer[j].role == "assistant") roleN = "Recruiter";
+      
       conversationString =
         conversationString +
-        subConversationAnswer[j].role +
+        roleN +
         ": " +
         subConversationAnswer[j].content +
         "\n";
@@ -267,11 +270,10 @@ async function findSummaryOfAnswers(convDataNow) {
     promptForSummaryAnswer += `
         QUESTION: <${questionContent}>
 
-        CONVERSATION: <${conversationString}>
+        CONVERSATION between Recruiter asking question and Candidate answering: <${conversationString}>
 
-        - Create the SUMMARY that answers to the QUESTION, based on the CONVERSATION above
+        - Create the SUMMARY of the answer that the Candidate give to the the QUESTION asked by the recruiter
         - the SUMMARY should be as small as possible with only 1-2 sentences
-        - only write positive information
 
         SUMMARY:
         `;
@@ -322,6 +324,10 @@ async function updateQuestionAskedConvoID(arr1, ID, infoAddQuestion) {
     );
 
     if (index !== -1) {
+      console.log("index = t1t - ", index,infoAddQuestion.conversation.slice(
+        -infoAddQuestion.timesAsked * 2
+      ));
+
       arr1[index] = {
         questionID: infoAddQuestion.questionID,
         questionContent: infoAddQuestion.content,
@@ -331,6 +337,9 @@ async function updateQuestionAskedConvoID(arr1, ID, infoAddQuestion) {
         summaryOfAnswer: "",
       };
     } else {
+      console.log("NOOO index = t1t - ",infoAddQuestion.conversation.slice(
+        -infoAddQuestion.timesAsked * 2
+      ));
       arr1.push({
         questionID: infoAddQuestion.questionID,
         questionContent: infoAddQuestion.content,
@@ -368,7 +377,6 @@ async function updateQuestionAskedConvoID(arr1, ID, infoAddQuestion) {
     }
   }
 
-  console.log("change = 2099");
 
   return arr1;
 }

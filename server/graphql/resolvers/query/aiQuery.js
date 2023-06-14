@@ -880,6 +880,8 @@ module.exports = {
     } = args.fields;
     // console.log("Query > interviewEdenAI > args.fields = ", args.fields);
 
+
+
     if (useMemory == undefined) {
       useMemory = true; // default to true
     }
@@ -894,7 +896,7 @@ module.exports = {
       timesAsked = 1;
     }
 
-    const originalTimesAsked = timesAsked;
+
 
     unansweredQuestionsArr = await addMultipleQuestionsToEdenAIFunc(
       unansweredQuestionsArr
@@ -916,6 +918,11 @@ module.exports = {
     console.log("questionAskingNow = ", questionAskingNow);
     console.log("questionAskingID = ", questionAskingID);
     // ads23
+
+
+    let originalQuestionAsking = questionAskingNow;
+    let originalQuestionAskingID = questionAskingID;
+    const originalTimesAsked = timesAsked;
 
     try {
       // ------------ Find Modified questions ------------
@@ -1151,7 +1158,7 @@ module.exports = {
       const newDate = new Date();
       if (conversation.length >= 2) {
 
-        if (positionTrainEdenAI == true){
+        if (positionTrainEdenAI == true){ // If EdenAI is talking to the company employ for training Eden
 
           // ------------- Update the Conversation MEMORY ----------------
           const _conversation = conversation.map((_item) => ({
@@ -1167,7 +1174,7 @@ module.exports = {
           // ------------- Update the Conversation MEMORY ----------------
 
 
-        } else {
+        } else { // If Eden is talking to the candidate on an interview 
             // ------------- Update the Conversation MEMORY ----------------
             const _conversation = conversation.map((_item) => ({
               ..._item,
@@ -1180,15 +1187,21 @@ module.exports = {
             );
             // ------------- Update the Conversation MEMORY ----------------
 
+            console.log("originalQuestionAsking,originalQuestionAskingID,originalTimesAsked = " , originalQuestionAsking,
+              originalQuestionAskingID,
+              originalTimesAsked,)
             //  ------------- Update the Answered Questions ----------------
             resultConv = await updateAnsweredQuestionFunc(
               resultConv,
               conversation,
-              questionAskingNow,
-              questionAskingID,
-              originalTimesAsked
+              originalQuestionAsking,
+              originalQuestionAskingID,
+              originalTimesAsked,
             );
             //  ------------- Update the Answered Questions ----------------
+
+            printC(originalTimesAsked, "4", "originalTimesAsked --- SSOS", "y");
+
 
             conversationID = resultConv._id;
         }
@@ -1466,11 +1479,13 @@ module.exports = {
         resultConv = await updateAnsweredQuestionFunc(
           resultConv,
           conversation,
-          questionAskingNow,
-          questionAskingID,
+          originalQuestionAsking,
+          originalQuestionAskingID,
           originalTimesAsked
         );
         //  ------------- Update the Answered Questions ----------------
+
+
 
         conversationID = resultConv._id;
       }
