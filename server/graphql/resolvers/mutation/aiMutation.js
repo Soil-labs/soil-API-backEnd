@@ -34,6 +34,8 @@ const {
 } = require("../utils/aiModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
+const { PubSub } = require("graphql-subscriptions");
+const pubsub = new PubSub();
 
 globalThis.fetch = fetch;
 
@@ -817,7 +819,10 @@ module.exports = {
       // sdf00
 
       await wait(30000);
-
+      //publish the userID of the saved cv
+      pubsub.publish("USER_CV_SAVED", {
+        userCVSavedToDB: { userID, cvSummary }
+      });
       return {
         success: true,
         titleRole: titleRole,
@@ -1686,6 +1691,13 @@ module.exports = {
         }
       );
     }
+  },
+  //subscription here
+  userCVSavedToDB: {
+    subscribe: (parent, args, context, info) => {
+      //make subscription here
+      return pubsub.asyncIterator("USER_CV_SAVED");
+    },
   },
 };
 

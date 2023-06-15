@@ -3,5 +3,6 @@ module.exports = `
         memberUpdated(fields: findMembersInput): Members
         roomUpdated(fields: findRoomsInput): Rooms
         memberUpdatedInRoom(fields: findRoomsInput): Members
+        userCVSavedToDB: AddCVToUserOutput
     }
 `
