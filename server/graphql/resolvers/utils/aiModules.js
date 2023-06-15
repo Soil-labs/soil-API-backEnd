@@ -392,6 +392,17 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
   }
 
   let positionsRequirements = positionData?.positionsRequirements?.content;
+
+  // positionsRequirements = `
+  // <Category 1: Skills>\n  - b1: Demonstrable experience of work on modern web applications\n  - b2: Strong understanding of HTML, CSS with SCSS and JavaScript\n  - b3: Experience with Javascript components libraries\n  - b4: Experience with TypeScript\n\n`
+
+  // positionsRequirements = `<Category 1: Skills>
+  // - b1: Demonstrable experience of work on modern web applications
+  // - b2: Strong understanding of HTML, CSS with SCSS and JavaScript
+  // - b3: Experience with Javascript components libraries
+  // - b4: Experience with TypeScript`
+
+
   printC(positionsRequirements, "3", "positionsRequirements", "g");
 
   // sdf0
@@ -472,9 +483,24 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
 
   // sd0
 
-  const convoCandidateRecruiterPrompt = await findConversationPrompt(
-    conversationID
+  let convoCandidateRecruiterPrompt = await findConversationPrompt(
+    conversationID,"Candidate"
   );
+
+  // convoCandidateRecruiterPrompt =  `Candidate: mi9
+  // Recruiter: Can you provide examples of web UI applications you have built using TypeScript and React?
+  // Candidate: dont know
+  // Recruiter: Thank you for your response. Can you please provide more details about your experience with TypeScript and React?
+  // Candidate: dont know
+  // Recruiter: Have you worked with REST, SQL, and NoSQL before? Can you give examples of how you have used them in your previous projects?
+  // Candidate: dont know
+  // Recruiter: Thanks for mentioning that. Can you provide more details on how you utilized REST, SQL, and NoSQL in your previous projects?
+  // Candidate: dont know
+  // Candidate: dont know
+  // Recruiter: Thanks for mentioning p4. Can you please provide more details on how you utilized REST, SQL, and NoSQL in your previous projects, as mentioned in my previous question?
+  // Candidate: dont know
+  // Recruiter: How do you approach code reviews and ensure code quality?
+  // Candidate: dont know `
 
   printC(
     convoCandidateRecruiterPrompt,
@@ -483,30 +509,56 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
     "p"
   );
 
-  promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
+//   promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
 
-  Report Candidate CV to Job Position (delimiters <>): <${CVToPositionReport}>
+//   Report Candidate CV to Job Position (delimiters <>): <${CVToPositionReport}>
 
-  Conversation of Candidate With Recruiter (delimiters <>): <${convoCandidateRecruiterPrompt}>
+//   Conversation of Candidate With Recruiter (delimiters <>): <${convoCandidateRecruiterPrompt}>
 
-  Requirements of Job Position (delimiters <>): <${positionsRequirements}>
+//   Requirements of Job Position (delimiters <>): <${positionsRequirements}>
 
 
  
-  Your Task is to Score each of the Job Requirements based on the CV and the Conversation to find the right candidate for the Job Position 
+//   Your Task is to Score each of the Job Requirements based on the CV and the Conversation to find the right candidate for the Job Position 
 
-  - You need to Score the Bullet points overall from 0 to 10 for each ID
-  - 10 = Perfect Match, -1 = Miss Information, 1 = No experience on this bullet point
-  - For each bullet point ONLY give ID, really small reason max 13 words and score
-  - Give exactly the same number of bullet points(IDs)
+//   - You need to Score the Bullet points overall from 0 to 10 for each ID
+//   - 10 = Perfect Match, -1 = Miss Information, 1 = No experience on this bullet point
+//   - For each bullet point ONLY give ID, really small reason max 13 words and score
+//   - Give exactly the same number of bullet points(IDs)
  
+
+// For example: 
+// Category 1:
+//       - ID: Score - A really small reason      
+//       - ID: Score - A really small reason
+
+//   Only Output the ID, Scores, really small reason:`;
+
+promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
+
+Report Candidate CV to Job Position (delimiters <>): <${CVToPositionReport}>
+
+Conversation of Candidate With Recruiter (delimiters <>): <${convoCandidateRecruiterPrompt}>
+
+Requirements of Job Position (delimiters <>): <${positionsRequirements}>
+
+
+
+Your Task is to Score each of the Job Requirements based on the CV and Conversation to find the right candidate for the Job Position 
+
+- You need to Score the Bullet points overall from 0 to 10 for each ID
+- 10 = Exact information provided, 5 = Some information, 0 = No Information provided,
+- For each bullet point ONLY give ID, Reason based on info  and score
+- Give exactly the same number of bullet points(IDs)
+- ONLY WRITE TRUE INFORMATION taken from Candidate, DO NOT MAKE UP FAKE INFORMATION
+- Only use info from Candidate!
 
 For example: 
 Category 1:
-      - ID: Score - A really small reason      
-      - ID: Score - A really small reason
+    - ID: Score - Reason based on info  
+    - ID: Score - Reason based on info
 
-  Only Output the ID, Scores, really small reason:`;
+Only Output the ID, Scores, really small reason:`;
 
   printC(promptReport, "4", "promptReport", "y");
 
@@ -1282,7 +1334,7 @@ async function askQuestionAgain(
   return askGPT;
 }
 
-async function findConversationPrompt(conversationID) {
+async function findConversationPrompt(conversationID, name = "Employ") {
   convData = await Conversation.findOne({ _id: conversationID }).select(
     "_id userID conversation"
   );
@@ -1297,7 +1349,7 @@ async function findConversationPrompt(conversationID) {
     if (convDataNow.role == "assistant")
       promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
     else
-      promptConv = promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
+      promptConv = promptConv + name + ": " + convDataNow.content + " \n\n";
   }
 
   return promptConv;
@@ -1607,7 +1659,7 @@ async function useGPTchatSimple(
     return;
   }
 
-  console.log("resContent = ", resContent);
+  // console.log("resContent = ", resContent);
 
   return resContent;
 }

@@ -806,9 +806,9 @@ module.exports = {
                 let promptEvaluate = `
                 QUESTION: <${questionN}>
 
-                USER summary of answer: <${answerN}>
+                USER Critic Summary : <${answerN}>
 
-                How much you will rate the QUESTION VS the USER summary of answer,  1 to 10
+                How much you will rate the QUESTION VS the USER Critic,  1 to 10
 
                 First, give only a number from 1 to 10, then give a really concise reason in 3 bullet points, every bullet point can have maximum 7 words:
 

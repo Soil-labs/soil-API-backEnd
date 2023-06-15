@@ -267,15 +267,25 @@ async function findSummaryOfAnswers(convDataNow) {
 
     let promptForSummaryAnswer = "";
 
+    // promptForSummaryAnswer += `
+    //     QUESTION: <${questionContent}>
+
+    //     CONVERSATION between Recruiter asking question and Candidate answering: <${conversationString}>
+
+    //     - Create the SUMMARY of the answer that the Candidate give to the the QUESTION asked by the recruiter
+    //     - the SUMMARY should be as small as possible with only 1-2 sentences
+
+    //     SUMMARY:
+    //     `;
     promptForSummaryAnswer += `
         QUESTION: <${questionContent}>
 
         CONVERSATION between Recruiter asking question and Candidate answering: <${conversationString}>
 
-        - Create the SUMMARY of the answer that the Candidate give to the the QUESTION asked by the recruiter
-        - the SUMMARY should be as small as possible with only 1-2 sentences
+        - Criticize how good is the Answer of the Candidate for the Question and add the main points of the answer
+        - the Critic should be as small as possible with only 1-2 sentences
 
-        SUMMARY:
+        Critic:
         `;
 
     printC(promptForSummaryAnswer, "2", "promptForSummaryAnswer", "p");
@@ -283,9 +293,9 @@ async function findSummaryOfAnswers(convDataNow) {
     // sdf00
 
 
-    // const summaryAnswer = await useGPTchatSimple(promptForSummaryAnswer);
+    const summaryAnswer = await useGPTchatSimple(promptForSummaryAnswer);
 
-    const summaryAnswer = conversationString
+    // const summaryAnswer = conversationString
 
     printC(summaryAnswer, "2", "summaryAnswer", "g");
 
