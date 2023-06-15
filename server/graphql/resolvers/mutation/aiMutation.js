@@ -717,6 +717,10 @@ module.exports = {
       throw new ApolloError("userID is required");
     }
 
+    if (!positionID) {
+      throw new ApolloError("positionID is required");
+    }
+
     let userData = await Members.findOne({ _id: userID });
 
     let positionData = await Position.findOne({ _id: positionID }).select(
