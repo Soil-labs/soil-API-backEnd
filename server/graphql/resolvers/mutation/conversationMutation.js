@@ -17,9 +17,12 @@ const {
   useGPTchatSimple,
   upsertEmbedingPineCone,
   deletePineCone,
-  CandidateNotesEdenAIAPICallF,
   conversationCVPositionToReportFunc,
   reportPassFailCVPositionConversationFunc,
+} = require("../utils/aiModules");
+
+const {
+  CandidateNotesEdenAIAPICallF,
 } = require("../utils/aiModules");
 
 const { printC } = require("../../../printModule");
