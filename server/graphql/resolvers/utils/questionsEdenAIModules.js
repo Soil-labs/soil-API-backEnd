@@ -125,11 +125,13 @@ async function addQuestionToEdenAIFunc(content) {
 
             console.log("questionData = " , questionData)
 
-            if (questionData){
+            if (questionData != null && questionData != undefined){
                 res = {
                     _id: questionData._id,
                     content: questionData.content
                 }
+            } else {
+                foundQuestion = false
             }
        }
 
