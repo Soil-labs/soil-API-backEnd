@@ -50,6 +50,11 @@ module.exports = {
         positionData = await new Position({
           name,
           companyID,
+          talentList: [{
+            name: "Accepted"
+          },{
+            name: "Rejected"
+          }]
         });
       }
 
@@ -806,15 +811,17 @@ module.exports = {
                 let promptEvaluate = `
                 QUESTION: <${questionN}>
 
-                USER Critic Summary : <${answerN}>
+                USER analysis Summary : <${answerN}>
 
-                How much you will rate the QUESTION VS the USER Critic,  1 to 10
-
-                First, give only a number from 1 to 10, then give a really concise reason in 3 bullet points, every bullet point can have maximum 7 words:
+                - How much you will rate the QUESTION based on the the USER analysis,  1 to 10
+                - First, give only a number from 1 to 10, then give a really concise reason in 3 bullet points, every bullet point can have maximum 7 words
+                - You can only give Evaluation and Reason, exactly like the Example below
 
                 Example 
                 EVALUATE: 6
                 REASON: the reason...
+
+                result: 
                 `
 
 
@@ -826,8 +833,6 @@ module.exports = {
 
                 // separate the result on EVALUATE and REASON on two different variables, using regex, it should work for all caps and all small letters
 
-     
-                printC(evaluateResult,"5.5","evaluateResult","g")
 
                 // const evaluateRegex = /<evaluate:\s*(\d+)\s*/i;
                 // const reasonRegex = /reason:\s*(.*)>/i;

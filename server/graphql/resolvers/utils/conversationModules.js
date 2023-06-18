@@ -3,9 +3,63 @@ const { Conversation } = require("../../../models/conversationModel");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
 
+const axios = require("axios");
+
+// const { useGPTchatSimple } = require("../utils/aiModules");
+
+function chooseAPIkey(chooseAPI = "") {
+  // openAI_keys = [
+  //   "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",
+  //   // "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",
+  //   "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",
+  //   "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",
+  // ];
+
+  let openAI_keys = ["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"];
+
+  if (chooseAPI == "API 2") {
+    openAI_keys = ["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"];
+  } else if (chooseAPI == "API 1") {
+    openAI_keys = ["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"];
+  }
+
+  // randomly choose one of the keys
+  let randomIndex = Math.floor(Math.random() * openAI_keys.length);
+  let key = openAI_keys[randomIndex];
+
+  return key;
+}
+
+async function useGPTchatSimple(prompt, temperature = 0.7) {
+  discussion = [
+    {
+      role: "user",
+      content: prompt,
+    },
+  ];
+
+  let OPENAI_API_KEY = chooseAPIkey();
+  response = await axios.post(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      messages: discussion,
+      model: "gpt-3.5-turbo",
+      temperature: temperature,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+    }
+  );
+
+  return response.data.choices[0].message.content;
+}
+
+
 const { printC } = require("../../../printModule");
 
-const { useGPTchatSimple } = require("./aiModules");
 
 function concatenateFirstTwoMessages(arr) {
   // Extract the first two messages from the array
@@ -293,7 +347,7 @@ async function findSummaryOfAnswers(convDataNow) {
     // sdf00
 
 
-    const summaryAnswer = await useGPTchatSimple(promptForSummaryAnswer);
+    const summaryAnswer = await useGPTchatSimple(promptForSummaryAnswer,0.7,'API 1');
 
     // const summaryAnswer = conversationString
 
@@ -309,7 +363,7 @@ async function findSummaryOfAnswers(convDataNow) {
             SUMMARY:
         `;
 
-    const summaryAnswerSmall = await useGPTchatSimple(promptSummarySmall);
+    const summaryAnswerSmall = await useGPTchatSimple(promptSummarySmall,0.7,'API 2');
 
     printC(summaryAnswerSmall, "3", "summaryAnswerSmall", "g");
 

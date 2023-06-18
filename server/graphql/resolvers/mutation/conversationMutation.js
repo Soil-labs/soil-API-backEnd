@@ -217,9 +217,9 @@ module.exports = {
           
           const res = await reportPassFailCVPositionConversationFunc(userID, positionID)
 
-          report = res.report
-          categoriesT = res.categoriesT
-          scoreAll = res.scoreAll
+          // report = res.report
+          // categoriesT = res.categoriesT
+          // scoreAll = res.scoreAll
     
 
           // printC(report,"4","report","g")
