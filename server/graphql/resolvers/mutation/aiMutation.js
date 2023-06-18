@@ -25,13 +25,16 @@ const {
   MessageMapKG_V4APICallF,
   deletePineCone,
   findConversationPrompt,
-  wait,
   interviewQuestionCreationUserFunc,
   conversationCVPositionToReportFunc,
   reportPassFailCVPositionConversationFunc,
   positionTextAndConvoToReportCriteriaFunc,
   positionTextToExtraQuestionsFunc,
 } = require("../utils/aiModules");
+
+const {
+  wait,
+} = require("../utils/aiExtraModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
 

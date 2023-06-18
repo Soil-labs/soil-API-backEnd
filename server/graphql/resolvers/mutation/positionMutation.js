@@ -18,7 +18,7 @@ const {checkAndAddPositionToMember  } = require("../utils/positionModules");
 
 const { printC } = require("../../../printModule");
 
-const { useGPTchatSimple,deletePineCone,upsertEmbedingPineCone,findBestEmbedings,getMemory,interviewQuestionCreationUserFunc} = require("../utils/aiModules");
+const { useGPTchatSimple,deletePineCone,upsertEmbedingPineCone,getMemory,interviewQuestionCreationUserFunc} = require("../utils/aiModules");
 
 
 
@@ -207,7 +207,7 @@ module.exports = {
 
  
 
-      try {
+      // try {
 
         questionsToAsk = await addMultipleQuestionsToEdenAIFunc(questionsToAsk)
 
@@ -229,13 +229,13 @@ module.exports = {
         
         return positionDataN
         
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "addQuestionsToAskPosition",
-          { component: "positionMutation > addQuestionsToAskPosition" }
-        );
-      }
+    //   } catch (err) {
+    //     throw new ApolloError(
+    //       err.message,
+    //       err.extensions?.code || "addQuestionsToAskPosition",
+    //       { component: "positionMutation > addQuestionsToAskPosition" }
+    //     );
+    //   }
     },
     deleteQuestionsToAskPosition: async (parent, args, context, info) => {
       const { positionID,questionID } = args.fields;

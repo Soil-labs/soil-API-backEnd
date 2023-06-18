@@ -3,7 +3,7 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 const axios = require("axios");
 
-const { findBestEmbedings,upsertEmbedingPineCone } = require("../utils/aiModules");
+const { findBestEmbedings,useGPTchatSimple,upsertEmbedingPineCone } = require("../utils/aiExtraModules");
 
 
 function chooseAPIkey(chooseAPI = "") {
@@ -70,6 +70,7 @@ async function addQuestionToEdenAIFunc(content) {
     const filter = {
         label: "questionsEdenAI",
       };
+
 
       bestKeywordsFromEmbed = await findBestEmbedings(
         content,
