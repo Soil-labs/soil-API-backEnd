@@ -50,6 +50,11 @@ module.exports = {
         positionData = await new Position({
           name,
           companyID,
+          talentList: [{
+            name: "Accepted"
+          },{
+            name: "Rejected"
+          }]
         });
       }
 
@@ -597,7 +602,11 @@ module.exports = {
       else 
         positionData = await Position.find({ candidatesReadyToDisplay: { $ne: true } });
 
-      try {
+
+      
+      
+
+      // try {
 
         let candidateResult = {}
 
@@ -646,6 +655,27 @@ module.exports = {
               const conversationN = convData[k];
 
               questionAnswered = conversationN.questionsAnswered
+
+
+              // --------- Find User Questions -------------
+              // console.log("position = " , position)
+              // console.log("position.candidates = " , position.candidates)
+              let index_ = position.candidates.findIndex((x) => x.userID.toString() == candidate.userID.toString());
+          
+              if (index_ != -1) {
+                for (let i=0;i<position.candidates[index_]?.interviewQuestionsForCandidate.length;i++){
+                  if (i<questionAnswered.length){
+                    printC(i, "0", "i", "y")
+                    printC(position.candidates[index_]?.interviewQuestionsForCandidate[i], "0", "position.candidates[index_]?.interviewQuestionsForCandidate[i]", "y")
+                    questionAnswered[i].questionContent = position.candidates[index_]?.interviewQuestionsForCandidate[i]?.personalizedContent
+                  }
+                }
+          
+              }
+          
+              printC(questionAnswered, "0", "questionAnswered", "g");
+              // kj0
+              // --------- Find User Questions -------------
               
 
               for (let pl = 0; pl< questionAnswered.length;pl++){ // loop on questionsAnswered
@@ -654,7 +684,7 @@ module.exports = {
                 questionID = questionAnsweredN.questionID
 
                 if (questionsToAskObj[questionID]) {
-                  printC(questionID,"3","questionID","y")
+                  printC(questionAnsweredN,"3","questionAnsweredN","y")
                   if (questionsToAskObj[questionID].usersAnswers == undefined) {
                     questionsToAskObj[questionID] = {
                       ...questionsToAskObj[questionID]._doc,
@@ -677,6 +707,10 @@ module.exports = {
                 }
 
               }
+
+              printC(questionsToAskObj,"4","questionsToAskObj","b")
+
+              // ss0ss
             }
 
             // sfd00
@@ -697,6 +731,8 @@ module.exports = {
 
             // questionInfo.questionsToAskObj[questionID].questionContentSmall =  questionContent?.contentSmall
 
+            printC(questionInfo,"5","questionInfo","y")
+            // sd00
 
             if (!questionInfo._doc) {
               questionsToAskObj[questionID].questionContent =  questionContent?.content
@@ -719,6 +755,8 @@ module.exports = {
 
             questionInfo = questionsToAskObj[questionID];
 
+            
+
             if (questionInfo.bestAnswer == undefined) { // If we don't have a best answer for this quesiton
 
               for (userID in questionInfo.usersAnswers) {
@@ -740,6 +778,10 @@ module.exports = {
               const questionN = questionContent?.content
               const bestAnswerN = questionInfo.bestAnswer
 
+              printC(questionInfo,"5","questionInfo","y")
+
+              // s0
+
               for (userID in questionInfo.usersAnswers) {
 
                 qLen = questionInfo.usersAnswers[userID].length -1
@@ -751,29 +793,46 @@ module.exports = {
                 printC(answerN,"5","answerN","y")
 
 
+                // let promptEvaluate = `
+                // QUESTION: <${questionN}>
+
+                // BEST DESIRED answer: <${bestAnswerN}>
+
+                // USER answer: <${answerN}>
+
+                // How much you will rate the USER VS the BEST DESIRED answer,  1 to 10
+
+                // First, give only a number from 1 to 10, then give a really concise reason in 3 bullet points, every bullet point can have maximum 6 words:
+
+                // Example 
+                // EVALUATE: 6
+                // REASON: the reason...
+                // `
                 let promptEvaluate = `
                 QUESTION: <${questionN}>
 
-                BEST DESIRED answer: <${bestAnswerN}>
+                USER analysis Summary : <${answerN}>
 
-                USER answer: <${answerN}>
-
-                How much you will rate the USER VS the BEST DESIRED answer,  1 to 10
-
-                First, give only a number from 1 to 10, then give a really concise reason in 3 bullet points, every bullet point can have maximum 6 words:
+                - How much you will rate the QUESTION based on the the USER analysis,  1 to 10
+                - First, give only a number from 1 to 10, then give a really concise reason in 3 bullet points, every bullet point can have maximum 7 words
+                - You can only give Evaluation and Reason, exactly like the Example below
 
                 Example 
                 EVALUATE: 6
                 REASON: the reason...
+
+                result: 
                 `
 
 
                 let evaluateResult = await useGPTchatSimple(promptEvaluate)
 
+                printC(evaluateResult,"5","evaluateResult","g")
+
+                // sdf
+
                 // separate the result on EVALUATE and REASON on two different variables, using regex, it should work for all caps and all small letters
 
-     
-                printC(evaluateResult,"5.5","evaluateResult","g")
 
                 // const evaluateRegex = /<evaluate:\s*(\d+)\s*/i;
                 // const reasonRegex = /reason:\s*(.*)>/i;
@@ -915,13 +974,13 @@ module.exports = {
 
         return positionData
         
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "updatePositionUserAnswers",
-          { component: "positionMutation > updatePositionUserAnswers" }
-        );
-      }
+      // } catch (err) {
+      //   throw new ApolloError(
+      //     err.message,
+      //     err.extensions?.code || "updatePositionUserAnswers",
+      //     { component: "positionMutation > updatePositionUserAnswers" }
+      //   );
+      // }
     },
     updatePositionConvRecruiter: async (parent, args, context, info) => {
       const { positionIDs} = args.fields;

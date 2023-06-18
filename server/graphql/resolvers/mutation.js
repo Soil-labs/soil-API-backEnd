@@ -11,7 +11,7 @@ const {
   // addSkillToMember,
   endorseAttribute,
   memberUpdated,
-  createFakeUser,
+  createFakeUser,createFakeUserCVnew,
   uploadUserDataGPT,
   updateMemberSignalInfo,
 } = require("./mutation/memberMutation");
@@ -122,7 +122,7 @@ const {
   addMessage,
   storeLongTermMemory,
   storeLongTermMemorySummary,
-  websiteToMemoryCompany,conversationCVPositionToReport,
+  websiteToMemoryCompany,positionTextToExtraQuestions,conversationCVPositionToReport,positionTextAndConvoToReportCriteria,positionSuggestQuestionsAskCandidate,
   saveCVtoUser,
   autoUpdateUserInfoFromCV,
   addMessages,
@@ -134,6 +134,7 @@ const {
   CVtoSummary,
   CVtoJobs,
   cvMapKG,
+  userCVSavedToDB,
 } = require("./mutation/aiMutation");
 
 const { createError, deleteError } = require("./mutation/errorsMutation");
@@ -158,7 +159,7 @@ module.exports = {
     addFavoriteProject,
     addPreferencesToMember,
     // addSkillToMember,
-    createFakeUser,
+    createFakeUser,createFakeUserCVnew,
     uploadUserDataGPT,
     updateMemberSignalInfo,
 
@@ -270,7 +271,7 @@ module.exports = {
     addMessage,
     storeLongTermMemory,
     storeLongTermMemorySummary,
-    websiteToMemoryCompany,conversationCVPositionToReport,
+    websiteToMemoryCompany,positionTextToExtraQuestions,conversationCVPositionToReport,positionTextAndConvoToReportCriteria,positionSuggestQuestionsAskCandidate,
     saveCVtoUser,
     autoUpdateUserInfoFromCV,
     addMessages,
@@ -296,5 +297,6 @@ module.exports = {
     memberUpdated,
     roomUpdated,
     memberUpdatedInRoom,
+    userCVSavedToDB
   },
 };

@@ -14,6 +14,7 @@ const positionModel = mongoose.Schema({
     bestAnswer: String,
   }],
   positionsRequirements: {
+    originalContent: String,
     content: String,
   },
   nodes: [{
@@ -42,6 +43,11 @@ const positionModel = mongoose.Schema({
     talent: [{
       userID: String,
     }]
+  }],
+  interviewQuestionsForPosition: [{
+    originalQuestionID: mongoose.Schema.ObjectId,
+    originalContent: String,
+    personalizedContent: String,
   }],
   candidatesReadyToDisplay: Boolean,
   candidates: [{

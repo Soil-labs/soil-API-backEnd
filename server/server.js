@@ -45,6 +45,7 @@ async function main() {
     context: { text: "I am Context" },
   });
 
+
   const serverCleanup = useServer(
     { schema, execute, subscribe },
     subscriptionServer
@@ -72,6 +73,7 @@ async function main() {
     },
   });
   await server.start();
+
 
   server.applyMiddleware({
     app,

@@ -741,6 +741,11 @@ module.exports = `
         expertise: [nodeCategoryInput]
         interests: [nodeCategoryInput]
     }
+    input createFakeUserCVnewInput {
+        memberID: ID
+        positionID: ID
+        cvContent: String
+    }
     input uploadUserDataGPTInput {
         memberID: ID
     }

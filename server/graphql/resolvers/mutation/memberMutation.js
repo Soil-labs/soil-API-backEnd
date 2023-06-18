@@ -12,7 +12,12 @@ const {printC} = require("../../../printModule")
 
 const { updateNodesToMember } = require("../utils/nodeModules");
 
+const {checkAndAddPositionToMember  } = require("../utils/positionModules");
 
+
+const {
+  saveCVtoUserFunc,interviewEdenAIFunc,useGPTchatSimple,
+} = require("../utils/aiModules");
 
 
 const {arrayToKeyObject,getRandomIDs,fetchRandomAvatar,randomPicture,useGPTchat,generateRandomID,addNewFakeUser,addNodesToFakeMember} = require("../utils/helperFunc");
@@ -87,33 +92,33 @@ async function createEmbeddingsGPT(words_n) {
 }
 
 
-async function useGPTchatSimple(prompt,temperature=0.7) {
+// async function useGPTchatSimple(prompt,temperature=0.7) {
   
-  discussion = [{
-    "role": "user",
-    "content": prompt
-  }]
+//   discussion = [{
+//     "role": "user",
+//     "content": prompt
+//   }]
 
 
   
-  let OPENAI_API_KEY = chooseAPIkey();
-  response = await axios.post(
-    "https://api.openai.com/v1/chat/completions",
-    {
-      messages: discussion,
-      model: "gpt-3.5-turbo",
-      temperature: temperature,
-    },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-      },
-    }
-  );
+//   let OPENAI_API_KEY = chooseAPIkey();
+//   response = await axios.post(
+//     "https://api.openai.com/v1/chat/completions",
+//     {
+//       messages: discussion,
+//       model: "gpt-3.5-turbo",
+//       temperature: temperature,
+//     },
+//     {
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${OPENAI_API_KEY}`,
+//       },
+//     }
+//   );
 
-  return response.data.choices[0].message.content;
-}
+//   return response.data.choices[0].message.content;
+// }
 
 async function generate12DigitID(inputString) {
   // Incredible funciton
@@ -296,12 +301,13 @@ module.exports = {
       }
     }
   ),
-  updateMember: combineResolvers(
-    IsAuthenticated,
+  updateMember: 
+  // combineResolvers(
+  //   IsAuthenticated,
     async (parent, args, { user }, info) => {
       const {
         discordName,
-        // _id,
+        _id,
         discordAvatar,
         discriminator,
         bio,
@@ -321,6 +327,9 @@ module.exports = {
       } = args.fields;
 
       let { skills } = args.fields;
+      
+      user = await Members.findOne({ _id: _id });
+      console.log("user = " , user)
 
       console.log("Mutation > updateMember > args.fields = ", args.fields);
 
@@ -691,8 +700,8 @@ module.exports = {
           { component: "tmemberQuery > findMember" }
         );
       }
-    }
-  ),
+    },
+  // ),
 
   addNodesToMember: 
   // combineResolvers(
@@ -2672,7 +2681,344 @@ module.exports = {
       );
     }
   },
+  createFakeUserCVnew: async (parent, args, context, info) => {
+    const { memberID,positionID } = args.fields;
+    let { cvContent } = args.fields;
+    console.log("Mutation > createFakeUserCVnew > args.fields = ", args.fields);
+
+
+    let positionData
+
+    if (!positionID) throw new Error("The positionID is required🔥");
+
+    if (!cvContent) {
+      // find the positionData 
+      positionData = await Position.findOne({ _id: positionID }).select("_id title positionsRequirements")
+
+      if (positionData?.positionsRequirements != undefined && positionData?.positionsRequirements?.originalContent != undefined){
+        cvContent = positionData.positionsRequirements.originalContent
+      }
+
+    }
+
+    try {
+
+      
+      let userData = {}
+
+      // --------- make random ID --------
+      if (memberID){
+        userData = await Members.findOne({ _id: memberID });
+
+        if (userData){
+          userData.alreadyExist = true
+        } else {
+          userData.alreadyExist = true
+        }
+      } else {
+        userData.alreadyExist = false
+      }
+
+      printC(userData,"1","userData","b")
+
+
+      if (!userData?._id){
+        const randomID = await generateRandomID(18)
+        // console.log("randomID = " , randomID) // TODO: remove
+        userData._id = randomID
+      } else {
+        randomID = userData._id
+      }
+
+      console.log("DONE - ID = " )
+      // --------- make random ID --------
+
+
+      // --------- Get Avatar for user --------
+      if (!userData?.discordAvatar){
+        const avatarUser = await randomPicture()
+        userData.discordAvatar = avatarUser
+      }
+      // --------- Get Avatar for user --------
+
+      console.log("DONE - Avatar = " )
+
+
+      // --------- find name user ------
+      if (!userData?.discordName){
+        // Generate a random number between 0 and 25
+        const randomNumber1 = Math.floor(Math.random() * 26);
+        const randomNumber2 = Math.floor(Math.random() * 26);
+
+        // Convert the random number to a letter
+        const randomLetter1 = String.fromCharCode(97 + randomNumber1); // generates a lowercase letter
+        const randomLetter2 = String.fromCharCode(65 + randomNumber2); // generates an uppercase letter
+
+        const name = await useGPTchat("Give me only one First name of a Programmer, only 1 word, it should include the following two letters: " +randomLetter1+ " "+ randomLetter2 + "\n")
+        // console.log("name = " , name) // TODO: remove
+        userData.discordName = name.trim().replace("\n", "").replace("\n", "").replace("\"", "")
+        console.log("DONE - name = " )
+      }
+      // --------- find name user ------
+
+      
+
+      // --------- create hourse per week, timezone, location, totalIncome, completedOpportunities -------
+
+      if (!userData?.hoursPerWeek){
+        // random hours per week from 10 to 40
+        userData.hoursPerWeek = Math.floor(Math.random() * 30) + 10
+      }
+
+      if (!userData?.timeZone){
+        // random timezone GMT + X
+        userData.timeZone = "GMT " + Math.floor(Math.random() * 12) + 1
+      }
+
+      if (!userData?.location){
+        // create array of 20 random location and choose one randomly from this array
+        const locations = ["New York", "Los Angeles", "Chicago", "Houston", "Philadelphia", "Phoenix", "San Antonio", "San Diego", "Dallas", "San Jose", "Austin", "Jacksonville", "San Francisco", "Indianapolis", "Columbus", "Fort Worth", "Charlotte", "Detroit", "El Paso", "Memphis"]
+        userData.location = locations[Math.floor(Math.random() * locations.length)]
+      }
+
+      if (!userData?.totalIncome){
+        // random totalIncome from 1000 to 100000 and round it on the 3 digit 1423 -> 1420
+        userData.totalIncome = Math.floor(Math.random() * 100) + 20
+        // userData.totalIncome = Math.floor(userData.totalIncome / 10) * 10
+      }
+
+      if (!userData?.completedOpportunities){
+        // random completedOpportunities from 0 to 30
+        userData.completedOpportunities = Math.floor(Math.random() * 30)
+      }
+
+      if (userData?.budget == undefined){
+        userData.budget = {}
+      }
+
+      if (!userData?.budget?.perHour){
+        userData.budget.perHour = Math.floor(Math.random() * 90) + 10
+      }
+      // --------- create hourse per week, timezone, location, totalIncome, completedOpportunities -------
+
+      if (userData?.experienceLevel == undefined){
+        userData.experienceLevel = {}
+      }
+
+      // --------- Create Experience Level -------
+      if (!userData?.experienceLevel?.total){
+        // random experience level it can be 3,6 or 9
+        const experienceLevel = [3,6,9,9]
+        userData.experienceLevel.total = experienceLevel[Math.floor(Math.random() * experienceLevel.length)]
+      }
+
+
+      if (!userData?.experienceLevel?.years){
+        // random yars which is a multiplier of the total years, but it is a random multiplier from 1 to 3
+        const multiplier = Math.floor(Math.random() * 3) + 1
+
+        userData.experienceLevel.years = userData.experienceLevel.total * multiplier
+      }
+
+      // --------- Create Experience Level -------
+
+
+      // --------- Create a big CV out of small test -------
+
+      promptTS = `Generate a high-quality CV for a candidate
+
+      Basic information of the position that the candidate will apply (delimiter <>): <${cvContent}>
+      
+      You need to create fake imagined CV for the candidate that is perfect for the above position
+        - Create previous positions with real names, education with real names, and specific skills
+        - as well as any other relevant information that would make them an attractive candidate the Job that the candidate will apply
+        
+      CV of candidate:`
+
+      cvBigVersion = await useGPTchatSimple(promptTS,1)
+      // cvBigVersion = cvContent
+      // printC(cvBigVersion,"1", "cvBigVersion","p")
+
+      // --------- Create a big CV out of small test -------
+
+
+      printC(userData,"2", "userData","b")
+
+
+      //  --------- Create User ---------
+      res = await addNewFakeUser(userData)
+      //  --------- Create User ---------
+
+
+      // --------- save CV and create questions for the user ---------
+      let resSaveCV = await saveCVtoUserFunc(cvBigVersion,userData._id,positionID)
+
+      positionData = resSaveCV.positionData
+
+      let candidateIdx_ = positionData?.candidates?.findIndex(
+        (candidate) => candidate.userID.toString() == userData._id.toString()
+      );
+
+      let interviewQuestions = []
+
+      if (candidateIdx_ != -1) {
+        interviewQuestions = positionData.candidates[candidateIdx_].interviewQuestionsForCandidate
+      }
+
+      // interviewQuestions =  [
+      //   {
+      //     _id: "648bfdd8a95add491c11e32a",
+      //     originalQuestionID: "645b28b3a1a0ae747ccb24e9",
+      //     originalContent: 'Why do you want to work for our company?',
+      //     personalizedContent: "What specifically about our company's use of web development frameworks such as React or Angular interests you and makes you want to work for us?"
+      //   },
+      //   {
+      //     _id: "648bfdd8a95add491c11e32b",
+      //     originalQuestionID: "6475f0bb37d59a80df9604cf",
+      //     originalContent: 'How do you deal with stress?',
+      //     personalizedContent: 'How do you utilize your strong analytical and problem-solving skills to manage stress in high-pressure situations during software development projects?'
+      //   },
+      //   {
+      //     _id: "648bfdd8a95add491c11e32c",
+      //     originalQuestionID: "6470fc20922b015b87eb9466",
+      //     originalContent: 'Why do you want to join this position, what attracted you? ',
+      //     personalizedContent: 'What attracted you to this position, and how do your skills in HTML, CSS, and JavaScript, as well as your experience leading and mentoring other developers, make you a strong fit for the role?'
+      //   },
+      //   {
+      //     _id: "648bfdd8a95add491c11e32d",
+      //     originalQuestionID: "6475f10837d59a80df9604d2",
+      //     originalContent: 'Tell me about the contributions you made to a failed project.',
+      //     personalizedContent: 'Can you describe a time when you were able to use your knowledge of software testing and quality assurance processes to identify and address issues in a project that was not meeting expectations?'
+      //   }
+      // ]
+
+      printC(interviewQuestions,"7", "interviewQuestions","g")
+
+
+      rand = Math.floor(Math.random() * 50034) + 1
+
+
+      let conversation = [{
+        "role": "user",
+        "content": "wpl4"+rand.toString(),
+      }]
+
+      // change format interviewQuestions
+      unansweredQuestionsArr = interviewQuestions.map((item) => {
+        return {
+          questionID: item.originalQuestionID,
+          questionContent: item.personalizedContent,
+        }
+      })
+
+      const positionTrainEdenAI = false
+      const useMemory = true
+
+      let timesAsked = 0
+
+      let resultInterview
+
+      printC(conversation,"9", "conversation","y")
+
+
+      while (unansweredQuestionsArr.length >0) {
+        resultInterview = await interviewEdenAIFunc(userData._id,positionID,positionTrainEdenAI,conversation,timesAsked,unansweredQuestionsArr,useMemory)
+
+        // printC(resultInterview,"8", "resultInterview","r")
+
+        conversation.push({
+          "role": "assistant",
+          "content": resultInterview.reply,
+        })
+        printC(conversation,"10", "conversation","y")
+
+
+
+        promptTS = `Play the Role of a Candidate, I will ask you questions and you need to imagine that you are the candidate, be really creative and answer like him
+
+        Candidate CV (delimiter <>): <${cvContent}>
+        
+        You need to create an imaginary answer to the question, based on the CV
+        -  also you can be really creative and imagine whatever you need to answer this qeustion
+        
+        Question (delimiter <>): <${resultInterview.reply}]}>
+        
+        Answer within 1-2 sentences:`
+
+        const randomAPI = Math.random() < 0.5 ? "API 1" : "API 2";
+
+
+        userReply = await useGPTchatSimple(promptTS,1,randomAPI)
+
+        // printC(userReply,"9", "userReply","y")
+
+        conversation.push({
+          "role": "user",
+          "content": userReply,
+        })
+
+        unansweredQuestionsArr = resultInterview.unansweredQuestionsArr
+
+        timesAsked =resultInterview.timesAsked
+
+        printC(conversation,"11", "conversation","y")
+
+      }
+
+      // --------- save CV and create questions for the user ---------
+
+
+      // --------- Add User to Position ---------
+
+      // positionData.candidates[candidateIdx_].conversationID = resultInterview.conversationID
+
+      // await positionData.save()
+
+      const candidates = [
+        {
+          userID: userData?._id,
+          conversationID: resultInterview.conversationID,
+        },
+      ];
+
+
+      let candidatesN = await updateEmployees(positionData.candidates, candidates,"userID");
+
+      console.log("candidatesN = " , candidatesN)
+      // sdf00
+
+      usersData = await Members.find({ _id: userData?._id } );
+
+
+      await checkAndAddPositionToMember(usersData,positionID)
+      
+
+
+      // find one and updates
+      let positionDataN = await Position.findOneAndUpdate(
+        { _id: positionID },
+        { 
+          candidates: positionData.candidates,
+          candidatesReadyToDisplay: false 
+        },
+        { new: true }
+      );
+
+      // --------- Add User to Position ---------
+
+
+      return (userData)
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "createFakeUserCVnew",
+        { component: "memberMutation > createFakeUserCVnew" }
+      );
+    }
+  },
 };
+
+
 
 // create async function that will change matchByServer
 const changeMatchByServer = async (nodeNow, memberData) => {
@@ -2754,3 +3100,49 @@ const calculate_skill_level = async (nodeNow) => {
   // asdf;
   return nodeNow;
 };
+
+
+
+async function updateEmployees(arr1, arr2,compareKey = "userID") {
+
+  // arr1New = [...arr1]
+  arr2.forEach(employee2 => {
+    const index = arr1.findIndex(employee1 => {
+
+      
+      if (employee1[compareKey] && employee2[compareKey]) return (employee1[compareKey].toString() == employee2[compareKey].toString())
+      else return -1
+      
+    });
+    if (index != -1) {
+      // arr1[index] = {
+      //   ...employee2,
+      //   ...arr1[index],
+      //   readyToDisplay: false,
+      // }
+      arr1[index].readyToDisplay = false
+      if (employee2.conversationID){
+        arr1[index].conversationID = employee2.conversationID
+      }
+      if (employee2.bestAnswer){
+        arr1[index].bestAnswer = employee2.bestAnswer
+      }
+    } else {
+      arr1.push({
+        ...employee2,
+        readyToDisplay: false,
+      });
+
+      if (employee2.conversationID){
+        arr1[arr1.length - 1].conversationID = employee2.conversationID
+      }
+      if (employee2.bestAnswer){
+        arr1[arr1.length - 1].bestAnswer = employee2.bestAnswer
+      }
+
+    }
+  });
+
+
+  return arr1;
+}

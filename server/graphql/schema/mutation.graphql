@@ -15,6 +15,7 @@ module.exports = `
         deleteMember(fields:deleteMemberInput!): Members
         # addSkillToMember(fields:addSkillToMember_Input!):Members
         createFakeUser(fields: createFakeUserInput ): Members
+        createFakeUserCVnew(fields: createFakeUserCVnewInput ): Members
         uploadUserDataGPT(fields: uploadUserDataGPTInput ): Members
         updateMemberSignalInfo(fields: updateMemberSignalInfoInput ): Members
         endorseAttribute(fields:endorseAttributeInput!): Members
@@ -142,7 +143,10 @@ module.exports = `
         storeLongTermMemory(fields: storeLongTermMemoryInput): storeLongTermMemoryOutput
         storeLongTermMemorySummary(fields: storeLongTermMemorySummaryInput): storeLongTermMemorySummaryOutput
         websiteToMemoryCompany(fields: websiteToMemoryCompanyInput): websiteToMemoryCompanyOutput
+        positionTextToExtraQuestions(fields: positionTextToExtraQuestionsInput): positionTextToExtraQuestionsOutput
         conversationCVPositionToReport(fields: conversationCVPositionToReportInput): conversationCVPositionToReportOutput
+        positionTextAndConvoToReportCriteria(fields: positionTextAndConvoToReportCriteriaInput): positionTextAndConvoToReportCriteriaOutput
+        positionSuggestQuestionsAskCandidate(fields: positionSuggestQuestionsAskCandidateInput): positionSuggestQuestionsAskCandidateOutput
         saveCVtoUser(fields: saveCVtoUserInput): saveCVtoUserOutput
         autoUpdateUserInfoFromCV(fields: autoUpdateUserInfoFromCVInput): autoUpdateUserInfoFromCVOutput
         autoUpdateMemoryFromCV(fields: autoUpdateMemoryFromCVInput): autoUpdateMemoryFromCVOutput

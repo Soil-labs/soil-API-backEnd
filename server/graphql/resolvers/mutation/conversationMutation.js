@@ -108,8 +108,6 @@ module.exports = {
       for (let i = 0; i < convData.length; i++) {
         convDataNow = convData[i];
 
-        // console.log("convDataNow = ", convDataNow);
-
         // --------------- Calculate candidateNotesEdenAI ---------------
         const userID = convDataNow.userID;
         const positionID = convDataNow.positionID;
@@ -195,7 +193,12 @@ module.exports = {
           convDataNow.summary = summaryArr;
           convDataNow.summaryReady = true;
 
+          printC(convDataNow,"0","convDataNow","b")
+
           convDataNow = await findSummaryOfAnswers(convDataNow);
+
+          // sdf0
+
 
           // printC(convDataNow,"0","convDataNow","b")
 
@@ -211,17 +214,16 @@ module.exports = {
           printC(positionID,"2","positionID","y")
           printC(userID,"3","userID","y")
 
-          // const res = await conversationCVPositionToReportFunc(userID, positionID)
+          
           const res = await reportPassFailCVPositionConversationFunc(userID, positionID)
 
-          report = res.report
-          categoriesT = res.categoriesT
-          scoreAll = res.scoreAll
+          // report = res.report
+          // categoriesT = res.categoriesT
+          // scoreAll = res.scoreAll
     
 
-          printC(report,"4","report","g")
-          // printC(categoriesT,"0","categoriesT","y")
-          // printC(scoreAll,"0","scoreAll","y")
+          // printC(report,"4","report","g")
+          
 
 
 
