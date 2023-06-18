@@ -606,7 +606,7 @@ module.exports = {
       
       
 
-      try {
+      // try {
 
         let candidateResult = {}
 
@@ -974,13 +974,13 @@ module.exports = {
 
         return positionData
         
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "updatePositionUserAnswers",
-          { component: "positionMutation > updatePositionUserAnswers" }
-        );
-      }
+      // } catch (err) {
+      //   throw new ApolloError(
+      //     err.message,
+      //     err.extensions?.code || "updatePositionUserAnswers",
+      //     { component: "positionMutation > updatePositionUserAnswers" }
+      //   );
+      // }
     },
     updatePositionConvRecruiter: async (parent, args, context, info) => {
       const { positionIDs} = args.fields;
