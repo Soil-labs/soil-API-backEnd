@@ -15,6 +15,7 @@ module.exports = `
         deleteMember(fields:deleteMemberInput!): Members
         # addSkillToMember(fields:addSkillToMember_Input!):Members
         createFakeUser(fields: createFakeUserInput ): Members
+        createFakeUserCVnew(fields: createFakeUserCVnewInput ): Members
         uploadUserDataGPT(fields: uploadUserDataGPTInput ): Members
         updateMemberSignalInfo(fields: updateMemberSignalInfoInput ): Members
         endorseAttribute(fields:endorseAttributeInput!): Members

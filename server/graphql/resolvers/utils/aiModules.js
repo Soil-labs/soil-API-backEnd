@@ -4,6 +4,9 @@ const { Position } = require("../../../models/positionModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { Conversation } = require("../../../models/conversationModel");
 
+const { ApolloError } = require("apollo-server-express");
+
+
 const { Configuration, OpenAIApi } = require("openai");
 
 const axios = require("axios");
@@ -12,6 +15,15 @@ const { PineconeClient } = require("@pinecone-database/pinecone");
 const { request, gql } = require("graphql-request");
 
 const { printC } = require("../../../printModule");
+
+const {
+  updateAnsweredQuestionFunc,
+  findAndUpdateConversationFunc,
+} = require("../utils/conversationModules");
+
+const {
+  addMultipleQuestionsToEdenAIFunc,
+} = require("../utils/questionsEdenAIModules");
 
 async function getMemory(messageContent, filter, topK = 3, maxLength = 2000) {
   memories = await findBestEmbedings(messageContent, filter, (topK = topK));
@@ -211,6 +223,121 @@ async function findInterviewQuestion(
   return newQuestion;
 }
 
+async function saveCVtoUserFunc(cvContent, userID, positionID) {
+  
+  let userData = await Members.findOne({ _id: userID });
+
+  let positionData = await Position.findOne({ _id: positionID }).select(
+    "_id candidates"
+  );
+
+  if (!userData) {
+    throw new ApolloError("User not found");
+  }
+
+  if (!positionData) {
+    throw new ApolloError("Position not found");
+  }
+
+
+  try {
+    userData = await Members.findOneAndUpdate(
+      { _id: userID },
+      {
+        cvInfo: {
+          ...userData.cvInfo,
+          cvContent: cvContent,
+          cvPreparationDone: false,
+          cvPreparationBio: false,
+          cvPreparationNodes: false,
+          cvPreparationPreviousProjects: false,
+          // cvPreparationMemory: false,
+        },
+      },
+      { new: true }
+    );
+
+    // ----------------- add candidate to position -----------------
+    let index_ = positionData.candidates.findIndex(
+      (x) => x.userID.toString() == userID.toString()
+    );
+
+    if (index_ == -1) {
+      positionData.candidates.push({
+        userID: userID,
+      });
+
+      await positionData.save();
+    }
+    // ----------------- add candidate to position -----------------
+
+    // ----------- CV to Summary -------------
+    let cvContentPrompt = `
+      CV CONTENT (delimiters <>): <${cvContent.substring(0, 3500)}>
+
+      - You are a recruiter with task to understand a candidate's CV.
+      - Your goal is to create a Summary of the CV CONTENT
+      - only contain most important skills, education and experience
+      - Task is to extract, Title Role, Main Skills, Summary
+
+      Title Role 5 words max: 
+      Main Skills 3 words max:
+      Summary 3 sentenses max:: 
+    `;
+    printC(cvContentPrompt,"3","cvContentPrompt","b")
+
+    titleSkillSummaryRes = await useGPTchatSimple(
+      cvContentPrompt,
+      0,
+      "API 2"
+    );
+
+    // titleSkillSummaryRes = `Title Role: Skilled Software Engineer
+    // Main Skills: Java, Spring, Kubernetes
+    // Summary: Highly skilled software engineer with 5+ years of experience in developing scalable and robust applications using Java, Spring, and Kubernetes. Proficient in building RESTful APIs, working with NoSQL and SQL databases, and deploying applications on Google Cloud Platform (GCP) using Helm. Proven track record of collaborating with cross-functional teams and delivering high-quality software solutions.`
+
+    printC(titleSkillSummaryRes, "3", "titleSkillSummaryRes", "b");
+
+    // ss00s
+
+    const titleRole = titleSkillSummaryRes.match(/Title Role: (.*)/)[1];
+    const mainSkills = titleSkillSummaryRes
+      .match(/Main Skills: (.*)/)[1]
+      .split(", ");
+    const cvSummary = titleSkillSummaryRes.match(/Summary: (.*)/)[1];
+
+    // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
+
+
+    // printC(cvSummary, "3", "cvSummary", "g");
+    // printC(titleRole, "3", "titleRole", "g");
+    // printC(mainSkills, "3", "mainSkills", "g");
+
+    // sss5
+    // ----------- CV to Summary -------------
+
+    let positionData2 = await interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
+
+
+    return {
+      success: true,
+      titleRole: titleRole,
+      mainSkills: mainSkills,
+      cvSummary: cvSummary,
+      positionData: positionData2,
+    };
+  } catch (err) {
+    throw new ApolloError(
+      err.message,
+      err.extensions?.code || "saveCVtoUserFunc",
+      {
+        component: "aiModules > saveCVtoUserFunc",
+      }
+    );
+  }
+
+}
+
 async function conversationCVPositionToReportFunc(memberID, positionID) {
   if (!positionID) {
     throw new ApolloError("positionID is required");
@@ -368,17 +495,23 @@ async function conversationCVPositionToReportFunc(memberID, positionID) {
 
 async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
   if (!positionID) {
-    throw new ApolloError("positionID is required");
+    return {
+      success: false,
+    }
   }
 
   positionData = await Position.findOne({ _id: positionID });
 
   if (!positionData) {
-    throw new ApolloError("Position not found");
+    return {
+      success: false,
+    }
   }
 
   if (!memberID) {
-    throw new ApolloError("memberID is required");
+    return {
+      success: false,
+    }
   }
 
   memberData = await Members.findOne({ _id: memberID });
@@ -388,7 +521,9 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
   );
 
   if (index_ == undefined || index_ == -1) {
-    throw new ApolloError("Candidate not found");
+    return {
+      success: false,
+    }
   }
 
   let positionsRequirements = positionData?.positionsRequirements?.content;
@@ -1140,6 +1275,367 @@ const InterviewQuestionCreationUserAPICallF = async (
   // console.log("res = " , res)
   // console.log("res.interviewQuestionCreationUser", res.interviewQuestionCreationUser);
   return res.interviewQuestionCreationUser;
+};
+
+
+
+const interviewEdenAIFunc = async (
+  userID, positionID, positionTrainEdenAI, conversation ,
+  timesAsked,
+  unansweredQuestionsArr,
+  useMemory,
+) => {
+  
+  let questionAskingNow = undefined
+  let questionAskingID  = undefined
+
+
+
+  if (useMemory == undefined) {
+    useMemory = true; // default to true
+  }
+
+  let nextQuestion;
+  let questionAskingNowA;
+
+  let flagFirstTime = false;
+
+  if (timesAsked == undefined || timesAsked == 0) {
+    flagFirstTime = true;
+    timesAsked = 1;
+  }
+
+
+
+  unansweredQuestionsArr = await addMultipleQuestionsToEdenAIFunc(
+    unansweredQuestionsArr
+  );
+
+  
+  // printC(unansweredQuestionsArr, "0", "unansweredQuestionsArr", "b");
+
+  // sdf
+
+  if (questionAskingNow == undefined && unansweredQuestionsArr.length > 0) {
+    questionAskingNow = unansweredQuestionsArr[0].questionContent;
+  }
+
+  if (questionAskingID == undefined && unansweredQuestionsArr.length > 0) {
+    questionAskingID = unansweredQuestionsArr[0].questionID;
+  }
+
+  // console.log("questionAskingNow = ", questionAskingNow);
+  // console.log("questionAskingID = ", questionAskingID);
+  // // ads23
+
+
+  let originalQuestionAsking = questionAskingNow;
+  let originalQuestionAskingID = questionAskingID;
+  const originalTimesAsked = timesAsked;
+
+  try {
+    // ------------ Find Modified questions ------------
+    let positionData = await Position.findOne({ _id: positionID }).select(
+      "_id candidates interviewQuestionsForPosition"
+    );
+
+    const candidate = positionData.candidates.find(
+      (candidate) => candidate.userID.toString() == userID.toString()
+    );
+
+
+    newQuestion = await findInterviewQuestion(positionData,candidate, questionAskingID,positionTrainEdenAI)
+
+    
+    // printC(newQuestion, "1", "newQuestion", "b");
+
+    // asdf09
+
+
+    if (newQuestion?.personalizedContent != undefined) 
+      questionAskingNow = newQuestion.personalizedContent; 
+
+  //     console.log("questionAskingNow = ", questionAskingNow);
+  // ads23
+
+    // ------------ Find Modified questions ------------
+
+    // -------------- Prompt of the conversation ------------
+    let prompt_conversation = "Conversation:";
+    let roleN;
+    let startP;
+    if (conversation.length - timesAsked * 2 > 0)
+      startP = conversation.length - timesAsked * 2;
+    else startP = 0;
+
+    lastMessage = "";
+    for (let i = startP; i < conversation.length; i++) {
+      // only take the part of the conversaiton that is about this quesoitn
+      // for (let i = 0; i < conversation.length; i++) {
+      roleN = "Person";
+      if (conversation[i].role == "assistant") roleN = "Interviewer";
+      prompt_conversation =
+        prompt_conversation +
+        "\n\n" +
+        roleN +
+        `: "` +
+        conversation[i].content +
+        `"`;
+
+      if (i == conversation.length - 1) {
+        lastMessage = roleN + `: "` + conversation[i].content + `"`;
+      }
+    }
+    // printC(prompt_conversation, "1", "prompt_conversation", "r");
+    // -------------- Prompt of the conversation ------------
+
+    if (questionAskingNow != undefined && questionAskingNow != "") {
+      // -------------- Ask GPT what to do  ------------
+      promptAskQuestion = `
+      Question: ${questionAskingNow}
+
+        Using the Conversation, is the Person answer the Question?
+        Is the Person answer the Question during the conversation?
+        - YES answer the question
+        - NO didn't answer the question 
+
+        You can only answer (YES, NO)
+
+        Result: 
+      `;
+
+      (promptQuestionAskedN =
+        prompt_conversation + "\n\n" + promptAskQuestion),
+        console.log("");
+      console.log("");
+
+
+      // printC(promptQuestionAskedN, "1", "promptQuestionAskedN", "p");
+
+      responseGPTchat = await useGPTchatSimple(promptQuestionAskedN);
+
+      // console.log("");
+      // console.log("-------------------------");
+      // printC(responseGPTchat, "1", "responseGPTchat", "r");
+
+      // if statment if on the responseGPTchat there is the word YES or NO put true or false
+      let moveNextQuestionGPT = true;
+      if (responseGPTchat.includes("YES")) moveNextQuestionGPT = true;
+      if (responseGPTchat.includes("NO")) moveNextQuestionGPT = false;
+
+      if (moveNextQuestionGPT == false) {
+        if (timesAsked >= 3) {
+          // if you are talking for too long for this quesiton, just move on
+          moveNextQuestionGPT = true;
+        }
+      }
+
+      // printC(moveNextQuestionGPT, "1", "moveNextQuestionGPT", "b")
+      // -------------- Ask GPT what to do  ------------
+
+      //  -------------- Move to next question ------------
+      if (moveNextQuestionGPT == true) {
+        if (unansweredQuestionsArr.length == 1) {
+          nextQuestion =
+            "NEW TASK: Finish the conversation, close it by saying thank you and that they finish the interview";
+          questionAskingNowA = "Finish the conversation";
+          resT = unansweredQuestionsArr.shift();
+        } else {
+          // questionAskingNowA = unansweredQuestions.shift()
+          // nextQuestion = "Next Question to Answer: " + questionAskingNowA
+
+          // printC(unansweredQuestionsArr, "1", "unansweredQuestionsArr", "b")
+
+          resT = unansweredQuestionsArr.shift();
+
+          // printC(unansweredQuestionsArr, "1", "unansweredQuestionsArr", "b")
+
+          questionAskingID = unansweredQuestionsArr[0].questionID;
+
+          newQuestion = await findInterviewQuestion(positionData,candidate, questionAskingID,positionTrainEdenAI)
+
+
+          // console.log("newQuestion = " , newQuestion)
+          // sdf9
+
+          if (newQuestion?.personalizedContent != undefined)
+            questionAskingNowA = newQuestion.personalizedContent;
+          else questionAskingNowA = unansweredQuestionsArr[0].questionContent;
+
+          // console.log("resT ---f-f-f-f-= " , resT)
+          // questionAskingNowA = unansweredQuestionsArr[0].questionContent
+          nextQuestion = `NEW QUESTION ASK: "` + questionAskingNowA + `"`;
+        }
+        timesAsked = 1;
+      } else {
+
+        // printC(questionAskingNow, "1", "questionAskingNow", "b")
+        // sadf0
+
+        if (flagFirstTime == true) {
+          nextQuestion = "QUESTION ASK: " + questionAskingNow + `"`;
+        } else {
+          nextQuestion = "QUESTION ASK AGAIN: " + questionAskingNow + `"`;
+        }
+        questionAskingNowA = questionAskingNow;
+
+        timesAsked = timesAsked + 1;
+      }
+    } else {
+      if (unansweredQuestionsArr.length == 1) {
+        nextQuestion =
+          "NEW TASK: Finish the conversation, close it by saying thank you and that they finish the interview";
+        questionAskingNowA = "Finish the conversation";
+        resT = unansweredQuestionsArr.shift();
+      } else {
+        // questionAskingNowA = unansweredQuestions.shift()
+        // nextQuestion = "Next Question to Answer: " + questionAskingNowA
+
+        resT = unansweredQuestionsArr.shift();
+
+        questionAskingID = unansweredQuestionsArr[0].questionID;
+
+        newQuestion = await findInterviewQuestion(positionData,candidate, questionAskingID,positionTrainEdenAI)
+
+
+        if (newQuestion?.personalizedContent != undefined)
+          questionAskingNowA = newQuestion.personalizedContent;
+        else questionAskingNowA = unansweredQuestionsArr[0].questionContent;
+        // questionAskingNowA = unansweredQuestionsArr[0].questionContent
+        nextQuestion = `NEW QUESTION ASK: "` + questionAskingNowA + `"`;
+
+        // unansweredQuestionsArr.shift()
+
+        timesAsked = timesAsked + 1;
+      }
+    }
+
+    // printC(timesAsked, "2", "timesAsked", "g");
+
+    // printC(lastMessage, "2", "lastMessage", "y");
+    // printC(nextQuestion, "2", "nextQuestion", "y");
+    // printC(questionAskingNowA, "2", "questionAskingNowA", "y");
+
+    let reply;
+    if (timesAsked == 1) {
+      // NEW Question
+
+      if (questionAskingNowA == "Finish the conversation") {
+        reply =
+          "Thank you for taking time to talk to me, I will let you know with the results ASAP";
+      } else {
+        reply = questionAskingNowA;
+      }
+    } else {
+      if (flagFirstTime == true) {
+        // NEW Question
+        reply = questionAskingNowA;
+      } else {
+        // Ask Again Question
+
+        let askGPT = "";
+
+        askGPT = `You are an Interviewer, you need to reply to the candidate with goal to deeply understand the candidate
+
+      - You have the Conversation between the Interviewer and the Candidate (delimited by <>)            
+
+      < ${prompt_conversation} >
+
+      - The original question that you need to collect information is (delimited by <>) 
+
+      < ${nextQuestion} >
+
+      - your goal is to collect the information from the candidate for this specific question and Job Role
+      - First make a small responded/acknowledgment of the answer with 1-8 words, if it applies
+      - You can only ask 1 question at a time, 
+      - you should use a maximum 1-2 sentence
+      
+      Interviewer Reply: 
+      `;
+
+        // printC(askGPT, "4", "askGPT", "p");
+
+        reply = await useGPTchatSimple(askGPT);
+      }
+    }
+
+    // printC(reply, "4", "reply", "r");
+    //  -------------- Move to next question ------------
+
+    conversationID = undefined;
+
+    const newDate = new Date();
+    if (conversation.length >= 2) {
+
+      if (positionTrainEdenAI == true){ // If EdenAI is talking to the company employ for training Eden
+
+        // ------------- Update the Conversation MEMORY ----------------
+        const _conversation = conversation.map((_item) => ({
+          ..._item,
+          date: _item.date ? _item.date : newDate,
+        }));
+        resultConv = await findAndUpdateConversationFunc(
+          userID,
+          _conversation,
+          positionID,
+          positionTrainEdenAI,
+        );
+        // ------------- Update the Conversation MEMORY ----------------
+
+
+      } else { // If Eden is talking to the candidate on an interview 
+          // ------------- Update the Conversation MEMORY ----------------
+          const _conversation = conversation.map((_item) => ({
+            ..._item,
+            date: _item.date ? _item.date : newDate,
+          }));
+          resultConv = await findAndUpdateConversationFunc(
+            userID,
+            _conversation,
+            positionID
+          );
+          // ------------- Update the Conversation MEMORY ----------------
+
+          console.log("originalQuestionAsking,originalQuestionAskingID,originalTimesAsked = " , originalQuestionAsking,
+            originalQuestionAskingID,
+            originalTimesAsked,)
+          //  ------------- Update the Answered Questions ----------------
+          resultConv = await updateAnsweredQuestionFunc(
+            resultConv,
+            conversation,
+            originalQuestionAsking,
+            originalQuestionAskingID,
+            originalTimesAsked,
+          );
+          //  ------------- Update the Answered Questions ----------------
+
+          // printC(originalTimesAsked, "4", "originalTimesAsked --- SSOS", "y");
+
+
+          conversationID = resultConv._id;
+      }
+    }
+
+    reply = reply.replace(/"/g, "");
+
+    return {
+      reply: reply,
+      date: newDate,
+      conversationID: conversationID,
+      questionAskingNow: questionAskingNowA,
+      // // unansweredQuestions: unansweredQuestions,
+      timesAsked: timesAsked,
+      unansweredQuestionsArr: unansweredQuestionsArr,
+    };
+  } catch (err) {
+    throw new ApolloError(
+      err.message,
+      err.extensions?.code || "interviewEdenAI",
+      {
+        component: "aiQuery > interviewEdenAI",
+      }
+    );
+  }
 };
 
 async function modifyQuestionFromCVMemory(
@@ -2800,4 +3296,6 @@ module.exports = {
   positionTextAndConvoToReportCriteriaFunc,
   positionTextToExtraQuestionsFunc,
   sortArrayRelevantNodes_aiModule,
+  saveCVtoUserFunc,
+  interviewEdenAIFunc,
 };

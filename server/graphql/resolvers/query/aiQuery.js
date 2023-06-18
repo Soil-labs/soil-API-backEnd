@@ -868,13 +868,12 @@ module.exports = {
     }
   },
   interviewEdenAI: async (parent, args, context, info) => {
-    const { userID, positionID, positionTrainEdenAI, conversation, unansweredQuestions } =
+    const { userID, positionID, positionTrainEdenAI, conversation } =
       args.fields;
     let {
       timesAsked,
       unansweredQuestionsArr,
       questionAskingNow,
-      questionAskingI,
       useMemory,
       questionAskingID,
     } = args.fields;
