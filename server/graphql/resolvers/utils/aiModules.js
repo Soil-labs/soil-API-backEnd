@@ -1162,35 +1162,7 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
   return res.messageMapKG_V2.keywords;
 };
 
-const CandidateNotesEdenAIAPICallF = async (memberID, positionID) => {
-  const query = gql`
-    query candidateNotesEdenAI($fields: candidateNotesEdenAIInput) {
-      candidateNotesEdenAI(fields: $fields) {
-        categoryName
-        score
-        reason
-      }
-    }
-  `;
 
-  const variables = {
-    fields: {
-      memberID: memberID,
-      positionID: positionID,
-    },
-  };
-
-  printC(variables, "1", "variables", "r");
-
-  res = await request(
-    // "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
-    "https://soil-api-backend-kgfromaicron.up.railway.app/graphql",
-    query,
-    variables
-  );
-
-  return res.candidateNotesEdenAI;
-};
 
 const MessageMapKG_V4APICallF = async (textToMap) => {
   try {
@@ -2256,8 +2228,6 @@ const nodes_aiModule = async (
 
   memberObj = await membersScoreMap(memberObj, weightModulesObj);
 
-  // console.log("change = " , change)
-  await showObject(memberObj, "memberObj");
 
   // asdf5
 
@@ -2367,86 +2337,6 @@ const totalScore_aiModule = async (
   return memberObj;
 };
 
-const sortArray_aiModule = async (memberObj) => {
-  memberArray = [];
-
-  for (const [memberID, member] of Object.entries(memberObj)) {
-    let score = member.total.score;
-
-    // console.log("member = " , member)
-
-    // -------------- Add Nodes --------------
-    nodesPercentage = [];
-    for (const [nodeID, node] of Object.entries(member.nodes)) {
-      // console.log("node = " , node)
-      nodesPercentage.push({
-        nodeID: nodeID,
-        totalPercentage: parseInt(node.score * 100),
-        conn_nodeIDs: node.conn_nodeIDs,
-      });
-
-      // console.log("node.conn_nodeObj = " , member._id,node.conn_nodeObj)
-
-      let mostRelevantMemberNodes = [];
-
-      for (const [conn_nodeID, conn_nodeObj] of Object.entries(
-        node.conn_nodeObj
-      )) {
-        // console.log("conn_nodeObj = " , conn_nodeObj)
-        mostRelevantMemberNodes.push({
-          nodeID: conn_nodeID,
-          totalPercentage: conn_nodeObj.scoreOriginal * 100,
-        });
-      }
-
-      mostRelevantMemberNodes.sort((a, b) =>
-        a.totalPercentage > b.totalPercentage ? -1 : 1
-      );
-
-      nodesPercentage[nodesPercentage.length - 1].mostRelevantMemberNodes =
-        mostRelevantMemberNodes;
-    }
-
-    nodesPercentage.sort((a, b) =>
-      a.totalPercentage > b.totalPercentage ? -1 : 1
-    );
-    // -------------- Add Nodes --------------
-
-    memberArray.push({
-      memberID: memberID,
-      matchPercentage: {
-        totalPercentage: score,
-        realTotalPercentage: member.total.scoreOriginalBeforeMap,
-      },
-      nodesPercentage: nodesPercentage,
-    });
-  }
-
-  // console.log("memberArray = " , memberArray)
-  for (let i = 0; i < memberArray.length; i++) {
-    let member = memberArray[i];
-    // console.log("member._id = " , member._id)
-    let nodesPercentage = member.nodesPercentage;
-    // console.log("nodesPercentage = " , nodesPercentage)
-    for (let j = 0; j < nodesPercentage.length; j++) {
-      let node = nodesPercentage[j];
-      let mostRelevantMemberNodes = node.mostRelevantMemberNodes;
-      // console.log("mostRelevantMemberNodes = " , mostRelevantMemberNodes)
-    }
-  }
-
-  // sdf
-
-  // console.log("memberArray = " , memberArray)
-
-  memberArray.sort((a, b) =>
-    a.matchPercentage.totalPercentage > b.matchPercentage.totalPercentage
-      ? -1
-      : 1
-  );
-
-  return memberArray;
-};
 
 
 const sortArrayRelevantNodes_aiModule = async (memberObj) => {
@@ -3229,15 +3119,6 @@ async function showArray(arr, name = "arr") {
   console.log(" ------------------ " + name + " ------------------");
 }
 
-async function showObject(objectT, name = "objectT") {
-  console.log(" ------------------ " + name + " ------------------");
-  for (const [key, value] of Object.entries(objectT)) {
-    console.log("key = ", key);
-    console.log("value = ", value);
-  }
-  console.log(" ------------------ " + name + " ------------------");
-}
-
 async function arrayToObject(arrayT) {
   let objectT = {};
   for (let i = 0; i < arrayT.length; i++) {
@@ -3255,16 +3136,11 @@ function nodeToMaxScore(x) {
   return y;
 }
 
-async function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+
 
 module.exports = {
-  wait,
   nodes_aiModule,
   totalScore_aiModule,
-  showObject,
-  sortArray_aiModule,
   upsertEmbedingPineCone,
   deletePineCone,
   chooseAPIkey,
@@ -3287,7 +3163,6 @@ module.exports = {
   InterviewQuestionCreationUserAPICallF,
   createEmbeddingsGPT,
   askQuestionAgain,
-  CandidateNotesEdenAIAPICallF,
   interviewQuestionCreationUserFunc,
   findConversationPrompt,
   conversationCVPositionToReportFunc,
@@ -3298,6 +3173,4 @@ module.exports = {
   sortArrayRelevantNodes_aiModule,
   saveCVtoUserFunc,
   interviewEdenAIFunc,
-  onlyGPTchat,
-  onlyGPTDavinci,
 };

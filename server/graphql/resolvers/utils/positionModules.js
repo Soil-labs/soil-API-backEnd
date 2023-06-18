@@ -2,7 +2,7 @@
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 
-const { findBestEmbedings,upsertEmbedingPineCone,useGPTchatSimple } = require("./aiModules");
+const { findBestEmbedings,upsertEmbedingPineCone,useGPTchatSimple } = require("./aiExtraModules");
 
 async function addQuestionToEdenAIFunc(content) {
 
