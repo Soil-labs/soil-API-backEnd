@@ -839,7 +839,7 @@ module.exports = {
       args.fields
     );
 
-    // try {
+    try {
       if (userIDs)
         usersData = await Members.find({
           _id: userIDs,
@@ -866,13 +866,7 @@ module.exports = {
           `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
           cvContent;
 
-        // summaryOfCV = await useGPTchatSimple(promptSum);
-
-        summaryOfCV = `I am a highly motivated software developer with over 10 years of experience, specializing in React and NodeJS. I am committed to writing easy-to-maintain software and fostering team cooperation, productivity, and motivation.
-
-        •Bachelor of Science in Computer Science, University of California, Berkeley
-        •Senior Software Developer at XYZ Inc., leading a team of 5 junior developers in an agile development environment, implementing CI/CD pipelines, and conducting regular code reviews to improve code quality.`
-
+        summaryOfCV = await useGPTchatSimple(promptSum);
 
         printC(summaryOfCV, "0", "summaryOfCV", "b");
 
@@ -929,34 +923,34 @@ module.exports = {
         //   userData.cvInfo.cvPreparationPreviousProjects = true;
         // }
         // // -------Calculate Previous Jobs -------
-        // // -------Calculate Previous Jobs -------
-        // if (userData.cvInfo.cvPreparationPreviousProjects != true) {
-        //   promptJobs =
-        //     'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
-        //     cvContent;
+        // -------Calculate Previous Jobs -------
+        if (userData.cvInfo.cvPreparationPreviousProjects != true) {
+          promptJobs =
+            'Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume). Your job is to find and give the last 1-3 this person had. Give me those jobs in a bullet point format,do not include the name in the summary. Only give me the last 3 jobs in descending order, the latest job should go on the top. So there should be only three bullet points. Also take the name of each postiotion and as a sub bullet point and in your own words, give a short decription of that position.   Always use "•" for a bullet point, never this "-". \nThis is the fomat(this is just an example, do not use this in the output):\n • Frontend Egineer, EdenProtocol,Wisconsin (June2022- Present)\n     • Develops user interface, stays updated with latest technologies, collaborates with designers and back-end developers.\n\nHere is that string: \n\n' +
+            cvContent;
 
-        //   responseFromGPT = await useGPTchatSimple(promptJobs, 0.05,'API 2');
+          responseFromGPT = await useGPTchatSimple(promptJobs, 0.05,'API 2');
 
-        //   jobsArr = responseFromGPT
-        //     .replace(/\n/g, "")
-        //     .split("•")
-        //     .filter((item) => item.trim() !== "");
+          jobsArr = responseFromGPT
+            .replace(/\n/g, "")
+            .split("•")
+            .filter((item) => item.trim() !== "");
 
-        //   let result = [];
+          let result = [];
 
-        //   for (let i = 0; i < jobsArr.length; i += 2) {
-        //     result.push({
-        //       title: jobsArr[i],
-        //       description: jobsArr[i + 1],
-        //     });
-        //   }
-        //   printC(result, "1", "result", "g");
+          for (let i = 0; i < jobsArr.length; i += 2) {
+            result.push({
+              title: jobsArr[i],
+              description: jobsArr[i + 1],
+            });
+          }
+          printC(result, "1", "result", "g");
 
-        //   userData.previousProjects = result;
+          userData.previousProjects = result;
 
-        //   userData.cvInfo.cvPreparationPreviousProjects = true;
-        // }
-        // // -------Calculate Previous Jobs -------
+          userData.cvInfo.cvPreparationPreviousProjects = true;
+        }
+        // -------Calculate Previous Jobs -------
 
         // -------------- Map Nodes from CV--------------
         if (userData.cvInfo.cvPreparationNodes != true) {
@@ -976,83 +970,18 @@ module.exports = {
             printC(promptCVtoMap, "3", "promptCVtoMap", "b")
 
 
-          // textForMapping = await useGPTchatSimple(promptCVtoMap, 0);
-
-          textForMapping=`Skills: React, NodeJS, JavaScript (ES6), Agile development methodologies, CI/CD pipelines (CircleCI), Docker, REST APIs, Java, AngularJS.`
+          textForMapping = await useGPTchatSimple(promptCVtoMap, 0);
 
           printC(textForMapping, "3", "textForMapping", "b");
           // sdf00
 
 
           let nodesN
-
-          nodesN = [
-            {
-              keyword: 'JavaScript',
-              confidence: 9,
-              nodeID: '6416adcc48d9ba5ceefb67cc',
-              node: { _id: '6416adcc48d9ba5ceefb67cc', name: 'JavaScript' }
-            },
-            {
-              keyword: 'Agile Methodologies',
-              confidence: 9,
-              nodeID: '6416ae6948d9ba5ceefb6971',
-              node: { _id: '6416ae6948d9ba5ceefb6971', name: 'Agile Methodologies' }
-            },
-            {
-              keyword: 'Java',
-              confidence: 9,
-              nodeID: '6416adc148d9ba5ceefb679c',
-              node: { _id: '6416adc148d9ba5ceefb679c', name: 'Java' }
-            },
-            {
-              keyword: 'React',
-              confidence: 9,
-              nodeID: '6416adf548d9ba5ceefb685d',
-              node: { _id: '6416adf548d9ba5ceefb685d', name: 'React' }
-            },
-            {
-              keyword: 'Node.js',
-              confidence: 9,
-              nodeID: '6416adfc48d9ba5ceefb686f',
-              node: { _id: '6416adfc48d9ba5ceefb686f', name: 'Node.js' }
-            },
-            {
-              keyword: 'Docker',
-              confidence: 9,
-              nodeID: '6416ae5048d9ba5ceefb6937',
-              node: { _id: '6416ae5048d9ba5ceefb6937', name: 'Docker' }
-            },
-            {
-              keyword: 'CI/CD pipelines',
-              confidence: 8,
-              nodeID: '6416b3d2a57032640bd80adc',
-              node: { _id: '6416b3d2a57032640bd80adc', name: 'CI/CD pipelines' }
-            },
-            {
-              keyword: 'Angular',
-              confidence: 8,
-              nodeID: '6416adf248d9ba5ceefb6854',
-              node: { _id: '6416adf248d9ba5ceefb6854', name: 'Angular' }
-            },
-            {
-              keyword: 'RESTful APIs',
-              confidence: 8,
-              nodeID: '6416b3c6a57032640bd80ab8',
-              node: { _id: '6416b3c6a57032640bd80ab8', name: 'RESTful APIs' }
-            },
-            {
-              keyword: 'REST',
-              confidence: 7,
-              nodeID: '6416aea848d9ba5ceefb6a04',
-              node: { _id: '6416aea848d9ba5ceefb6a04', name: 'REST' }
-            }
-          ]
-          // try {
-            // nodesN = await MessageMapKG_V4APICallF(textForMapping);
-          // } catch (err) {
-          //   console.log("Map Nodes err = " , err)
-          // }
+          try {
+            nodesN = await MessageMapKG_V4APICallF(textForMapping);
+          } catch (err) {
+            console.log("Map Nodes err = " , err)
+          }
 
           printC(nodesN, "3", "nodesN", "b");
 
@@ -1063,9 +992,6 @@ module.exports = {
           });
 
           nodeIDs = nodeSave.map((obj) => obj._id);
-
-
-          console.log("change = " )
 
           await addNodesToMemberFunc(userData._id, nodeIDs);
 
@@ -1083,15 +1009,15 @@ module.exports = {
       return {
         users: usersData,
       };
-    // } catch (err) {
-    //   throw new ApolloError(
-    //     err.message,
-    //     err.extensions?.code || "autoUpdateUserInfoFromCV",
-    //     {
-    //       component: "aiMutation > autoUpdateUserInfoFromCV",
-    //     }
-    //   );
-    // }
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "autoUpdateUserInfoFromCV",
+        {
+          component: "aiMutation > autoUpdateUserInfoFromCV",
+        }
+      );
+    }
   },
   autoUpdateMemoryFromCV: async (parent, args, context, info) => {
     const { userIDs } = args.fields;

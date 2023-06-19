@@ -731,7 +731,7 @@ module.exports = {
       }
       console.log("nodesID_level_obj = ", nodesID_level_obj);
 
-      // try {
+      try {
         let memberData = await Members.findOne({ _id: memberID });
 
         let nodesData = await Node.find({ _id: nodesID }).select(
@@ -825,15 +825,15 @@ module.exports = {
         pubsub.publish(memberData2._id, {
           memberUpdated: memberData2,
         });
- 
+
         return memberData2;
-      // } catch (err) {
-      //   throw new ApolloError(
-      //     err.message,
-      //     err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-      //     { component: "tmemberQuery > findMember" }
-      //   );
-      // }
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "tmemberQuery > findMember" }
+        );
+      }
     },
   deleteNodesFromMember: 
   // combineResolvers(
