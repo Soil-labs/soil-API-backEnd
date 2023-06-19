@@ -5,6 +5,9 @@ const { Node } = require("../../../models/nodeModal");
 
 const { request, gql} = require('graphql-request');
 
+const { REACT_APP_API_URL, REACT_APP_API_CRON_URL } = process.env;
+
+
 
 const {
     makeConnection_neo4j,
@@ -64,7 +67,9 @@ const updateNodesToMember = async (fields) => {
       // 'X-Custom-Header': 'CustomValue'
     }
 
-    res = await request('https://soil-api-backend-kgfromai2.up.railway.app/graphql', query, variables,headers)
+    res = await request(
+      // 'https://soil-api-backend-kgfromai2.up.railway.app/graphql'
+    REACT_APP_API_URL, query, variables,headers)
 
     // console.log("res = " , res)
 
@@ -136,7 +141,9 @@ const changeMatchByServer = async (nodeNow) => {
     };
 
     res = await request(
-      "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+      // "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+      // "https://soil-api-backend-productionai2.up.railway.app/graphql",
+      REACT_APP_API_URL,
       query,
       variables
     );
