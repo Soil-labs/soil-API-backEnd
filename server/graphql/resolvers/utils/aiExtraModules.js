@@ -25,6 +25,9 @@ const {
   addMultipleQuestionsToEdenAIFunc,
 } = require("../utils/questionsEdenAIModules");
 
+
+const { REACT_APP_API_URL, REACT_APP_API_CRON_URL } = process.env;
+
 async function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -51,7 +54,8 @@ const CandidateNotesEdenAIAPICallF = async (memberID, positionID) => {
 
   res = await request(
     // "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
-    "https://soil-api-backend-kgfromaicron.up.railway.app/graphql",
+    // "https://soil-api-backend-kgfromaicron.up.railway.app/graphql",
+    REACT_APP_API_CRON_URL,
     query,
     variables
   );

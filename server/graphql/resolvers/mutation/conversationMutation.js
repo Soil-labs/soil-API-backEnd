@@ -23,7 +23,7 @@ const {
 
 const {
   CandidateNotesEdenAIAPICallF,
-} = require("../utils/aiModules");
+} = require("../utils/aiExtraModules");
 
 const { printC } = require("../../../printModule");
 
