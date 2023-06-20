@@ -147,6 +147,7 @@ module.exports = `
         conversationCVPositionToReport(fields: conversationCVPositionToReportInput): conversationCVPositionToReportOutput
         positionTextAndConvoToReportCriteria(fields: positionTextAndConvoToReportCriteriaInput): positionTextAndConvoToReportCriteriaOutput
         positionSuggestQuestionsAskCandidate(fields: positionSuggestQuestionsAskCandidateInput): positionSuggestQuestionsAskCandidateOutput
+        findPrioritiesTrainEdenAI(fields: findPrioritiesTrainEdenAIInput): findPrioritiesTrainEdenAIOutput
         saveCVtoUser(fields: saveCVtoUserInput): saveCVtoUserOutput
         autoUpdateUserInfoFromCV(fields: autoUpdateUserInfoFromCVInput): autoUpdateUserInfoFromCVOutput
         autoUpdateMemoryFromCV(fields: autoUpdateMemoryFromCVInput): autoUpdateMemoryFromCVOutput
