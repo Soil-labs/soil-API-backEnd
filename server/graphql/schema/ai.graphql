@@ -535,6 +535,14 @@ module.exports = `
         keywords: [KeywordValue]
     }
 
+     input firstImpressionAPIInput {
+        message: String
+     }
+
+     type firstImpressionAPIOutput {
+        result: String
+     }
+
 
     
 

@@ -30,11 +30,10 @@ const {
   reportPassFailCVPositionConversationFunc,
   positionTextAndConvoToReportCriteriaFunc,
   positionTextToExtraQuestionsFunc,
+  useShaleAPI,
 } = require("../utils/aiModules");
 
-const {
-  wait,
-} = require("../utils/aiExtraModules");
+const { wait } = require("../utils/aiExtraModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
 const { PubSub } = require("graphql-subscriptions");
@@ -649,7 +648,6 @@ module.exports = {
 
       questionsSuggest = await useGPTchatSimple(promptNewQuestions, 0, "API 2");
 
-
       // questionsSuggest =  `
       // 1. Can you give an example of a time when you had to use your strong organizational skills to successfully complete a project?
       // 2. Have you worked in a team environment before? Can you give an example of a successful teamwork experience?
@@ -686,13 +684,11 @@ module.exports = {
         questionsArray.push(questionObject);
       }
 
-      printC(questionsArray,"3","questionsArray","b")
-
+      printC(questionsArray, "3", "questionsArray", "b");
 
       return {
         success: true,
         questionSuggest: questionsArray,
-
       };
     } catch (err) {
       throw new ApolloError(
@@ -706,16 +702,20 @@ module.exports = {
   },
   findPrioritiesTrainEdenAI: async (parent, args, context, info) => {
     const { positionID } = args.fields;
-    console.log("Mutation > findPrioritiesTrainEdenAI > args.fields = ", args.fields);
+    console.log(
+      "Mutation > findPrioritiesTrainEdenAI > args.fields = ",
+      args.fields
+    );
 
     try {
-
       if (!positionID) {
         throw new ApolloError("positionID is required");
       }
-    
-      positionData = await Position.findOne({ _id: positionID }).select('_id positionsRequirements');
-    
+
+      positionData = await Position.findOne({ _id: positionID }).select(
+        "_id positionsRequirements"
+      );
+
       if (!positionData) {
         throw new ApolloError("Position not found");
       }
@@ -791,11 +791,10 @@ module.exports = {
       
       Think you’d be a good fit for the role? Send us your CV now!
       
-      For more information, please visit our company website: https://www.windmill.digital.`
+      For more information, please visit our company website: https://www.windmill.digital.`;
 
-      printC(positionsRequirements,"3","positionsRequirements","b")
+      printC(positionsRequirements, "3", "positionsRequirements", "b");
       // sd02
-
 
       // --------------------------------- Find Priorities ---------------------------------
       let promptNewQuestions = `
@@ -811,16 +810,18 @@ module.exports = {
          2. Priority Title - Reason based on Requirements in MAX 10 words
         
         Priorities:
-      `
+      `;
 
-      printC(promptNewQuestions,"3","promptNewQuestions","b")
+      printC(promptNewQuestions, "3", "promptNewQuestions", "b");
 
-      prioritiesSuggestions = await useGPTchatSimple(promptNewQuestions,0,"API 1")
+      prioritiesSuggestions = await useGPTchatSimple(
+        promptNewQuestions,
+        0,
+        "API 1"
+      );
 
+      printC(prioritiesSuggestions, "3", "prioritiesSuggestions", "p");
 
-      printC(prioritiesSuggestions,"3","prioritiesSuggestions","p")
-
-  
       const regex = /(\d+)\.\s+(.*)\s+-\s+(.*)/g;
       const prioritiesArray = [];
 
@@ -833,9 +834,8 @@ module.exports = {
         prioritiesArray.push(questionObject);
       }
 
-      printC(prioritiesArray,"3","prioritiesArray","g")
+      printC(prioritiesArray, "3", "prioritiesArray", "g");
       // --------------------------------- Find Priorities ---------------------------------
-
 
       // --------------------------------- Find TradeOffs ---------------------------------
       let promptNewTradeOffs = `
@@ -851,39 +851,39 @@ module.exports = {
          2. TradeOff1 VS TradeOff2 - Reason based on Requirements
         
         TradeOffs:
-      `
+      `;
 
-      printC(promptNewTradeOffs,"3","promptNewTradeOffs","b")
+      printC(promptNewTradeOffs, "3", "promptNewTradeOffs", "b");
 
-      tradeOffsSuggestions = await useGPTchatSimple(promptNewTradeOffs,0,"API 1")
+      tradeOffsSuggestions = await useGPTchatSimple(
+        promptNewTradeOffs,
+        0,
+        "API 1"
+      );
 
-
-      printC(tradeOffsSuggestions,"3","tradeOffsSuggestions","p")
+      printC(tradeOffsSuggestions, "3", "tradeOffsSuggestions", "p");
       // sd7
 
-  
       const regexT = /(\d+)\.\s+(.+?)\s+-\s+(.+?)(?=\d+\.|$)/gs;
-      
+
       const tradeoffsArray = [];
       let matchT;
       while ((matchT = regexT.exec(tradeOffsSuggestions)) != null) {
         const tradeoffObject = {
-          tradeOff1: matchT[2].split(' vs. ')[0],
-          tradeOff2: matchT[2].split(' vs. ')[1],
+          tradeOff1: matchT[2].split(" vs. ")[0],
+          tradeOff2: matchT[2].split(" vs. ")[1],
           reason: matchT[3],
         };
         tradeoffsArray.push(tradeoffObject);
       }
-      
-      printC(tradeoffsArray,"3","tradeoffsArray","g")
-      // --------------------------------- Find TradeOffs ---------------------------------
 
+      printC(tradeoffsArray, "3", "tradeoffsArray", "g");
+      // --------------------------------- Find TradeOffs ---------------------------------
 
       return {
         success: true,
         priorities: prioritiesArray,
         tradeOffs: tradeoffsArray,
-
       };
     } catch (err) {
       throw new ApolloError(
@@ -1001,7 +1001,7 @@ module.exports = {
       await wait(30000);
       //publish the userID of the saved cv
       pubsub.publish("USER_CV_SAVED", {
-        userCVSavedToDB: { userID, cvSummary }
+        userCVSavedToDB: { userID, cvSummary },
       });
       return {
         success: true,
@@ -1053,7 +1053,7 @@ module.exports = {
           `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
           cvContent;
 
-        summaryOfCV = await useGPTchatSimple(promptSum);
+        summaryOfCV = await useShaleAPI(promptSum);
 
         printC(summaryOfCV, "0", "summaryOfCV", "b");
 
@@ -1064,7 +1064,7 @@ module.exports = {
         // ------- Calculate Summary -------
 
         // -------Calculate Previous Jobs -------
-        if (userData.cvInfo.cvPreparationPreviousProjects != true) {
+        if (true) {
           promptJobs = `
           Act as resume career expert. I will provide you a string extracted from a PDF which was a CV(resume).
     
@@ -1089,18 +1089,18 @@ module.exports = {
     
          `;
 
-          responseFromGPT = await useGPTchatSimple(promptJobs, 0.05);
-          console.log("responseFromGPT = ", responseFromGPT);
+          responseFromGPT = await useShaleAPI(promptJobs, 0.05);
+          printC("responseFromGPT = ", await responseFromGPT);
 
-          let modifiedResult = await responseFromGPT.replace(/\\n|\n/g, "");
+          // let modifiedResult = responseFromGPT.replace(/\\n|\n/g, "");
 
-          printC("modifiedResult", modifiedResult);
+          // printC("modifiedResult", modifiedResult);
 
-          result = JSON.parse(modifiedResult);
+          // result = JSON.parse(modifiedResult);
 
-          userData.previousProjects = result;
+          userData.previousProjects = responseFromGPT;
 
-          userData.cvInfo.cvPreparationPreviousProjects = true;
+          // userData.cvInfo.cvPreparationPreviousProjects = true;
         }
         // -------Calculate Previous Jobs -------
 
@@ -1595,6 +1595,63 @@ module.exports = {
       return {
         // keywords: await MessageMapKG_V2APICall,
         keywords: await MessageMapKG_V2APICall,
+      };
+    } catch (err) {
+      throw new ApolloError(err.message);
+    }
+  },
+
+  firstImpressionAPI: async (parent, args, context, info) => {
+    const { message } = args.fields;
+    // console.log("hey 1");
+    // const MessageMapKG_V2APICall = async (fields) => {
+    //   const query = gql`
+    //     query messageMapKG_V2($fields: messageMapKG_V2Input) {
+    //       messageMapKG_V2(fields: $fields) {
+    //         keywords {
+    //           keyword
+    //           confidence
+    //           nodeID
+    //           node {
+    //             _id
+    //             name
+    //           }
+    //         }
+    //       }
+    //     }
+    //   `;
+
+    //   const variables = {
+    //     fields: {
+    //       message: await responseFromGPT,
+    //       // message: message,
+    //     },
+    //   };
+
+    //   res = await request(
+    //     "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+    //     query,
+    //     variables
+    //   );
+
+    //   // console.log("res = " , res)
+    //   console.log("res.messageMapKG_V2", res.messageMapKG_V2);
+    //   return res.messageMapKG_V2.keywords;
+    // };
+    // if (!cvString) throw new ApolloError("The cvString is required");
+
+    // prompt =
+    //   "I give you a string extracted from a CV(resume) PDF. Your job is to extract as much information as possible from that CV and list all the skills that person has CV in a small paragraph. Keep the paragrpah small and you dont need to have complete sentenses. Make it as dese as possible with just listing the skills.\nDo not have any other words except for skills. \n\nExaple output: Skills: React, C++, C#, Communiaction, JavaScript....\n\nHere is the string:\n" +
+    //   message;
+
+    // responseFromGPT = await useGPTchatSimple(prompt, 0.7);
+    // // console.log("responseFromGPT", responseFromGPT);
+    // console.log("MessageMapKG_V2APICall", MessageMapKG_V2APICall);
+
+    try {
+      return {
+        // keywords: await MessageMapKG_V2APICall,
+        result: message,
       };
     } catch (err) {
       throw new ApolloError(err.message);

@@ -11,7 +11,8 @@ const {
   // addSkillToMember,
   endorseAttribute,
   memberUpdated,
-  createFakeUser,createFakeUserCVnew,
+  createFakeUser,
+  createFakeUserCVnew,
   uploadUserDataGPT,
   updateMemberSignalInfo,
 } = require("./mutation/memberMutation");
@@ -122,7 +123,12 @@ const {
   addMessage,
   storeLongTermMemory,
   storeLongTermMemorySummary,
-  websiteToMemoryCompany,positionTextToExtraQuestions,conversationCVPositionToReport,positionTextAndConvoToReportCriteria,positionSuggestQuestionsAskCandidate,findPrioritiesTrainEdenAI,
+  websiteToMemoryCompany,
+  positionTextToExtraQuestions,
+  conversationCVPositionToReport,
+  positionTextAndConvoToReportCriteria,
+  positionSuggestQuestionsAskCandidate,
+  findPrioritiesTrainEdenAI,
   saveCVtoUser,
   autoUpdateUserInfoFromCV,
   addMessages,
@@ -134,6 +140,7 @@ const {
   CVtoSummary,
   CVtoJobs,
   cvMapKG,
+  firstImpressionAPI,
   userCVSavedToDB,
 } = require("./mutation/aiMutation");
 
@@ -159,7 +166,8 @@ module.exports = {
     addFavoriteProject,
     addPreferencesToMember,
     // addSkillToMember,
-    createFakeUser,createFakeUserCVnew,
+    createFakeUser,
+    createFakeUserCVnew,
     uploadUserDataGPT,
     updateMemberSignalInfo,
 
@@ -271,7 +279,12 @@ module.exports = {
     addMessage,
     storeLongTermMemory,
     storeLongTermMemorySummary,
-    websiteToMemoryCompany,positionTextToExtraQuestions,conversationCVPositionToReport,positionTextAndConvoToReportCriteria,positionSuggestQuestionsAskCandidate,findPrioritiesTrainEdenAI,
+    websiteToMemoryCompany,
+    positionTextToExtraQuestions,
+    conversationCVPositionToReport,
+    positionTextAndConvoToReportCriteria,
+    positionSuggestQuestionsAskCandidate,
+    findPrioritiesTrainEdenAI,
     saveCVtoUser,
     autoUpdateUserInfoFromCV,
     addMessages,
@@ -283,6 +296,7 @@ module.exports = {
     CVtoSummary,
     CVtoJobs,
     cvMapKG,
+    firstImpressionAPI,
 
     // ------------- ERROR MUTATION -----------------
     createError,
@@ -297,6 +311,6 @@ module.exports = {
     memberUpdated,
     roomUpdated,
     memberUpdatedInRoom,
-    userCVSavedToDB
+    userCVSavedToDB,
   },
 };

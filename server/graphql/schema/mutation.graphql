@@ -159,6 +159,7 @@ module.exports = `
         CVtoSummary(fields: CVtoSummaryInput): CVtoSummaryOutput
         CVtoJobs(fields: CVtoJobsInput): CVtoJobsOutput
         cvMapKG(fields: cvMapKGInput): cvMapKGOutput
+        firstImpressionAPI(fields: firstImpressionAPIInput): firstImpressionAPIOutput
 
 
 
