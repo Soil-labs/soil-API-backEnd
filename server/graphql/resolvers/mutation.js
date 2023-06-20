@@ -134,6 +134,7 @@ const {
   CVtoSummary,
   CVtoJobs,
   cvMapKG,
+  userCVSavedToDB,
 } = require("./mutation/aiMutation");
 
 const { createError, deleteError } = require("./mutation/errorsMutation");
@@ -296,5 +297,6 @@ module.exports = {
     memberUpdated,
     roomUpdated,
     memberUpdatedInRoom,
+    userCVSavedToDB
   },
 };

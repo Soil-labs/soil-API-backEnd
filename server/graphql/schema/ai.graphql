@@ -570,6 +570,11 @@ module.exports = `
         direction: SortDirection
     }
 
+    type AddCVToUserOutput {
+        userID: String
+        cvSummary: String
+    }
+
 
     type PaginatedMessages {
         data: [AI]
