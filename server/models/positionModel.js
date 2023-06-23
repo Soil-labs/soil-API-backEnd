@@ -53,6 +53,7 @@ const positionModel = mongoose.Schema({
   candidates: [{
     userID: String,
     overallScore: Number,
+    skillScore: Number,
     acceptedOrRejected: Boolean,
     readyToDisplay: Boolean,
     conversationID: mongoose.Schema.ObjectId,

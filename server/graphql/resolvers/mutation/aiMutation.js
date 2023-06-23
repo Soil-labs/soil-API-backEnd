@@ -631,9 +631,7 @@ module.exports = {
 
       let promptNewQuestions = `
         REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
-
-      
-        
+  
         - you can only ask 1 question at a time
         - You should stay really close to the context of the REQUIREMENTS Job Position, and try to cover most of the requirements!
         - Your goal is to ask the best questions in order to understand if the Candidate is a good fit for the Job Position
@@ -651,16 +649,7 @@ module.exports = {
 
       questionsSuggest = await useGPTchatSimple(promptNewQuestions, 0, "API 2");
 
-      // questionsSuggest = ` 1. Can you provide examples of machine learning or data projects you have led and implemented? - Experience
-      // 2. What machine learning and deep learning frameworks are you proficient in? - Skills
-      // 3. What is your level of experience with cloud engineering and creating ML solutions in the cloud? - Skills/Industry Knowledge
-      // 4. Can you explain your experience with Natural Language Processing or Computer Vision? - Industry Knowledge
-      // 5. What is your highest level of education in machine learning, statistics, applied mathematics, or computer science? - Education
-      // 6. Have you worked in the pharmaceutical industry before? If so, can you provide examples of your experience? - Industry Knowledge
-      // 7. How do you approach problem-solving and analyzing data? - Experience
-      // 8. Can you describe your communication skills and experience presenting results and outlining solutions to business stakeholders? - Communication Skills
-      // 9. Are you passionate about scaling up and deploying AI & Data solutions? How do you stay up to date with industry advancements? - Culture Fit/Industry Knowledge
-      // `
+
       // questionsSuggest =  `
       // 1. Can you give an example of a time when you had to use your strong organizational skills to successfully complete a project?
       // 2. Have you worked in a team environment before? Can you give an example of a successful teamwork experience?
@@ -697,16 +686,13 @@ module.exports = {
         questionsArray.push(questionObject);
       }
 
-      printC(questionsArray, "3", "questionsArray", "b");
-      // s0
+      printC(questionsArray,"3","questionsArray","b")
 
-      // sdf0
-
-      // await positionData.save();
 
       return {
         success: true,
         questionSuggest: questionsArray,
+
       };
     } catch (err) {
       throw new ApolloError(
@@ -714,6 +700,197 @@ module.exports = {
         err.extensions?.code || "positionSuggestQuestionsAskCandidate",
         {
           component: "aiMutation > positionSuggestQuestionsAskCandidate",
+        }
+      );
+    }
+  },
+  findPrioritiesTrainEdenAI: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
+    console.log("Mutation > findPrioritiesTrainEdenAI > args.fields = ", args.fields);
+
+    try {
+
+      if (!positionID) {
+        throw new ApolloError("positionID is required");
+      }
+    
+      positionData = await Position.findOne({ _id: positionID }).select('_id positionsRequirements');
+    
+      if (!positionData) {
+        throw new ApolloError("Position not found");
+      }
+
+      // positionsRequirements = positionData.positionsRequirements.originalContent
+
+      positionsRequirements = `We are looking for a UX Design Lead to join our team and support them in delivering the best user experience for the success of the products and the satisfaction of the customers.
+
+      Our team works closely with market leaders in finance, healthcare, compliance, and other industries to design and develop strategic products that address complex workflow challenges.
+      
+      As a UX Design Lead, you will be responsible for delivering the best user experience, which makes your role extremely important to the success of the products and the satisfaction of the customers.
+      
+      We are especially interested if you have extensive experience with enterprise-level product solutions and domain expertise that aligns with our focus industries.
+      
+      What’s in it for you?
+      
+      You will have the opportunity to contribute your vision to our products and projects and help drive each engagement toward success. You will fully participate in the product design and development process – including project estimation, research, client-facing discovery, ideation, low and high fidelity wireframing, interactive prototyping, and visual design.
+      
+      Our collaborative environment emphasizes personal growth and support and will allow you to share your knowledge while also learning from colleagues.
+      
+      Requirements
+      
+      8+ years of experience in UX design
+      Experience conducting design sprints or workshops with clients
+      Experience in interface design for web and mobile applications
+      Experience in leading and managing the design team
+      Excellent interpersonal and communication skills
+      Detail-oriented
+      Critical thinking skills
+      Strong knowledge of Sketch, Figma, Adobe CC (Photoshop, Illustrator), Principle, InVision/Marvel App
+      Understanding of methodologies such as Design Thinking & Human Centered Design
+      Experience designing complex enterprise projects (creating and supporting design system/Apple & Material Design guidelines)
+      Ability to apply a high-fidelity wireframe/prototype approach to create a user flow from scratch
+      Proactivity and ability to solve tasks (accept criticism and explain design options)
+      A portfolio that demonstrates the above skills
+      English - Upper-Intermediate
+      
+      Responsibilities
+      
+      Conduct design sprints or workshops to collect and evaluate business goals and user needs.
+      Conduct and analyze stakeholder interviews & user surveys
+      Create pitch-decks and visual concepts of products
+      Conduct UX audits of existing products to reveal gaps in UX
+      Develop customer journey maps and flow-charts for the products
+      Create wireframes, clickable prototypes, and new UI elements for products
+      Deliver an outstanding user experience through an exceptional and intuitive application design
+      Provide leadership and direction for a team of designers
+      Develop and maintain design systems for the products
+      
+      About Windmill
+      
+      Windmill design & build digital product experiences which delight, since 2012! We are a product delivery company dedicated to delivering impactful digital products and solutions, that resolve modern challenges.
+      
+      With our global operation headquartered in Switzerland, celebrating and seeking diversity and teams based in the UK, USA, Portugal, South Africa, Germany, Ukraine and India.
+      
+      Interested in learning more? Take a look at our website: www.windmill.digital/about/
+      
+      What We Offer
+      
+      Firstly, we offer the chance to be part of an experience driven company, who put you firmly in the driver’s seat of your own development. Operating on a remote first principle, we give our teams the flexibility to work from where, when and how they like. As long as you meet the requirements of your role (OKR, responsibilities etc) and are available for key meetings, the how is up to you.
+      
+      In Addition To Experience, You Get
+      
+      Competitive compensation and benefits
+      Working as part of a diverse, international team
+      Interesting tasks and challenges, where you can be creative and take ownership
+      Opportunities for career enhancement
+      Opportunity to make a positive impact on the team
+      
+      Equal Opportunities At Windmill
+      
+      Windmill Digital is an equal opportunities employer that strongly believes in workplace diversity. We consider all applicants regardless of their age, religion, ethnicity, sexual orientation or disability.
+      
+      Think you’d be a good fit for the role? Send us your CV now!
+      
+      For more information, please visit our company website: https://www.windmill.digital.`
+
+      printC(positionsRequirements,"3","positionsRequirements","b")
+      // sd02
+
+
+      // --------------------------------- Find Priorities ---------------------------------
+      let promptNewQuestions = `
+        REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
+  
+        - Your Task is based on teh content to find the Priorities for this Job Position 
+        - you can use Maximum 1 sentence to explain why you choose a priority, maximum 5 priorities
+        - You would give the priorities from the highest at the Top to the lowest at the Bottom
+        - Choose priorities from (Cultural fit, Technical skills, Soft skills, Work experience, Leadership potential, Diversity and inclusion, Long-term prospects, Motivation and enthusiasm, Initiative and creativity, Flexibility, Reliability and work ethic, Collaboration skills, Strong references, Customer or client focus, Industry knowledge )
+
+        Example priority structure:
+         1. Priority Title - Reason based on Requirements in MAX 10 words
+         2. Priority Title - Reason based on Requirements in MAX 10 words
+        
+        Priorities:
+      `
+
+      printC(promptNewQuestions,"3","promptNewQuestions","b")
+
+      prioritiesSuggestions = await useGPTchatSimple(promptNewQuestions,0,"API 1")
+
+
+      printC(prioritiesSuggestions,"3","prioritiesSuggestions","p")
+
+  
+      const regex = /(\d+)\.\s+(.*)\s+-\s+(.*)/g;
+      const prioritiesArray = [];
+
+      let match;
+      while ((match = regex.exec(prioritiesSuggestions)) !== null) {
+        const questionObject = {
+          priority: match[2],
+          reason: match[3],
+        };
+        prioritiesArray.push(questionObject);
+      }
+
+      printC(prioritiesArray,"3","prioritiesArray","g")
+      // --------------------------------- Find Priorities ---------------------------------
+
+
+      // --------------------------------- Find TradeOffs ---------------------------------
+      let promptNewTradeOffs = `
+        REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
+  
+        - Your Task is based on teh content to find the TradeOffs for this Job Position 
+        - you can use Maximum 1 sentence to explain why you choose a priority, maximum 5 tradeOffs
+        - You would give the tradeOffs from the highest at the Top to the lowest at the Bottom
+        - Choose tradeOffs from (Quality vs. Quantity, Experience vs. Potential, Skills vs. Cultural Fit, Speed vs. Thoroughness, Internal vs. External Candidates, Role Flexibility vs. Specialization, Remote Work vs. Onsite Presence, Diversity vs. Cultural Homogeneity, Compensation vs. Non-monetary Benefits, Direct Hire vs. Contract-to-hire, Long-term vs. Short-term Fit, Local vs. International Candidates, Traditional vs. Innovative Sourcing, Employer Brand Visibility vs. Highly-targeted Approaches, Candidate Experience vs. Time Investment)
+
+        Example priority structure:
+         1. TradeOff1 VS TradeOff2 - Reason based on Requirements
+         2. TradeOff1 VS TradeOff2 - Reason based on Requirements
+        
+        TradeOffs:
+      `
+
+      printC(promptNewTradeOffs,"3","promptNewTradeOffs","b")
+
+      tradeOffsSuggestions = await useGPTchatSimple(promptNewTradeOffs,0,"API 1")
+
+
+      printC(tradeOffsSuggestions,"3","tradeOffsSuggestions","p")
+      // sd7
+
+  
+      const regexT = /(\d+)\.\s+(.+?)\s+-\s+(.+?)(?=\d+\.|$)/gs;
+      
+      const tradeoffsArray = [];
+      let matchT;
+      while ((matchT = regexT.exec(tradeOffsSuggestions)) != null) {
+        const tradeoffObject = {
+          tradeOff1: matchT[2].split(' vs. ')[0],
+          tradeOff2: matchT[2].split(' vs. ')[1],
+          reason: matchT[3],
+        };
+        tradeoffsArray.push(tradeoffObject);
+      }
+      
+      printC(tradeoffsArray,"3","tradeoffsArray","g")
+      // --------------------------------- Find TradeOffs ---------------------------------
+
+
+      return {
+        success: true,
+        priorities: prioritiesArray,
+        tradeOffs: tradeoffsArray,
+
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findPrioritiesTrainEdenAI",
+        {
+          component: "aiMutation > findPrioritiesTrainEdenAI",
         }
       );
     }
@@ -747,7 +924,7 @@ module.exports = {
             cvPreparationBio: false,
             cvPreparationNodes: false,
             cvPreparationPreviousProjects: false,
-            // cvPreparationMemory: false,
+            cvPreparationMemory: false,
           },
         },
         { new: true }
@@ -1014,7 +1191,7 @@ module.exports = {
       }
 
       for (let i = 0; i < usersData.length; i++) {
-        let i = 0; // SOS 🆘 delete
+        // let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
 
@@ -1064,18 +1241,47 @@ module.exports = {
             }
           }
 
+          printC(jobsArr, "1", "jobsArr", "g");
+          // sks0
+
+          sumBulletSplit = jobsArr
+
           let cvMemory = [];
+
+          let upsertSum,embeddings;
 
           for (let i = 0; i < sumBulletSplit.length; i++) {
             // -------------- Sent to PineCone --------------
-            let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
+            // let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
 
-            upsertSum = await upsertEmbedingPineCone({
-              text: sumBulletSplit[i],
-              embedding: embeddings[0],
-              _id: userData._id,
-              label: "CV_user_memory",
-            });
+            // upsertSum = await upsertEmbedingPineCone({
+            //   text: sumBulletSplit[i],
+            //   embedding: embeddings[0],
+            //   _id: userData._id,
+            //   label: "CV_user_memory",
+            // });
+            let maxAttempts = 3;
+            let numAttempts = 0;
+            let success = false;
+
+            while (numAttempts < maxAttempts && !success) {
+              try {
+                embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
+
+                upsertSum = await upsertEmbedingPineCone({
+                  text: sumBulletSplit[i],
+                  embedding: embeddings[0],
+                  _id: userData._id,
+                  label: "CV_user_memory",
+                });
+
+                success = true;
+              } catch (error) {
+                console.error(error);
+                numAttempts++;
+              }
+            }
+
             printC(upsertSum, "2", "upsertSum", "y");
             // -------------- Sent to PineCone --------------
 

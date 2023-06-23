@@ -107,11 +107,29 @@ module.exports = `
         positionID: ID
     }
 
-    
-
     type positionSuggestQuestionsAskCandidateOutput {
         success: Boolean
         questionSuggest: [questionSuggestType]
+    }
+
+     input findPrioritiesTrainEdenAIInput {
+        positionID: ID
+    }
+
+    type findPrioritiesTrainEdenAIOutput {
+        success: Boolean
+        priorities: [prioritiesType]
+        tradeOffs: [tradeOffsType]
+    }
+
+    type prioritiesType {
+        priority: String
+        reason: String
+    }
+    type tradeOffsType {
+        tradeOff1: String
+        tradeOff2: String
+        reason: String
     }
 
     type questionSuggestType {
@@ -277,6 +295,18 @@ module.exports = `
         reply: String
         # keywords: [String]
     }
+
+    input askEdenUserPositionInput {
+        userID: ID
+        positionID: ID
+        conversation: [messageChat]
+    }
+
+     type askEdenUserPositionOutput {
+        reply: String
+        # keywords: [String]
+    }
+
 
     input messageChat {
         role: String

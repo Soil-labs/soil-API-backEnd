@@ -135,7 +135,7 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
   }
 
   positionsRequirements = positionData.positionsRequirements.originalContent;
-  // printC(positionsRequirements,"0","positionsRequirements","b")
+  // printC(positionData,"0","positionData","b")
 
   positionsRequirements = positionsRequirements.replace(/b\d+:\s/g, "");
   printC(positionsRequirements, "0.5", "positionsRequirements", "b");
@@ -251,7 +251,7 @@ async function saveCVtoUserFunc(cvContent, userID, positionID) {
           cvPreparationBio: false,
           cvPreparationNodes: false,
           cvPreparationPreviousProjects: false,
-          // cvPreparationMemory: false,
+          cvPreparationMemory: false,
         },
       },
       { new: true }

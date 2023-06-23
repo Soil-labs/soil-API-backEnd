@@ -324,10 +324,57 @@ async function findBestEmbedings(message, filter, topK = 3) {
 }
 
 
+async function saveScoreToPositionCandidate(memberArray,positionID) {
+
+  // Find the position and the candidates from mongo
+
+  
+  positionData = await Position.findOne({ _id: positionID }).select('_id candidates');
+
+  printC(positionData, "1", "positionData", "r");
+  printC(memberArray, "1", "memberArray", "b");
+
+  // for each candidate userID, find the memberID and update the score
+
+  if (positionData == null) {
+    return false
+  }
+
+  for (let i = 0; i < memberArray.length; i++) {
+
+    for (let j = 0; j < positionData.candidates.length; j++) {
+        
+        if (positionData.candidates[j].userID == memberArray[i].memberID) {
+  
+          positionData.candidates[j].skillScore = memberArray[i].matchPercentage?.totalPercentage;
+
+          printC(positionData.candidates[j], "1", "positionData.candidates[j]", "y")
+
+          printC(memberArray[i].matchPercentage?.totalPercentage, "1", "memberArray[i].matchPercentage?.totalPercentage", "y")
+  
+          break;
+        }
+  
+    }
+  }
+
+  // printC(positionData.candidates, "1", "positionData.candidates", "r")
+
+  // save the positionData back to mongo
+  await positionData.save();
+
+
+  return true 
+
+  
+}
+
+
 module.exports = {
   wait,
   CandidateNotesEdenAIAPICallF,
   findBestEmbedings,
   useGPTchatSimple,
   upsertEmbedingPineCone,
+  saveScoreToPositionCandidate,
 };
