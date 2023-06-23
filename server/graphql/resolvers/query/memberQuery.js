@@ -27,6 +27,7 @@ const { ApolloError } = require("apollo-server-express");
 const { IsAuthenticated } = require("../../../utils/authorization");
 
 const {nodes_aiModule,totalScore_aiModule,sortArrayRelevantNodes_aiModule,arrayToObject,useGPTchatSimple} = require("../utils/aiModules")
+const {saveScoreToPositionCandidate} = require("../utils/aiExtraModules")
 
 function mapRange(input, inputMin, inputMax, outputMin, outputMax) {
   return (
@@ -1434,7 +1435,7 @@ module.exports = {
     return val;
   },
   matchNodesToMembers_AI4: async (parent, args, context, info) => {
-    const { nodesID,membersIDallow, weightModules,budget,availability,experienceLevel } =
+    const { nodesID,positionID,membersIDallow, weightModules,budget,availability,experienceLevel } =
       args.fields;
     let { page, limit } = args.fields;
     console.log("Query > matchNodesToMembers_AI4 > args.fields = ", args.fields);
@@ -1495,6 +1496,10 @@ module.exports = {
 
 
       memberArray = await sortArrayRelevantNodes_aiModule(memberObj)
+
+
+
+      await saveScoreToPositionCandidate(memberArray,positionID)
 
 
 

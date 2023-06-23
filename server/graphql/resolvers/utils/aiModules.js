@@ -251,7 +251,7 @@ async function saveCVtoUserFunc(cvContent, userID, positionID) {
           cvPreparationBio: false,
           cvPreparationNodes: false,
           cvPreparationPreviousProjects: false,
-          // cvPreparationMemory: false,
+          cvPreparationMemory: false,
         },
       },
       { new: true }

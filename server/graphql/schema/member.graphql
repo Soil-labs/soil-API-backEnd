@@ -475,6 +475,7 @@ module.exports = `
 
     input matchNodesToMembers_AI4Input {
         nodesID: [ID]
+        positionID: ID
         membersIDallow: [ID]
         budget: budgetInputT
         experienceLevel: Int
