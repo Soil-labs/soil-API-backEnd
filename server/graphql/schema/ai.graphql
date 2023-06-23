@@ -296,6 +296,18 @@ module.exports = `
         # keywords: [String]
     }
 
+    input askEdenUserPositionInput {
+        userID: ID
+        positionID: ID
+        conversation: [messageChat]
+    }
+
+     type askEdenUserPositionOutput {
+        reply: String
+        # keywords: [String]
+    }
+
+
     input messageChat {
         role: String
         content: String

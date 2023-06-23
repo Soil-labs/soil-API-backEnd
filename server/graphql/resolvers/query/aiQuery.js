@@ -29,6 +29,10 @@ const {
   findInterviewQuestion,
 } = require("../utils/aiModules");
 
+
+const { useGPTchatSimple} = require("../utils/aiModules");
+
+
 const {
   updateAnsweredQuestionFunc,
   findAndUpdateConversationFunc,
@@ -158,32 +162,32 @@ async function useGPTchat(
   return response.data.choices[0].message.content;
 }
 
-async function useGPTchatSimple(prompt, temperature = 0.7) {
-  discussion = [
-    {
-      role: "user",
-      content: prompt,
-    },
-  ];
+// async function useGPTchatSimple(prompt, temperature = 0.7) {
+//   discussion = [
+//     {
+//       role: "user",
+//       content: prompt,
+//     },
+//   ];
 
-  let OPENAI_API_KEY = chooseAPIkey();
-  response = await axios.post(
-    "https://api.openai.com/v1/chat/completions",
-    {
-      messages: discussion,
-      model: "gpt-3.5-turbo",
-      temperature: temperature,
-    },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-      },
-    }
-  );
+//   let OPENAI_API_KEY = chooseAPIkey();
+//   response = await axios.post(
+//     "https://api.openai.com/v1/chat/completions",
+//     {
+//       messages: discussion,
+//       model: "gpt-3.5-turbo",
+//       temperature: temperature,
+//     },
+//     {
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${OPENAI_API_KEY}`,
+//       },
+//     }
+//   );
 
-  return response.data.choices[0].message.content;
-}
+//   return response.data.choices[0].message.content;
+// }
 async function useGPT4Simple(prompt, temperature = 0.7) {
   discussion = [
     {
@@ -3216,6 +3220,148 @@ module.exports = {
         err.extensions?.code || "edenGPTreplyMemory",
         {
           component: "aiQuery > edenGPTreplyMemory",
+        }
+      );
+    }
+  },
+  askEdenUserPosition: async (parent, args, context, info) => {
+    const {  userID,positionID,conversation } = args.fields;
+    console.log("Query > askEdenUserPosition > args.fields = ", args.fields);
+    try {
+      const filter = {
+        label: "CV_user_memory",
+      };
+      if (userID) {
+        filter._id = userID;
+      }
+
+      let message = ""
+      let beforeMessage = ""
+      let prompt_beforeMessage = ""
+      if (conversation.length==0){
+        
+        throw new Error("There is no Conversation");
+      } else if (conversation.length==1){
+
+        message = conversation[0].content;
+
+      } else if (conversation.length>=2){
+        message = conversation[conversation.length - 1].content;
+        
+        beforeMessage = conversation[conversation.length - 2].content;
+        prompt_beforeMessage = `- Previous message of conversation (delimited by ||): |${beforeMessage}|'`
+
+      }
+
+      longTermMemories = await findBestEmbedings(message, filter, (topK = 4));
+
+      console.log("longTermMemories = " , longTermMemories)
+      // ads
+
+      let prompt_longTermMemory = "";
+      for (let i = 0; i < longTermMemories.length; i++) {
+        prompt_longTermMemory =
+          prompt_longTermMemory + "\n Info " + (i+1) +": <" + longTermMemories[i].metadata.text +">";
+      }
+
+      console.log("prompt_longTermMemory = ", prompt_longTermMemory);
+      // asdf
+
+      prompot_General = `
+      You have as input: 
+
+      - Information about the Candidate (delimited by ||): |${prompt_longTermMemory}|
+
+
+      - QUESTION from Recruiter: |${message}|
+
+        Your task is to estimate how relevant is each of the information to the QUESTION Info 1,Info 2, etc.
+        - the relevance score to the QUESTION is from 0 to 10
+        - be extremely critical its better to have 0 if it has nothing to do with the QUESTION than 10
+
+        Example output: 
+        Info 1: 10  
+        Into 2: 0
+        etc.
+
+        The output should be only the relevance score with no explanation: 
+      `;
+
+      printC(prompot_General, "0", "prompot_General", "g");
+
+      infoRelevanceScoreGPT = await useGPTchatSimple(prompot_General,0.7,"API 1");
+
+      // infoRelevanceScoreGPT = `Info 1: 10
+      // Info 2: 1
+      // Info 3: 1
+      // Info 4: 3`
+
+      
+      printC(infoRelevanceScoreGPT, "1", "infoRelevanceScoreGPT", "b");
+
+      const regex = /Info\s+(\d+):\s+(\d+)/g;
+
+      // Initialize an empty array to store the info and score
+      const infoAndScore = [];
+
+      // Iterate over each match and extract the info and score
+      let match;
+      while ((match = regex.exec(infoRelevanceScoreGPT))) {
+        const info = match[1];
+        const score = match[2];
+        infoAndScore.push({ info, score });
+      }
+
+      printC(infoAndScore, "2", "infoAndScore", "g");
+
+      let prompt_relevantInfo = "";
+      for (let i = 0; i < longTermMemories.length; i++) {
+        if (infoAndScore[i].score > 6) {
+          prompt_relevantInfo =
+            prompt_relevantInfo + "\n Info " + (i+1) +": <" + longTermMemories[i].metadata.text +">";
+        }
+      }
+
+      if (prompt_relevantInfo == "") { // if all of them are not relevant just use all of them
+        prompt_relevantInfo = prompt_longTermMemory
+      }
+
+
+      prompot_replyQuestion = `
+      You have as input: 
+
+      - RELATED INFO about the Candidate (delimited by ||): |${prompt_relevantInfo}|
+
+      ${prompt_beforeMessage}
+
+      - QUESTION from Recruiter (delimited by ||): |${message}|
+
+        Your task is to reply to the QUESTION with a short 1-2 sentence answer
+         - use whatever you need from RELATED INFO to reply to the QUESTION
+         - Really try to use RELATED INFO if is not enough you can you can be creative in the answer and imagine something
+
+
+        Answer to question: 
+      `;
+
+      printC(prompot_replyQuestion, "4", "prompot_replyQuestion", "g");
+
+      replyQuestionGPT = await useGPTchatSimple(prompot_replyQuestion,0.7,"API 2");
+
+      printC(replyQuestionGPT, "5", "replyQuestionGPT", "b");
+
+
+
+      return {
+        reply: replyQuestionGPT,
+        // keywords: keywordsEdenArray
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "askEdenUserPosition",
+        {
+          component: "aiQuery > askEdenUserPosition",
         }
       );
     }

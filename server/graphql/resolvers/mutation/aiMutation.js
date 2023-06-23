@@ -924,7 +924,7 @@ module.exports = {
             cvPreparationBio: false,
             cvPreparationNodes: false,
             cvPreparationPreviousProjects: false,
-            // cvPreparationMemory: false,
+            cvPreparationMemory: false,
           },
         },
         { new: true }
@@ -1191,7 +1191,7 @@ module.exports = {
       }
 
       for (let i = 0; i < usersData.length; i++) {
-        let i = 0; // SOS 🆘 delete
+        // let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
 
@@ -1241,18 +1241,47 @@ module.exports = {
             }
           }
 
+          printC(jobsArr, "1", "jobsArr", "g");
+          // sks0
+
+          sumBulletSplit = jobsArr
+
           let cvMemory = [];
+
+          let upsertSum,embeddings;
 
           for (let i = 0; i < sumBulletSplit.length; i++) {
             // -------------- Sent to PineCone --------------
-            let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
+            // let embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
 
-            upsertSum = await upsertEmbedingPineCone({
-              text: sumBulletSplit[i],
-              embedding: embeddings[0],
-              _id: userData._id,
-              label: "CV_user_memory",
-            });
+            // upsertSum = await upsertEmbedingPineCone({
+            //   text: sumBulletSplit[i],
+            //   embedding: embeddings[0],
+            //   _id: userData._id,
+            //   label: "CV_user_memory",
+            // });
+            let maxAttempts = 3;
+            let numAttempts = 0;
+            let success = false;
+
+            while (numAttempts < maxAttempts && !success) {
+              try {
+                embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
+
+                upsertSum = await upsertEmbedingPineCone({
+                  text: sumBulletSplit[i],
+                  embedding: embeddings[0],
+                  _id: userData._id,
+                  label: "CV_user_memory",
+                });
+
+                success = true;
+              } catch (error) {
+                console.error(error);
+                numAttempts++;
+              }
+            }
+
             printC(upsertSum, "2", "upsertSum", "y");
             // -------------- Sent to PineCone --------------
 
