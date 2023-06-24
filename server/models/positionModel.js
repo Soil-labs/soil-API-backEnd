@@ -59,6 +59,7 @@ const positionModel = mongoose.Schema({
     conversationID: mongoose.Schema.ObjectId,
     summaryQuestions: [{
       questionID: mongoose.Schema.ObjectId,
+      originalQuestionContent: String,
       questionContent: String,
       questionContentSmall: String,
       answerContent: String,

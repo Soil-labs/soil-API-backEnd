@@ -911,6 +911,7 @@ module.exports = {
                 summaryQuestions.push({
                   questionID: questionID,
                   questionContent: candidateResult[userIDn][questionID].questionContent,
+                  originalQuestionContent: questionsToAskObj[questionID]?.questionContent,
                   questionContentSmall: questionsToAskObj[questionID]?.questionContentSmall,
                   answerContent: candidateResult[userIDn][questionID].summaryOfAnswer?.replace(/[<>]/g, ""),
                   answerContentSmall: candidateResult[userIDn][questionID].summaryOfAnswerSmall?.replace(/[<>]/g, ""),
