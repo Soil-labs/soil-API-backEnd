@@ -105,7 +105,7 @@ async function updateAnsweredQuestionFunc(
         timesAsked: timesAsked,
         conversation: conversation,
       };
-      console.log("change = 1211122123");
+      console.log("change = 1211122123",infoAddQuestion);
 
       questionAnsweredUpdate = await updateQuestionAskedConvoID(
         questionAnsweredSoFar,
@@ -125,7 +125,7 @@ async function updateAnsweredQuestionFunc(
         conversation: conversation,
       };
 
-      console.log("change = 202");
+      console.log("change = 202",infoAddQuestion);
       questionAnsweredUpdate = await updateQuestionAskedConvoID(
         questionAnsweredSoFar,
         null,
@@ -397,6 +397,7 @@ async function updateQuestionAskedConvoID(arr1, ID, infoAddQuestion) {
       arr1[index] = {
         questionID: infoAddQuestion.questionID,
         questionContent: infoAddQuestion.content,
+        originalQuestionContent: infoAddQuestion.originalContent,
         subConversationAnswer: infoAddQuestion.conversation.slice(
           -infoAddQuestion.timesAsked * 2
         ),
@@ -409,6 +410,7 @@ async function updateQuestionAskedConvoID(arr1, ID, infoAddQuestion) {
       arr1.push({
         questionID: infoAddQuestion.questionID,
         questionContent: infoAddQuestion.content,
+        originalQuestionContent: infoAddQuestion.originalContent,
         subConversationAnswer: infoAddQuestion.conversation.slice(
           -infoAddQuestion.timesAsked * 2
         ),
@@ -426,6 +428,7 @@ async function updateQuestionAskedConvoID(arr1, ID, infoAddQuestion) {
       arr1[index] = {
         questionID: undefined,
         questionContent: infoAddQuestion.content,
+        originalQuestionContent: infoAddQuestion.originalContent,
         subConversationAnswer: infoAddQuestion.conversation.slice(
           -infoAddQuestion.timesAsked * 2
         ),
@@ -435,6 +438,7 @@ async function updateQuestionAskedConvoID(arr1, ID, infoAddQuestion) {
       arr1.push({
         questionID: undefined,
         questionContent: infoAddQuestion.content,
+        originalQuestionContent: infoAddQuestion.originalContent,
         subConversationAnswer: infoAddQuestion.conversation.slice(
           -infoAddQuestion.timesAsked * 2
         ),
