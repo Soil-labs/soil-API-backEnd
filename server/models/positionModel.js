@@ -50,6 +50,7 @@ const positionModel = mongoose.Schema({
     personalizedContent: String,
   }],
   candidatesReadyToDisplay: Boolean,
+  candidatesFlagAnalysisCreated: Boolean,
   candidates: [{
     userID: String,
     overallScore: Number,
@@ -101,6 +102,18 @@ const positionModel = mongoose.Schema({
         reason: String,
         IDb: String,
       }]
+    },
+    analysisCandidateEdenAI: {
+      flagAnalysisCreated: Boolean,
+      background: {
+        content: String,
+      },
+      fitRequirements: {
+        content: String,
+      },
+      skills: {
+        content: String,
+      }
     }
   }],
 
