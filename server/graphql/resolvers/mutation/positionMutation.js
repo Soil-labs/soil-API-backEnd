@@ -18,9 +18,9 @@ const {checkAndAddPositionToMember  } = require("../utils/positionModules");
 
 const { printC } = require("../../../printModule");
 
-const { useGPTchatSimple,deletePineCone,upsertEmbedingPineCone,getMemory,interviewQuestionCreationUserFunc} = require("../utils/aiModules");
+const { deletePineCone,upsertEmbedingPineCone,getMemory,interviewQuestionCreationUserFunc} = require("../utils/aiModules");
 
-
+const {useGPTchatSimple} = require("../utils/aiExtraModules");
 
 
 const {
@@ -588,6 +588,178 @@ module.exports = {
       }
     },
 
+    updateAnalysisEdenAICandidates: async (parent, args, context, info) => {
+      const { positionIDs} = args.fields;
+      console.log("Mutation > updateAnalysisEdenAICandidates > args.fields = ", args.fields);
+
+
+      if (positionIDs)
+        positionData = await Position.find({ 
+          _id: positionIDs,
+          // candidatesFlagAnalysisCreated: { $ne: true } // SOS 🆘 - uncomment!!!
+        });
+      else 
+        positionData = await Position.find({ candidatesFlagAnalysisCreated: { $ne: true } });
+
+
+      
+      try {
+
+
+        for (let i = 0; i < positionData.length; i++) { // Loop on positions
+          const position = positionData[i];
+
+          for (let j = 0;j<position.candidates.length;j++){
+          // for (let j = 0;j<1;j++){
+
+            candidate = position.candidates[j]
+
+            if (candidate?.analysisCandidateEdenAI?.flagAnalysisCreated == true) continue
+
+            printC(candidate.userID,"0","candidate.userID","b")
+            printC(candidate.analysisCandidateEdenAI,"1","candidate.analysisCandidateEdenAI","b")
+
+
+            positionRequirements = position.positionsRequirements.content
+
+            printC(positionRequirements,"2","positionRequirements","b")
+
+            // find member on mongo
+            memberData = await Members.findOne({ _id: candidate.userID }).select('_id discordName cvInfo');
+
+            cvMember = memberData.cvInfo.cvContent
+
+            printC(cvMember,"3","cvMember","b")
+
+            printC(memberData?.cvInfo?.cvMemory,"4","memberData?.cvInfo?.cvMemory","b")
+
+
+            // combine the cvMemory for Prompt
+            prompt_cv = ""
+            if (memberData?.cvInfo?.cvMemory) {
+              prompt_cv = memberData?.cvInfo?.cvMemory?.map((memory) => memory.memoryContent).join(" \n\n ")
+            } else {
+              prompt_cv = memberData?.cvInfo?.cvContent
+            }
+
+            printC(prompt_cv,"5","prompt_cv","b")
+
+            // ------------------- Background Analysis -------------------
+            promptBackground = `
+            You are an Interviewer, you need for an opinion and then create a summary if a candidate is a good fit for the position.
+
+            - JOB POSITION (delimited by <>) < ${positionRequirements} >
+    
+            - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
+    
+            - Understand the JOB POSITION, and analyze the CANDIDATE INFO
+            - Analyze why the candidate fit or don't fit this position
+            
+            Summary in only 1 sentences: 
+            `
+
+            printC(promptBackground,"6","promptBackground","g")
+
+
+            backgroundAnalysis = await useGPTchatSimple(promptBackground,0.7,"API 2");
+
+            printC(backgroundAnalysis,"7","backgroundAnalysis","g")
+            // ------------------- Background Analysis -------------------
+
+
+
+
+            // ------------------- Skill Analysis -------------------
+            promptSkill = `
+            You are an Interviewer, you need for an opinion and then create a summary if a candidate is a good fit for the position specifically focusing on the skills of the candidate.
+
+            - JOB POSITION (delimited by <>) < ${positionRequirements} >
+    
+            - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
+    
+            - Understand the JOB POSITION, and analyze the CANDIDATE INFO
+            - Analyze why the candidate fit or don't fit this position specifically focusing on th skills
+            
+            Summary of skill analysis in only 1 sentences: 
+            `
+
+            printC(promptSkill,"6","promptSkill","g")
+
+
+            skillAnalysis = await useGPTchatSimple(promptSkill,0.7,"API 1");
+
+            printC(skillAnalysis,"7","skillAnalysis","g")
+            // ------------------- Skill Analysis -------------------
+
+
+            // ------------------- JobRequirements Analysis -------------------
+            promptJobRequirements = `
+            You are an Interviewer, you need for an opinion and then create a summary if a candidate is a good fit for the position specifically focusing on the Requirements of this positions and if they are fulfilled
+
+            - JOB POSITION (delimited by <>) < ${positionRequirements} >
+    
+            - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
+    
+            - Understand the JOB POSITION, and analyze the CANDIDATE INFO
+            - Analyze why the candidate fit or don't fit this position focusing on the Requirements of this positions and if they are fulfilled
+            
+            Really small Summary in only 1 sentences: 
+            `
+
+            printC(promptJobRequirements,"6","promptJobRequirements","g")
+
+
+            jobRequirementsAnalysis = await useGPTchatSimple(promptJobRequirements,0.7,"API 2");
+
+            printC(jobRequirementsAnalysis,"7","jobRequirementsAnalysis","g")
+            // ------------------- JobRequirements Analysis -------------------
+
+            
+
+            // ------------ Add to candidate ------------
+            positionData[i].candidates[j].analysisCandidateEdenAI = {
+              ...positionData[i].candidates[j].analysisCandidateEdenAI,
+              background: {
+                content: backgroundAnalysis,
+              },
+              fitRequirements:{
+              content: jobRequirementsAnalysis,
+              },
+              skills: {
+                content: skillAnalysis,
+              },
+              flagAnalysisCreated: true,
+            }
+            // ------------ Add to candidate ------------
+
+
+
+            // sd0
+          }
+
+          // ------------ Add to position ------------
+          positionData[i].candidatesFlagAnalysisCreated = true
+          // ------------ Add to position ------------
+
+
+          // save it to mongo
+          await positionData[i].save();
+
+
+        
+        }
+
+
+        return positionData
+        
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "updateAnalysisEdenAICandidates",
+          { component: "positionMutation > updateAnalysisEdenAICandidates" }
+        );
+      }
+    },
     
     updatePositionUserAnswers: async (parent, args, context, info) => {
       const { positionIDs} = args.fields;
@@ -606,7 +778,7 @@ module.exports = {
       
       
 
-      // try {
+      try {
 
         let candidateResult = {}
 
@@ -975,13 +1147,13 @@ module.exports = {
 
         return positionData
         
-      // } catch (err) {
-      //   throw new ApolloError(
-      //     err.message,
-      //     err.extensions?.code || "updatePositionUserAnswers",
-      //     { component: "positionMutation > updatePositionUserAnswers" }
-      //   );
-      // }
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "updatePositionUserAnswers",
+          { component: "positionMutation > updatePositionUserAnswers" }
+        );
+      }
     },
     updatePositionConvRecruiter: async (parent, args, context, info) => {
       const { positionIDs} = args.fields;

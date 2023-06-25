@@ -6,6 +6,7 @@ module.exports = `
         url: String
         company: Company
         candidatesReadyToDisplay: Boolean
+        candidatesFlagAnalysisCreated: Boolean
         questionsToAsk: [QuestionType]
         positionsRequirements: positionsRequirementsType
         nodes: [NodeDataType]
@@ -74,6 +75,26 @@ module.exports = `
         notesInterview: [notesInterviewType]
         averageScoreNotesInterview: Float
         compareCandidatePosition: compareCandidatePositionType
+        analysisCandidateEdenAI: analysisCandidateEdenAIType
+    }
+
+    type analysisCandidateEdenAIType {
+         flagAnalysisCreated: Boolean,
+        background: backgroundAnalysisType,
+        fitRequirements: fitRequirementsAnalysisType,
+        skills: skillsAnalysisType,
+    }
+
+    type backgroundAnalysisType {
+        content: String,
+    }
+
+    type fitRequirementsAnalysisType {
+        content: String,
+    }
+
+    type skillsAnalysisType {
+        content: String,
     }
 
     type compareCandidatePositionType {
@@ -198,6 +219,10 @@ module.exports = `
     }
 
     input updatePositionUserAnswersInput {
+        positionIDs: [ID]
+    }
+
+    input updateAnalysisEdenAICandidatesInput {
         positionIDs: [ID]
     }
 
