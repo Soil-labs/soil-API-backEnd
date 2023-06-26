@@ -178,6 +178,7 @@ async function updatePositionInterviewedOfUser(userID) {
       {
         candidates: candidatesN,
         candidatesReadyToDisplay: false,
+        candidatesFlagAnalysisCreated: false,
       },
       { new: true }
     );

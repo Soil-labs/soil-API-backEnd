@@ -314,7 +314,8 @@ module.exports = {
           { _id: positionID },
           { 
             candidates: positionData.candidates,
-            candidatesReadyToDisplay: false 
+            candidatesReadyToDisplay: false,
+            candidatesFlagAnalysisCreated: false,
           },
           { new: true }
         );
