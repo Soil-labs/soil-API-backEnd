@@ -948,10 +948,6 @@ module.exports = {
 
       if (newQuestion?.personalizedContent != undefined) 
         questionAskingNow = newQuestion.personalizedContent; 
-
-    //     console.log("questionAskingNow = ", questionAskingNow);
-    // ads23
-
       // ------------ Find Modified questions ------------
 
       // -------------- Prompt of the conversation ------------
