@@ -77,7 +77,7 @@ async function positionTextToExtraQuestionsFunc(
     - You can improve each of the QUESTION using any of the REQUIREMENTS
     - you can only ask 1 question at a time
     - Your task is to ask extra questions from the provided REQUIREMENTS, 
-    - example of question "you mention here that there is backend responsibilities, what do you mean with that?"
+    - example of question "you mention that there is backend responsibilities, what do you mean with that?"
     
     Improved only QUESTIONS with no extra information: 
   `;
@@ -1027,22 +1027,44 @@ async function interviewQuestionCreationUserFunc(
     //   Improved QUESTIONS:
     // `
 
-    let promptNewQuestions = `
-    NOTES for this Job Role for User CV (delimiters <>): <${infoCandidateForJob}>
+  //   let promptNewQuestions = `
+  //   NOTES for this Job Role for User CV (delimiters <>): <${infoCandidateForJob}>
 
-    QUESTIONS (delimiters <>) <${questionsPrompt}>
+  //   QUESTIONS (delimiters <>) <${questionsPrompt}>
 
    
-    - Task is to improved some of the questions using facts from NOTES to make it relevant
-    - the Improved QUESTIONS should have exactly the same order as the original QUESTIONS and exactly the same meaning with the original QUESTIONS
-    - you can only ask 1 question at a time
+  //   - Task is to improved some of the questions using facts from NOTES to make it relevant
+  //   - the Improved QUESTIONS should have exactly the same order as the original QUESTIONS and exactly the same meaning with the original QUESTIONS
+  //   - you can only ask 1 question at a time
+  //   - Your task is to ask deeper questions from facts that provided on the NOTES, 
+  //   - example of question "you mention that you worked in Google, what were your responsibilities there?"
     
-    Improved QUESTIONS: 
-  `;
+  //   Improved QUESTIONS: 
+  // `;
+
+
+  let promptNewQuestions = `
+  NOTES CV: <${cvSummary}>
+
+  QUESTIONS (delimiters <>) <${questionsPrompt}>
+
+ 
+  - Task is to improved some of the questions using facts from NOTES to make it relevant
+  - the Improved QUESTIONS should have exactly the same order as the original QUESTIONS and exactly the same meaning with the original QUESTIONS
+  - you can only ask 1 question at a time
+  - Your task is to ask deeper questions from facts that provided on the NOTES, 
+  - example of question "you mention that you worked in Google, what were your responsibilities there?"
+  
+  Improved QUESTIONS: 
+`;
 
     improvedQuestions = await useGPTchatSimple(promptNewQuestions, 0, "API 2");
 
     improvedQuestions = improvedQuestions.replace(/^\s*[\r\n]/gm, '');
+
+    printC(improvedQuestions, "3", "improvedQuestions", "p");
+
+    // sd03
 
 
     // improvedQuestions = `1. Can you provide examples of scalable front-end web applications you have developed using Java, Spring, and Kubernetes? 
