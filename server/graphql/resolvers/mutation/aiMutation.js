@@ -317,26 +317,6 @@ module.exports = {
     stringFromWebsite = message;
 
     try {
-      // promptReport = ` You have as input the Details of a Job Position
-      // Job Position (delimiters <>): <${stringFromWebsite}>
-
-      // The Recruiter Task is to create a report for the most important info about what skills, qualifications, education, culture fit, personality type, experience etc. the Candidate should have!
-
-      // - You need make really small bullet points of information about the Candidate for every Category
-      // - Based on the conversation you can make from 0 to 4 bullet points for every Category
-      // - To include information in the output you must first find it in text of <Job Position>
-      // - Do not make up fake information, only use what you fine in <Job Position>
-      // - If you do not find the information, just skip the category(leave it blank)
-      // - Include up to 6 categories
-
-      // For example:
-      //   <Category 1: title>
-      //     - content
-      //     - content
-      //   <Category 2: title>
-      //     - content
-
-      // Answer:`;
 
       promptReport = ` You have as input the Details of a Job Position
       Job Position (delimiters <>): <${stringFromWebsite}>
@@ -372,7 +352,6 @@ module.exports = {
       });
 
       printC(report, "1", "report", "g");
-      // sdf9
 
       // ---------------------- Map Nodes from Position text ---------------------
       promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
