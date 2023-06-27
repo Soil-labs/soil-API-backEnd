@@ -617,22 +617,22 @@ module.exports = {
 
             if (candidate?.analysisCandidateEdenAI?.flagAnalysisCreated == true) continue
 
-            printC(candidate.userID,"0","candidate.userID","b")
-            printC(candidate.analysisCandidateEdenAI,"1","candidate.analysisCandidateEdenAI","b")
+            // printC(candidate.userID,"0","candidate.userID","b")
+            // printC(candidate.analysisCandidateEdenAI,"1","candidate.analysisCandidateEdenAI","b")
 
 
             positionRequirements = position.positionsRequirements.content
 
-            printC(positionRequirements,"2","positionRequirements","b")
+            // printC(positionRequirements,"2","positionRequirements","b")
 
             // find member on mongo
             memberData = await Members.findOne({ _id: candidate.userID }).select('_id discordName cvInfo');
 
             cvMember = memberData.cvInfo.cvContent
 
-            printC(cvMember,"3","cvMember","b")
+            // printC(cvMember,"3","cvMember","b")
 
-            printC(memberData?.cvInfo?.cvMemory,"4","memberData?.cvInfo?.cvMemory","b")
+            // printC(memberData?.cvInfo?.cvMemory,"4","memberData?.cvInfo?.cvMemory","b")
 
 
             // combine the cvMemory for Prompt
@@ -643,9 +643,46 @@ module.exports = {
               prompt_cv = memberData?.cvInfo?.cvContent
             }
 
-            printC(prompt_cv,"5","prompt_cv","b")
+            // printC(prompt_cv,"5","prompt_cv","b")
+
+            // ------------------- Find the Score ----------------------
+            // Background Score
+            let matchScore = candidate.overallScore
+            // Skill Score
+            let skillScore = candidate.skillScore
+            //JobRequirement Score
+            let jobRequirementsScore = 0
+            let jobRequirementsScoreCount = 0
+            if (candidate?.compareCandidatePosition?.reportPassFail){
+              for (let k=0;k<candidate?.compareCandidatePosition?.reportPassFail.length;k++){
+                let score = candidate?.compareCandidatePosition?.reportPassFail[k].score
+
+                if (score != undefined){
+                  jobRequirementsScore += score
+                  jobRequirementsScoreCount += 1
+                }
+
+              }
+            }
+
+            if (jobRequirementsScoreCount > 0) {
+              jobRequirementsScore = (jobRequirementsScore / jobRequirementsScoreCount)*10
+            }
+
+            let backgroundScore = (matchScore + skillScore + jobRequirementsScore)/3
+            
+            // ------------------- Find the Score ----------------------
 
             // ------------------- Background Analysis -------------------
+            let instructionsScore = ""
+            if (backgroundScore > 82) {
+              instructionsScore = "Be really positive Find all the reasons that it is a great fit"
+            } else if (backgroundScore >50) {
+              instructionsScore = "Be neutral find the reasons that will work and don't work and report them"
+            } else {
+              instructionsScore = "Be really negative find all the reasons that it will not be a good fit"
+            }
+
             promptBackground = `
             You are an Interviewer, you need for an opinion and then create a summary if a candidate is a good fit for the position.
 
@@ -654,23 +691,37 @@ module.exports = {
             - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
     
             - Understand the JOB POSITION, and analyze the CANDIDATE INFO
-            - Analyze why the candidate fit or don't fit this position
+            - Analyze why the candidate fit or or NOT for this position based on specific previous relevant positions and relevant education that the candidate had 
+
+            ${instructionsScore}
             
-            Summary in only 1 sentences: 
+            Summary in 2 sentences basing analysis on specific names of previous jobs: 
             `
 
-            printC(promptBackground,"6","promptBackground","g")
+            // printC(promptBackground,"6","promptBackground","g")
 
 
             backgroundAnalysis = await useGPTchatSimple(promptBackground,0.7,"API 2");
 
+            printC(backgroundScore,"7","backgroundScore","p")
+            printC(instructionsScore,"7","instructionsScore","r")
+
             printC(backgroundAnalysis,"7","backgroundAnalysis","g")
+
             // ------------------- Background Analysis -------------------
 
 
 
 
             // ------------------- Skill Analysis -------------------
+            instructionsScore = ""
+            if (skillScore > 75) {
+              instructionsScore = "Be really positive Find all the reasons that it is a great fit"
+            } else if (skillScore >60) {
+              instructionsScore = "Be neutral find the reasons that will work and don't work and report them"
+            } else {
+              instructionsScore = "Be really negative find all the reasons that it will not be a good fit"
+            }
             promptSkill = `
             You are an Interviewer, you need for an opinion and then create a summary if a candidate is a good fit for the position specifically focusing on the skills of the candidate.
 
@@ -679,21 +730,35 @@ module.exports = {
             - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
     
             - Understand the JOB POSITION, and analyze the CANDIDATE INFO
-            - Analyze why the candidate fit or don't fit this position specifically focusing on th skills
+            - Analyze why the candidate fit or NOT for this position specifically focusing on the skills
+            - Go straight to the point!! don't unnecessary words and don't repeat yourself
+
+            ${instructionsScore}
+
             
-            Summary of skill analysis in only 1 sentences: 
+            Summary of skill analysis in only 1.5 sentences: 
             `
 
-            printC(promptSkill,"6","promptSkill","g")
+            // printC(promptSkill,"6","promptSkill","g")
 
 
             skillAnalysis = await useGPTchatSimple(promptSkill,0.7,"API 1");
 
+            printC(skillScore,"7","skillScore","p")
+            printC(instructionsScore,"7","instructionsScore","r")
             printC(skillAnalysis,"7","skillAnalysis","g")
             // ------------------- Skill Analysis -------------------
 
 
             // ------------------- JobRequirements Analysis -------------------
+            instructionsScore = ""
+            if (jobRequirementsScore > 75) {
+              instructionsScore = "Be really positive Find all the reasons that it is a great fit"
+            } else if (jobRequirementsScore >60) {
+              instructionsScore = "Be neutral find the reasons that will work and don't work and report them"
+            } else {
+              instructionsScore = "Be really negative find all the reasons that it will not be a good fit"
+            }
             promptJobRequirements = `
             You are an Interviewer, you need for an opinion and then create a summary if a candidate is a good fit for the position specifically focusing on the Requirements of this positions and if they are fulfilled
 
@@ -702,15 +767,23 @@ module.exports = {
             - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
     
             - Understand the JOB POSITION, and analyze the CANDIDATE INFO
-            - Analyze why the candidate fit or don't fit this position focusing on the Requirements of this positions and if they are fulfilled
+            - Analyze why the candidate fit or NOT for this position focusing on the Requirements of this positions
+            - Don't talk about Skills!
+            - Go straight to the point!! don't unnecessary words and don't repeat yourself
             
-            Really small Summary in only 1 sentences: 
+            ${instructionsScore}
+
+            Summary the most interesting info in only 1.5 sentences: 
             `
 
-            printC(promptJobRequirements,"6","promptJobRequirements","g")
+            // printC(promptJobRequirements,"6","promptJobRequirements","g")
 
 
             jobRequirementsAnalysis = await useGPTchatSimple(promptJobRequirements,0.7,"API 2");
+
+
+            printC(jobRequirementsScore,"7","jobRequirementsScore","p")
+            printC(instructionsScore,"7","instructionsScore","r")
 
             printC(jobRequirementsAnalysis,"7","jobRequirementsAnalysis","g")
             // ------------------- JobRequirements Analysis -------------------
@@ -731,7 +804,9 @@ module.exports = {
               },
               flagAnalysisCreated: true,
             }
-            // ------------ Add to candidate ------------
+
+            
+            // // ------------ Add to candidate ------------
 
 
 
