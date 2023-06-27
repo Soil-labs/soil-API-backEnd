@@ -76,16 +76,18 @@ async function positionTextToExtraQuestionsFunc(
   
     - You can improve each of the QUESTION using any of the REQUIREMENTS
     - you can only ask 1 question at a time
-    - You should stay really close to the meaning of the QUESTIONS!
-    - make the question simple light and too the point 
-    - only ask the question don't add were you found the info or anything else
+    - Your task is to ask extra questions from the provided REQUIREMENTS, 
+    - example of question "you mention here that there is backend responsibilities, what do you mean with that?"
     
-    
-    Improved QUESTIONS: 
+    Improved only QUESTIONS with no extra information: 
   `;
 
+
+  // - You should stay really close to the meaning of the QUESTIONS!
+  // - make the question simple light and too the point 
+  // - try to add were you found the information, for example "you mention here that there is backend responsibilities, what do you mean with that?"
+
   printC(promptNewQuestions, "3", "promptNewQuestions", "b");
-  // s0
 
   improvedQuestions = await useGPTchatSimple(promptNewQuestions, 0, "API 2");
 
