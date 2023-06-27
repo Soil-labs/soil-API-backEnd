@@ -934,7 +934,7 @@ module.exports = {
 
         Title Role 5 words max: 
         Main Skills 3 words max:
-        Summary 3 sentenses max:: 
+        Summary 3 sentences max:: 
       `;
       printC(cvContentPrompt, "3", "cvContentPrompt", "b");
 
@@ -962,9 +962,9 @@ module.exports = {
       // Ateet Tiwari is a Full Stack Developer with experience in Front-End, Back-End, Database, Messaging Services, and UI Development. He has a strong proficiency in React, Redux, Node, Express, Python, SQL, and MongoDB. Ateet has led initiatives and teams, improved product performance, and designed in-house frameworks and systems. He is a Polygon Fellowship Graduate and has extensive knowledge in web3 development.
       // `
 
-      printC(cvSummary, "3", "cvSummary", "g");
-      printC(titleRole, "3", "titleRole", "g");
-      printC(mainSkills, "3", "mainSkills", "g");
+      // printC(cvSummary, "3", "cvSummary", "g");
+      // printC(titleRole, "3", "titleRole", "g");
+      // printC(mainSkills, "3", "mainSkills", "g");
       // sdf0
 
       // ----------- CV to Summary -------------
@@ -974,10 +974,10 @@ module.exports = {
       // console.log("interviewQ = " , interviewQ)
       // InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
 
-      interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
+      interviewQuestionCreationUserFunc(positionID, userID, cvContent);
       // sdf00
 
-      await wait(30000);
+      await wait(25000);
       //publish the userID of the saved cv
       pubsub.publish("USER_CV_SAVED", {
         userCVSavedToDB: { userID, cvSummary }
