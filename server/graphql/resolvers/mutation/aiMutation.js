@@ -683,78 +683,78 @@ module.exports = {
         throw new ApolloError("Position not found");
       }
 
-      // positionsRequirements = positionData.positionsRequirements.originalContent
+      positionsRequirements = positionData.positionsRequirements.originalContent
 
-      positionsRequirements = `We are looking for a UX Design Lead to join our team and support them in delivering the best user experience for the success of the products and the satisfaction of the customers.
+      // positionsRequirements = `We are looking for a UX Design Lead to join our team and support them in delivering the best user experience for the success of the products and the satisfaction of the customers.
 
-      Our team works closely with market leaders in finance, healthcare, compliance, and other industries to design and develop strategic products that address complex workflow challenges.
+      // Our team works closely with market leaders in finance, healthcare, compliance, and other industries to design and develop strategic products that address complex workflow challenges.
       
-      As a UX Design Lead, you will be responsible for delivering the best user experience, which makes your role extremely important to the success of the products and the satisfaction of the customers.
+      // As a UX Design Lead, you will be responsible for delivering the best user experience, which makes your role extremely important to the success of the products and the satisfaction of the customers.
       
-      We are especially interested if you have extensive experience with enterprise-level product solutions and domain expertise that aligns with our focus industries.
+      // We are especially interested if you have extensive experience with enterprise-level product solutions and domain expertise that aligns with our focus industries.
       
-      What’s in it for you?
+      // What’s in it for you?
       
-      You will have the opportunity to contribute your vision to our products and projects and help drive each engagement toward success. You will fully participate in the product design and development process – including project estimation, research, client-facing discovery, ideation, low and high fidelity wireframing, interactive prototyping, and visual design.
+      // You will have the opportunity to contribute your vision to our products and projects and help drive each engagement toward success. You will fully participate in the product design and development process – including project estimation, research, client-facing discovery, ideation, low and high fidelity wireframing, interactive prototyping, and visual design.
       
-      Our collaborative environment emphasizes personal growth and support and will allow you to share your knowledge while also learning from colleagues.
+      // Our collaborative environment emphasizes personal growth and support and will allow you to share your knowledge while also learning from colleagues.
       
-      Requirements
+      // Requirements
       
-      8+ years of experience in UX design
-      Experience conducting design sprints or workshops with clients
-      Experience in interface design for web and mobile applications
-      Experience in leading and managing the design team
-      Excellent interpersonal and communication skills
-      Detail-oriented
-      Critical thinking skills
-      Strong knowledge of Sketch, Figma, Adobe CC (Photoshop, Illustrator), Principle, InVision/Marvel App
-      Understanding of methodologies such as Design Thinking & Human Centered Design
-      Experience designing complex enterprise projects (creating and supporting design system/Apple & Material Design guidelines)
-      Ability to apply a high-fidelity wireframe/prototype approach to create a user flow from scratch
-      Proactivity and ability to solve tasks (accept criticism and explain design options)
-      A portfolio that demonstrates the above skills
-      English - Upper-Intermediate
+      // 8+ years of experience in UX design
+      // Experience conducting design sprints or workshops with clients
+      // Experience in interface design for web and mobile applications
+      // Experience in leading and managing the design team
+      // Excellent interpersonal and communication skills
+      // Detail-oriented
+      // Critical thinking skills
+      // Strong knowledge of Sketch, Figma, Adobe CC (Photoshop, Illustrator), Principle, InVision/Marvel App
+      // Understanding of methodologies such as Design Thinking & Human Centered Design
+      // Experience designing complex enterprise projects (creating and supporting design system/Apple & Material Design guidelines)
+      // Ability to apply a high-fidelity wireframe/prototype approach to create a user flow from scratch
+      // Proactivity and ability to solve tasks (accept criticism and explain design options)
+      // A portfolio that demonstrates the above skills
+      // English - Upper-Intermediate
       
-      Responsibilities
+      // Responsibilities
       
-      Conduct design sprints or workshops to collect and evaluate business goals and user needs.
-      Conduct and analyze stakeholder interviews & user surveys
-      Create pitch-decks and visual concepts of products
-      Conduct UX audits of existing products to reveal gaps in UX
-      Develop customer journey maps and flow-charts for the products
-      Create wireframes, clickable prototypes, and new UI elements for products
-      Deliver an outstanding user experience through an exceptional and intuitive application design
-      Provide leadership and direction for a team of designers
-      Develop and maintain design systems for the products
+      // Conduct design sprints or workshops to collect and evaluate business goals and user needs.
+      // Conduct and analyze stakeholder interviews & user surveys
+      // Create pitch-decks and visual concepts of products
+      // Conduct UX audits of existing products to reveal gaps in UX
+      // Develop customer journey maps and flow-charts for the products
+      // Create wireframes, clickable prototypes, and new UI elements for products
+      // Deliver an outstanding user experience through an exceptional and intuitive application design
+      // Provide leadership and direction for a team of designers
+      // Develop and maintain design systems for the products
       
-      About Windmill
+      // About Windmill
       
-      Windmill design & build digital product experiences which delight, since 2012! We are a product delivery company dedicated to delivering impactful digital products and solutions, that resolve modern challenges.
+      // Windmill design & build digital product experiences which delight, since 2012! We are a product delivery company dedicated to delivering impactful digital products and solutions, that resolve modern challenges.
       
-      With our global operation headquartered in Switzerland, celebrating and seeking diversity and teams based in the UK, USA, Portugal, South Africa, Germany, Ukraine and India.
+      // With our global operation headquartered in Switzerland, celebrating and seeking diversity and teams based in the UK, USA, Portugal, South Africa, Germany, Ukraine and India.
       
-      Interested in learning more? Take a look at our website: www.windmill.digital/about/
+      // Interested in learning more? Take a look at our website: www.windmill.digital/about/
       
-      What We Offer
+      // What We Offer
       
-      Firstly, we offer the chance to be part of an experience driven company, who put you firmly in the driver’s seat of your own development. Operating on a remote first principle, we give our teams the flexibility to work from where, when and how they like. As long as you meet the requirements of your role (OKR, responsibilities etc) and are available for key meetings, the how is up to you.
+      // Firstly, we offer the chance to be part of an experience driven company, who put you firmly in the driver’s seat of your own development. Operating on a remote first principle, we give our teams the flexibility to work from where, when and how they like. As long as you meet the requirements of your role (OKR, responsibilities etc) and are available for key meetings, the how is up to you.
       
-      In Addition To Experience, You Get
+      // In Addition To Experience, You Get
       
-      Competitive compensation and benefits
-      Working as part of a diverse, international team
-      Interesting tasks and challenges, where you can be creative and take ownership
-      Opportunities for career enhancement
-      Opportunity to make a positive impact on the team
+      // Competitive compensation and benefits
+      // Working as part of a diverse, international team
+      // Interesting tasks and challenges, where you can be creative and take ownership
+      // Opportunities for career enhancement
+      // Opportunity to make a positive impact on the team
       
-      Equal Opportunities At Windmill
+      // Equal Opportunities At Windmill
       
-      Windmill Digital is an equal opportunities employer that strongly believes in workplace diversity. We consider all applicants regardless of their age, religion, ethnicity, sexual orientation or disability.
+      // Windmill Digital is an equal opportunities employer that strongly believes in workplace diversity. We consider all applicants regardless of their age, religion, ethnicity, sexual orientation or disability.
       
-      Think you’d be a good fit for the role? Send us your CV now!
+      // Think you’d be a good fit for the role? Send us your CV now!
       
-      For more information, please visit our company website: https://www.windmill.digital.`
+      // For more information, please visit our company website: https://www.windmill.digital.`
 
       printC(positionsRequirements,"3","positionsRequirements","b")
       // sd02
