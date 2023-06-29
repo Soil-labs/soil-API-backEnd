@@ -58,11 +58,6 @@ const {
   findCompanyFromSlug,
 } = require("./query/companyQuery");
 
-const {
-  findMemories,
-} = require("./query/memoryPineconeQuery");
-
-
 const { findQuestionEdenAI } = require("./query/questionsEdenAIQuery");
 
 const {
@@ -216,10 +211,6 @@ module.exports = {
     findCompany,
     findCompanies,
     findCompanyFromSlug,
-
-
-    // ------------- MEMORY PINECONE QUERY -----------------
-    findMemories,
 
     // ------------- QUESTIONS EDEN AI QUERY -----------------
     findQuestionEdenAI,

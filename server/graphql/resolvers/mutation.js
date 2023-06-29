@@ -74,10 +74,6 @@ const {
   addEmployeesCompany,
 } = require("./mutation/companyMutation");
 
-const {
-  addMemory,deleteMemories,
-} = require("./mutation/memoryPineconeMutation");
-
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
 const { updateServer } = require("./mutation/serverMutation");
 const {
@@ -221,10 +217,6 @@ module.exports = {
     updateCompany,
     updateUrlCompany,
     addEmployeesCompany,
-
-
-    // ------------- MEMORY PINECONE MUTATION -----------------
-    addMemory,deleteMemories,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,

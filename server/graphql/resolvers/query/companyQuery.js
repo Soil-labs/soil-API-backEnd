@@ -45,6 +45,7 @@ module.exports = {
     const { _id } = args.fields;
     console.log("Query > findCompanies > args.fields = ", args.fields);
 
+    console.log("eloi is cool = ");
     let searchQuery_and = [];
     let searchQuery = {};
 

@@ -3,13 +3,8 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 const axios = require("axios");
 
-const { findBestEmbedings,useGPTchatSimple } = require("../utils/aiExtraModules");
+const { findBestEmbedings,useGPTchatSimple,upsertEmbedingPineCone } = require("../utils/aiExtraModules");
 
-
-
-const {
-  addMemoryPineconeFunc,
-} = require("../utils/memoryPineconeModules");
 
 function chooseAPIkey(chooseAPI = "") {
   // openAI_keys = [
@@ -153,17 +148,13 @@ async function addQuestionToEdenAIFunc(content) {
 
         console.log("change = 1")
 
-        // upsertDoc = await upsertEmbedingPineCone({
-        //     text: content,
-        //     _id: result._id,
-        //     label: "questionsEdenAI",
-        //   });
-        resTK = await addMemoryPineconeFunc({
-          memory: content,
-          userID: result._id,
-          label: "questionsEdenAI",
-        })
+        upsertDoc = await upsertEmbedingPineCone({
+            text: content,
+            _id: result._id,
+            label: "questionsEdenAI",
+          });
 
+          console.log("change = 2")
 
           
           res = {

@@ -15,8 +15,8 @@ const {
 const {
   useGPTchat,
   useGPTchatSimple,
-  // upsertEmbedingPineCone,
-  // deletePineCone,
+  upsertEmbedingPineCone,
+  deletePineCone,
   conversationCVPositionToReportFunc,
   reportPassFailCVPositionConversationFunc,
 } = require("../utils/aiModules");
@@ -24,12 +24,6 @@ const {
 const {
   CandidateNotesEdenAIAPICallF,
 } = require("../utils/aiExtraModules");
-
-
-const {
-  addMemoryPineconeFunc,
-  deleteMemoriesPineconeFunc,
-} = require("../utils/memoryPineconeModules");
 
 const { printC } = require("../../../printModule");
 
@@ -149,12 +143,8 @@ module.exports = {
           // if (true) {
 
           // ------------------ Delete old summaries from pinecone ------------------
-          // deletePineIDs = convDataNow.summary.map((obj) => obj.pineConeID);
-          // await deletePineCone(deletePineIDs);
-          let filter = {
-            pineconeID: deletePineIDs,
-          }
-          resTK = await deleteMemoriesPineconeFunc(filter)
+          deletePineIDs = convDataNow.summary.map((obj) => obj.pineConeID);
+          await deletePineCone(deletePineIDs);
           // ------------------ Delete old summaries from pinecone ------------------
  
           let paragraphSummary = await useGPTchat(
@@ -188,23 +178,17 @@ module.exports = {
           for (let j = 0; j < splitSummary.length; j++) {
             splitSumNow = splitSummary[j];
 
-            // upsertDoc = await upsertEmbedingPineCone({
-            //   text: splitSumNow,
-            //   _id: convDataNow.userID,
-            //   label: "conv_with_user_memory",
-            //   convKey: convDataNow.convKey,
-            // });
-
-            resTK = await addMemoryPineconeFunc({
-              userID: convDataNow.userID,
+            upsertDoc = await upsertEmbedingPineCone({
+              text: splitSumNow,
+              _id: convDataNow.userID,
               label: "conv_with_user_memory",
-              memory: splitSumNow,
               convKey: convDataNow.convKey,
-            })
+            });
+
+            // console.log("upsertDoc = ", upsertDoc);
 
             summaryArr.push({
-              // pineConeID: upsertDoc.pineConeID,
-              pineConeID: resTK?.memoryData?.pineConeID,
+              pineConeID: upsertDoc.pineConeID,
               content: splitSumNow,
             });
           }

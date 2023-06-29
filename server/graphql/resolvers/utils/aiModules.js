@@ -3197,5 +3197,4 @@ module.exports = {
   sortArrayRelevantNodes_aiModule,
   saveCVtoUserFunc,
   interviewEdenAIFunc,
-  generateRandomID,
 };
