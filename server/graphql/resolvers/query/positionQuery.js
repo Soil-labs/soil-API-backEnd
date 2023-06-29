@@ -45,7 +45,6 @@ module.exports = {
     const { _id } = args.fields;
     console.log("Query > findPositions > args.fields = ", args.fields);
 
-    console.log("eloi is cool = ");
     let searchQuery_and = [];
     let searchQuery = {};
 

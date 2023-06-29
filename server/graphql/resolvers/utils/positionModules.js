@@ -2,7 +2,12 @@
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 
-const { findBestEmbedings,upsertEmbedingPineCone,useGPTchatSimple } = require("./aiExtraModules");
+const { findBestEmbedings,useGPTchatSimple } = require("./aiExtraModules");
+
+
+const {
+  addMemoryPineconeFunc,
+} = require("../utils/memoryPineconeModules");
 
 async function addQuestionToEdenAIFunc(content) {
 
@@ -88,11 +93,16 @@ async function addQuestionToEdenAIFunc(content) {
 
         console.log("change = 1")
 
-        upsertDoc = await upsertEmbedingPineCone({
-            text: content,
-            _id: result._id,
-            label: "questionsEdenAI",
-          });
+        // upsertDoc = await upsertEmbedingPineCone({
+        //     text: content,
+        //     _id: result._id,
+        //     label: "questionsEdenAI",
+        //   });
+        resTK = await addMemoryPineconeFunc({
+          memory: content,
+          userID: result._id,
+          label: "questionsEdenAI",
+        })
 
           console.log("change = 2")
 

@@ -12,6 +12,7 @@ const nodeType = require("./node.graphql");
 const conversationType = require("./conversation.graphql");
 const positionType = require("./position.graphql");
 const companyType = require("./company.graphql");
+const memoryPineconeType = require("./memoryPinecone.graphql");
 const questionsEdenAI = require("./questionsEdenAI.graphql");
 const SkillCategoryType = require("./skillCategory.graphql");
 const SkillSubCategoryType = require("./skillSubCategory.graphql");
@@ -36,6 +37,7 @@ const typeDefs = gql`
   ${questionsEdenAI}
   ${positionType}
   ${companyType}
+  ${memoryPineconeType}
   ${memberType}
   ${endorsementType}
   ${reviewType}

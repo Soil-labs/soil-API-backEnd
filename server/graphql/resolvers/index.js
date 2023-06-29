@@ -55,6 +55,7 @@ const {
   QuestionType,
 } = require("./objectResolvers/positionResolver");
 const { Company } = require("./objectResolvers/companyResolver");
+const { MemoryPinecone } = require("./objectResolvers/memoryPineconeResolver");
 const { SkillCategory } = require("./objectResolvers/skillCategoryResolver");
 const {
   SkillSubCategory,
@@ -112,6 +113,7 @@ module.exports = {
   Rooms,
   RoleTemplate,
   Company,
+  MemoryPinecone,
   Position,
   CandidateType,
   talentListType,
