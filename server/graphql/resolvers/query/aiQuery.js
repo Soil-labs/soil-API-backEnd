@@ -15,6 +15,9 @@ const { Configuration, OpenAIApi } = require("openai");
 
 const { printC } = require("../../../printModule");
 
+const { REACT_APP_MONGO_DATABASE } = process.env;
+
+
 const {
   taskPlanning,
   findAvailTaskPineCone,
@@ -141,7 +144,10 @@ async function useGPTchat(
     content: userNewMessage + "\n" + userQuestion,
   });
 
+  // console.log("userQuestion = " , userQuestion)
+
   // console.log("discussion = ", discussion);
+  // sdf
 
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
   response = await axios.post(
@@ -243,6 +249,7 @@ async function findBestEmbedings(message, filter, topK = 3) {
 
   // console.log("filter = " , filter)
   // console.log("queryRequest = " , queryRequest)
+  // sd0
 
   const queryResponse = await index.query({ queryRequest });
 
@@ -3226,6 +3233,7 @@ module.exports = {
     try {
       const filter = {
         label: "CV_user_memory",
+        database: REACT_APP_MONGO_DATABASE,
       };
       if (userID) {
         filter._id = userID;
@@ -3252,7 +3260,7 @@ module.exports = {
       longTermMemories = await findBestEmbedings(message, filter, (topK = 4));
 
       console.log("longTermMemories = " , longTermMemories)
-      // ads
+      // ads32
 
       let prompt_longTermMemory = "";
       for (let i = 0; i < longTermMemories.length; i++) {
@@ -3280,7 +3288,7 @@ module.exports = {
         Into 2: 0
         etc.
 
-        The output should be only the relevance score with no explanation: 
+        Output id and score no explanation:
       `;
 
       printC(prompot_General, "0", "prompot_General", "g");
@@ -3324,25 +3332,65 @@ module.exports = {
 
 
       prompot_replyQuestion = `
-      You have as input: 
+      Your input: 
+      1) RELATED INFO about the Candidate (delimited by ||): |${prompt_relevantInfo}|
 
-      - RELATED INFO about the Candidate (delimited by ||): |${prompt_relevantInfo}|
+      2) Previous Message Conversation (delimited by ||): |${prompt_beforeMessage}|
 
-      ${prompt_beforeMessage}
+      3) QUESTION from Recruiter (delimited by ||): |${message}|
 
-      - QUESTION from Recruiter (delimited by ||): |${message}|
-
-        Your task is to reply to the QUESTION with a short 1-2 sentence answer
-         - use whatever you need from RELATED INFO to reply to the QUESTION
-         - Really try to use RELATED INFO if is not enough you can you can be creative in the answer and imagine something
-
+      - Your task is to reply to the QUESTION with a short 1-2 sentence answer
+      - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
+      - Be creative if you don't have enough information
 
         Answer to question: 
       `;
 
       printC(prompot_replyQuestion, "4", "prompot_replyQuestion", "g");
 
-      replyQuestionGPT = await useGPTchatSimple(prompot_replyQuestion,0.7,"API 2");
+
+      // only take the last 2 messages of the conversation
+      let conversation_use = conversation.slice(-6)
+      // delete the last message of the conversation and save it to a variable
+      let lastMessage = conversation_use.pop()
+      // keep all variables except  date from conversation
+      conversation_use = conversation_use.map((obj) => {
+        return {
+          role: obj.role,
+          content: obj.content,
+        };
+      });
+
+
+
+
+      const systemPrompt = `
+      - Your task is to reply to the QUESTION with a short 1-3 sentence answer
+      - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
+      - Be creative if you don't have enough information` 
+      
+
+      prompt_relatedInfo = `
+      RELATED INFO about the Candidate (delimited by ||): |${prompt_relevantInfo}|
+
+      ${systemPrompt}
+
+
+      Question to Answer: 
+      `
+
+      
+      replyQuestionGPT = await useGPTchat(
+        prompt_relatedInfo,
+        conversation_use,
+        systemPrompt,
+        lastMessage?.content,
+        0.99,
+      );
+
+      // replyQuestionGPT = await useGPTchatSimple(prompot_replyQuestion,0.95,"API 2");
+      
+      
 
       printC(replyQuestionGPT, "5", "replyQuestionGPT", "b");
 

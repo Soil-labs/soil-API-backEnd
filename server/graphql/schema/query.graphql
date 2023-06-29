@@ -75,6 +75,11 @@ module.exports = `
             findCompanyFromSlug(fields:findCompanyFromSlugInput): Company
 
 
+           #  ---------- MEMORY PINECONE QUERY -------
+
+            findMemories(fields:findMemoriesInput): [MemoryPinecone]
+
+
            #  ---------- QUESTIONS EDENAI QUERY -------
             findQuestionEdenAI(fields:findQuestionEdenAIInput): QuestionsEdenAI
 

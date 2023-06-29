@@ -23,7 +23,6 @@ const {
   useGPTchatSimple,
   MessageMapKG_V2APICallF,
   MessageMapKG_V4APICallF,
-  deletePineCone,
   findConversationPrompt,
   interviewQuestionCreationUserFunc,
   conversationCVPositionToReportFunc,
@@ -31,6 +30,13 @@ const {
   positionTextAndConvoToReportCriteriaFunc,
   positionTextToExtraQuestionsFunc,
 } = require("../utils/aiModules");
+
+
+
+const {
+  addMemoryPineconeFunc,
+  deleteMemoriesPineconeFunc,
+} = require("../utils/memoryPineconeModules");
 
 const {
   wait,
@@ -179,16 +185,22 @@ module.exports = {
       summary = await useGPTchatSimple(prompt, 0.7);
       // summary = "The conversation between the user and recruiter was about finding a Designer for the user's position. The desired skills for the designer were the ability to work well in a team, and proficiency in Figma and wireframe design. The user's position is working with a web3 NFT marketplace."
 
-      embed_summary = await createEmbeddingsGPT(summary);
+      // embed_summary = await createEmbeddingsGPT(summary);
 
-      upsertDoc = await upsertEmbedingPineCone({
-        text: summary,
-        embedding: embed_summary[0],
-        _id: userID,
+      // upsertDoc = await upsertEmbedingPineCone({
+      //   text: summary,
+      //   embedding: embed_summary[0],
+      //   _id: userID,
+      //   label: "long_term_memory",
+      // });
+
+      // console.log("upsertDoc = ", upsertDoc);
+
+      res = await addMemoryPineconeFunc({
+        userID: userID,
         label: "long_term_memory",
-      });
-
-      console.log("upsertDoc = ", upsertDoc);
+        memory: summary
+      })
 
       return {
         summary: summary,
@@ -245,15 +257,20 @@ module.exports = {
 
       const getUpserts = async () => {
         for (let i = 0; i < jobsArr.length; i++) {
-          let embeddings = await createEmbeddingsGPT(jobsArr[i]);
-          console.log("embeddings", embeddings); //
-          upsertSum = await upsertEmbedingPineCone({
-            text: jobsArr[i],
-            embedding: embeddings[0],
-            _id: userID,
+          // let embeddings = await createEmbeddingsGPT(jobsArr[i]);
+          // console.log("embeddings", embeddings); //
+          // upsertSum = await upsertEmbedingPineCone({
+          //   text: jobsArr[i],
+          //   embedding: embeddings[0],
+          //   _id: userID,
+          //   label: "CV_user_memory",
+          // });
+          // console.log("upsertSum=", upsertSum);
+          res = await addMemoryPineconeFunc({
+            userID: userID,
             label: "CV_user_memory",
-          });
-          console.log("upsertSum=", upsertSum);
+            memory: jobsArr[i]
+          })
         }
       };
 
@@ -1159,8 +1176,8 @@ module.exports = {
       if (userIDs)
         usersData = await Members.find({
           _id: userIDs,
-          "cvInfo.cvPreparationMemory": { $ne: true },
-          "cvInfo.cvContent": { $ne: null },
+          // "cvInfo.cvPreparationMemory": { $ne: true },
+          // "cvInfo.cvContent": { $ne: null },
         });
       else {
         usersData = await Members.find({
@@ -1169,21 +1186,33 @@ module.exports = {
         });
       }
 
+
       for (let i = 0; i < usersData.length; i++) {
         // let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
 
+
+      console.log("change = " )
+
         // ----------- Calculate and Save Memory ------------
-        if (userData.cvInfo.cvPreparationMemory != true) {
+        // if (userData.cvInfo.cvPreparationMemory != true) {
+          if (true) {
           // ------------ Delete previous memory ------------
-          if (userData.cvInfo?.cvMemory?.length > 0) {
-            deletePineIDs = userData.cvInfo.cvMemory.map(
-              (obj) => obj.pineConeID
-            );
-            await deletePineCone(deletePineIDs);
+          // if (userData.cvInfo?.cvMemory?.length > 0) {
+          //   deletePineIDs = userData.cvInfo.cvMemory.map(
+          //     (obj) => obj.pineConeID
+          //   );
+          //   await deletePineCone(deletePineIDs);
+          // }
+          let filter = {
+            userID: userData._id,
+            label: "CV_user_memory"
           }
+          res = await deleteMemoriesPineconeFunc(filter)
           // ------------ Delete previous memory ------------
+
+
 
           promptMemory = `I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. 
         These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. 
@@ -1220,6 +1249,7 @@ module.exports = {
             }
           }
 
+
           printC(jobsArr, "1", "jobsArr", "g");
           // sks0
 
@@ -1239,34 +1269,41 @@ module.exports = {
             //   _id: userData._id,
             //   label: "CV_user_memory",
             // });
-            let maxAttempts = 3;
-            let numAttempts = 0;
-            let success = false;
+            // let maxAttempts = 3;
+            // let numAttempts = 0;
+            // let success = false;
 
-            while (numAttempts < maxAttempts && !success) {
-              try {
-                embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
+            // while (numAttempts < maxAttempts && !success) {
+            //   try {
+            //     embeddings = await createEmbeddingsGPT(sumBulletSplit[i]);
 
-                upsertSum = await upsertEmbedingPineCone({
-                  text: sumBulletSplit[i],
-                  embedding: embeddings[0],
-                  _id: userData._id,
-                  label: "CV_user_memory",
-                });
+            //     upsertSum = await upsertEmbedingPineCone({
+            //       text: sumBulletSplit[i],
+            //       embedding: embeddings[0],
+            //       _id: userData._id,
+            //       label: "CV_user_memory",
+            //     });
 
-                success = true;
-              } catch (error) {
-                console.error(error);
-                numAttempts++;
-              }
-            }
+            //     success = true;
+            //   } catch (error) {
+            //     console.error(error);
+            //     numAttempts++;
+            //   }
+            // }
 
-            printC(upsertSum, "2", "upsertSum", "y");
+            res = await addMemoryPineconeFunc({
+              userID: userData._id,
+              label: "CV_user_memory",
+              memory: sumBulletSplit[i]
+            })
+
+
+            printC(res, "2", "res", "y");
             // -------------- Sent to PineCone --------------
 
             cvMemory.push({
               memoryContent: sumBulletSplit[i],
-              pineConeID: upsertSum.id_message,
+              pineConeID: res?.memoryData?.id_message,
             });
 
             printC(sumBulletSplit[i], "2", "sumBulletSplit[i]", "p");
@@ -2057,38 +2094,38 @@ async function generateRandomID(numDigit = 8) {
   return id;
 }
 
-async function upsertEmbedingPineCone(data) {
-  const pinecone = new PineconeClient();
-  await pinecone.init({
-    environment: "us-east1-gcp",
-    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
-  });
+// async function upsertEmbedingPineCone(data) {
+//   const pinecone = new PineconeClient();
+//   await pinecone.init({
+//     environment: "us-east1-gcp",
+//     apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+//   });
 
-  const index = await pinecone.Index("profile-eden-information");
+//   const index = await pinecone.Index("profile-eden-information");
 
-  id_message = await generateRandomID(8);
+//   id_message = await generateRandomID(8);
 
-  const upsertRequest = {
-    vectors: [
-      {
-        id: id_message,
-        values: data.embedding,
-        metadata: {
-          text: data.text,
-          _id: data._id,
-          label: data.label,
-        },
-      },
-    ],
-  };
+//   const upsertRequest = {
+//     vectors: [
+//       {
+//         id: id_message,
+//         values: data.embedding,
+//         metadata: {
+//           text: data.text,
+//           _id: data._id,
+//           label: data.label,
+//         },
+//       },
+//     ],
+//   };
 
-  const upsertResponse = await index.upsert({ upsertRequest });
+//   const upsertResponse = await index.upsert({ upsertRequest });
 
-  return {
-    upsertResponse,
-    id_message,
-  };
-}
+//   return {
+//     upsertResponse,
+//     id_message,
+//   };
+// }
 
 function chooseAPIkey() {
   // openAI_keys = [
