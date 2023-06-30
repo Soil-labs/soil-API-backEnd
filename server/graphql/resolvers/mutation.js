@@ -128,6 +128,7 @@ const {
 const {
   addMessage,
   secondInterviewLetter,
+  rejectionLetter,
   storeLongTermMemory,
   storeLongTermMemorySummary,
   websiteToMemoryCompany,
@@ -289,6 +290,7 @@ module.exports = {
     // --------------- AI MUTATION -----------------
     addMessage,
     secondInterviewLetter,
+    rejectionLetter,
     storeLongTermMemory,
     storeLongTermMemorySummary,
     websiteToMemoryCompany,

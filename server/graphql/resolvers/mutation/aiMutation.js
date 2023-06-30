@@ -240,6 +240,95 @@ module.exports = {
       );
     }
   },
+  rejectionLetter: async (parent, args, context, info) => {
+    let { positionID, userID, message } = args.fields;
+
+    console.log("Mutation > addNodesToPosition > args.fields = ", args.fields);
+
+    if (!positionID) throw new ApolloError("positionID is required");
+    if (!userID) throw new ApolloError("userID is required");
+
+    try {
+      memberData = await Members.findOne({ _id: userID }).select(
+        "_id discordName cvInfo"
+      );
+
+      console.log("member data", memberData);
+
+      cvInfo = "";
+      if (memberData?.cvInfo?.cvMemory) {
+        cvInfo = memberData?.cvInfo?.cvMemory
+          ?.map((memory) => memory.memoryContent)
+          .join(" \n\n ");
+        console.log("prompt_cv", cvInfo);
+      } else {
+        cvInfo = memberData?.cvInfo?.cvContent;
+        console.log("else", cvInfo);
+      }
+
+      positionData = await Position.find({
+        _id: positionID,
+      });
+
+      positionRequirements = await positionData[0].positionsRequirements
+        .content;
+
+      console.log(positionRequirements);
+
+      promptInterviewLetter = `
+
+      Act as an HR Expert. I want you to write a letter to a candidate inviting them to a second interview.
+
+      For context there will two things: information from the CV and Job requirements.
+
+      Information from CV (delimiters <>): <${cvInfo}>
+
+      Job Requirements (delimiters <>): <${positionRequirements}>
+
+      Now here is the letter that you will customize based on the information above(delimiters ''' '''):
+
+      '''
+      Dear  ${memberData.discordName},
+
+      Thank you for taking the time to participate in our interview process. 
+      We certainly appreciated the opportunity to learn more about your capabilities and technical skills. 
+      However, after analyzing your profile,  <change this part 1>it was observed that your experience with some of the key technologies(mention the specific names of technologies) in our stack and leadership roles is somewhat limited. 
+      For this position, proficiency in these technologies and the ability to guide team members effectively is crucial, and the ability to make sound technical trade-off decisions is of great significance <change this part 1>. 
+   
+      <change this part 2>We believe that with more experience and exploration, you'll be a capable candidate for similar roles in the future. We highly recommend looking into our sister companies that might have suitable opportunities fitting your current skill set.  <change this part 2> joineden.ai is a great resource where you can find these openings. We wish you the best in your future endeavors and career pursuits.
+   
+      Kind Regards,
+      Miltiadis Saratzidis
+      '''
+
+  
+
+
+    Your job is to only change the variable part in the letter that is inside the <change this part 1> and <change this part 2> . 
+    The goal is to make the variable part custom to the candidate. 
+    You will use the Information from CV and Job Requirements to write that variable part. 
+    
+    For <change this part 1>(delimiters) find where there is a mismatch between the CV and  Job Requirements use that as the reason for rejection, be specific.
+    For <change this part 2>(delimiters) act as a coach and suggest where the candidate can improve, be specific and more detailed in how the candidate can be better prepared(specific actions that they could take).
+
+    Keep the rest of the letter unchanged. 
+    `;
+
+      letter = await useGPTchatSimple(promptInterviewLetter, 0.7);
+
+      console.log(letter);
+
+      return {
+        generatedLetter: letter,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "addNodesToPosition",
+        { component: "positionMutation > addNodesToPosition" }
+      );
+    }
+  },
   storeLongTermMemory: async (parent, args, context, info) => {
     const { messages, userID } = args.fields;
     console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
