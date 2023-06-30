@@ -186,6 +186,18 @@ module.exports = `
         data: [addMessageInput]
     }
 
+
+    input secondInterviewLetterInput {
+        message: String
+        userID: ID
+        positionID: ID
+    }
+
+    type secondInterviewLetterOutput {
+        generatedLetter: String
+    }
+
+
     input findMessageInput {
         discordID: ID
         serverID: ID
