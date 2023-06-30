@@ -11,7 +11,8 @@ const {
   // addSkillToMember,
   endorseAttribute,
   memberUpdated,
-  createFakeUser,createFakeUserCVnew,
+  createFakeUser,
+  createFakeUserCVnew,
   uploadUserDataGPT,
   updateMemberSignalInfo,
 } = require("./mutation/memberMutation");
@@ -61,7 +62,8 @@ const {
   addCandidatesPosition,
   deletePositionCandidate,
   addConvRecruiterToPosition,
-  updatePositionUserAnswers,updateAnalysisEdenAICandidates,
+  updatePositionUserAnswers,
+  updateAnalysisEdenAICandidates,
   updatePositionConvRecruiter,
   createTalentListPosition,
   updateUsersTalentListPosition,
@@ -75,7 +77,8 @@ const {
 } = require("./mutation/companyMutation");
 
 const {
-  addMemory,deleteMemories,
+  addMemory,
+  deleteMemories,
 } = require("./mutation/memoryPineconeMutation");
 
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
@@ -124,9 +127,15 @@ const {
 
 const {
   addMessage,
+  secondInterviewLetter,
   storeLongTermMemory,
   storeLongTermMemorySummary,
-  websiteToMemoryCompany,positionTextToExtraQuestions,conversationCVPositionToReport,positionTextAndConvoToReportCriteria,positionSuggestQuestionsAskCandidate,findPrioritiesTrainEdenAI,
+  websiteToMemoryCompany,
+  positionTextToExtraQuestions,
+  conversationCVPositionToReport,
+  positionTextAndConvoToReportCriteria,
+  positionSuggestQuestionsAskCandidate,
+  findPrioritiesTrainEdenAI,
   saveCVtoUser,
   autoUpdateUserInfoFromCV,
   addMessages,
@@ -163,7 +172,8 @@ module.exports = {
     addFavoriteProject,
     addPreferencesToMember,
     // addSkillToMember,
-    createFakeUser,createFakeUserCVnew,
+    createFakeUser,
+    createFakeUserCVnew,
     uploadUserDataGPT,
     updateMemberSignalInfo,
 
@@ -211,7 +221,8 @@ module.exports = {
     addCandidatesPosition,
     deletePositionCandidate,
     addConvRecruiterToPosition,
-    updatePositionUserAnswers,updateAnalysisEdenAICandidates,
+    updatePositionUserAnswers,
+    updateAnalysisEdenAICandidates,
     updatePositionConvRecruiter,
     createTalentListPosition,
     updateUsersTalentListPosition,
@@ -222,9 +233,9 @@ module.exports = {
     updateUrlCompany,
     addEmployeesCompany,
 
-
     // ------------- MEMORY PINECONE MUTATION -----------------
-    addMemory,deleteMemories,
+    addMemory,
+    deleteMemories,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,
@@ -277,9 +288,15 @@ module.exports = {
 
     // --------------- AI MUTATION -----------------
     addMessage,
+    secondInterviewLetter,
     storeLongTermMemory,
     storeLongTermMemorySummary,
-    websiteToMemoryCompany,positionTextToExtraQuestions,conversationCVPositionToReport,positionTextAndConvoToReportCriteria,positionSuggestQuestionsAskCandidate,findPrioritiesTrainEdenAI,
+    websiteToMemoryCompany,
+    positionTextToExtraQuestions,
+    conversationCVPositionToReport,
+    positionTextAndConvoToReportCriteria,
+    positionSuggestQuestionsAskCandidate,
+    findPrioritiesTrainEdenAI,
     saveCVtoUser,
     autoUpdateUserInfoFromCV,
     addMessages,
@@ -305,6 +322,6 @@ module.exports = {
     memberUpdated,
     roomUpdated,
     memberUpdatedInRoom,
-    userCVSavedToDB
+    userCVSavedToDB,
   },
 };
