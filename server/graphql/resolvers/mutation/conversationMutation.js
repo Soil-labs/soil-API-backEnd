@@ -149,7 +149,7 @@ module.exports = {
           // if (true) {
 
           // ------------------ Delete old summaries from pinecone ------------------
-          // deletePineIDs = convDataNow.summary.map((obj) => obj.pineConeID);
+          deletePineIDs = convDataNow.summary.map((obj) => obj.pineConeID);
           // await deletePineCone(deletePineIDs);
           let filter = {
             pineconeID: deletePineIDs,
