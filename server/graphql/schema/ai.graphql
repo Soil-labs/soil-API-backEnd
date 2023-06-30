@@ -197,6 +197,18 @@ module.exports = `
         generatedLetter: String
     }
 
+    input rejectionLetterInput {
+        message: String
+        userID: ID
+        positionID: ID
+    }
+
+    type rejectionLetterOutput {
+        generatedLetter: String
+    }
+
+    
+
 
     input findMessageInput {
         discordID: ID
