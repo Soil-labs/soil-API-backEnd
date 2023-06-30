@@ -74,12 +74,12 @@ async function positionTextToExtraQuestionsFunc(
     QUESTIONS (delimiters <>) <${questionsPrompt}>
 
   
-    - You can improve each of the QUESTION using any of the REQUIREMENTS
+    - You SHOULD make more relevant each of the QUESTION using any of the REQUIREMENTS
     - you can only ask 1 question at a time
-    - Your task is to ask extra questions from the provided REQUIREMENTS, 
-    - example of question "you mention that there is backend responsibilities, what do you mean with that?"
+    - Your task is to ask extra super relevant questions from the provided REQUIREMENTS, 
+    - example of question "you mention on the requirements that there is fullstack responsibilities, what do you mean with that?"
     
-    Improved only QUESTIONS with no extra information: 
+    Only Improved only QUESTIONS: 
   `;
 
 
@@ -115,14 +115,16 @@ async function positionTextToExtraQuestionsFunc(
   for (let i = 0; i < improvedQuestionsArray.length; i++) {
     const improvedQuestion = improvedQuestionsArray[i];
 
-    printC(questionData[i], "5", "questionData[i]", "y");
 
     interviewQuestionsForCandidate.push({
       originalQuestionID: questionData[i]?.questionID,
       originalContent: questionData[i]?.content,
       personalizedContent: improvedQuestion.replace(/^\s*\d+\.\s*/, ""),
     });
+    
+    
   }
+  printC(interviewQuestionsForCandidate, "5", "interviewQuestionsForCandidate", "y");
 
   return interviewQuestionsForCandidate;
 }
