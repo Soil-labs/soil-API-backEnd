@@ -44,6 +44,11 @@ const {
 } = require("../../../utils/authorization");
 const { ACCESS_LEVELS } = require("../../../auth/constants");
 
+
+const {
+  addMemoryPineconeFunc,
+} = require("../utils/memoryPineconeModules");
+
 const { PubSub } = require("graphql-subscriptions");
 const pubsub = new PubSub();
 
@@ -136,43 +141,43 @@ async function generate12DigitID(inputString) {
 
 
 
-async function upsertEmbedingPineCone(data,ID = undefined) {
+// async function upsertEmbedingPineCone(data,ID = undefined) {
 
 
-  embedding = await createEmbeddingsGPT(data.text)
+//   embedding = await createEmbeddingsGPT(data.text)
 
-  const pinecone = new PineconeClient();
-  await pinecone.init({
-    environment: "us-east1-gcp",
-    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
-  });
-
-
-  const index = await pinecone.Index("profile-eden-information");
-
-  if (ID == undefined) ID = await generate12DigitID(data.text)
+//   const pinecone = new PineconeClient();
+//   await pinecone.init({
+//     environment: "us-east1-gcp",
+//     apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+//   });
 
 
+//   const index = await pinecone.Index("profile-eden-information");
+
+//   if (ID == undefined) ID = await generate12DigitID(data.text)
 
 
-  const upsertRequest = {
-    vectors: [
-      {
-        id: ID,
-        values: embedding,
-        metadata: {
-          text: data.text,
-          _id: data._id,
-          label: data.label,
-        }
-      },
-    ],
-  };
 
-  const upsertResponse = await index.upsert({upsertRequest});
 
-  return upsertResponse
-}
+//   const upsertRequest = {
+//     vectors: [
+//       {
+//         id: ID,
+//         values: embedding,
+//         metadata: {
+//           text: data.text,
+//           _id: data._id,
+//           label: data.label,
+//         }
+//       },
+//     ],
+//   };
+
+//   const upsertResponse = await index.upsert({upsertRequest});
+
+//   return upsertResponse
+// }
 
 module.exports = {
   addNewMember: combineResolvers(
@@ -2168,10 +2173,16 @@ module.exports = {
 
 
       // ------------ Upload Bio ------------
-      upsertDoc = await upsertEmbedingPineCone({
-        text: membersData.bio,
-        _id: memberID,
+      // upsertDoc = await upsertEmbedingPineCone({
+      //   text: membersData.bio,
+      //   _id: memberID,
+      //   label: "bio",
+      //   category: "user_data"
+      // })
+      resTK = await addMemoryPineconeFunc({
+        userID: memberID,
         label: "bio",
+        memory: membersData.bio,
         category: "user_data"
       })
       // ------------ Upload Bio ------------
@@ -2183,9 +2194,15 @@ module.exports = {
       
       for (let i = 0; i < nodesData.length; i++) {
         const node = nodesData[i];
-        upsertDoc = await upsertEmbedingPineCone({
-          text: node.name,
-          _id: memberID,
+        // upsertDoc = await upsertEmbedingPineCone({
+        //   text: node.name,
+        //   _id: memberID,
+        //   label: "node",
+        //   category: "user_data"
+        // })
+        resTK = await addMemoryPineconeFunc({
+          memory: node.name,
+          userID: memberID,
           label: "node",
           category: "user_data"
         })
@@ -2195,9 +2212,15 @@ module.exports = {
       // ------------ Upload previousProjects ------------
       for (let i = 0; i < membersData.previousProjects.length; i++) {
         const project = membersData.previousProjects[i];
-        upsertDoc = await upsertEmbedingPineCone({
-          text: "Project Title: " + project.title + "\n" + "Project Description: " + project.description,
-          _id: memberID,
+        // upsertDoc = await upsertEmbedingPineCone({
+        //   text: "Project Title: " + project.title + "\n" + "Project Description: " + project.description,
+        //   _id: memberID,
+        //   label: "previusProject",
+        //   category: "user_data"
+        // })
+        resTK = await addMemoryPineconeFunc({
+          memory:"Project Title: " + project.title + "\n" + "Project Description: " + project.description,
+          userID: memberID,
           label: "previusProject",
           category: "user_data"
         })
@@ -2387,9 +2410,15 @@ module.exports = {
         // ------------ Upload Nodes ------------
         for (let i = 0; i < nodesData.length; i++) {
           const node = nodesData[i];
-          upsertDoc = await upsertEmbedingPineCone({
-            text: node.name,
-            _id: randomID,
+          // upsertDoc = await upsertEmbedingPineCone({
+          //   text: node.name,
+          //   _id: randomID,
+          //   label: "node",
+          //   category: "user_data"
+          // })
+          resTK = await addMemoryPineconeFunc({
+            memory: node.name,
+            userID: randomID,
             label: "node",
             category: "user_data"
           })
@@ -2477,9 +2506,15 @@ module.exports = {
         // --------- find bio user ------
         
         // ------------ Upload Bio ------------
-        upsertDoc = await upsertEmbedingPineCone({
-          text: bio,
-          _id: randomID,
+        // upsertDoc = await upsertEmbedingPineCone({
+        //   text: bio,
+        //   _id: randomID,
+        //   label: "bio",
+        //   category: "user_data"
+        // })
+        resTK = await addMemoryPineconeFunc({
+          memory: bio,
+          userID: randomID,
           label: "bio",
           category: "user_data"
         })
@@ -2548,9 +2583,15 @@ module.exports = {
           })
 
           // ------------ Upload previousProjects ------------
-          upsertDoc = await upsertEmbedingPineCone({
-            text: "Project Title: " + title + "\n" + "Project Description: " + description,
-            _id: randomID,
+          // upsertDoc = await upsertEmbedingPineCone({
+          //   text: "Project Title: " + title + "\n" + "Project Description: " + description,
+          //   _id: randomID,
+          //   label: "previusProject",
+          //   category: "user_data"
+          // })
+          resTK = await addMemoryPineconeFunc({
+            memory: "Project Title: " + title + "\n" + "Project Description: " + description,
+            userID: randomID,
             label: "previusProject",
             category: "user_data"
           })

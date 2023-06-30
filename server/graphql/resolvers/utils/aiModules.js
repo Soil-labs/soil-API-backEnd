@@ -185,7 +185,7 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
     <Category 2: title>
       - b3: small content max 15 words
 
-  Answer:`;
+  Answer like the example:`;
   let report = await useGPTchatSimple(promptReport, 0);
 
   let idCounter = 1;
@@ -3197,4 +3197,5 @@ module.exports = {
   sortArrayRelevantNodes_aiModule,
   saveCVtoUserFunc,
   interviewEdenAIFunc,
+  generateRandomID,
 };

@@ -100,6 +100,12 @@ module.exports = `
         addEmployeesCompany(fields:addEmployeesCompanyInput): Company
 
 
+        # ------------- MEMORY PINECONE MUTATION -----------------
+        addMemory(fields:addMemoryInput): MemoryPinecone
+        deleteMemories(fields:deleteMemoriesInput): [MemoryPinecone]
+
+
+
         #  ---------- ROLE MUTATIONS -------
         updateRoleTemplate(fields:createRoleInput): RoleTemplate
 

@@ -18,9 +18,17 @@ const {checkAndAddPositionToMember  } = require("../utils/positionModules");
 
 const { printC } = require("../../../printModule");
 
-const { deletePineCone,upsertEmbedingPineCone,getMemory,interviewQuestionCreationUserFunc} = require("../utils/aiModules");
+const { 
+  // deletePineCone,
+  getMemory,interviewQuestionCreationUserFunc} = require("../utils/aiModules");
 
 const {useGPTchatSimple} = require("../utils/aiExtraModules");
+
+
+const {
+  addMemoryPineconeFunc,
+  deleteMemoriesPineconeFunc,
+} = require("../utils/memoryPineconeModules");
 
 
 const {
@@ -1446,7 +1454,11 @@ module.exports = {
         const convMemory = position.convRecruiter[position.convRecruiter.length - 1]?.convMemory
         if (convMemory.length >0) {
           deletePineIDs = convMemory.map(obj => obj.pineConeID)
-          await deletePineCone(deletePineIDs)
+          // await deletePineCone(deletePineIDs)
+          let filter = {
+            pineconeID: deletePineIDs,
+          }
+          resTK = await deleteMemoriesPineconeFunc(filter)
         }
         // ------------ Delete previous memory ------------
         
@@ -1455,14 +1467,20 @@ module.exports = {
         // newMemoryT.forEach(memorySaveN => {
         for (let i=0;i<newMemoryT.length;i++){
           const memorySaveN = newMemoryT[i].memoryContent;
-          upsertSum = await upsertEmbedingPineCone({
-            text: memorySaveN,
-            _id: position._id,
-            label: "Company_TrainEdenAI_memory",
-          });
-          printC(upsertSum,"2","upsertSum","y")
+          // upsertSum = await upsertEmbedingPineCone({
+          //   text: memorySaveN,
+          //   _id: position._id,
+          //   label: "Company_TrainEdenAI_memory",
+          // });
+          // printC(upsertSum,"2","upsertSum","y")
 
-          newMemoryT[i].pineConeID = upsertSum.pineConeID
+          resTK = await addMemoryPineconeFunc({
+            memory:memorySaveN,
+            positionID: position._id,
+            label: "Company_TrainEdenAI_memory",
+          })
+
+          newMemoryT[i].pineConeID = resTK?.memoryData?.pineConeID
         }
         // -------------- Sent to PineCone --------------
 
