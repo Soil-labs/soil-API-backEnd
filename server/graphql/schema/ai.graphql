@@ -182,6 +182,14 @@ module.exports = `
         users: [Members]
     }
 
+    input autoUpdateMemoryFromPositionRequirmentsInput {
+        positionIDs: [ID]
+    }
+
+    type autoUpdateMemoryFromPositionRequirmentsOutput {
+        positions: [Position]
+    }
+
     input addMessagesInput {
         data: [addMessageInput]
     }

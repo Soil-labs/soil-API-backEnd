@@ -16,6 +16,11 @@ const positionModel = mongoose.Schema({
   positionsRequirements: {
     originalContent: String,
     content: String,
+    positionMemory: [{
+      memoryContent: String,
+      pineConeID: String,
+    }],
+    positionPreparationMemory: Boolean,
   },
   nodes: [{
     nodeID: mongoose.Schema.ObjectId,
