@@ -31,16 +31,12 @@ const {
   positionTextToExtraQuestionsFunc,
 } = require("../utils/aiModules");
 
-
-
 const {
   addMemoryPineconeFunc,
   deleteMemoriesPineconeFunc,
 } = require("../utils/memoryPineconeModules");
 
-const {
-  wait,
-} = require("../utils/aiExtraModules");
+const { wait } = require("../utils/aiExtraModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
 const { PubSub } = require("graphql-subscriptions");
@@ -162,6 +158,177 @@ module.exports = {
       );
     }
   },
+  secondInterviewLetter: async (parent, args, context, info) => {
+    let { positionID, userID, message } = args.fields;
+
+    console.log("Mutation > addNodesToPosition > args.fields = ", args.fields);
+
+    if (!positionID) throw new ApolloError("positionID is required");
+    if (!userID) throw new ApolloError("userID is required");
+
+    try {
+      memberData = await Members.findOne({ _id: userID }).select(
+        "_id discordName cvInfo"
+      );
+
+      console.log("member data", memberData);
+
+      cvInfo = "";
+      if (memberData?.cvInfo?.cvMemory) {
+        cvInfo = memberData?.cvInfo?.cvMemory
+          ?.map((memory) => memory.memoryContent)
+          .join(" \n\n ");
+        console.log("prompt_cv", cvInfo);
+      } else {
+        cvInfo = memberData?.cvInfo?.cvContent;
+        console.log("else", cvInfo);
+      }
+
+      positionData = await Position.find({
+        _id: positionID,
+      });
+
+      positionRequirements = await positionData[0].positionsRequirements
+        .content;
+
+      promptInterviewLetter = `
+
+      Act as an HR Expert. I want you to write a letter to a candidate inviting them to a second interview.
+
+      For context there will two things: information from the CV and Job requirements.
+
+      Information from CV (delimiters <>): <${cvInfo}>
+
+      Job Requirements (delimiters <>): <${positionRequirements}>
+
+      Now here is the letter that you will customize based on the information above(delimiters ''' '''):
+
+      '''
+      Dear ${memberData.discordName},
+
+      We at Eden Protocol Inc. were deeply impressed by your application and interview. <change this part>Your proficiency in team leadership,
+      fueled by your profound drive and enthusiasm for the complexity of the problem space in which we operate<change this part>, resonated
+      deeply with our team ethos. We strongly believe that your distinctive experience and passion align perfectly with our mission.
+      Hence, it is exciting to extend an invitation to you for an in-person interview to expand on your vision and further witness your prowess firsthand.
+      We are keen on furthering this conversation and exploring potential avenues for mutual growth with you.
+
+      Feel free to pick a time that works for you here:
+      https://calendly.com/tomhusson/30
+
+      Yours sincerely,
+      Miltiadis Saratzidis
+
+      '''
+
+      Your job is to only change the variable part in the letter that is inside the <change this part>Your proficiency in team leadership,
+      fueled by your profound drive and enthusiasm for the complexity of the problem space in which we operate <change this part>. The goal is to make the variable part custom to the
+      candidate. You will use the Information from CV and Job Requirements to write that variable part. Keep the rest of the letter unchanged. Keep it very short & punchy
+      `;
+
+      letter = await useGPTchatSimple(promptInterviewLetter, 0.7);
+
+      console.log(letter);
+
+      return {
+        generatedLetter: letter,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "addNodesToPosition",
+        { component: "positionMutation > addNodesToPosition" }
+      );
+    }
+  },
+  rejectionLetter: async (parent, args, context, info) => {
+    let { positionID, userID, message } = args.fields;
+
+    console.log("Mutation > addNodesToPosition > args.fields = ", args.fields);
+
+    if (!positionID) throw new ApolloError("positionID is required");
+    if (!userID) throw new ApolloError("userID is required");
+
+    try {
+      memberData = await Members.findOne({ _id: userID }).select(
+        "_id discordName cvInfo"
+      );
+
+      console.log("member data", memberData);
+
+      cvInfo = "";
+      if (memberData?.cvInfo?.cvMemory) {
+        cvInfo = memberData?.cvInfo?.cvMemory
+          ?.map((memory) => memory.memoryContent)
+          .join(" \n\n ");
+        console.log("prompt_cv", cvInfo);
+      } else {
+        cvInfo = memberData?.cvInfo?.cvContent;
+        console.log("else", cvInfo);
+      }
+
+      positionData = await Position.find({
+        _id: positionID,
+      });
+
+      positionRequirements = await positionData[0].positionsRequirements
+        .content;
+
+      console.log(positionRequirements);
+
+      promptInterviewLetter = `
+
+      Act as an HR Expert. I want you to write a letter to a candidate inviting them to a second interview.
+
+      For context there will two things: information from the CV and Job requirements.
+
+      Information from CV (delimiters <>): <${cvInfo}>
+
+      Job Requirements (delimiters <>): <${positionRequirements}>
+
+      Now here is the letter that you will customize based on the information above(delimiters ''' '''):
+
+      '''
+      Dear  ${memberData.discordName},
+
+      Thank you for taking the time to participate in our interview process. 
+      We certainly appreciated the opportunity to learn more about your capabilities and technical skills. 
+      However, after analyzing your profile,  <change this part 1>it was observed that your experience with some of the key technologies(mention the specific names of technologies) in our stack and leadership roles is somewhat limited. 
+      For this position, proficiency in these technologies and the ability to guide team members effectively is crucial, and the ability to make sound technical trade-off decisions is of great significance <change this part 1>. 
+   
+      <change this part 2>We believe that with more experience and exploration, you'll be a capable candidate for similar roles in the future. We highly recommend looking into our sister companies that might have suitable opportunities fitting your current skill set.  <change this part 2> joineden.ai is a great resource where you can find these openings. We wish you the best in your future endeavors and career pursuits.
+   
+      Kind Regards,
+      Miltiadis Saratzidis
+      '''
+
+  
+
+
+    Your job is to only change the variable part in the letter that is inside the <change this part 1> and <change this part 2> . 
+    The goal is to make the variable part custom to the candidate. 
+    You will use the Information from CV and Job Requirements to write that variable part. 
+    
+    For <change this part 1>(delimiters) find where there is a mismatch between the CV and  Job Requirements use that as the reason for rejection, be specific.
+    For <change this part 2>(delimiters) act as a coach and suggest where the candidate can improve, be specific and more detailed in how the candidate can be better prepared(specific actions that they could take).
+
+    Keep the rest of the letter unchanged. 
+    `;
+
+      letter = await useGPTchatSimple(promptInterviewLetter, 0.7);
+
+      console.log(letter);
+
+      return {
+        generatedLetter: letter,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "addNodesToPosition",
+        { component: "positionMutation > addNodesToPosition" }
+      );
+    }
+  },
   storeLongTermMemory: async (parent, args, context, info) => {
     const { messages, userID } = args.fields;
     console.log("Mutation > storeLongTermMemory > args.fields = ", args.fields);
@@ -199,8 +366,8 @@ module.exports = {
       res = await addMemoryPineconeFunc({
         userID: userID,
         label: "long_term_memory",
-        memory: summary
-      })
+        memory: summary,
+      });
 
       return {
         summary: summary,
@@ -269,8 +436,8 @@ module.exports = {
           res = await addMemoryPineconeFunc({
             userID: userID,
             label: "CV_user_memory",
-            memory: jobsArr[i]
-          })
+            memory: jobsArr[i],
+          });
         }
       };
 
@@ -334,7 +501,6 @@ module.exports = {
     stringFromWebsite = message;
 
     try {
-
       promptReport = ` You have as input the Details of a Job Position
       Job Position (delimiters <>): <${stringFromWebsite}>
 
@@ -646,7 +812,6 @@ module.exports = {
 
       questionsSuggest = await useGPTchatSimple(promptNewQuestions, 0, "API 2");
 
-
       // questionsSuggest =  `
       // 1. Can you give an example of a time when you had to use your strong organizational skills to successfully complete a project?
       // 2. Have you worked in a team environment before? Can you give an example of a successful teamwork experience?
@@ -683,13 +848,11 @@ module.exports = {
         questionsArray.push(questionObject);
       }
 
-      printC(questionsArray,"3","questionsArray","b")
-
+      printC(questionsArray, "3", "questionsArray", "b");
 
       return {
         success: true,
         questionSuggest: questionsArray,
-
       };
     } catch (err) {
       throw new ApolloError(
@@ -703,38 +866,43 @@ module.exports = {
   },
   findPrioritiesTrainEdenAI: async (parent, args, context, info) => {
     const { positionID } = args.fields;
-    console.log("Mutation > findPrioritiesTrainEdenAI > args.fields = ", args.fields);
+    console.log(
+      "Mutation > findPrioritiesTrainEdenAI > args.fields = ",
+      args.fields
+    );
 
     try {
-
       if (!positionID) {
         throw new ApolloError("positionID is required");
       }
-    
-      positionData = await Position.findOne({ _id: positionID }).select('_id positionsRequirements');
-    
+
+      positionData = await Position.findOne({ _id: positionID }).select(
+        "_id positionsRequirements"
+      );
+
       if (!positionData) {
         throw new ApolloError("Position not found");
       }
 
-      positionsRequirements = positionData.positionsRequirements.originalContent
+      positionsRequirements =
+        positionData.positionsRequirements.originalContent;
 
       // positionsRequirements = `We are looking for a UX Design Lead to join our team and support them in delivering the best user experience for the success of the products and the satisfaction of the customers.
 
       // Our team works closely with market leaders in finance, healthcare, compliance, and other industries to design and develop strategic products that address complex workflow challenges.
-      
+
       // As a UX Design Lead, you will be responsible for delivering the best user experience, which makes your role extremely important to the success of the products and the satisfaction of the customers.
-      
+
       // We are especially interested if you have extensive experience with enterprise-level product solutions and domain expertise that aligns with our focus industries.
-      
+
       // What’s in it for you?
-      
+
       // You will have the opportunity to contribute your vision to our products and projects and help drive each engagement toward success. You will fully participate in the product design and development process – including project estimation, research, client-facing discovery, ideation, low and high fidelity wireframing, interactive prototyping, and visual design.
-      
+
       // Our collaborative environment emphasizes personal growth and support and will allow you to share your knowledge while also learning from colleagues.
-      
+
       // Requirements
-      
+
       // 8+ years of experience in UX design
       // Experience conducting design sprints or workshops with clients
       // Experience in interface design for web and mobile applications
@@ -749,9 +917,9 @@ module.exports = {
       // Proactivity and ability to solve tasks (accept criticism and explain design options)
       // A portfolio that demonstrates the above skills
       // English - Upper-Intermediate
-      
+
       // Responsibilities
-      
+
       // Conduct design sprints or workshops to collect and evaluate business goals and user needs.
       // Conduct and analyze stakeholder interviews & user surveys
       // Create pitch-decks and visual concepts of products
@@ -761,38 +929,37 @@ module.exports = {
       // Deliver an outstanding user experience through an exceptional and intuitive application design
       // Provide leadership and direction for a team of designers
       // Develop and maintain design systems for the products
-      
+
       // About Windmill
-      
+
       // Windmill design & build digital product experiences which delight, since 2012! We are a product delivery company dedicated to delivering impactful digital products and solutions, that resolve modern challenges.
-      
+
       // With our global operation headquartered in Switzerland, celebrating and seeking diversity and teams based in the UK, USA, Portugal, South Africa, Germany, Ukraine and India.
-      
+
       // Interested in learning more? Take a look at our website: www.windmill.digital/about/
-      
+
       // What We Offer
-      
+
       // Firstly, we offer the chance to be part of an experience driven company, who put you firmly in the driver’s seat of your own development. Operating on a remote first principle, we give our teams the flexibility to work from where, when and how they like. As long as you meet the requirements of your role (OKR, responsibilities etc) and are available for key meetings, the how is up to you.
-      
+
       // In Addition To Experience, You Get
-      
+
       // Competitive compensation and benefits
       // Working as part of a diverse, international team
       // Interesting tasks and challenges, where you can be creative and take ownership
       // Opportunities for career enhancement
       // Opportunity to make a positive impact on the team
-      
+
       // Equal Opportunities At Windmill
-      
+
       // Windmill Digital is an equal opportunities employer that strongly believes in workplace diversity. We consider all applicants regardless of their age, religion, ethnicity, sexual orientation or disability.
-      
+
       // Think you’d be a good fit for the role? Send us your CV now!
-      
+
       // For more information, please visit our company website: https://www.windmill.digital.`
 
-      printC(positionsRequirements,"3","positionsRequirements","b")
+      printC(positionsRequirements, "3", "positionsRequirements", "b");
       // sd02
-
 
       // --------------------------------- Find Priorities ---------------------------------
       let promptNewQuestions = `
@@ -808,16 +975,18 @@ module.exports = {
          2. Priority Title - Reason based on Requirements in MAX 10 words
         
         Priorities:
-      `
+      `;
 
-      printC(promptNewQuestions,"3","promptNewQuestions","b")
+      printC(promptNewQuestions, "3", "promptNewQuestions", "b");
 
-      prioritiesSuggestions = await useGPTchatSimple(promptNewQuestions,0,"API 1")
+      prioritiesSuggestions = await useGPTchatSimple(
+        promptNewQuestions,
+        0,
+        "API 1"
+      );
 
+      printC(prioritiesSuggestions, "3", "prioritiesSuggestions", "p");
 
-      printC(prioritiesSuggestions,"3","prioritiesSuggestions","p")
-
-  
       const regex = /(\d+)\.\s+(.*)\s+-\s+(.*)/g;
       const prioritiesArray = [];
 
@@ -830,9 +999,8 @@ module.exports = {
         prioritiesArray.push(questionObject);
       }
 
-      printC(prioritiesArray,"3","prioritiesArray","g")
+      printC(prioritiesArray, "3", "prioritiesArray", "g");
       // --------------------------------- Find Priorities ---------------------------------
-
 
       // --------------------------------- Find TradeOffs ---------------------------------
       let promptNewTradeOffs = `
@@ -848,39 +1016,39 @@ module.exports = {
          2. TradeOff1 VS TradeOff2 - Reason based on Requirements
         
         TradeOffs:
-      `
+      `;
 
-      printC(promptNewTradeOffs,"3","promptNewTradeOffs","b")
+      printC(promptNewTradeOffs, "3", "promptNewTradeOffs", "b");
 
-      tradeOffsSuggestions = await useGPTchatSimple(promptNewTradeOffs,0,"API 1")
+      tradeOffsSuggestions = await useGPTchatSimple(
+        promptNewTradeOffs,
+        0,
+        "API 1"
+      );
 
-
-      printC(tradeOffsSuggestions,"3","tradeOffsSuggestions","p")
+      printC(tradeOffsSuggestions, "3", "tradeOffsSuggestions", "p");
       // sd7
 
-  
       const regexT = /(\d+)\.\s+(.+?)\s+-\s+(.+?)(?=\d+\.|$)/gs;
-      
+
       const tradeoffsArray = [];
       let matchT;
       while ((matchT = regexT.exec(tradeOffsSuggestions)) != null) {
         const tradeoffObject = {
-          tradeOff1: matchT[2].split(' vs. ')[0],
-          tradeOff2: matchT[2].split(' vs. ')[1],
+          tradeOff1: matchT[2].split(" vs. ")[0],
+          tradeOff2: matchT[2].split(" vs. ")[1],
           reason: matchT[3],
         };
         tradeoffsArray.push(tradeoffObject);
       }
-      
-      printC(tradeoffsArray,"3","tradeoffsArray","g")
-      // --------------------------------- Find TradeOffs ---------------------------------
 
+      printC(tradeoffsArray, "3", "tradeoffsArray", "g");
+      // --------------------------------- Find TradeOffs ---------------------------------
 
       return {
         success: true,
         priorities: prioritiesArray,
         tradeOffs: tradeoffsArray,
-
       };
     } catch (err) {
       throw new ApolloError(
@@ -998,7 +1166,7 @@ module.exports = {
       await wait(25000);
       //publish the userID of the saved cv
       pubsub.publish("USER_CV_SAVED", {
-        userCVSavedToDB: { userID, cvSummary }
+        userCVSavedToDB: { userID, cvSummary },
       });
       return {
         success: true,
@@ -1187,18 +1355,16 @@ module.exports = {
         });
       }
 
-
       for (let i = 0; i < usersData.length; i++) {
         // let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
 
-
-      console.log("change = " )
+        console.log("change = ");
 
         // ----------- Calculate and Save Memory ------------
         if (userData.cvInfo.cvPreparationMemory != true) {
-          // if (true) {
+
           // ------------ Delete previous memory ------------
           // if (userData.cvInfo?.cvMemory?.length > 0) {
           //   deletePineIDs = userData.cvInfo.cvMemory.map(
@@ -1208,12 +1374,10 @@ module.exports = {
           // }
           let filter = {
             userID: userData._id,
-            label: "CV_user_memory"
-          }
-          res = await deleteMemoriesPineconeFunc(filter)
+            label: "CV_user_memory",
+          };
+          res = await deleteMemoriesPineconeFunc(filter);
           // ------------ Delete previous memory ------------
-
-
 
           promptMemory = `I will provide you with a string extracted from a CV (resume), delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. 
         These facts will be stored in Pinecone to later be retrieved and enhance the interview-like conversation with an AI. 
@@ -1250,15 +1414,14 @@ module.exports = {
             }
           }
 
-
           printC(jobsArr, "1", "jobsArr", "g");
           // sks0
 
-          sumBulletSplit = jobsArr
+          sumBulletSplit = jobsArr;
 
           let cvMemory = [];
 
-          let upsertSum,embeddings;
+          let upsertSum, embeddings;
 
           for (let i = 0; i < sumBulletSplit.length; i++) {
             // -------------- Sent to PineCone --------------
@@ -1295,9 +1458,8 @@ module.exports = {
             res = await addMemoryPineconeFunc({
               userID: userData._id,
               label: "CV_user_memory",
-              memory: sumBulletSplit[i]
-            })
-
+              memory: sumBulletSplit[i],
+            });
 
             printC(res, "2", "res", "y");
             // -------------- Sent to PineCone --------------

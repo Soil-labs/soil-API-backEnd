@@ -160,6 +160,9 @@ module.exports = `
         autoUpdateMemoryFromCV(fields: autoUpdateMemoryFromCVInput): autoUpdateMemoryFromCVOutput
         autoUpdateMemoryFromPositionRequirments(fields: autoUpdateMemoryFromPositionRequirmentsInput): autoUpdateMemoryFromPositionRequirmentsOutput
         addMessages(fields: addMessagesInput): [AI]
+        secondInterviewLetter(fields: secondInterviewLetterInput): secondInterviewLetterOutput
+        rejectionLetter(fields: rejectionLetterInput): rejectionLetterOutput
+
         updateMessage(fields: updateMessageInput): AI
         useAI_OnMessage(fields: useAI_OnMessageInput): useAI_OnMessageOutput
         messageToGPT(fields: messageToGPTInput): messageToGPTOutput
