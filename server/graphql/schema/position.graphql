@@ -20,6 +20,7 @@ module.exports = `
     type positionsRequirementsType { 
         originalContent: String
         content: String
+        positionPreparationMemory: Boolean
     }
 
     type convRecruiterType {

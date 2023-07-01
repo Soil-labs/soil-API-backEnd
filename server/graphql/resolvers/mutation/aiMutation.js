@@ -613,6 +613,7 @@ module.exports = {
         interviewQuestionsForCandidate;
       positionData.positionsRequirements.content = report;
       positionData.positionsRequirements.originalContent = stringFromWebsite;
+      positionData.positionsRequirements.positionPreparationMemory = false;
 
       // update Mongo
       await positionData.save();
@@ -1362,8 +1363,8 @@ module.exports = {
         console.log("change = ");
 
         // ----------- Calculate and Save Memory ------------
-        // if (userData.cvInfo.cvPreparationMemory != true) {
-        if (true) {
+        if (userData.cvInfo.cvPreparationMemory != true) {
+
           // ------------ Delete previous memory ------------
           // if (userData.cvInfo?.cvMemory?.length > 0) {
           //   deletePineIDs = userData.cvInfo.cvMemory.map(
@@ -1489,6 +1490,156 @@ module.exports = {
         err.extensions?.code || "autoUpdateMemoryFromCV",
         {
           component: "aiMutation > autoUpdateMemoryFromCV",
+        }
+      );
+    }
+  },
+  autoUpdateMemoryFromPositionRequirments: async (parent, args, context, info) => {
+    const { positionsID } = args.fields;
+    console.log(
+      "Mutation > autoUpdateMemoryFromPositionRequirments > args.fields = ",
+      args.fields
+    );
+
+    try {
+      if (positionsID)
+        positionsData = await Position.find({
+          _id: positionsID,
+          // "cvInfo.cvPreparationMemory": { $ne: true },
+          // "cvInfo.cvContent": { $ne: null },
+        });
+      else {
+        positionsData = await Position.find({
+          // "positionsRequirements.positionPreparationMemory": { $ne: true },
+          "positionsRequirements.positionPreparationMemory": false,
+          "positionsRequirements.originalContent": { $ne: null },
+        });
+      }
+
+      printC(positionsData, "1", "positionsData", "b");
+      // df0
+
+
+      for (let i = 0; i < positionsData.length; i++) {
+        // let i = 0; // SOS 🆘 delete
+        let positionData = positionsData[i];
+        let positionsRequirements = positionData.positionsRequirements.originalContent;
+
+
+
+        printC(positionData._id, "1", "positionData._id", "b");
+        // sdf9
+        
+        
+
+        // ----------- Calculate and Save Memory ------------
+        if (positionData?.positionsRequirements?.cvPreparationMemory != true) {
+          let filter = {
+            positionID: positionData._id,
+            label: "requirements_position_memory"
+          }
+          res = await deleteMemoriesPineconeFunc(filter)
+          // ------------ Delete previous memory ------------
+
+
+
+          promptMemory = `I will provide you with a string extracted from a Requirements of Jib, delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. 
+          I want you to find experiences in the Requirements and combine them with a description of what is required + if you find the skills that were associated with that experience. 
+          
+          Never have a bullet point for skills in the output, do not list skills as a separate category.  
+
+          Follow this strict format (each category should be limited to 200 characters, do not go beyond 200 character limit for each category):
+          
+          Here is the string to extract the information from: """${positionsRequirements}"""
+          
+          Facts found in the string:`;
+
+          summaryBulletPoints = await useGPTchatSimple(
+            promptMemory,
+            0,
+            "API 2"
+          );
+
+          // let summaryBulletPoints = `
+          // - Antmicro's AI team builds advanced deep learning-capable data processing devices for customers from various business sectors.
+          // - The team participates in the world's leading edge AI projects aimed at developing the edge AI tooling ecosystem.
+          // - Antmicro collaborates closely with Google around the open source machine learning framework TensorFlow.
+          // - Antmicro uses innovative development methodologies to stay at the forefront of the industry.
+          // - The team members become early adopters of the latest processing platforms from vendors such as NVIDIA, NXP, or Xilinx.
+          // - The team is responsible for designing AI system architectures for tasks such as video processing, object detection and tracking, speech recognition, and text analysis.
+          // - The team implements, trains, and tests AI algorithms with 3D game engines and optimizes them for given hardware.
+          // - The team develops and improves AI-oriented tools and frameworks.
+          // - The team's everyday work involves Linux and other open source operating systems.
+          // - Automation of workflow through writing automated tests and Continuous Integration scripts is encouraged.
+          // - The requirements include a Bachelor or Master degree in computer science, electronics, or related fields.
+          // - Understanding computer architectures is required.
+          // - Expertise in C/C++ is a must.
+          // - Experience with bash, git, gcc, and make is required.
+          // - Knowledge of Linux and its internals is required.
+          // - Experience with Python and/or other scripting languages is required.
+          // - Knowledge of TensorFlow/Caffe is required.
+          // - Understanding of neural network architectures is required.
+          // - Knowledge of CUDA/OpenCL/OpenCV is required.
+          // - Knowledge of computer vision algorithms is required.
+          // - Knowledge of the latest trends in AI is required.
+          // - Interest in algorithmics is required.
+          // - Good command of English is required.
+          // - Ability and willingness to learn and work as part of a team is required.
+          // - Full-time employment only (no B2B, no agencies).
+          // - A valid work permit for Poland/European Union is required.`
+
+          printC(summaryBulletPoints, "1", "summaryBulletPoints", "g");
+
+          
+          const jobsArr_ = summaryBulletPoints.split('\n').filter(item => item.trim().startsWith('-'));
+
+  
+          const jobsArr = jobsArr_.map(item => "- " + item.replace(/- /g, "").trim());
+
+
+
+
+
+          printC(jobsArr, "2", "jobsArr", "p");
+
+          printC(jobsArr[2], "2", "jobsArr[2]", "p");
+
+
+
+          sumBulletSplit = jobsArr
+
+
+          for (let i = 0; i < sumBulletSplit.length; i++) {
+            res = await addMemoryPineconeFunc({
+              positionID: positionData._id,
+              label: "requirements_position_memory",
+              memory: sumBulletSplit[i]
+            })
+
+
+            printC(res, "2", "res", "y");
+            // -------------- Sent to PineCone --------------
+
+
+            printC(sumBulletSplit[i], "2", "sumBulletSplit[i]", "p");
+          }
+
+          positionData.positionsRequirements.positionPreparationMemory = true;
+        }
+        // ----------- Calculate and Save Memory ------------
+
+        await positionData.save();
+      }
+
+      return {
+        positions: positionsData,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "autoUpdateMemoryFromPositionRequirments",
+        {
+          component: "aiMutation > autoUpdateMemoryFromPositionRequirments",
         }
       );
     }
