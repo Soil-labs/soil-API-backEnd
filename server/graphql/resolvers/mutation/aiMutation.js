@@ -904,8 +904,17 @@ module.exports = {
     let userData = await Members.findOne({ _id: userID });
 
     let positionData = await Position.findOne({ _id: positionID }).select(
-      "_id candidates"
+      "_id candidates positionsRequirements"
     );
+
+    if (!positionData) {
+      throw new ApolloError("Position not found");
+    }
+
+    let positionRequirementsC = positionData.positionsRequirements.content;
+
+    // printC(positionRequirementsC,"3","positionRequirementsC","b")
+    // sdf9s
 
     if (!userData) {
       throw new ApolloError("User not found");
@@ -943,36 +952,116 @@ module.exports = {
 
       // ----------- CV to Summary -------------
       let cvContentPrompt = `
-        CV CONTENT (delimiters <>): <${cvContent.substring(0, 3500)}>
+        CV CANDIDATE (delimiters <>): <${cvContent.substring(0, 3500)}>
 
-        - You are a recruiter with task to understand a candidate's CV.
-        - Your goal is to create a Summary of the CV CONTENT
-        - only contain most important skills, education and experience
-        - Task is to extract, Title Role, Main Skills, Summary
+        JOB REQUIREMENTS (delimiters <>): <${positionRequirementsC}>
 
-        Title Role 5 words max: 
-        Main Skills 3 words max:
-        Summary 3 sentences max:: 
+        - You are a recruiter with task to understand the the Fit between a candidate's CV and Job Requirments
+        - Task is to extract: Persentage of match, Skills, Candidate Strengths Fit, Candidate Weaknesses Fit, Candidate Growth Position, Candidate Improve Expirience
+        - talk in "second person" like you are a recruiter and you are selling the position to the candidate
+
+        
+        Percentage of match from 0 to 100: 
+        Main Skills CV CANDIDATE , 7 skills Max:
+        Were CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max: 
+
+        Were the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max:
+
+        Were the CANDIDATE will Grow being in this JOB, 2 sentence Max:
+
+        Were the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max:
       `;
       printC(cvContentPrompt, "3", "cvContentPrompt", "b");
 
       titleSkillSummaryRes = await useGPTchatSimple(
         cvContentPrompt,
         0,
-        "API 2"
+        "API 2",
+        "chatGPT4"
       );
+
+      // titleSkillSummaryRes = `Percentage of match from 0 to 100: 70%
+      // Main Skills CV CANDIDATE, 7 skills Max: Machine Learning, Deep Learning, SQL, MERN, Python, C++, Leadership
+      
+      // Where CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max: 
+      // Your extensive experience in Machine Learning and leadership roles aligns well with the requirement for managing ML-driven products. Your proficiency in SQL and data processing frameworks is also a strong fit for the role.
+      
+      // Where the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max:
+      // While your CV showcases a strong technical background, it doesn't mention any experience with agile/scrum software development methodologies, which is a requirement for this role. Additionally, fluency in French is required for this position, which is not mentioned in your CV.
+      
+      // Where the CANDIDATE will Grow being in this JOB, 2 sentence Max:
+      // This role will provide you with the opportunity to further develop your product management skills in the context of ML-driven products. You will also have the chance to gain experience in agile/scrum methodologies, expanding your software development knowledge.
+      
+      // Where the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max:
+      // In this role, you will have the opportunity to work on experimental products poWhered by data feedback loops, which will enhance your experience in building innovative solutions. Additionally, working in a multilingual environment will improve your communication skills and broaden your professional network.
+      // `
+      // titleSkillSummaryRes = `Where the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max: While your CV showcases a strong technical background, it doesn't mention any experience with agile/scrum software development methodologies, which is a requirement for this role. Additionally, fluency in French is required for this position, which is not mentioned in your CV.
+      
+      // Where the CANDIDATE will Grow being in this JOB, 2 sentence Max:
+      // This role will provide you with the opportunity to further develop your product management skills in the context of ML-driven products. You will also have the chance to gain experience in agile/scrum methodologies, expanding your software development knowledge.
+      
+      // Where the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max:
+      // In this role, you will have the opportunity to work on experimental products poWhered by data feedback loops, which will enhance your experience in building innovative solutions. Additionally, working in a multilingual environment will improve your communication skills and broaden your professional network.
+      // `
 
       // titleSkillSummaryRes = `Title Role: Skilled Software Engineer
       // Main Skills: Java, Spring, Kubernetes
       // Summary: Highly skilled software engineer with 5+ years of experience in developing scalable and robust applications using Java, Spring, and Kubernetes. Proficient in building RESTful APIs, working with NoSQL and SQL databases, and deploying applications on Google Cloud Platform (GCP) using Helm. Proven track record of collaborating with cross-functional teams and delivering high-quality software solutions.`
 
       printC(titleSkillSummaryRes, "3", "titleSkillSummaryRes", "b");
+      // sdf9
 
-      const titleRole = titleSkillSummaryRes.match(/Title Role: (.*)/)[1];
+      // const titleRole = titleSkillSummaryRes.match(/Title Role: (.*)/)[1];
+      // const mainSkills = titleSkillSummaryRes
+      //   .match(/Main Skills: (.*)/)[1]
+      //   .split(", ");
+      // const cvSummary = titleSkillSummaryRes.match(/Summary: (.*)/)[1];
+
+      // const persentageMatch = titleSkillSummaryRes.match(/Percentage of match from 0 to 100: \s*(.*)/)[1].replace("%","");
+      // printC(persentageMatch, "3", "persentageMatch", "b");
+      // const mainSkills = titleSkillSummaryRes
+      //   .match(/Main Skills CV CANDIDATE, 7 skills Max: \s*(.*)/)[1]
+      //   .split(", ");
+      //   printC(mainSkills, "3", "mainSkills", "b");
+      // const cvStrongFit = titleSkillSummaryRes.match(/Where CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max: \s*(.*)/)[1];
+      // printC(cvStrongFit, "3", "cvStrongFit", "b");
+      // const cvImproveForJob = titleSkillSummaryRes.match(/Where the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max: \s*(.*)/);
+      // printC(cvImproveForJob, "3", "cvImproveForJob", "b");
+      // const candidateGrowJob = titleSkillSummaryRes.match(/Where the CANDIDATE will Grow being in this JOB, 2 sentence Max: \s*(.*)/)[1];
+      // printC(candidateGrowJob, "3", "candidateGrowJob", "b");
+      // const candidateExpirienceJob = titleSkillSummaryRes.match(/Where the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max: \s*(.*)/)[1];
+      // printC(candidateExpirienceJob, "3", "candidateExpirienceJob", "b");
+
+
+      const matchPercentageRegex = /Percentage of match from 0 to 100: (\d+)%/;
+      const mainSkillsRegex = /Main Skills CV CANDIDATE, 7 skills Max: (.*)/;
+      const strongFitRegex = /Where CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max:\s*(.*)/;
+      const improveRegex = /Where the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max:\s*(.*)/;
+      const growthRegex = /Where the CANDIDATE will Grow being in this JOB, 2 sentence Max:\s*(.*)/;
+      const experienceRegex = /Where the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max:\s*(.*)/;
+
+      const matchPercentage = titleSkillSummaryRes.match(matchPercentageRegex)[1].trim().replace("%","");
+      // const mainSkills = titleSkillSummaryRes.match(mainSkillsRegex)[1].trim();
+      const strongFit = titleSkillSummaryRes.match(strongFitRegex)[1].trim();
+      const whereToImrpove = titleSkillSummaryRes.match(improveRegex)[1].trim();
+      const growthAreas = titleSkillSummaryRes.match(growthRegex)[1].trim();
+      const experienceAreas = titleSkillSummaryRes.match(experienceRegex)[1].trim();
+
       const mainSkills = titleSkillSummaryRes
-        .match(/Main Skills: (.*)/)[1]
+        .match(mainSkillsRegex)[1]
         .split(", ");
-      const cvSummary = titleSkillSummaryRes.match(/Summary: (.*)/)[1];
+
+      console.log("Match Percentage:", matchPercentage);
+      console.log("Main Skills:", mainSkills);
+      console.log("Strong Fit:", strongFit);
+      console.log("Areas to Improve:", whereToImrpove);
+      console.log("Growth Opportunities:", growthAreas);
+      console.log("Experience Improvement:", experienceAreas);
+
+
+
+
+      // sdf0
 
       // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
 
@@ -980,31 +1069,28 @@ module.exports = {
       // Ateet Tiwari is a Full Stack Developer with experience in Front-End, Back-End, Database, Messaging Services, and UI Development. He has a strong proficiency in React, Redux, Node, Express, Python, SQL, and MongoDB. Ateet has led initiatives and teams, improved product performance, and designed in-house frameworks and systems. He is a Polygon Fellowship Graduate and has extensive knowledge in web3 development.
       // `
 
-      // printC(cvSummary, "3", "cvSummary", "g");
-      // printC(titleRole, "3", "titleRole", "g");
-      // printC(mainSkills, "3", "mainSkills", "g");
-      // sdf0
+      
 
       // ----------- CV to Summary -------------
 
-      // OLD Algorithm
-      // const interviewQ = await InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
-      // console.log("interviewQ = " , interviewQ)
-      // InterviewQuestionCreationUserAPICallF(positionID, userID, cvSummary);
+      // interviewQuestionCreationUserFunc(positionID, userID, cvContent);
+      // // sdf00
 
-      interviewQuestionCreationUserFunc(positionID, userID, cvContent);
-      // sdf00
-
-      await wait(25000);
-      //publish the userID of the saved cv
-      pubsub.publish("USER_CV_SAVED", {
-        userCVSavedToDB: { userID, cvSummary }
-      });
+      // await wait(25000);
+      // //publish the userID of the saved cv
+      // pubsub.publish("USER_CV_SAVED", {
+      //   userCVSavedToDB: { userID, cvSummary }
+      // });
       return {
         success: true,
-        titleRole: titleRole,
+        // titleRole: titleRole,
         mainSkills: mainSkills,
-        cvSummary: cvSummary,
+        // cvSummary: cvSummary,
+        matchPercentage: matchPercentage,
+        strongFit: strongFit,
+        whereToImrpove: whereToImrpove,
+        growthAreas: growthAreas,
+        experienceAreas: experienceAreas,
       };
     } catch (err) {
       throw new ApolloError(
