@@ -164,6 +164,12 @@ module.exports = `
         titleRole: String
         mainSkills: [String]
         cvSummary: String
+        matchPercentage: Float
+        strongFit: String
+        whereToImrpove: String
+        growthAreas: String
+        experienceAreas: String
+
     }
 
     input autoUpdateUserInfoFromCVInput {
