@@ -166,7 +166,7 @@ module.exports = `
         cvSummary: String
         matchPercentage: Float
         strongFit: String
-        whereToImrpove: String
+        improvementPoints: String
         growthAreas: String
         experienceAreas: String
 

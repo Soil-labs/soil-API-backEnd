@@ -1211,7 +1211,7 @@ module.exports = {
       const matchPercentage = titleSkillSummaryRes.match(matchPercentageRegex)[1].trim().replace("%","");
       // const mainSkills = titleSkillSummaryRes.match(mainSkillsRegex)[1].trim();
       const strongFit = titleSkillSummaryRes.match(strongFitRegex)[1].trim();
-      const whereToImrpove = titleSkillSummaryRes.match(improveRegex)[1].trim();
+      const improvementPoints = titleSkillSummaryRes.match(improveRegex)[1].trim();
       const growthAreas = titleSkillSummaryRes.match(growthRegex)[1].trim();
       const experienceAreas = titleSkillSummaryRes.match(experienceRegex)[1].trim();
 
@@ -1222,7 +1222,7 @@ module.exports = {
       console.log("Match Percentage:", matchPercentage);
       console.log("Main Skills:", mainSkills);
       console.log("Strong Fit:", strongFit);
-      console.log("Areas to Improve:", whereToImrpove);
+      console.log("Areas to Improve:", improvementPoints);
       console.log("Growth Opportunities:", growthAreas);
       console.log("Experience Improvement:", experienceAreas);
 
@@ -1256,7 +1256,7 @@ module.exports = {
         // cvSummary: cvSummary,
         matchPercentage: matchPercentage,
         strongFit: strongFit,
-        whereToImrpove: whereToImrpove,
+        improvementPoints: improvementPoints,
         growthAreas: growthAreas,
         experienceAreas: experienceAreas,
       };
