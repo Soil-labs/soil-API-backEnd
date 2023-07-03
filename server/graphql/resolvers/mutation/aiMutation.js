@@ -277,7 +277,7 @@ module.exports = {
 
       promptInterviewLetter = `
 
-      Act as an HR Expert. I want you to write a letter to a candidate inviting them to a second interview.
+      Act as an HR Expert. I want you to write a rejection letter to a candidate, and also suggest some areas for improvement(laconically)
 
       For context there will two things: information from the CV and Job requirements.
 
@@ -1150,24 +1150,24 @@ module.exports = {
 
       // titleSkillSummaryRes = `Percentage of match from 0 to 100: 70%
       // Main Skills CV CANDIDATE, 7 skills Max: Machine Learning, Deep Learning, SQL, MERN, Python, C++, Leadership
-      
-      // Where CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max: 
+
+      // Where CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max:
       // Your extensive experience in Machine Learning and leadership roles aligns well with the requirement for managing ML-driven products. Your proficiency in SQL and data processing frameworks is also a strong fit for the role.
-      
+
       // Where the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max:
       // While your CV showcases a strong technical background, it doesn't mention any experience with agile/scrum software development methodologies, which is a requirement for this role. Additionally, fluency in French is required for this position, which is not mentioned in your CV.
-      
+
       // Where the CANDIDATE will Grow being in this JOB, 2 sentence Max:
       // This role will provide you with the opportunity to further develop your product management skills in the context of ML-driven products. You will also have the chance to gain experience in agile/scrum methodologies, expanding your software development knowledge.
-      
+
       // Where the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max:
       // In this role, you will have the opportunity to work on experimental products poWhered by data feedback loops, which will enhance your experience in building innovative solutions. Additionally, working in a multilingual environment will improve your communication skills and broaden your professional network.
       // `
       // titleSkillSummaryRes = `Where the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max: While your CV showcases a strong technical background, it doesn't mention any experience with agile/scrum software development methodologies, which is a requirement for this role. Additionally, fluency in French is required for this position, which is not mentioned in your CV.
-      
+
       // Where the CANDIDATE will Grow being in this JOB, 2 sentence Max:
       // This role will provide you with the opportunity to further develop your product management skills in the context of ML-driven products. You will also have the chance to gain experience in agile/scrum methodologies, expanding your software development knowledge.
-      
+
       // Where the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max:
       // In this role, you will have the opportunity to work on experimental products poWhered by data feedback loops, which will enhance your experience in building innovative solutions. Additionally, working in a multilingual environment will improve your communication skills and broaden your professional network.
       // `
@@ -1200,20 +1200,30 @@ module.exports = {
       // const candidateExpirienceJob = titleSkillSummaryRes.match(/Where the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max: \s*(.*)/)[1];
       // printC(candidateExpirienceJob, "3", "candidateExpirienceJob", "b");
 
-
       const matchPercentageRegex = /Percentage of match from 0 to 100: (\d+)%/;
       const mainSkillsRegex = /Main Skills CV CANDIDATE, 7 skills Max: (.*)/;
-      const strongFitRegex = /Where CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max:\s*(.*)/;
-      const improveRegex = /Where the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max:\s*(.*)/;
-      const growthRegex = /Where the CANDIDATE will Grow being in this JOB, 2 sentence Max:\s*(.*)/;
-      const experienceRegex = /Where the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max:\s*(.*)/;
+      const strongFitRegex =
+        /Where CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max:\s*(.*)/;
+      const improveRegex =
+        /Where the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max:\s*(.*)/;
+      const growthRegex =
+        /Where the CANDIDATE will Grow being in this JOB, 2 sentence Max:\s*(.*)/;
+      const experienceRegex =
+        /Where the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max:\s*(.*)/;
 
-      const matchPercentage = titleSkillSummaryRes.match(matchPercentageRegex)[1].trim().replace("%","");
+      const matchPercentage = titleSkillSummaryRes
+        .match(matchPercentageRegex)[1]
+        .trim()
+        .replace("%", "");
       // const mainSkills = titleSkillSummaryRes.match(mainSkillsRegex)[1].trim();
       const strongFit = titleSkillSummaryRes.match(strongFitRegex)[1].trim();
-      const improvementPoints = titleSkillSummaryRes.match(improveRegex)[1].trim();
+      const improvementPoints = titleSkillSummaryRes
+        .match(improveRegex)[1]
+        .trim();
       const growthAreas = titleSkillSummaryRes.match(growthRegex)[1].trim();
-      const experienceAreas = titleSkillSummaryRes.match(experienceRegex)[1].trim();
+      const experienceAreas = titleSkillSummaryRes
+        .match(experienceRegex)[1]
+        .trim();
 
       const mainSkills = titleSkillSummaryRes
         .match(mainSkillsRegex)[1]
@@ -1226,9 +1236,6 @@ module.exports = {
       console.log("Growth Opportunities:", growthAreas);
       console.log("Experience Improvement:", experienceAreas);
 
-
-
-
       // sdf0
 
       // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
@@ -1236,8 +1243,6 @@ module.exports = {
       // cvSummary = `
       // Ateet Tiwari is a Full Stack Developer with experience in Front-End, Back-End, Database, Messaging Services, and UI Development. He has a strong proficiency in React, Redux, Node, Express, Python, SQL, and MongoDB. Ateet has led initiatives and teams, improved product performance, and designed in-house frameworks and systems. He is a Polygon Fellowship Graduate and has extensive knowledge in web3 development.
       // `
-
-      
 
       // ----------- CV to Summary -------------
 
@@ -1450,7 +1455,6 @@ module.exports = {
 
         // ----------- Calculate and Save Memory ------------
         if (userData.cvInfo.cvPreparationMemory != true) {
-
           // ------------ Delete previous memory ------------
           // if (userData.cvInfo?.cvMemory?.length > 0) {
           //   deletePineIDs = userData.cvInfo.cvMemory.map(
@@ -1580,7 +1584,12 @@ module.exports = {
       );
     }
   },
-  autoUpdateMemoryFromPositionRequirments: async (parent, args, context, info) => {
+  autoUpdateMemoryFromPositionRequirments: async (
+    parent,
+    args,
+    context,
+    info
+  ) => {
     const { positionsID } = args.fields;
     console.log(
       "Mutation > autoUpdateMemoryFromPositionRequirments > args.fields = ",
@@ -1605,29 +1614,23 @@ module.exports = {
       printC(positionsData, "1", "positionsData", "b");
       // df0
 
-
       for (let i = 0; i < positionsData.length; i++) {
         // let i = 0; // SOS 🆘 delete
         let positionData = positionsData[i];
-        let positionsRequirements = positionData.positionsRequirements.originalContent;
-
-
+        let positionsRequirements =
+          positionData.positionsRequirements.originalContent;
 
         printC(positionData._id, "1", "positionData._id", "b");
         // sdf9
-        
-        
 
         // ----------- Calculate and Save Memory ------------
         if (positionData?.positionsRequirements?.cvPreparationMemory != true) {
           let filter = {
             positionID: positionData._id,
-            label: "requirements_position_memory"
-          }
-          res = await deleteMemoriesPineconeFunc(filter)
+            label: "requirements_position_memory",
+          };
+          res = await deleteMemoriesPineconeFunc(filter);
           // ------------ Delete previous memory ------------
-
-
 
           promptMemory = `I will provide you with a string extracted from a Requirements of Jib, delimited with triple quotes """ """. Your job is to thoroughly scan the whole string and list facts that you find in the string. 
           I want you to find experiences in the Requirements and combine them with a description of what is required + if you find the skills that were associated with that experience. 
@@ -1676,36 +1679,29 @@ module.exports = {
 
           printC(summaryBulletPoints, "1", "summaryBulletPoints", "g");
 
-          
-          const jobsArr_ = summaryBulletPoints.split('\n').filter(item => item.trim().startsWith('-'));
+          const jobsArr_ = summaryBulletPoints
+            .split("\n")
+            .filter((item) => item.trim().startsWith("-"));
 
-  
-          const jobsArr = jobsArr_.map(item => "- " + item.replace(/- /g, "").trim());
-
-
-
-
+          const jobsArr = jobsArr_.map(
+            (item) => "- " + item.replace(/- /g, "").trim()
+          );
 
           printC(jobsArr, "2", "jobsArr", "p");
 
           printC(jobsArr[2], "2", "jobsArr[2]", "p");
 
-
-
-          sumBulletSplit = jobsArr
-
+          sumBulletSplit = jobsArr;
 
           for (let i = 0; i < sumBulletSplit.length; i++) {
             res = await addMemoryPineconeFunc({
               positionID: positionData._id,
               label: "requirements_position_memory",
-              memory: sumBulletSplit[i]
-            })
-
+              memory: sumBulletSplit[i],
+            });
 
             printC(res, "2", "res", "y");
             // -------------- Sent to PineCone --------------
-
 
             printC(sumBulletSplit[i], "2", "sumBulletSplit[i]", "p");
           }
