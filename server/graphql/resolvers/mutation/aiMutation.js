@@ -1073,14 +1073,14 @@ module.exports = {
 
       // ----------- CV to Summary -------------
 
-      // interviewQuestionCreationUserFunc(positionID, userID, cvContent);
-      // // sdf00
+      interviewQuestionCreationUserFunc(positionID, userID, cvContent);
+      // sdf00
 
-      // await wait(25000);
-      // //publish the userID of the saved cv
-      // pubsub.publish("USER_CV_SAVED", {
-      //   userCVSavedToDB: { userID, cvSummary }
-      // });
+      await wait(5000);
+      //publish the userID of the saved cv
+      pubsub.publish("USER_CV_SAVED", {
+        userCVSavedToDB: { userID, cvSummary }
+      });
       return {
         success: true,
         // titleRole: titleRole,
