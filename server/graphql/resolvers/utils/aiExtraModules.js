@@ -370,6 +370,59 @@ async function saveScoreToPositionCandidate(memberArray,positionID) {
 }
 
 
+async function findRoleDescriptionAndBenefits(message,positionID) {
+
+
+  promptReport = ` You have as input the Details of a Job Position
+      Job Position (delimiters <>): <${message}>
+
+
+      - Your task is to organise the Role Description and Benefits of the Job Position in bullet points 
+      - you can use from 3 to 6 bullet points for each 
+
+
+
+      Role: 
+      Benefits:
+      `;
+
+      let report = await useGPTchatSimple(promptReport, 0,"API 2");
+
+      printC(report, "1", "report", "r")
+
+
+    const rolePattern = /Role:([\s\S]*?)Benefits:/;
+    const benefitsPattern = /Benefits:([\s\S]*)/;
+
+    const getBulletPoints = (report, pattern) => {
+      const match = report.match(pattern);
+      if (match) {
+        const bulletPoints = match[1].trim().split('\n-');
+        return bulletPoints.slice(1).map(bullet => bullet.trim());
+      }
+      return [];
+    };
+
+    const role = getBulletPoints(report, rolePattern);
+    const benefits = getBulletPoints(report, benefitsPattern);
+
+    console.log('Role:', role);
+    console.log('Benefits:', benefits);
+
+
+    // update mongoDB for the positoinID
+
+    positionData = await Position.findOne({ _id: positionID }).select('_id positionsRequirements');
+
+    positionData.positionsRequirements.roleDescription = role;
+    positionData.positionsRequirements.benefits = benefits;
+
+
+    await positionData.save();
+  
+}
+
+
 module.exports = {
   wait,
   CandidateNotesEdenAIAPICallF,
@@ -377,4 +430,5 @@ module.exports = {
   useGPTchatSimple,
   upsertEmbedingPineCone,
   saveScoreToPositionCandidate,
+  findRoleDescriptionAndBenefits,
 };

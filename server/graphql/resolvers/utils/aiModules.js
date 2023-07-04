@@ -920,9 +920,9 @@ async function interviewQuestionCreationUserFunc(
     // `
 
     let promptJOB_CV = `
-    USER_CV (delimiters <>) <${cvSummary}>
+    USER_CV (delimiters <>) <${cvSummary.substring(0, 3500)}>
 
-    JOB_ROLE (delimiters <>): <${bestJobRoleMemories}>
+    JOB_ROLE (delimiters <>): <${bestJobRoleMemories.substring(0, 3500)}>
 
 
     - Your goal is to create a professional really critical Report of the candidate USER_CV for the JOB_ROLE.
