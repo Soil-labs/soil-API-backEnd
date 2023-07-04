@@ -957,44 +957,40 @@ module.exports = {
         JOB REQUIREMENTS (delimiters <>): <${positionRequirementsC}>
 
         - You are a recruiter with task to understand the the Fit between a candidate's CV and Job Requirments
-        - Task is to extract: Persentage of match, Skills, Candidate Strengths Fit, Candidate Weaknesses Fit, Candidate Growth Position, Candidate Improve Expirience
-        - talk in "second person" like you are a recruiter and you are selling the position to the candidate
+        - talk in "second person" like you are a recruiter and you are selling the position to the candidat
 
-        
-        Percentage of match from 0 to 100: 
-        Main Skills CV CANDIDATE , 7 skills Max:
-        Were CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max: 
+        1. persentage:  Percentage of match from 0 to 100
+        2. skills: Main Skills CV CANDIDATE , 7 skills Max
+        3. strengths: Were CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max
+        4. weaknesses: Were the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max
+        5. growth: Were the CANDIDATE will Grow being in this JOB, 2 sentence Max
+        6. improve: Were the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max
 
-        Were the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max:
-
-        Were the CANDIDATE will Grow being in this JOB, 2 sentence Max:
-
-        Were the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max:
+        1. persentage:
+        2. skills:
+        3. strengths:
+        4. weaknesses:
+        5. growth:
+        6. improve:
       `;
       printC(cvContentPrompt, "3", "cvContentPrompt", "b");
 
       titleSkillSummaryRes = await useGPTchatSimple(
         cvContentPrompt,
         0,
-        "API 2",
+        "API 1",
         "chatGPT4"
       );
 
-      // titleSkillSummaryRes = `Percentage of match from 0 to 100: 70%
-      // Main Skills CV CANDIDATE, 7 skills Max: Machine Learning, Deep Learning, SQL, MERN, Python, C++, Leadership
-      
-      // Where CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max: 
-      // Your extensive experience in Machine Learning and leadership roles aligns well with the requirement for managing ML-driven products. Your proficiency in SQL and data processing frameworks is also a strong fit for the role.
-      
-      // Where the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max:
-      // While your CV showcases a strong technical background, it doesn't mention any experience with agile/scrum software development methodologies, which is a requirement for this role. Additionally, fluency in French is required for this position, which is not mentioned in your CV.
-      
-      // Where the CANDIDATE will Grow being in this JOB, 2 sentence Max:
-      // This role will provide you with the opportunity to further develop your product management skills in the context of ML-driven products. You will also have the chance to gain experience in agile/scrum methodologies, expanding your software development knowledge.
-      
-      // Where the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max:
-      // In this role, you will have the opportunity to work on experimental products poWhered by data feedback loops, which will enhance your experience in building innovative solutions. Additionally, working in a multilingual environment will improve your communication skills and broaden your professional network.
-      // `
+      // titleSkillSummaryRes = `1. Percentage: 70%
+      // 2. Skills: Machine Learning, Deep Learning, Natural Language Processing (NLP), MLOps, Computer Vision, Voice Recognition, SQL
+      // 3. Strengths: Your extensive experience in machine learning and deep learning, as well as your leadership role in managing a team of engineers, aligns well with the job requirements. Your proficiency in SQL and experience in data-driven product development are also valuable assets.
+      // 4. Weaknesses: While your technical skills are impressive, the job requires experience in product management of ML-driven products, which is not evident in your CV. Additionally, fluency in French is required for this role, which is not mentioned in your language skills.
+      // 5. Growth: This role offers an opportunity to expand your skills in product management, a critical aspect of ML-driven products. You will also have the chance to work in a multicultural environment, enhancing your language skills and cultural competence.
+      // 6. Improve: In this role, you will be able to apply your technical skills to real-world problems, improving your ability to translate complex data into actionable business strategies. You will also gain experience in lean startup methodologies and processes, which will enhance your overall understanding of product development.`
+
+
+
       // titleSkillSummaryRes = `Where the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max: While your CV showcases a strong technical background, it doesn't mention any experience with agile/scrum software development methodologies, which is a requirement for this role. Additionally, fluency in French is required for this position, which is not mentioned in your CV.
       
       // Where the CANDIDATE will Grow being in this JOB, 2 sentence Max:
@@ -1033,31 +1029,90 @@ module.exports = {
       // printC(candidateExpirienceJob, "3", "candidateExpirienceJob", "b");
 
 
-      const matchPercentageRegex = /Percentage of match from 0 to 100: (\d+)%/;
-      const mainSkillsRegex = /Main Skills CV CANDIDATE, 7 skills Max: (.*)/;
-      const strongFitRegex = /Where CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max:\s*(.*)/;
-      const improveRegex = /Where the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max:\s*(.*)/;
-      const growthRegex = /Where the CANDIDATE will Grow being in this JOB, 2 sentence Max:\s*(.*)/;
-      const experienceRegex = /Where the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max:\s*(.*)/;
+      // const matchPercentageRegex = /Percentage of match from 0 to 100: (\d+)%/;
+      // const mainSkillsRegex = /Main Skills CV CANDIDATE, 7 skills Max: (.*)/;
+      // const strongFitRegex = /Were CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max:\s*(.*)/;
+      // const improveRegex = /Where the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max:\s*(.*)/;
+      // const growthRegex = /Where the CANDIDATE will Grow being in this JOB, 2 sentence Max:\s*(.*)/;
+      // const experienceRegex = /Where the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max:\s*(.*)/;
 
-      const matchPercentage = titleSkillSummaryRes.match(matchPercentageRegex)[1].trim().replace("%","");
-      // const mainSkills = titleSkillSummaryRes.match(mainSkillsRegex)[1].trim();
-      const strongFit = titleSkillSummaryRes.match(strongFitRegex)[1].trim();
-      const improvementPoints = titleSkillSummaryRes.match(improveRegex)[1].trim();
-      const growthAreas = titleSkillSummaryRes.match(growthRegex)[1].trim();
-      const experienceAreas = titleSkillSummaryRes.match(experienceRegex)[1].trim();
+      // 1. persentage:
+      // 2. skills:
+      // 3. strengths:
+      // 4. weaknesses:
+      // 5. growth:
+      // 6. improve:
 
-      const mainSkills = titleSkillSummaryRes
-        .match(mainSkillsRegex)[1]
-        .split(", ");
+      // const matchPercentageRegex = /1. persentage: (\d+)%/;
+      // const mainSkillsRegex = /2. skills: (.*)/;
+      // const strongFitRegex = /3. strengths: \s*(.*)/;
+      // const improveRegex = /4. weaknesses: \s*(.*)/;
+      // const growthRegex = /5. growth: \s*(.*)/;
+      // const experienceRegex = /6. improve: \s*(.*)/;
 
+      // const matchPercentage = titleSkillSummaryRes.match(matchPercentageRegex)[1].trim().replace("%","");
+      // console.log("Match Percentage:", matchPercentage);
+      
+      // const strongFit = titleSkillSummaryRes.match(strongFitRegex)[1].trim();
+      // console.log("Strong Fit:", strongFit);
+      // const improvementPoints = titleSkillSummaryRes.match(improveRegex)[1].trim();
+      // console.log("Areas to Improve:", improvementPoints);
+      // const growthAreas = titleSkillSummaryRes.match(growthRegex)[1].trim();
+      // console.log("Growth Opportunities:", growthAreas);
+      // const experienceAreas = titleSkillSummaryRes.match(experienceRegex)[1].trim();
+      // console.log("Experience Improvement:", experienceAreas);
+
+      // const mainSkills = titleSkillSummaryRes
+      //   .match(mainSkillsRegex)[1]
+      //   .split(", ");
+
+      // console.log("Main Skills:", mainSkills);
+
+
+      // const regexPattern = /<\d+\. (.*?): (.*)>/gs;
+      // const splitString = titleSkillSummaryRes.match(regexPattern).map(section => section.replace(/<.*?>/g, '').trim());
+
+      // console.log(splitString);
+
+      // const regexPattern = /<\d+\. (.*?): (.*)>/gs;
+      // const regexPattern = /:\s(.*?)(?=(?:\n\d+\.|\n$))/gs;
+
+      // const splitString = [];
+
+      // let match;
+      // while ((match = regexPattern.exec(titleSkillSummaryRes)) != null) {
+
+      //   console.log("match[2] = " , match)
+      //   const section = match[2].trim();
+      //   splitString.push(section);
+      // }
+
+      // console.log(splitString);
+
+      lines = titleSkillSummaryRes.split("\n");
+      const extractedText = lines.map(line => line.split(":")[1].trim());
+      console.log(extractedText);
+
+      const matchPercentage  = extractedText[0].replace("%","")
       console.log("Match Percentage:", matchPercentage);
-      console.log("Main Skills:", mainSkills);
+      const strongFit = extractedText[2]
       console.log("Strong Fit:", strongFit);
+      const improvementPoints = extractedText[3]
       console.log("Areas to Improve:", improvementPoints);
+      const growthAreas = extractedText[4]
       console.log("Growth Opportunities:", growthAreas);
+      const experienceAreas = extractedText[5]
       console.log("Experience Improvement:", experienceAreas);
 
+       const mainSkills = extractedText[1]
+        .split(", ");
+
+      console.log("Main Skills:", mainSkills);
+
+      printC(extractedText, "3", "extractedText", "b");
+
+
+      // sd0
 
 
 
