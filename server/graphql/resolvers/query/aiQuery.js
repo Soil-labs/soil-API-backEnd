@@ -3228,14 +3228,22 @@ module.exports = {
     }
   },
   askEdenUserPosition: async (parent, args, context, info) => {
-    const {  userID,positionID,conversation } = args.fields;
+    const {  userID,positionID,conversation,whatToAsk } = args.fields;
     console.log("Query > askEdenUserPosition > args.fields = ", args.fields);
     try {
-      const filter = {
-        label: "CV_user_memory",
-        database: REACT_APP_MONGO_DATABASE,
-      };
-      if (userID) {
+      let  filter = {}
+      filter.database = REACT_APP_MONGO_DATABASE;
+      if (whatToAsk=="COMPANY"){
+        filter.label = "requirements_position_memory";
+        if (!positionID) throw new Error("There is no positionID")
+        filter._id = positionID;
+      } else if (whatToAsk=="CANDIDATE_OF_COMPANY"){
+        filter.label = "CV_user_memory";
+        if (!userID) throw new Error("There is no userID")
+        filter._id = userID;
+      } else {
+        filter.label = "CV_user_memory";
+        if (!userID) throw new Error("There is no userID")
         filter._id = userID;
       }
 
