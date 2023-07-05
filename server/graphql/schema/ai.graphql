@@ -338,6 +338,7 @@ module.exports = `
         userID: ID
         positionID: ID
         conversation: [messageChat]
+        whatToAsk: whatToAskEnum
     }
 
      type askEdenUserPositionOutput {
@@ -418,6 +419,11 @@ module.exports = `
         CAREER_GOALS_ASPIRATIONS
         WORK_PREFERENCES
         GENERAL_CONVERSATION
+    }
+
+    enum whatToAskEnum {
+        CANDIDATE_OF_COMPANY
+        COMPANY
     }
 
     type edenGPTCreateProfileExperienceChatAPIOutput {
