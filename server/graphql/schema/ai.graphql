@@ -164,6 +164,12 @@ module.exports = `
         titleRole: String
         mainSkills: [String]
         cvSummary: String
+        matchPercentage: Float
+        strongFit: String
+        improvementPoints: String
+        growthAreas: String
+        experienceAreas: String
+
     }
 
     input autoUpdateUserInfoFromCVInput {
@@ -182,9 +188,41 @@ module.exports = `
         users: [Members]
     }
 
+    input autoUpdateMemoryFromPositionRequirmentsInput {
+        positionIDs: [ID]
+    }
+
+    type autoUpdateMemoryFromPositionRequirmentsOutput {
+        positions: [Position]
+    }
+
     input addMessagesInput {
         data: [addMessageInput]
     }
+
+
+    input secondInterviewLetterInput {
+        message: String
+        userID: ID
+        positionID: ID
+    }
+
+    type secondInterviewLetterOutput {
+        generatedLetter: String
+    }
+
+    input rejectionLetterInput {
+        message: String
+        userID: ID
+        positionID: ID
+    }
+
+    type rejectionLetterOutput {
+        generatedLetter: String
+    }
+
+    
+
 
     input findMessageInput {
         discordID: ID
@@ -300,6 +338,7 @@ module.exports = `
         userID: ID
         positionID: ID
         conversation: [messageChat]
+        whatToAsk: whatToAskEnum
     }
 
      type askEdenUserPositionOutput {
@@ -380,6 +419,11 @@ module.exports = `
         CAREER_GOALS_ASPIRATIONS
         WORK_PREFERENCES
         GENERAL_CONVERSATION
+    }
+
+    enum whatToAskEnum {
+        CANDIDATE_OF_COMPANY
+        COMPANY
     }
 
     type edenGPTCreateProfileExperienceChatAPIOutput {

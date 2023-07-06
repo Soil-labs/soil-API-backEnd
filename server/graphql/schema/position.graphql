@@ -20,6 +20,9 @@ module.exports = `
     type positionsRequirementsType { 
         originalContent: String
         content: String
+        roleDescription: [String]
+        benefits: [String]
+        positionPreparationMemory: Boolean
     }
 
     type convRecruiterType {

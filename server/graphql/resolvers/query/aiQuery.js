@@ -221,7 +221,7 @@ async function useGPT4Simple(prompt, temperature = 0.7) {
   return response.data.choices[0].message.content;
 }
 
-async function findBestEmbedings(message, filter, topK = 3) {
+async function findBestEmbedings(message, filter, topK = 3,tag) {
   const pinecone = new PineconeClient();
   await pinecone.init({
     environment: "us-east1-gcp",
@@ -259,7 +259,67 @@ async function findBestEmbedings(message, filter, topK = 3) {
 
   // const contexts = queryResponse.matches.map(x => x.metadata.name + ": " + x.metadata.text);
 
-  return queryResponse.matches;
+  let matchesT = queryResponse.matches;
+
+  if (tag != undefined){
+    matchesT = matchesT.map((x) => {
+      return {
+        ...x,
+        metadata: {
+          ...x.metadata,
+          text: x.metadata.text.replace("-","").trim() + " - " + tag,
+          // text: x.metadata.text.replace("-").trim() + " - " + tag,
+        },
+      };
+    });
+  }
+  // console.log("tag = " , tag)
+  // sd92
+
+  return matchesT;
+}
+
+async function findBestEmbedingsMemoryString(message, filter, topK = 3) {
+  const pinecone = new PineconeClient();
+  await pinecone.init({
+    environment: "us-east1-gcp",
+    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+  });
+
+  const index = await pinecone.Index("profile-eden-information");
+
+  embed = await createEmbeddingsGPT(message);
+
+
+  let queryRequest = {
+    topK: topK,
+    vector: embed[0],
+    includeMetadata: true,
+  };
+
+  if (filter != undefined) {
+    queryRequest = {
+      ...queryRequest,
+      filter: filter,
+    };
+  }
+
+  const queryResponse = await index.query({ queryRequest });
+
+
+  const longTermMemories =  queryResponse.matches;
+
+  let prompt_longTermMemory = "";
+      for (let i = 0; i < longTermMemories.length; i++) {
+        prompt_longTermMemory =
+          prompt_longTermMemory + "\n Info " + (i+1) +": <" + longTermMemories[i].metadata.text +">";
+      }
+
+
+  return {
+    prompt_longTermMemory:  prompt_longTermMemory,
+    longTermMemories: longTermMemories ,
+  }
 }
 
 async function findBestEmbedingsArray(arr, filter, topK = 3) {
@@ -3228,26 +3288,23 @@ module.exports = {
     }
   },
   askEdenUserPosition: async (parent, args, context, info) => {
-    const {  userID,positionID,conversation } = args.fields;
+    const {  userID,positionID,conversation,whatToAsk } = args.fields;
     console.log("Query > askEdenUserPosition > args.fields = ", args.fields);
     try {
-      const filter = {
-        label: "CV_user_memory",
-        database: REACT_APP_MONGO_DATABASE,
-      };
-      if (userID) {
-        filter._id = userID;
-      }
+      
 
       let message = ""
       let beforeMessage = ""
       let prompt_beforeMessage = ""
+
+      let prompt_conversation = ""
       if (conversation.length==0){
-        
         throw new Error("There is no Conversation");
       } else if (conversation.length==1){
 
         message = conversation[0].content;
+
+        prompt_conversation = message;
 
       } else if (conversation.length>=2){
         message = conversation[conversation.length - 1].content;
@@ -3255,21 +3312,86 @@ module.exports = {
         beforeMessage = conversation[conversation.length - 2].content;
         prompt_beforeMessage = `- Previous message of conversation (delimited by ||): |${beforeMessage}|'`
 
+
+        let prompt_conversation = "";
+        const startIndex = Math.max(0, conversation.length - 4); // Start from the last 4 messages
+        for (let i = startIndex; i < conversation.length-1; i++) {
+          const role = conversation[i].role === "user" ? "user" : "assistant"; // Determine the role (user or assistant)
+          prompt_conversation += `\n${role}: ${conversation[i].content}`; // Add role and content to the prompt conversation
+        }
+        
+        prompt_conversation += "\n\nUser Question: " + message; // Add user question to the prompt conversation
+        
+      //   printC(prompt_conversation, "0", "prompt_conversation", "p");
+
+      // sd026
+        
+      }
+      
+
+
+
+      // ---------------------- find Memory Best Embedings ----------------------
+      let  filter = {}
+      let prompt_longTermMemory, longTermMemories;
+
+      filter.database = REACT_APP_MONGO_DATABASE;
+      if (whatToAsk=="COMPANY"){
+        filter.label = "requirements_position_memory";
+        if (!positionID) throw new Error("There is no positionID")
+        filter._id = positionID;
+
+        longTermMemories = await findBestEmbedings(prompt_conversation, filter, (topK = 4));
+
+        
+
+      } else { //if (whatToAsk=="CANDIDATE_OF_COMPANY"){
+        filter.label = {"$in": ["CV_user_memory"]}
+        if (!userID) throw new Error("There is no userID")
+        filter._id = userID;
+        longTermMemories_userCV = await findBestEmbedings(prompt_conversation, filter, (topK = 2), "User");
+
+        filter.label = {"$in": ["conv_with_user_memory"]}
+        if (!userID) throw new Error("There is no userID")
+        filter._id = userID;
+        longTermMemories_userConvMemory = await findBestEmbedings(prompt_conversation, filter, (topK = 2), "User");
+
+
+        filter.label = "requirements_position_memory";
+        if (!positionID) throw new Error("There is no positionID")
+        filter._id = positionID;
+
+        longTermMemories_position = await findBestEmbedings(prompt_conversation, filter, (topK = 4),"Company");
+        // longTermMemories_position = await findBestEmbedings(prompt_conversation, filter, (topK = 4));
+
+        longTermMemories_ = longTermMemories_userCV.concat(longTermMemories_userConvMemory)
+        longTermMemories = longTermMemories_.concat(longTermMemories_position)
+
       }
 
-      longTermMemories = await findBestEmbedings(message, filter, (topK = 4));
-
-      console.log("longTermMemories = " , longTermMemories)
-      // ads32
-
-      let prompt_longTermMemory = "";
+      prompt_longTermMemory = "";
       for (let i = 0; i < longTermMemories.length; i++) {
         prompt_longTermMemory =
-          prompt_longTermMemory + "\n Info " + (i+1) +": <" + longTermMemories[i].metadata.text +">";
+          prompt_longTermMemory + "\n Info " + (i+1) +":" + longTermMemories[i].metadata.text;
       }
 
-      console.log("prompt_longTermMemory = ", prompt_longTermMemory);
-      // asdf
+      printC(longTermMemories, "0", "longTermMemories", "g");
+      printC(prompt_longTermMemory, "1", "prompt_longTermMemory", "g");
+      // sdf5
+      // ---------------------- find Memory Best Embedings ----------------------
+
+
+      // console.log("longTermMemories = " , longTermMemories)
+      // ads32
+
+      // let prompt_longTermMemory = "";
+      // for (let i = 0; i < longTermMemories.length; i++) {
+      //   prompt_longTermMemory =
+      //     prompt_longTermMemory + "\n Info " + (i+1) +": <" + longTermMemories[i].metadata.text +">";
+      // }
+
+      // console.log("prompt_longTermMemory = ", prompt_longTermMemory);
+      // // asdf
 
       prompot_General = `
       You have as input: 
