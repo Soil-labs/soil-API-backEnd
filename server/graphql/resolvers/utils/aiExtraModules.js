@@ -63,6 +63,52 @@ const CandidateNotesEdenAIAPICallF = async (memberID, positionID) => {
   return res.candidateNotesEdenAI;
 };
 
+
+async function useGPT4chat(
+  userNewMessage,
+  discussionOld,
+  systemPrompt,
+  userQuestion = "",
+  temperature = 0.7,
+  chooseAPI = "API 1"
+) {
+  let discussion = [...discussionOld];
+
+  discussion.unshift({
+    role: "system",
+    content: systemPrompt,
+  });
+
+  if (userNewMessage != "") {
+    discussion.push({
+      role: "user",
+      content: userNewMessage + "\n" + userQuestion,
+    });
+  }
+
+  console.log("discussion = ", discussion);
+
+  // ssd2
+
+  let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
+  response = await axios.post(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      messages: discussion,
+      model: "gpt-4",
+      temperature: temperature,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+    }
+  );
+
+  return response.data.choices[0].message.content;
+}
+
 async function onlyGPTDavinci(
   prompt,
   temperature = 0.7,
@@ -431,4 +477,5 @@ module.exports = {
   upsertEmbedingPineCone,
   saveScoreToPositionCandidate,
   findRoleDescriptionAndBenefits,
+  useGPT4chat,
 };

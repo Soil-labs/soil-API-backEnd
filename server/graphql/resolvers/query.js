@@ -117,7 +117,7 @@ const {
   evaluateAnswerEdenAI,
   edenGPTCreateProfileExperienceChatAPI,
   edenAITalSearchExpirience,
-  interviewEdenAI,
+  interviewEdenAI,interviewEdenGPT4only,
   createProfileExperienceWithChatCVMemory,
   edenGPTReviewChatAPI,
 } = require("./query/aiQuery");
@@ -274,7 +274,7 @@ module.exports = {
     edenGPTCreateProfileExperienceChatAPI,
     edenAITalSearchExpirience,
     createProfileExperienceWithChatCVMemory,
-    interviewEdenAI,
+    interviewEdenAI,interviewEdenGPT4only,
     edenGPTReviewChatAPI,
 
     //----------- GRAPH VISUAL QUERY ------------------
