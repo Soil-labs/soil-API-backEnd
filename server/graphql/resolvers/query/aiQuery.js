@@ -35,6 +35,8 @@ const {
 
 const { useGPTchatSimple} = require("../utils/aiModules");
 
+const { useGPT4chat} = require("../utils/aiExtraModules");
+
 
 const {
   updateAnsweredQuestionFunc,
@@ -1283,6 +1285,143 @@ module.exports = {
         // // unansweredQuestions: unansweredQuestions,
         timesAsked: timesAsked,
         unansweredQuestionsArr: unansweredQuestionsArr,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "interviewEdenAI",
+        {
+          component: "aiQuery > interviewEdenAI",
+        }
+      );
+    }
+  },
+  interviewEdenGPT4only: async (parent, args, context, info) => {
+    const { userID, positionID, positionTrainEdenAI, conversation } =
+      args.fields;
+    let {
+      useMemory,
+    } = args.fields;
+
+
+
+    if (useMemory == undefined) {
+      useMemory = true; // default to true
+    }
+
+    let nextQuestion;
+    let questionAskingNowA;
+
+    let flagFirstTime = false;
+
+    console.log("change = 1" )
+
+
+    try {
+      // ------------ Find Modified questions ------------
+      let positionData = await Position.findOne({ _id: positionID }).select(
+        "_id candidates interviewQuestionsForPosition positionsRequirements"
+      );
+
+      const candidate = positionData.candidates.find(
+        (candidate) => candidate.userID.toString() == userID.toString()
+      );
+
+      positionsRequirementsContent = positionData.positionsRequirements.originalContent
+
+      // ------------ Find Modified questions ------------
+
+      console.log("change = 2" )
+    
+      discussionT = conversation.map((item) => ({
+        role: item.role,
+        content: item.content,
+        }));
+
+
+      let systemPrompt = `You're a world-class senior recruiter named Eden. You communicate very effectively, to the point yet with care & compassion. You're always as helpful and optimize everything for maximum alignment between you and your hiring manager in order to help them find the absolute best candidate possible. Whenever asked, you can help your hiring manager reason through multiple scenarios & tradeoffs. If the hiring manager is answering with very little new information, push for a little more information & clarifications. You love a little quirky joke from now and then. Ask one question at a time and wait for the hiring manager's response. Acknowledge each response with maximum one sentence by highlighting an interesting element in the answer or simply introducing the next question with a cool segway. keep your total amount of questions to maximum 10.`
+      let userNewMessage = ""
+      if (discussionT.length >0){
+        userNewMessage = discussionT.pop().content
+      } 
+
+      const originalMessage = `
+      Based on this job description what clarifying questions would you ask to make sure there is a high level of alignment between you and the hiring manager? 
+      ${positionsRequirementsContent}
+      `
+
+      // add at the start of discussionT a string
+      discussionT.unshift({role: "assistant", content: originalMessage})
+     
+
+      reply = await useGPT4chat( userNewMessage,discussionT,systemPrompt);
+
+
+      // sd99d
+
+      console.log("change = 3" )
+
+      printC(reply, "4", "reply", "r");
+      //  -------------- Move to next question ------------
+
+      conversationID = undefined;
+
+      const newDate = new Date();
+      if (conversation.length >= 2) {
+
+        if (positionTrainEdenAI == true){ // If EdenAI is talking to the company employ for training Eden
+
+          // ------------- Update the Conversation MEMORY ----------------
+          const _conversation = conversation.map((_item) => ({
+            ..._item,
+            date: _item.date ? _item.date : newDate,
+          }));
+          resultConv = await findAndUpdateConversationFunc(
+            userID,
+            _conversation,
+            positionID,
+            positionTrainEdenAI,
+          );
+          // ------------- Update the Conversation MEMORY ----------------
+
+
+        } else { // If Eden is talking to the candidate on an interview 
+            // ------------- Update the Conversation MEMORY ----------------
+            const _conversation = conversation.map((_item) => ({
+              ..._item,
+              date: _item.date ? _item.date : newDate,
+            }));
+            resultConv = await findAndUpdateConversationFunc(
+              userID,
+              _conversation,
+              positionID
+            );
+            // ------------- Update the Conversation MEMORY ----------------
+
+            console.log("originalQuestionAsking,originalQuestionAskingID,originalTimesAsked = " , originalQuestionAsking,
+              originalQuestionAskingID,
+              originalTimesAsked,)
+            //  ------------- Update the Answered Questions ----------------
+            resultConv = await updateAnsweredQuestionFunc(
+              resultConv,
+              conversation,
+              originalQuestionAsking,
+              originalQuestionAskingID,
+              originalTimesAsked,
+            );
+            //  ------------- Update the Answered Questions ----------------
+
+            printC(originalTimesAsked, "4", "originalTimesAsked --- SSOS", "y");
+
+
+            conversationID = resultConv._id;
+        }
+      }
+
+      return {
+        reply: reply,
+        date: newDate,
+        conversationID: conversationID,
       };
     } catch (err) {
       throw new ApolloError(

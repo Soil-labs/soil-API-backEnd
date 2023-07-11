@@ -467,6 +467,21 @@ module.exports = `
         timesAsked: Int
     }
 
+    input interviewEdenGPT4onlyInput {
+        userID: ID
+        positionID: ID
+        positionTrainEdenAI: Boolean
+        useMemory: Boolean
+        conversation: [messageChat]
+    }
+
+    
+    type interviewEdenGPT4onlyOutput {
+        reply: String
+        date: Date
+        conversationID: ID
+    }
+
     input unansweredQuestionsInput {
         questionContent: String
         questionID: ID
