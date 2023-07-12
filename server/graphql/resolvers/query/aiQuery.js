@@ -3476,11 +3476,12 @@ module.exports = {
 
       filter.database = REACT_APP_MONGO_DATABASE;
       if (whatToAsk=="COMPANY"){
-        filter.label = "requirements_position_memory";
+        // filter.label = "requirements_position_memory";
+        filter.label =  {"$in": ["requirements_position_memory","conv_for_position_memory"]}
         if (!positionID) throw new Error("There is no positionID")
         filter._id = positionID;
 
-        longTermMemories = await findBestEmbedings(prompt_conversation, filter, (topK = 4));
+        longTermMemories = await findBestEmbedings(prompt_conversation, filter, (topK = 8));
 
         
 
@@ -3496,7 +3497,8 @@ module.exports = {
         longTermMemories_userConvMemory = await findBestEmbedings(prompt_conversation, filter, (topK = 2), "User");
 
 
-        filter.label = "requirements_position_memory";
+        // filter.label = "requirements_position_memory";
+        filter.label =  {"$in": ["requirements_position_memory","conv_for_position_memory"]}
         if (!positionID) throw new Error("There is no positionID")
         filter._id = positionID;
 
