@@ -1063,13 +1063,9 @@ module.exports = {
 
             printC(questionsToAskObj, "4", "questionsToAskObj", "b");
 
-            // ss0ss
           }
-
-          // sfd00
         }
 
-        // console.log("questionsToAskObj = " , questionsToAskObj)
 
         printC(questionsToAskObj, "4", "questionsToAskObj", "b");
 
