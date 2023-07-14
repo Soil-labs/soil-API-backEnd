@@ -221,11 +221,11 @@ async function updateQuestionSmall(questionContent) {
   if (questionContent?.content && !questionContent?.contentSmall){
     
     promptQuestionSmall = `
-    CONTENT: <${questionContent.content}>
+    ORIGINAL QUESTION: <${questionContent.content}>
 
-    - Create a SUMMARY of the CONTENT  with Maximum 3-5 words!!!
+    - Create a SUMMARY question of the ORIGINAL QUESTION with Maximum 8-12 words!!!
 
-    SUMMARY:
+    SUMMARY question:
     `
 
     const questionSmall = await onlyGPTchat(promptQuestionSmall)
