@@ -23,6 +23,16 @@ const positionModel = mongoose.Schema({
       pineConeID: String,
     }],
     positionPreparationMemory: Boolean,
+    tradeOffs: [{
+      tradeOff1: String,
+      tradeOff2: String,
+      reason: String,
+      selected: String,
+    }],
+    priorities: [{
+      priority: String,
+      reason: String,
+    }],
   },
   nodes: [{
     nodeID: mongoose.Schema.ObjectId,
