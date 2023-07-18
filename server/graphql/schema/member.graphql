@@ -9,6 +9,7 @@ module.exports = `
         discordAvatar: String
         discriminator: String
         bio: String
+        oneLiner: String
 
         onbording: onboardingType
 

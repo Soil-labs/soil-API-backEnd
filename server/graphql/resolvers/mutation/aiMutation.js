@@ -1285,15 +1285,59 @@ module.exports = {
 
         // ------- Calculate Summary -------
         // if (userData.cvInfo.cvPreparationBio != true) {
+
+        // promptSum =
+        //   `Act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) and your job is to write a short bio for that profile. Here is the structure of the bio: 
+          
+          
+        //   Pick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).
+          
+          
+        //   Follow this structure 2 parts. First part is 1 sentences. Sencond part is two bullet points with 18 words MAX each.
+          
+        //   Part 1(do not include Part 1 in the response): 
+        //   1 sentences (Opening line: Introduce yourself and your expertise)
+          
+        //   Part 2(do not include Part 2 in the response):
+        //    - The present position that they work in and what they do there 
+        //    - Highest level of education(list only the highest education and only list that one)
+
+        //    CV: <${cvContent}>
+           
+        //    Structured Profile:`
+
         promptSum =
-          `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
+          `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points with MAX 15 words each (no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 small sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 small sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
           cvContent;
 
         summaryOfCV = await useGPTchatSimple(promptSum);
 
+        summaryOfCV = summaryOfCV.replace("Part 1:", "");
+        summaryOfCV = summaryOfCV.replace("Part 2:", "");
+        summaryOfCV = summaryOfCV.replace("Part 1", "");
+        summaryOfCV = summaryOfCV.replace("Part 2", "");
+
         printC(summaryOfCV, "0", "summaryOfCV", "b");
 
+
+
+
+        oneLinerPrompt =
+        `
+        Your task is to create a 1 liner for a candidate that explain perfectly who he is in only 8 MAX words
+
+        CV: <${cvContent}>
+
+        1 liner in 8 MAX words:
+        `;
+
+          oneLiner = await useGPTchatSimple(oneLinerPrompt);
+
+          printC(oneLiner, "0", "oneLinerGPT", "b");
+
+
         userData.bio = summaryOfCV;
+        userData.oneLiner = oneLiner;
 
         userData.cvInfo.cvPreparationBio = true;
         // }
