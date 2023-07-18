@@ -1051,6 +1051,13 @@ module.exports = {
       printC(tradeoffsArray, "3", "tradeoffsArray", "g");
       // --------------------------------- Find TradeOffs ---------------------------------
 
+
+      // Save the priorities and tradeoffs to the Position
+      positionData.positionsRequirements.priorities = prioritiesArray;
+      positionData.positionsRequirements.tradeOffs = tradeoffsArray;
+      await positionData.save();
+      
+
       return {
         success: true,
         priorities: prioritiesArray,

@@ -23,6 +23,21 @@ module.exports = `
         roleDescription: [String]
         benefits: [String]
         positionPreparationMemory: Boolean
+        tradeOffs: [tradeOffsType]
+        priorities: [prioritiesType]
+        
+    }
+
+    type tradeOffsType {
+        tradeOff1: String,
+        tradeOff2: String,
+        reason: String,
+        selected: String,
+    }
+
+    type prioritiesType {
+        priority: String,
+        reason: String,
     }
 
     type convRecruiterType {

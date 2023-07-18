@@ -122,15 +122,6 @@ module.exports = `
         tradeOffs: [tradeOffsType]
     }
 
-    type prioritiesType {
-        priority: String
-        reason: String
-    }
-    type tradeOffsType {
-        tradeOff1: String
-        tradeOff2: String
-        reason: String
-    }
 
     type questionSuggestType {
         question: String
