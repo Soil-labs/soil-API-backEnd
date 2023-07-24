@@ -1,0 +1,18 @@
+module.exports = `
+
+    enum MessageType {
+        groupMessage, 
+        chatMessage
+    }
+
+    type MessageValue {
+         idMessage: String
+    }
+ 
+    input whatsAppChatMessageInput {
+        phoneNumber:String
+        message:String
+        messageType: MessageType
+    }
+
+`

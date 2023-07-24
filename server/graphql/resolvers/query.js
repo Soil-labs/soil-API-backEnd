@@ -148,6 +148,8 @@ const { findEndorsementLink } = require("./query/endorsementQuery");
 
 const { errors } = require("./query/errorQuery");
 
+const { sendWhatsAppTextMessage } = require("./query/whatsAppQuery")
+
 module.exports = {
   Query: {
     // ------------- DEV-ONLY QUERY ----------------
@@ -299,5 +301,8 @@ module.exports = {
 
     //----------- EDEN ENDORSEMENT QUERY ------------------
     findEndorsementLink,
+
+    //----------- WHATSAPP QUERY ------------------
+    sendWhatsAppTextMessage,
   },
 };
