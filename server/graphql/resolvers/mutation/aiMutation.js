@@ -967,6 +967,8 @@ module.exports = {
       printC(positionsRequirements, "3", "positionsRequirements", "b");
       // sd02
 
+
+
       // --------------------------------- Find Priorities ---------------------------------
       let promptNewQuestions = `
         REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
@@ -977,8 +979,8 @@ module.exports = {
         - Choose priorities from (Cultural fit, Technical skills, Soft skills, Work experience, Leadership potential, Diversity and inclusion, Long-term prospects, Motivation and enthusiasm, Initiative and creativity, Flexibility, Reliability and work ethic, Collaboration skills, Strong references, Customer or client focus, Industry knowledge )
 
         Example priority structure:
-         1. Priority Title - Reason based on Requirements in MAX 10 words
-         2. Priority Title - Reason based on Requirements in MAX 10 words
+         1. Priority Title - Reason based on Requirements in MAX 20 words
+         2. Priority Title - Reason based on Requirements in MAX 20 words
         
         Priorities:
       `;
@@ -992,6 +994,12 @@ module.exports = {
       );
 
       printC(prioritiesSuggestions, "3", "prioritiesSuggestions", "p");
+
+      // prioritiesSuggestions = `1. Technical skills - Strong experience with Spring framework, NoSQL and SQL databases, and message queue systems (e.g Kafka).
+      // 2. Leadership potential - Lead technical decisions inside and across teams to improve technical excellence through lateral leadership.
+      // 3. Work experience - 4+ years experience working as a Backend Java Engineer.
+      // 4. Collaboration skills - Contribute to finding the best solutions for customer service products that make operations easier.
+      // 5. Motivation and enthusiasm - Enjoy working within an agile setup.`
 
       const regex = /(\d+)\.\s+(.*)\s+-\s+(.*)/g;
       const prioritiesArray = [];
@@ -1016,15 +1024,17 @@ module.exports = {
         - you can use Maximum 1 sentence to explain why you choose a priority, maximum 5 tradeOffs
         - You would give the tradeOffs from the highest at the Top to the lowest at the Bottom
         - Choose tradeOffs from (Quality vs. Quantity, Experience vs. Potential, Skills vs. Cultural Fit, Speed vs. Thoroughness, Internal vs. External Candidates, Role Flexibility vs. Specialization, Remote Work vs. Onsite Presence, Diversity vs. Cultural Homogeneity, Compensation vs. Non-monetary Benefits, Direct Hire vs. Contract-to-hire, Long-term vs. Short-term Fit, Local vs. International Candidates, Traditional vs. Innovative Sourcing, Employer Brand Visibility vs. Highly-targeted Approaches, Candidate Experience vs. Time Investment)
+        - You should choose the right tradeoff for this REQUIREMENTS
 
         Example priority structure:
-         1. TradeOff1 VS TradeOff2 - Reason based on Requirements
-         2. TradeOff1 VS TradeOff2 - Reason based on Requirements
+         1. TradeOff1 VS TradeOff2 - Choose: TradeOff2 - Reason based on Requirements
+         2. TradeOff1 VS TradeOff2 - Choose: TradeOff1 - Reason based on Requirements
         
         TradeOffs:
       `;
 
       printC(promptNewTradeOffs, "3", "promptNewTradeOffs", "b");
+      
 
       tradeOffsSuggestions = await useGPTchatSimple(
         promptNewTradeOffs,
@@ -1033,16 +1043,24 @@ module.exports = {
       );
 
       printC(tradeOffsSuggestions, "3", "tradeOffsSuggestions", "p");
-      // sd7
 
-      const regexT = /(\d+)\.\s+(.+?)\s+-\s+(.+?)(?=\d+\.|$)/gs;
+      // tradeOffsSuggestions = `1. Quality vs. Quantity - Choose: Quality - The job position requires a strong understanding of software development best practices and the ability to design new products from scratch, indicating a need for high-quality work rather than a high quantity of work.
+      // 2. Experience vs. Potential - Choose: Experience - The job position specifically states a requirement of 4+ years of experience, indicating a preference for candidates with proven experience in the role rather than potential for growth.
+      // 3. Skills vs. Cultural Fit - Choose: Skills - The job position lists specific technical skills and experience with certain technologies, indicating a higher priority on skills rather than cultural fit.
+      // 4. Speed vs. Thoroughness - Choose: Thoroughness - The job position emphasizes the importance of code quality, testing, and deployment, indicating a need for thoroughness in the development process rather than speed.
+      // 5. Role Flexibility vs. Specialization - Choose: Specialization - The job position is specifically for a Senior Backend Java Engineer, indicating a need for candidates with specialized skills in this area rather than a more flexible role.`
+
+      // const regexT = /(\d+)\.\s+(.+?)\s+-\s+(.+?)(?=\d+\.|$)/gs;
+      const regexT = /(\d+\.\s+.+?)\s+-\s+(Choose:\s+.+?)\s+-\s+(.+?)(?=\d+\.|$)/gs;
 
       const tradeoffsArray = [];
       let matchT;
       while ((matchT = regexT.exec(tradeOffsSuggestions)) != null) {
+
         const tradeoffObject = {
-          tradeOff1: matchT[2].split(" vs. ")[0],
-          tradeOff2: matchT[2].split(" vs. ")[1],
+          tradeOff1: matchT[1].split(" vs. ")[0].replace(/^\d+\.\s*/, "").trim(),
+          tradeOff2: matchT[1].split(" vs. ")[1],
+          selected: matchT[2].replace("Choose:", "").trim(),
           reason: matchT[3],
         };
         tradeoffsArray.push(tradeoffObject);
@@ -1050,6 +1068,13 @@ module.exports = {
 
       printC(tradeoffsArray, "3", "tradeoffsArray", "g");
       // --------------------------------- Find TradeOffs ---------------------------------
+
+
+      // Save the priorities and tradeoffs to the Position
+      positionData.positionsRequirements.priorities = prioritiesArray;
+      positionData.positionsRequirements.tradeOffs = tradeoffsArray;
+      await positionData.save();
+      
 
       return {
         success: true,
@@ -1260,15 +1285,59 @@ module.exports = {
 
         // ------- Calculate Summary -------
         // if (userData.cvInfo.cvPreparationBio != true) {
+
+        // promptSum =
+        //   `Act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) and your job is to write a short bio for that profile. Here is the structure of the bio: 
+          
+          
+        //   Pick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).
+          
+          
+        //   Follow this structure 2 parts. First part is 1 sentences. Sencond part is two bullet points with 18 words MAX each.
+          
+        //   Part 1(do not include Part 1 in the response): 
+        //   1 sentences (Opening line: Introduce yourself and your expertise)
+          
+        //   Part 2(do not include Part 2 in the response):
+        //    - The present position that they work in and what they do there 
+        //    - Highest level of education(list only the highest education and only list that one)
+
+        //    CV: <${cvContent}>
+           
+        //    Structured Profile:`
+
         promptSum =
-          `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
+          `I want you to act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) deliniated with tripple quotes(""" """) and your job is to write a short bio for that profile. Here is the structure of the bio: \n\n\nPick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points with MAX 15 words each (no more than 2).\n\n\nFollow this structure 2 parts. First part is 2 small sentences. Sencond part is two bullet points \n\nPart 1(do not include Part 1 in the response): \n2 small sentences (Opening line: Introduce yourself and your expertise)\n\nPart 2(do not include Part 2 in the response):\n •Highest level of education(list only the highest education and only list that one)\n •The present position that they work in and what they do there \n\n\n\n` +
           cvContent;
 
         summaryOfCV = await useGPTchatSimple(promptSum);
 
+        summaryOfCV = summaryOfCV.replace("Part 1:", "");
+        summaryOfCV = summaryOfCV.replace("Part 2:", "");
+        summaryOfCV = summaryOfCV.replace("Part 1", "");
+        summaryOfCV = summaryOfCV.replace("Part 2", "");
+
         printC(summaryOfCV, "0", "summaryOfCV", "b");
 
+
+
+
+        oneLinerPrompt =
+        `
+        Your task is to create a 1 liner for a candidate that explain perfectly who he is in only 8 MAX words
+
+        CV: <${cvContent}>
+
+        1 liner in 8 MAX words:
+        `;
+
+          oneLiner = await useGPTchatSimple(oneLinerPrompt);
+
+          printC(oneLiner, "0", "oneLinerGPT", "b");
+
+
         userData.bio = summaryOfCV;
+        userData.oneLiner = oneLiner;
 
         userData.cvInfo.cvPreparationBio = true;
         // }

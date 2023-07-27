@@ -17,6 +17,8 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 
 
+
+
 require("dotenv").config();
 
 const typeDefs = require("./graphql/schema");
@@ -146,6 +148,8 @@ async function main() {
       console.log("ended running the task every 2 days");
     }
   });
+
+  
 }
 
 main();

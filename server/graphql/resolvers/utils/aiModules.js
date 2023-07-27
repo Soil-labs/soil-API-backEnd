@@ -187,7 +187,7 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
     <Category 2: title>
       - b3: small content max 15 words
 
-  Answer like the example:`;
+  Answer like the example for every <Category>:`;
   let report = await useGPTchatSimple(promptReport, 0);
 
   let idCounter = 1;
@@ -622,7 +622,12 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
 
   printC(conversationID, "1", "conversationID", "b");
 
-  printC(CVToPositionReport, "2", "CVToPositionReport", "p");
+
+  // find member and take the cvInfo.cvContent
+  let cvContent = memberData.cvInfo.cvContent;
+
+  // printC(CVToPositionReport, "2", "CVToPositionReport", "p");
+  printC(cvContent, "3", "cvContent", "p");
 
   // sd0
 
@@ -652,6 +657,8 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
     "p"
   );
 
+  // sd8
+
 //   promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
 
 //   Report Candidate CV to Job Position (delimiters <>): <${CVToPositionReport}>
@@ -679,7 +686,7 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
 
 promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
 
-Report Candidate CV to Job Position (delimiters <>): <${CVToPositionReport}>
+Report Candidate CV to Job Position (delimiters <>): <${cvContent.substring(0, 3000)}>
 
 Conversation of Candidate With Recruiter (delimiters <>): <${convoCandidateRecruiterPrompt}>
 
@@ -694,18 +701,20 @@ Your Task is to Score each of the Job Requirements based on the CV and Conversat
 - For each bullet point ONLY give ID, Reason based on info  and score
 - Give exactly the same number of bullet points(IDs)
 - ONLY WRITE TRUE INFORMATION taken from Candidate, DO NOT MAKE UP FAKE INFORMATION
-- Only use info from Candidate!
+- If there is no information reason should be "No Info"!
+- Be positive, try to find the best score and make connections to find reasons for the score
 
-For example: 
+Example: 
 Category 1:
     - ID: Score - Reason based on info  
     - ID: Score - Reason based on info
 
-Only Output the ID, Scores, really small reason:`;
+ Only Output the ID, Scores, small reason give facts and analysis found on Conversation or Report Candidate:`;
 
   printC(promptReport, "4", "promptReport", "y");
 
-  let report = await useGPTchatSimple(promptReport, 0);
+  // let report = await useGPTchatSimple(promptReport, 0,"API 1");
+  let report = await useGPTchatSimple(promptReport, 0,"API 1","chatGPT4");
 
   // printC(report,"4","report","g")
 

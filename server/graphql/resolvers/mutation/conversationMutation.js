@@ -109,34 +109,56 @@ module.exports = {
 
     
 
+    console.log("change = " )
+    
+
     try {
+      
       let convData = await Conversation.find(searchQuery);
 
       
 
       for (let i = 0; i < convData.length; i++) {
+        let userID = ""
+        let positionTrainEdenAI
+        let positionID = "232"
+
+        let filter = {}
+
         convDataNow = convData[i];
 
-        // --------------- Calculate candidateNotesEdenAI ---------------
-        const userID = convDataNow.userID;
-        const positionID = convDataNow.positionID;
 
-        // console.log("userID,positionID = ", userID, positionID);
+        // --------------- Calculate candidateNotesEdenAI ---------------
+
+        userID = convDataNow.userID;
+        positionID = convDataNow.positionID;
+        positionTrainEdenAI = convDataNow.positionTrainEdenAI;
+
+        if (positionTrainEdenAI == true) { // For Delete the right memories
+
+          filter = {
+            positionID: positionID,
+            label:"conv_for_position_memory"
+          }
+
+        } else {
+          filter = {
+            userID: userID,
+            label:"conv_for_user_memory"
+          }
+
+        }
 
         if (userID != undefined && positionID != undefined)
           CandidateNotesEdenAIAPICallF(userID, positionID);
-        // df0
-
         // --------------- Calculate candidateNotesEdenAI ---------------
 
-        // console.log("convDataNow = ", convDataNow);
-
         await updatePositionInterviewedOfUser(convDataNow.userID);
-        // asdf9
 
-        // console.log("convDataNow. = ", convDataNow.updatedAt);
 
         printC( convDataNow.updatedAt,"0"," convDataNow.updatedAt","b")
+        printC(positionID,"2","positionID","y")
+
 
         // how many minutes pass from last update
         const minutesSinceLastUpdate =
@@ -145,15 +167,11 @@ module.exports = {
         // console.log("minutesSinceLastUpdate = ", minutesSinceLastUpdate);
         printC(minutesSinceLastUpdate,"1","minutesSinceLastUpdate","b")
 
-        if (minutesSinceLastUpdate > 1.2) {
-          // if (true) {
+        printC(positionID,"2","positionID","y")
 
+
+        if (minutesSinceLastUpdate > 1.2) {
           // ------------------ Delete old summaries from pinecone ------------------
-          deletePineIDs = convDataNow.summary.map((obj) => obj.pineConeID);
-          // await deletePineCone(deletePineIDs);
-          let filter = {
-            pineconeID: deletePineIDs,
-          }
           resTK = await deleteMemoriesPineconeFunc(filter)
           // ------------------ Delete old summaries from pinecone ------------------
  
@@ -188,19 +206,23 @@ module.exports = {
           for (let j = 0; j < splitSummary.length; j++) {
             splitSumNow = splitSummary[j];
 
-            // upsertDoc = await upsertEmbedingPineCone({
-            //   text: splitSumNow,
-            //   _id: convDataNow.userID,
-            //   label: "conv_with_user_memory",
-            //   convKey: convDataNow.convKey,
-            // });
 
-            resTK = await addMemoryPineconeFunc({
-              userID: convDataNow.userID,
-              label: "conv_with_user_memory",
-              memory: splitSumNow,
-              convKey: convDataNow.convKey,
-            })
+            if (positionTrainEdenAI == true) { 
+              resTK = await addMemoryPineconeFunc({
+                positionID: convDataNow.positionID,
+                label: "conv_for_position_memory",
+                memory: splitSumNow,
+                convKey: convDataNow.convKey,
+              })
+            } else {
+              resTK = await addMemoryPineconeFunc({
+                userID: convDataNow.userID,
+                label: "conv_with_user_memory",
+                memory: splitSumNow,
+                convKey: convDataNow.convKey,
+              })
+            }
+           
 
             summaryArr.push({
               // pineConeID: upsertDoc.pineConeID,
@@ -230,8 +252,8 @@ module.exports = {
           const positionID = convDataNow.positionID;
           const userID = convDataNow.userID;
 
-          printC(positionID,"2","positionID","y")
-          printC(userID,"3","userID","y")
+          // printC(positionID,"2","positionID","y")
+          // printC(userID,"3","userID","y")
 
           
           const res = await reportPassFailCVPositionConversationFunc(userID, positionID)
