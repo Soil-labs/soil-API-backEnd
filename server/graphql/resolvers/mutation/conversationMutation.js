@@ -174,70 +174,70 @@ module.exports = {
 
 
         if (minutesSinceLastUpdate > 2.3) {
-          // // ------------------ Delete old summaries from pinecone ------------------
-          // resTK = await deleteMemoriesPineconeFunc(filter)
-          // // ------------------ Delete old summaries from pinecone ------------------
+          // ------------------ Delete old summaries from pinecone ------------------
+          resTK = await deleteMemoriesPineconeFunc(filter)
+          // ------------------ Delete old summaries from pinecone ------------------
  
-          // let paragraphSummary = await useGPTchat(
-          //   // "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation. reasult:",
-          //   // "Please summarize the conversation using bullet points. Focuse on creating consise bullet points. Try to incorporate the keywords that were used during the conversation. reasult:",
-          //   "Create a summary of the important parts of the conversation \n\n Summary:",
-          //   convDataNow.conversation.map(({ role, content }) => ({
-          //     role,
-          //     content,
-          //   })), // clean up from any _id etc
-          //   ""
-          // );
+          let paragraphSummary = await useGPTchat(
+            // "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation. reasult:",
+            // "Please summarize the conversation using bullet points. Focuse on creating consise bullet points. Try to incorporate the keywords that were used during the conversation. reasult:",
+            "Create a summary of the important parts of the conversation \n\n Summary:",
+            convDataNow.conversation.map(({ role, content }) => ({
+              role,
+              content,
+            })), // clean up from any _id etc
+            ""
+          );
 
-          // const promptForBulletS =
-          //   paragraphSummary +
-          //   "\n - Focus on Creating the smallest possible number of bullet points \n - Bullet point should exist only if it adds new important information \n\n Create Bullet point Summary:";
+          const promptForBulletS =
+            paragraphSummary +
+            "\n - Focus on Creating the smallest possible number of bullet points \n - Bullet point should exist only if it adds new important information \n\n Create Bullet point Summary:";
 
-          // const bulletSummary = await useGPTchatSimple(promptForBulletS);
+          const bulletSummary = await useGPTchatSimple(promptForBulletS);
 
-          // // console.log("bulletSummary = " , bulletSummary)
+          // console.log("bulletSummary = " , bulletSummary)
 
-          // let splitSummary = bulletSummary.split("- ");
+          let splitSummary = bulletSummary.split("- ");
 
-          // splitSummary.shift();
+          splitSummary.shift();
 
-          // // console.log("splitSummary = ", splitSummary);
-          // // ---------------- GPT find new Summary ------------
+          // console.log("splitSummary = ", splitSummary);
+          // ---------------- GPT find new Summary ------------
 
-          // let summaryArr = [];
+          let summaryArr = [];
 
-          // for (let j = 0; j < splitSummary.length; j++) {
-          //   splitSumNow = splitSummary[j];
+          for (let j = 0; j < splitSummary.length; j++) {
+            splitSumNow = splitSummary[j];
 
 
-          //   if (positionTrainEdenAI == true) { 
-          //     resTK = await addMemoryPineconeFunc({
-          //       positionID: convDataNow.positionID,
-          //       label: "conv_for_position_memory",
-          //       memory: splitSumNow,
-          //       convKey: convDataNow.convKey,
-          //     })
-          //   } else {
-          //     resTK = await addMemoryPineconeFunc({
-          //       userID: convDataNow.userID,
-          //       label: "conv_with_user_memory",
-          //       memory: splitSumNow,
-          //       convKey: convDataNow.convKey,
-          //     })
-          //   }
+            if (positionTrainEdenAI == true) { 
+              resTK = await addMemoryPineconeFunc({
+                positionID: convDataNow.positionID,
+                label: "conv_for_position_memory",
+                memory: splitSumNow,
+                convKey: convDataNow.convKey,
+              })
+            } else {
+              resTK = await addMemoryPineconeFunc({
+                userID: convDataNow.userID,
+                label: "conv_with_user_memory",
+                memory: splitSumNow,
+                convKey: convDataNow.convKey,
+              })
+            }
            
 
-          //   summaryArr.push({
-          //     // pineConeID: upsertDoc.pineConeID,
-          //     pineConeID: resTK?.memoryData?.pineConeID,
-          //     content: splitSumNow,
-          //   });
-          // }
+            summaryArr.push({
+              // pineConeID: upsertDoc.pineConeID,
+              pineConeID: resTK?.memoryData?.pineConeID,
+              content: splitSumNow,
+            });
+          }
 
-          // convDataNow.summary = summaryArr;
-          // convDataNow.summaryReady = true;
+          convDataNow.summary = summaryArr;
+          convDataNow.summaryReady = true;
 
-          // printC(convDataNow,"0","convDataNow","b")
+          printC(convDataNow,"0","convDataNow","b")
 
           // // sdf9
 
