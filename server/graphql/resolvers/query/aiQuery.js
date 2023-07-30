@@ -1502,9 +1502,7 @@ module.exports = {
       }
 
       printC(positionsRequirementsContent, "2", "positionsRequirementsContent", "g");
-
-      // d92
-
+      
       tradeOffs = positionData.positionsRequirements.tradeOffs
       
       tradeOffsPrompt = ""
@@ -1522,7 +1520,16 @@ module.exports = {
 
       companyName = "Testla"
 
-      let CVNotes = memberData.cvInfo.cvContent
+      // let CVNotes = memberData.cvInfo.cvContent
+
+
+      
+      let CVNotes = ""
+      if (memberData?.cvInfo?.cvNotes == undefined) {
+        CVNotes = memberData.cvInfo.cvContent
+      } else {
+        CVNotes = memberData.cvInfo.cvNotes
+      }
       
       let questionsID = []
       positionData.questionsToAsk.forEach((item) => {
