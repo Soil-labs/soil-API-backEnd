@@ -30,7 +30,7 @@ module.exports = {
     }
   },
   findConversations: async (parent, args, context, info) => {
-    const { _id, userID, convKey, summaryReady} = args.fields;
+    const { _id, userID,positionID, convKey,positionTrainEdenAI, summaryReady} = args.fields;
     console.log("Query > findConversations > args.fields = ", args.fields);
 
 
@@ -47,7 +47,11 @@ module.exports = {
       searchQuery_and.push({ convKey: convKey });
     } else if (summaryReady != undefined) {
       searchQuery_and.push({ summaryReady: summaryReady });
-    }
+    } else if (positionTrainEdenAI != undefined) {
+      searchQuery_and.push({ positionTrainEdenAI: positionTrainEdenAI });
+    } else if (positionID) {
+      searchQuery_and.push({ positionID: positionID });
+    } 
 
     if (searchQuery_and.length > 0) {
       searchQuery = {

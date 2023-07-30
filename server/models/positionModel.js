@@ -17,6 +17,7 @@ const positionModel = mongoose.Schema({
   positionsRequirements: {
     originalContent: String,
     content: String,
+    notesRequirConv: String,
     roleDescription: [String],
     benefits: [String],
     positionMemory: [{
