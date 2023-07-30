@@ -84,6 +84,7 @@ module.exports = `
 
     type cvInfoType {
         cvContent: String
+        cvNotes: String
         cvMemory: [cvMemoryType]
         cvPreparationDone: Boolean,
         cvPreparationBio: Boolean,
