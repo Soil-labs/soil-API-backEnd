@@ -58,6 +58,12 @@ const {
   findCompanyFromSlug,
 } = require("./query/companyQuery");
 
+
+const {
+  findQueryResponses,
+} = require("./query/queryResponseQuery");
+
+
 const {
   findMemories,
 } = require("./query/memoryPineconeQuery");
@@ -216,6 +222,10 @@ module.exports = {
     findCompany,
     findCompanies,
     findCompanyFromSlug,
+
+
+    // ------------- QUERY RESPONSE QUERY -----------------
+    findQueryResponses,
 
 
     // ------------- MEMORY PINECONE QUERY -----------------

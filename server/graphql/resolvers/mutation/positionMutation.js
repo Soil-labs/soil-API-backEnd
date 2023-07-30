@@ -34,7 +34,7 @@ const { arrayToObj } = require("../utils/endorsementModules");
 
 module.exports = {
   updatePosition: async (parent, args, context, info) => {
-    const { _id, name, companyID } = args.fields;
+    const { _id, name, companyID,mainUserID } = args.fields;
     console.log("Mutation > updatePosition > args.fields = ", args.fields);
 
     try {
@@ -50,10 +50,12 @@ module.exports = {
         positionData = await Position.findOne({ _id });
 
         if (name) positionData.name = name;
+        if (companyID) positionData.companyID = companyID;
       } else {
         positionData = await new Position({
           name,
           companyID,
+          mainUserID,
           talentList: [
             {
               name: "Accepted",
@@ -786,7 +788,7 @@ module.exports = {
 
             ${instructionsScore}
             
-            Summary in 2 sentences basing analysis on specific names of previous jobs: 
+            Summary in 2 sentences basing analysis on specific names of previous jobs MAX 45 words: 
             `;
 
           // printC(promptBackground,"6","promptBackground","g")
@@ -830,7 +832,7 @@ module.exports = {
             ${instructionsScore}
 
             
-            Summary of skill analysis in only 1.5 sentences: 
+            Summary of skill analysis in only 1.5 sentences MAX 45 words: 
             `;
 
           // printC(promptSkill,"6","promptSkill","g")
@@ -868,7 +870,7 @@ module.exports = {
             
             ${instructionsScore}
 
-            Summary the most interesting info in only 1.5 sentences: 
+            Summary the most interesting info in only 1.5 sentences MAX 45 words: 
             `;
 
           // printC(promptJobRequirements,"6","promptJobRequirements","g")

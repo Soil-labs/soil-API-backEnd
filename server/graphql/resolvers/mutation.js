@@ -77,6 +77,10 @@ const {
 } = require("./mutation/companyMutation");
 
 const {
+  updateQueryResponse
+} = require("./mutation/queryResponseMutation");
+
+const {
   addMemory,
   deleteMemories,
 } = require("./mutation/memoryPineconeMutation");
@@ -234,6 +238,9 @@ module.exports = {
     updateCompany,
     updateUrlCompany,
     addEmployeesCompany,
+
+    // ------------- QUERY RESPONSE MUTATION -----------------
+    updateQueryResponse,
 
     // ------------- MEMORY PINECONE MUTATION -----------------
     addMemory,

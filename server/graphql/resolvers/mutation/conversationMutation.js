@@ -8,6 +8,7 @@ const {
   updateQuestionAskedConvoID,
   updatePositionInterviewedOfUser,
   findSummaryOfAnswers,
+  findQuestionsAsked,
   findAndUpdateConversationFunc,
   updateAnsweredQuestionFunc,
 } = require("../utils/conversationModules");
@@ -109,14 +110,15 @@ module.exports = {
 
     
 
-    console.log("change = " )
     
 
     try {
       
       let convData = await Conversation.find(searchQuery);
 
-      
+
+      // printC(convData,"1","convData","b")
+      // dd9
 
       for (let i = 0; i < convData.length; i++) {
         let userID = ""
@@ -236,12 +238,15 @@ module.exports = {
 
           printC(convDataNow,"0","convDataNow","b")
 
+          // sdf9
+
+          if (convDataNow.questionsAnswered.length == 0) {
+            convDataNow = await findQuestionsAsked(convDataNow,convDataNow.positionID);
+          }
+
           convDataNow = await findSummaryOfAnswers(convDataNow);
 
-          // sdf0
 
-
-          // printC(convDataNow,"0","convDataNow","b")
 
 
           await convDataNow.save();

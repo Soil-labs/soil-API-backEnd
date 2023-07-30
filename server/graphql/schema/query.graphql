@@ -75,6 +75,10 @@ module.exports = `
             findCompanyFromSlug(fields:findCompanyFromSlugInput): Company
 
 
+           #  ---------- QUERY RESPONSE QUERY -------
+            findQueryResponses(fields:findQueryResponsesInput): [QueryResponse]
+
+
            #  ---------- MEMORY PINECONE QUERY -------
 
             findMemories(fields:findMemoriesInput): [MemoryPinecone]
