@@ -370,34 +370,6 @@ async function createEmbeddingsGPT(words_n) {
   return res;
 }
 
-async function findBestEmbedings(message, filter, topK = 3) {
-  const pinecone = new PineconeClient();
-  await pinecone.init({
-    environment: "us-east1-gcp",
-    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
-  });
-
-  const index = await pinecone.Index("profile-eden-information");
-
-  embed = await createEmbeddingsGPT(message);
-
-  let queryRequest = {
-    topK: topK,
-    vector: embed[0],
-    includeMetadata: true,
-  };
-
-  if (filter != undefined) {
-    queryRequest = {
-      ...queryRequest,
-      filter: filter,
-    };
-  }
-
-  const queryResponse = await index.query({ queryRequest });
-
-  return queryResponse.matches;
-}
 
 
 async function saveScoreToPositionCandidate(memberArray,positionID) {
@@ -498,14 +470,44 @@ async function findRoleDescriptionAndBenefits(message,positionID) {
   
 }
 
+async function findBestEmbedings(message, filter, topK = 3) {
+  const pinecone = new PineconeClient();
+  await pinecone.init({
+    environment: "us-east1-gcp",
+    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+  });
+
+  const index = await pinecone.Index("profile-eden-information");
+
+  embed = await createEmbeddingsGPT(message);
+
+  let queryRequest = {
+    topK: topK,
+    vector: embed[0],
+    includeMetadata: true,
+  };
+
+  if (filter != undefined) {
+    queryRequest = {
+      ...queryRequest,
+      filter: filter,
+    };
+  }
+
+  const queryResponse = await index.query({ queryRequest });
+
+  return queryResponse.matches;
+}
+
+
 
 module.exports = {
   wait,
   CandidateNotesEdenAIAPICallF,
-  findBestEmbedings,
   useGPTchatSimple,
   upsertEmbedingPineCone,
   saveScoreToPositionCandidate,
   findRoleDescriptionAndBenefits,
   useGPT4chat,
+  findBestEmbedings,
 };

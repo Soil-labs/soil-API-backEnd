@@ -245,7 +245,7 @@ module.exports = {
             await updateNotesRequirmentsConversation(convDataNow); 
           }
 
-          ss0
+          // ss0
 
           if (convDataNow.questionsAnswered.length == 0) {
             convDataNow = await findQuestionsAsked(convDataNow,convDataNow.positionID);
