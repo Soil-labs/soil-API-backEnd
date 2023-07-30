@@ -626,6 +626,169 @@ module.exports = {
       );
     }
   },
+  findPrioritiesTrainEdenAI: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
+    console.log(
+      "Mutation > findPrioritiesTrainEdenAI > args.fields = ",
+      args.fields
+    );
+
+    try {
+      if (!positionID) {
+        throw new ApolloError("positionID is required");
+      }
+
+      positionData = await Position.findOne({ _id: positionID }).select(
+        "_id positionsRequirements"
+      );
+
+
+
+      if (!positionData) {
+        throw new ApolloError("Position not found");
+      }
+
+      if (positionData.positionsRequirements?.priorities != undefined && positionData.positionsRequirements?.tradeOffs != undefined) {
+
+        let prioritiesT = positionData.positionsRequirements.priorities;
+        let tradeoffsT = positionData.positionsRequirements.tradeOffs;
+
+        return {
+          success: true,
+          priorities: prioritiesT,
+          tradeOffs: tradeoffsT,
+        };
+
+      }
+
+      positionsRequirements =
+        positionData.positionsRequirements.originalContent;
+
+      printC(positionsRequirements, "3", "positionsRequirements", "b");
+
+
+      // --------------------------------- Find Priorities ---------------------------------
+      let promptNewQuestions = `
+        REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
+  
+        - Your Task is based on teh content to find the Priorities for this Job Position 
+        - you can use Maximum 1 sentence to explain why you choose a priority, maximum 5 priorities
+        - You would give the priorities from the highest at the Top to the lowest at the Bottom
+        - Choose priorities from (Cultural fit, Technical skills, Soft skills, Work experience, Leadership potential, Diversity and inclusion, Long-term prospects, Motivation and enthusiasm, Initiative and creativity, Flexibility, Reliability and work ethic, Collaboration skills, Strong references, Customer or client focus, Industry knowledge )
+
+        Example priority structure:
+         1. Priority Title - Reason based on Requirements in MAX 20 words
+         2. Priority Title - Reason based on Requirements in MAX 20 words
+        
+        Priorities:
+      `;
+
+      printC(promptNewQuestions, "3", "promptNewQuestions", "b");
+
+      prioritiesSuggestions = await useGPTchatSimple(
+        promptNewQuestions,
+        0,
+        "API 1"
+      );
+
+      printC(prioritiesSuggestions, "3", "prioritiesSuggestions", "p");
+
+      // prioritiesSuggestions = `1. Technical skills - Strong experience with Spring framework, NoSQL and SQL databases, and message queue systems (e.g Kafka).
+      // 2. Leadership potential - Lead technical decisions inside and across teams to improve technical excellence through lateral leadership.
+      // 3. Work experience - 4+ years experience working as a Backend Java Engineer.
+      // 4. Collaboration skills - Contribute to finding the best solutions for customer service products that make operations easier.
+      // 5. Motivation and enthusiasm - Enjoy working within an agile setup.`
+
+      const regex = /(\d+)\.\s+(.*)\s+-\s+(.*)/g;
+      const prioritiesArray = [];
+
+      let match;
+      while ((match = regex.exec(prioritiesSuggestions)) !== null) {
+        const questionObject = {
+          priority: match[2],
+          reason: match[3],
+        };
+        prioritiesArray.push(questionObject);
+      }
+
+      printC(prioritiesArray, "3", "prioritiesArray", "g");
+      // --------------------------------- Find Priorities ---------------------------------
+
+      // --------------------------------- Find TradeOffs ---------------------------------
+      let promptNewTradeOffs = `
+        REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
+  
+        - Your Task is based on teh content to find the TradeOffs for this Job Position 
+        - you can use Maximum 1 sentence to explain why you choose a priority, maximum 5 tradeOffs
+        - You would give the tradeOffs from the highest at the Top to the lowest at the Bottom
+        - Choose tradeOffs from (Quality vs. Quantity, Experience vs. Potential, Skills vs. Cultural Fit, Speed vs. Thoroughness, Internal vs. External Candidates, Role Flexibility vs. Specialization, Remote Work vs. Onsite Presence, Diversity vs. Cultural Homogeneity, Compensation vs. Non-monetary Benefits, Direct Hire vs. Contract-to-hire, Long-term vs. Short-term Fit, Local vs. International Candidates, Traditional vs. Innovative Sourcing, Employer Brand Visibility vs. Highly-targeted Approaches, Candidate Experience vs. Time Investment)
+        - You should choose the right tradeoff for this REQUIREMENTS
+
+        Example priority structure:
+         1. TradeOff1 VS TradeOff2 - Choose: TradeOff2 - Reason based on Requirements
+         2. TradeOff1 VS TradeOff2 - Choose: TradeOff1 - Reason based on Requirements
+        
+        TradeOffs:
+      `;
+
+      printC(promptNewTradeOffs, "3", "promptNewTradeOffs", "b");
+      
+
+      tradeOffsSuggestions = await useGPTchatSimple(
+        promptNewTradeOffs,
+        0,
+        "API 1"
+      );
+
+      printC(tradeOffsSuggestions, "3", "tradeOffsSuggestions", "p");
+
+      // tradeOffsSuggestions = `1. Quality vs. Quantity - Choose: Quality - The job position requires a strong understanding of software development best practices and the ability to design new products from scratch, indicating a need for high-quality work rather than a high quantity of work.
+      // 2. Experience vs. Potential - Choose: Experience - The job position specifically states a requirement of 4+ years of experience, indicating a preference for candidates with proven experience in the role rather than potential for growth.
+      // 3. Skills vs. Cultural Fit - Choose: Skills - The job position lists specific technical skills and experience with certain technologies, indicating a higher priority on skills rather than cultural fit.
+      // 4. Speed vs. Thoroughness - Choose: Thoroughness - The job position emphasizes the importance of code quality, testing, and deployment, indicating a need for thoroughness in the development process rather than speed.
+      // 5. Role Flexibility vs. Specialization - Choose: Specialization - The job position is specifically for a Senior Backend Java Engineer, indicating a need for candidates with specialized skills in this area rather than a more flexible role.`
+
+      // const regexT = /(\d+)\.\s+(.+?)\s+-\s+(.+?)(?=\d+\.|$)/gs;
+      const regexT = /(\d+\.\s+.+?)\s+-\s+(Choose:\s+.+?)\s+-\s+(.+?)(?=\d+\.|$)/gs;
+
+      const tradeoffsArray = [];
+      let matchT;
+      while ((matchT = regexT.exec(tradeOffsSuggestions)) != null) {
+
+        const tradeoffObject = {
+          tradeOff1: matchT[1].split(" vs. ")[0].replace(/^\d+\.\s*/, "").trim(),
+          tradeOff2: matchT[1].split(" vs. ")[1],
+          selected: matchT[2].replace("Choose:", "").trim(),
+          reason: matchT[3],
+        };
+        tradeoffsArray.push(tradeoffObject);
+      }
+
+      printC(tradeoffsArray, "3", "tradeoffsArray", "g");
+      // --------------------------------- Find TradeOffs ---------------------------------
+
+
+      // Save the priorities and tradeoffs to the Position
+      positionData.positionsRequirements.priorities = prioritiesArray;
+      positionData.positionsRequirements.tradeOffs = tradeoffsArray;
+      await positionData.save();
+      
+
+      return {
+        success: true,
+        priorities: prioritiesArray,
+        tradeOffs: tradeoffsArray,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findPrioritiesTrainEdenAI",
+        {
+          component: "aiMutation > findPrioritiesTrainEdenAI",
+        }
+      );
+    }
+  },
   edenGPTCreateProfileExperienceChatAPI: async (
     parent,
     args,
