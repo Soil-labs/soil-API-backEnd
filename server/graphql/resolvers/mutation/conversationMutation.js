@@ -9,6 +9,7 @@ const {
   updatePositionInterviewedOfUser,
   findSummaryOfAnswers,
   findQuestionsAsked,
+  updateNotesRequirmentsConversation,
   findAndUpdateConversationFunc,
   updateAnsweredQuestionFunc,
 } = require("../utils/conversationModules");
@@ -238,7 +239,13 @@ module.exports = {
 
           printC(convDataNow,"0","convDataNow","b")
 
-          // sdf9
+          // // sdf9
+
+          if (convDataNow.positionTrainEdenAI == true) { // this is an alignment conversation
+            await updateNotesRequirmentsConversation(convDataNow); 
+          }
+
+          // ss0
 
           if (convDataNow.questionsAnswered.length == 0) {
             convDataNow = await findQuestionsAsked(convDataNow,convDataNow.positionID);

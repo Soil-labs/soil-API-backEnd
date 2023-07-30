@@ -73,8 +73,9 @@ module.exports = `
     input findConversationsInput {
         _id: [ID]
         userID: [String]
+        positionID: [String]
         convKey: [String]
-
+        positionTrainEdenAI: Boolean
         summaryReady: Boolean,
     }
 

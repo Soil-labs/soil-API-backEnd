@@ -258,6 +258,63 @@ async function findAndUpdateConversationFunc(userID, conversation, positionID,po
   return resultConv;
 }
 
+async function updateNotesRequirmentsConversation(convDataNow) {
+
+  let positionIDn = convDataNow.positionID;
+
+  let positionData = await Position.findOne({
+    _id: positionIDn,
+  }).select("_id name positionsRequirements positionsRequirements");
+
+
+  if (positionData?.positionsRequirements?.notesRequirConv == undefined){ // its not been created yet
+
+    let requirments = positionData.positionsRequirements.originalContent
+
+
+    conversationPrompt = ""
+    convDataNow.conversation.forEach((item,idx) => {
+      conversationPrompt = conversationPrompt + item.role+ ": " + item.content + " \n\n"
+    })
+
+
+    
+    promptConvoQuestions = `
+    POSITION REQUIRMENTS: <${requirments}>
+
+    CONVERSATION: <${conversationPrompt}>
+
+    - you are a recruiter, your task is to create Notes that combine the POSITION REQUIRMENTS and the CONVERSATION above.
+    - the format will be on bullet point
+    - each bullet point can be from 1 to 2 sentenses
+    - you can create as many bullet points as you want
+
+    Position Notes:
+    `;
+
+    printC(promptConvoQuestions, "2", "promptConvoQuestions", "p");
+
+    const promptConvoQuestionsRes = await useGPTchatSimple(promptConvoQuestions,0.7,'API 2');
+
+    printC(promptConvoQuestionsRes, "2", "promptConvoQuestionsRes", "p");
+
+    
+    // save to mongo
+    let positionsRequirements = {
+      ...positionData.positionsRequirements,
+      notesRequirConv: promptConvoQuestionsRes,
+    };
+
+    positionData.positionsRequirements = positionsRequirements;
+
+    positionData = await positionData.save();
+
+
+  }
+
+
+}
+
 async function findQuestionsAsked(convDataNow,positionID) {
 
 
@@ -626,5 +683,6 @@ module.exports = {
   findAndUpdateConversationFunc,
   findSummaryOfAnswers,
   findQuestionsAsked,
+  updateNotesRequirmentsConversation,
   updatePositionInterviewedOfUser,
 };
