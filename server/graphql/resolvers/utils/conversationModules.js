@@ -298,10 +298,10 @@ async function findQuestionsAsked(convDataNow,positionID) {
       conversationPrompt = conversationPrompt + "A"+ countAssistant.toString() + ": " + item.content + " \n\n"
       convAssistantArray.push(item)
       positionAssistantToConversation.push(idx)
-    } else {
-      countUser = countUser + 1
-      conversationPrompt = conversationPrompt + "U"+ countUser.toString() + ": " + item.content + " \n\n"
-      convUserArray.push(item)
+    // } else {
+    //   countUser = countUser + 1
+    //   conversationPrompt = conversationPrompt + "U"+ countUser.toString() + ": " + item.content + " \n\n"
+    //   convUserArray.push(item)
     }
   })
 
@@ -354,7 +354,7 @@ async function findQuestionsAsked(convDataNow,positionID) {
 
   printC(promptConvoQuestionsRes, "2", "promptConvoQuestionsRes", "p");
 
-
+// dfl2
   // // Split the string into an array of Qx blocks
   // const qxBlocks = promptConvoQuestionsRes.split(/(?=Q\d:)/);
 
