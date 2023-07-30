@@ -285,7 +285,7 @@ async function updateNotesRequirmentsConversation(convDataNow) {
     CONVERSATION: <${conversationPrompt}>
 
     - you are a recruiter, your task is to create Notes that combine the POSITION REQUIRMENTS and the CONVERSATION above.
-    - the format will be on bullet point
+    - the format will be on bullet points
     - each bullet point can be from 1 to 2 sentenses
     - you can create as many bullet points as you want
 

@@ -25,6 +25,7 @@ const {
   MessageMapKG_V4APICallF,
   findConversationPrompt,
   interviewQuestionCreationUserFunc,
+  interviewCreateCVNotesFunc,
   conversationCVPositionToReportFunc,
   reportPassFailCVPositionConversationFunc,
   positionTextAndConvoToReportCriteriaFunc,
@@ -987,31 +988,26 @@ module.exports = {
       const experienceAreas = extractedText[5]
       console.log("Experience Improvement:", experienceAreas);
 
-       const mainSkills = extractedText[1]
-        .split(", ");
+       const mainSkills = extractedText[1].split(", ");
 
       console.log("Main Skills:", mainSkills);
-
       printC(extractedText, "3", "extractedText", "b");
 
-
-      // sdf0
-
-      // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
-
-      // cvSummary = `
-      // Ateet Tiwari is a Full Stack Developer with experience in Front-End, Back-End, Database, Messaging Services, and UI Development. He has a strong proficiency in React, Redux, Node, Express, Python, SQL, and MongoDB. Ateet has led initiatives and teams, improved product performance, and designed in-house frameworks and systems. He is a Polygon Fellowship Graduate and has extensive knowledge in web3 development.
-      // `
-
+      
       // ----------- CV to Summary -------------
 
-      interviewQuestionCreationUserFunc(positionID, userID, cvContent);
+      // interviewQuestionCreationUserFunc(positionID, userID, cvContent); // GPT3 Interview
       // sdf00
 
-      await wait(5000);
+      interviewCreateCVNotesFunc(userData, cvContent); // GPT4 Interview
+
+
+      // await wait(5000);
+
+
       //publish the userID of the saved cv
       pubsub.publish("USER_CV_SAVED", {
-        userCVSavedToDB: { userID, cvSummary },
+        userCVSavedToDB: { userID, cvContent },
       });
       return {
         success: true,
