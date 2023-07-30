@@ -172,7 +172,7 @@ module.exports = {
         printC(positionID,"2","positionID","y")
 
 
-        if (minutesSinceLastUpdate > 1.2) {
+        if (minutesSinceLastUpdate > 2.3) {
           // ------------------ Delete old summaries from pinecone ------------------
           resTK = await deleteMemoriesPineconeFunc(filter)
           // ------------------ Delete old summaries from pinecone ------------------
