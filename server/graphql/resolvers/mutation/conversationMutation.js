@@ -240,9 +240,9 @@ module.exports = {
 
           // sdf9
 
-          // if (convDataNow.questionsAnswered.length == 0) {
+          if (convDataNow.questionsAnswered.length == 0) {
             convDataNow = await findQuestionsAsked(convDataNow,convDataNow.positionID);
-          // }
+          }
 
           convDataNow = await findSummaryOfAnswers(convDataNow);
 
