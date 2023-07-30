@@ -1495,7 +1495,15 @@ module.exports = {
         (candidate) => candidate.userID.toString() == userID.toString()
       );
 
-      positionsRequirementsContent = positionData.positionsRequirements.originalContent
+      if (positionData.positionsRequirements.notesRequirConv == undefined) {
+        positionsRequirementsContent = positionData.positionsRequirements.originalContent
+      } else {
+        positionsRequirementsContent = positionData.positionsRequirements.notesRequirConv
+      }
+
+      printC(positionsRequirementsContent, "2", "positionsRequirementsContent", "g");
+
+      // d92
 
       tradeOffs = positionData.positionsRequirements.tradeOffs
       
