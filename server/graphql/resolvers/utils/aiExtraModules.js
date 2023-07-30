@@ -264,6 +264,8 @@ async function useGPTchatSimple(
         resContent = await onlyGPTchat(prompt, temperature, apiKey);
       else if (useMode == "davinci") {
         resContent = await onlyGPTDavinci(prompt, temperature, apiKey);
+      } else if (useMode == "chatGPT4") {
+        resContent = await useGPT4Simple(prompt, temperature, apiKey);
       }
       success = true;
     } catch (e) {
@@ -288,6 +290,34 @@ async function useGPTchatSimple(
   // console.log("resContent = ", resContent);
 
   return resContent;
+}
+
+
+async function useGPT4Simple(prompt, temperature = 0.7,chooseAPI = "API 1") {
+  discussion = [
+    {
+      role: "user",
+      content: prompt,
+    },
+  ];
+
+  let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
+  response = await axios.post(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      messages: discussion,
+      model: "gpt-4",
+      temperature: temperature,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+    }
+  );
+
+  return response.data.choices[0].message.content;
 }
 
 

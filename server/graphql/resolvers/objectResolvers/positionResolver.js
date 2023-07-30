@@ -29,6 +29,24 @@ module.exports = {
         );
       }
     },
+    mainUser: async (parent, args, context, info) => {
+      try {
+        const mainUserID = parent.mainUserID;
+        memberData = await Members.findOne({ _id: mainUserID });
+        if (memberData) {
+          return memberData;
+        }
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "companyResolver > company",
+            company: context.req.company?._id,
+          }
+        );
+      }
+    },
   },
   CandidateType: {
     user: async (parent, args, context, info) => {

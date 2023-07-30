@@ -2,6 +2,8 @@ const { AI } = require("../../../models/aiModel");
 const { Node } = require("../../../models/nodeModal");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
+const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
+
 
 const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
@@ -1320,14 +1322,49 @@ module.exports = {
     try {
       // ------------ Find Modified questions ------------
       let positionData = await Position.findOne({ _id: positionID }).select(
-        "_id candidates interviewQuestionsForPosition positionsRequirements"
+        "_id questionsToAsk candidates interviewQuestionsForPosition positionsRequirements"
       );
+
+      let memberData = await Members.findOne({ _id: userID }).select("_id discordName cvInfo")
+
 
       const candidate = positionData.candidates.find(
         (candidate) => candidate.userID.toString() == userID.toString()
       );
 
       positionsRequirementsContent = positionData.positionsRequirements.originalContent
+
+      tradeOffs = positionData.positionsRequirements.tradeOffs
+      
+      tradeOffsPrompt = ""
+      tradeOffs.forEach((item) => {
+        tradeOffsPrompt = tradeOffsPrompt + item.selected + ", "
+      })
+
+
+      priorities = positionData.positionsRequirements.priorities
+
+      prioritiesPrompt = ""
+      priorities.forEach((item,idx) => {
+        prioritiesPrompt = prioritiesPrompt + (idx + 1).toString() + ". " + item.priority + " "
+      })
+
+      companyName = "Testla"
+
+      let CVNotes = memberData.cvInfo.cvContent
+      
+      let questionsID = []
+      positionData.questionsToAsk.forEach((item) => {
+        questionsID.push(item.questionID)
+      })
+
+      let questionsToAsk = await QuestionsEdenAI.find({ _id: { $in: questionsID } })
+
+      questionsPrompt = ""
+      questionsToAsk.forEach((item,idx) => {
+        questionsPrompt = questionsPrompt + (idx + 1).toString() + ". " + item.content + " "
+      })
+
 
       // ------------ Find Modified questions ------------
 
@@ -1336,25 +1373,79 @@ module.exports = {
       discussionT = conversation.map((item) => ({
         role: item.role,
         content: item.content,
-        }));
+      }));
 
-
-      let systemPrompt = `You're a world-class senior recruiter named Eden. You communicate very effectively, to the point yet with care & compassion. You're always as helpful and optimize everything for maximum alignment between you and your hiring manager in order to help them find the absolute best candidate possible. Whenever asked, you can help your hiring manager reason through multiple scenarios & tradeoffs. If the hiring manager is answering with very little new information, push for a little more information & clarifications. You love a little quirky joke from now and then. Ask one question at a time and wait for the hiring manager's response. Acknowledge each response with maximum one sentence by highlighting an interesting element in the answer or simply introducing the next question with a cool segway. keep your total amount of questions to maximum 10.`
+      let systemPrompt=""
       let userNewMessage = ""
-      if (discussionT.length >0){
-        userNewMessage = discussionT.pop().content
-      } 
+      let originalMessage = ""
 
-      const originalMessage = `
-      Based on this job description what clarifying questions would you ask to make sure there is a high level of alignment between you and the hiring manager? 
-      ${positionsRequirementsContent}
-      `
+      if (positionTrainEdenAI == true){ // If EdenAI is talking to the company employ for training 
+
+        systemPrompt = `You're a world-class senior recruiter named Eden. You communicate very effectively, to the point yet with care & compassion. You're always as helpful and optimize everything for maximum alignment between you and your hiring manager in order to help them find the absolute best candidate possible. Whenever asked, you can help your hiring manager reason through multiple scenarios & tradeoffs. If the hiring manager is answering with very little new information, push for a little more information & clarifications. You love a little quirky joke from now and then. Ask one question at a time and wait for the hiring manager's response. Acknowledge each response with maximum one sentence by highlighting an interesting element in the answer or simply introducing the next question with a cool segway. keep your total amount of questions to maximum 10.`
+        if (discussionT.length >0){
+          userNewMessage = discussionT.pop().content
+        } 
+
+        originalMessage = `
+        Based on this job description what clarifying questions would you ask to make sure there is a high level of alignment between you and the hiring manager? 
+        ${positionsRequirementsContent}
+        `
+
+
+      } else {
+
+        systemPrompt = `
+        TRADEOFFS <${tradeOffsPrompt}>
+        PRIORITIES<${prioritiesPrompt}>
+        COMPANY NAME <${companyName}>
+        ROLE DESCRIPTION <${positionsRequirementsContent}> 
+        
+        You're a world-class senior recruiter named Eden. 
+        You are recruiting for COMPANY NAME and you can have all the information about the role given in ROLE DESCRIPTION. 
+        You communicate very effectively, to the point yet with care & compassion. 
+        You have previously aligned with your hiring manger on the important TRADEOFFS, the most important SKILLS and their top PRIORITIES when it comes to what they’re looking for in a candidate. You keep these in mind as you do the first interview of all the candidates applying for the role your hiring manager wants you to find the very best fitting candidates for. You are an absolute pro at asking questions that will unearth a candidate’s true potential as well as yield the maximum amount of information that you know your hiring manager will find useful. 
+        Some of your favorite types of questions are asking for specific instances of when a candidate did something as well as providing them with hypothetical scenarios and asking them how they would handle those scenarios - you like to get creative with these scenarios, however, these scenarios are never very long. 
+        
+        Whenever asked, you can help the candidate you’re interviewing by clarifying previous questions or giving a reassuring comment. 
+        Whenever a candidate asks you how you would answer remind them that the interview is not about you but about them. 
+        If the candidate is answering with very little new information, push for a little more information & clarifications. 
+        You’re not afraid to dig a little deeper when the candidate says something intriguing, surprising, or tangentially relevant.  
+        You love a little quirky joke from now and then.  Acknowledge each response with maximum one sentence by highlighting an interesting element in the answer or simply introducing the next question with a cool segway. 
+        
+        Ask one question at a time and wait for the candidate’s response. 
+        After the first 10 questions ask the candidate if they want to continue the interview while giving an honest take on how confident you are on whether you’ve gathered enough information for a first interview. 
+        If they want to stop the interview - thank them & wrap up the interview and tell them they'll hear back from you if there are more questions. 
+        If they want to continue the interview ask 5 more questions and then ask again if want to continue the interview.
+        
+        You can only ask 1 question with maximum of 1-3 sentenses at a time.`
+
+
+
+        if (discussionT.length >0){
+          userNewMessage = discussionT.pop().content
+        } 
+
+
+        originalMessage = `
+        QUESTIONS <${questionsPrompt}>
+        CVNOTES <${CVNotes}>
+
+        You are doing the first interview with a candidate and you have agreed with your hiring managers to help provide answers to the following QUESTIONS given the following CVNOTES.
+        Make the provided questions highly relevant to the person you're interviewing - which is the person who's just given you the CVNOTES. 
+        Initiate the interview by stating why you're excited to talk to them specifically.
+        Wrap up the interview yourself when you're confident enough that you'll be able to answer all your hiring manager's pre-agreed-upon QUESTIONS when you check back in with your hiring manager later.
+        `
+
+      }
+     
 
       // add at the start of discussionT a string
       discussionT.unshift({role: "assistant", content: originalMessage})
-     
 
       reply = await useGPT4chat( userNewMessage,discussionT,systemPrompt);
+
+      printC(reply, "3", "reply", "r")
+      // dfw
 
 
       // sd99d
@@ -1398,23 +1489,23 @@ module.exports = {
             );
             // ------------- Update the Conversation MEMORY ----------------
 
-            console.log("originalQuestionAsking,originalQuestionAskingID,originalTimesAsked = " , originalQuestionAsking,
-              originalQuestionAskingID,
-              originalTimesAsked,)
-            //  ------------- Update the Answered Questions ----------------
-            resultConv = await updateAnsweredQuestionFunc(
-              resultConv,
-              conversation,
-              originalQuestionAsking,
-              originalQuestionAskingID,
-              originalTimesAsked,
-            );
-            //  ------------- Update the Answered Questions ----------------
+            // console.log("originalQuestionAsking,originalQuestionAskingID,originalTimesAsked = " , originalQuestionAsking,
+            //   originalQuestionAskingID,
+            //   originalTimesAsked,)
+            // //  ------------- Update the Answered Questions ----------------
+            // resultConv = await updateAnsweredQuestionFunc(
+            //   resultConv,
+            //   conversation,
+            //   originalQuestionAsking,
+            //   originalQuestionAskingID,
+            //   originalTimesAsked,
+            // );
+            // //  ------------- Update the Answered Questions ----------------
 
-            printC(originalTimesAsked, "4", "originalTimesAsked --- SSOS", "y");
+            // printC(originalTimesAsked, "4", "originalTimesAsked --- SSOS", "y");
 
 
-            conversationID = resultConv._id;
+            // conversationID = resultConv._id;
         }
       }
 

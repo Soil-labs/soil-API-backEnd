@@ -17,7 +17,6 @@ const conversationSchema = mongoose.Schema({
 
   summaryReady: Boolean,
 
-  summary: [String],
   summary: [
     {
       pineConeID: String,
@@ -39,6 +38,10 @@ const conversationSchema = mongoose.Schema({
       summaryOfAnswerSmall: String,
     },
   ],
+  typeConvo: {
+    type: String,
+    enum: ["QUERY_RESPONSE", "INTERVIEW","ALIGN","ASK_OPPORTUNITY","ASK_CANDIDATE","ASK_TALENT_LIST"],
+  },
 
   updatedAt: Date,
 });

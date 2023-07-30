@@ -100,6 +100,11 @@ module.exports = `
         addEmployeesCompany(fields:addEmployeesCompanyInput): Company
 
 
+         # ------------- QUERY RESPONSE MUTATION -----------------
+        updateQueryResponse(fields:updateQueryResponseInput): QueryResponse
+
+
+
         # ------------- MEMORY PINECONE MUTATION -----------------
         addMemory(fields:addMemoryInput): MemoryPinecone
         deleteMemories(fields:deleteMemoriesInput): [MemoryPinecone]
