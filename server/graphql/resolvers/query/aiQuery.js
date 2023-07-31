@@ -647,7 +647,7 @@ module.exports = {
         throw new ApolloError("Position not found");
       }
 
-      if (positionData.positionsRequirements?.priorities != undefined && positionData.positionsRequirements?.tradeOffs != undefined) {
+      if (positionData.positionsRequirements?.priorities?.length > 0 && positionData.positionsRequirements?.tradeOffs?.length > 0) {
 
         let prioritiesT = positionData.positionsRequirements.priorities;
         let tradeoffsT = positionData.positionsRequirements.tradeOffs;
