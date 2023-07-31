@@ -2,6 +2,7 @@ const { AI } = require("../../../models/aiModel");
 const { Node } = require("../../../models/nodeModal");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
+const { Company } = require("../../../models/companyModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 
@@ -277,8 +278,6 @@ async function findBestEmbedings(message, filter, topK = 3,tag) {
       };
     });
   }
-  // console.log("tag = " , tag)
-  // sd92
 
   return matchesT;
 }
@@ -1485,7 +1484,7 @@ module.exports = {
     try {
       // ------------ Find Modified questions ------------
       let positionData = await Position.findOne({ _id: positionID }).select(
-        "_id questionsToAsk candidates interviewQuestionsForPosition positionsRequirements"
+        "_id companyID questionsToAsk candidates interviewQuestionsForPosition positionsRequirements"
       );
 
       let memberData = await Members.findOne({ _id: userID }).select("_id discordName cvInfo")
@@ -1518,12 +1517,20 @@ module.exports = {
         prioritiesPrompt = prioritiesPrompt + (idx + 1).toString() + ". " + item.priority + " "
       })
 
-      companyName = "Testla"
+      let companyName = "Tesla"
+
+      if (positionData.companyID) {
+        let companyData = await Company.findOne({ _id: positionData.companyID }).select("_id name")
+
+        companyName = companyData.name
+
+        printC(companyName, "2", "companyName", "g");
+      }
 
       // let CVNotes = memberData.cvInfo.cvContent
 
 
-      
+
       let CVNotes = ""
       if (memberData?.cvInfo?.cvNotes == undefined) {
         CVNotes = memberData.cvInfo.cvContent
