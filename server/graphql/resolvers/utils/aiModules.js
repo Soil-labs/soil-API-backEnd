@@ -154,15 +154,18 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
   let convData = convData_.pop();
 
   let promptConv = "";
-  for (let i = 0; i < convData.conversation.length; i++) {
-    let convDataNow = convData.conversation[i];
-    if (convDataNow.role == "assistant")
-      promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
-    else
-      promptConv = promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
-  }
+  if (convData) {
+    
+    for (let i = 0; i < convData.conversation.length; i++) {
+      let convDataNow = convData.conversation[i];
+      if (convDataNow.role == "assistant")
+        promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+      else
+        promptConv = promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
+    }
 
-  printC(promptConv, "2", "promptConv", "b");
+    printC(promptConv, "2", "promptConv", "b");
+  }
 
   promptReport = ` You are a professional Recruiter, have as input the Details of a Job Position and the Conversation with the Company Representation
   Job Position (delimiters <>): <${positionsRequirements}>
