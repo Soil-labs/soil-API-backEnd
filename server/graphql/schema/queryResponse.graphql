@@ -6,7 +6,7 @@ module.exports = `
         responder: responderType,
         conversationID: ID,
         phase: phaseQueryResponseEnum,
-        question: questionType,
+        question: questionQueryType,
         answer: answerType,
 
     }
@@ -45,7 +45,7 @@ module.exports = `
         userID: String,
     }
 
-    type questionType {
+    type questionQueryType {
         content: String,
     }
 
