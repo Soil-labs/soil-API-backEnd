@@ -148,7 +148,7 @@ async function updateAnsweredQuestionFunc(
   return resultConv;
 }
 
-async function updatePositionInterviewedOfUser(userID) {
+async function updatePositionInterviewedOfUser(userID,positionID) {
   console.log("userID = ", userID);
 
   userData = await Members.findOne({ _id: userID }).select(
@@ -162,6 +162,9 @@ async function updatePositionInterviewedOfUser(userID) {
   );
 
   console.log("positionsAppliedIDs = ", positionsAppliedIDs);
+
+  // add also positionID
+  positionsAppliedIDs.push(positionID);
 
   positionsT = await Position.find({ _id: { $in: positionsAppliedIDs } });
 
