@@ -1527,10 +1527,6 @@ module.exports = {
         printC(companyName, "2", "companyName", "g");
       }
 
-      // let CVNotes = memberData.cvInfo.cvContent
-
-
-
       let CVNotes = ""
       if (memberData?.cvInfo?.cvNotes == undefined) {
         CVNotes = memberData.cvInfo.cvContent

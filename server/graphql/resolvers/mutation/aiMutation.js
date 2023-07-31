@@ -504,80 +504,111 @@ module.exports = {
 
 
     try {
-      promptReport = ` You have as input the Details of a Job Position
-      Job Position (delimiters <>): <${stringFromWebsite}>
+      //  ------------- Notes ----------------
+
+    
+      promptConvoQuestions = `
+      POSITION REQUIRMENTS: <${stringFromWebsite}>
+
+      - you are a recruiter, your task is to create Notes based on POSITION REQUIRMENTS that are Efficient and concise.
+      - the format will be on bullet points
+      - each bullet point can be from 1 to 2 sentenses
+      - you can create as many bullet points as you need
+
+      Position Notes:
+      `;
+
+      printC(promptConvoQuestions, "2", "promptConvoQuestions", "p");
+
+      const promptConvoQuestionsRes = await useGPTchatSimple(promptConvoQuestions,0.7,'API 1');
+
+      printC(promptConvoQuestionsRes, "2", "promptConvoQuestionsRes", "p");
 
 
-      The Recruiter Task is to create a report for the most important categories and subCategories the Candidate should have and will be evaluated!
+      //  ------------- Notes ----------------
 
 
-      - Every Category can have from  1 to 4 bullet points
-      - To include information in the output you must first find it in text of <Job Position> Do not make up fake information
-      - Include 2-4 categories from Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
-      - You need make really small bullet points maximum 15 words about what the Candidate should have to pass on every Category
-      - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc. 
+    
+      // // ------------- Report ----------------
+      // promptReport = ` You have as input the Details of a Job Position
+      // Job Position (delimiters <>): <${stringFromWebsite}>
 
-      For example: 
-        <Category 1: title>
-          - b1: small content max 15 words
-          - b2: small content max 15 words
-        <Category 2: title>
-          - b3: small content max 15 words
 
-      Answer:`;
-      let report = await useGPTchatSimple(promptReport, 0);
+      // The Recruiter Task is to create a report for the most important categories and subCategories the Candidate should have and will be evaluated!
 
-      // let report = "Category 1: Skills>\n- Experience with databases and SQL\n- Cloud experience, preferably with AWS\n- Programming experience\n- TypeScript experience is a plus\n\n<Category 2: Qualifications>\n- Experience building and maintaining backend systems\n- Experience with infrastructure improvements and scaling\n- Experience troubleshooting production issues and conducting root cause analysis\n- Experience conducting systems tests for security, performance, and availability\n\n<Category 3: Education>\n- No specific education requirements mentioned\n\n<Category 4: Culture Fit>\n- Team player\n- Willingness to work on everything on the backend side\n- Strong communication skills\n- Ability to work in a fast-paced environment\n\n<Category 5: Personality Type>\n- Detail-oriented\n- Problem solver\n- Self-motivated\n- Adaptable\n\n<Category 6: Experience>\n- Experience maintaining and improving infrastructure in AWS\n- Experience maintaining TypeScript SDKs and writing internal and public documentation\n- No specific years of experience mentioned\n- Experience with observability, monitoring, and alerting for services"
 
-      printC(report, "0", "report", "b");
+      // - Every Category can have from  1 to 4 bullet points
+      // - To include information in the output you must first find it in text of <Job Position> Do not make up fake information
+      // - Include 2-4 categories from Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
+      // - You need make really small bullet points maximum 15 words about what the Candidate should have to pass on every Category
+      // - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc. 
 
-      let idCounter = 1;
+      // For example: 
+      //   <Category 1: title>
+      //     - b1: small content max 15 words
+      //     - b2: small content max 15 words
+      //   <Category 2: title>
+      //     - b3: small content max 15 words
 
-      report = report.replace(/(-\s+b\d+:)/g, (match) => {
-        return match.replace(/\d+/, idCounter++);
-      });
+      // Answer:`;
+      // let report = await useGPTchatSimple(promptReport, 0);
 
-      printC(report, "1", "report", "g");
+      // // let report = "Category 1: Skills>\n- Experience with databases and SQL\n- Cloud experience, preferably with AWS\n- Programming experience\n- TypeScript experience is a plus\n\n<Category 2: Qualifications>\n- Experience building and maintaining backend systems\n- Experience with infrastructure improvements and scaling\n- Experience troubleshooting production issues and conducting root cause analysis\n- Experience conducting systems tests for security, performance, and availability\n\n<Category 3: Education>\n- No specific education requirements mentioned\n\n<Category 4: Culture Fit>\n- Team player\n- Willingness to work on everything on the backend side\n- Strong communication skills\n- Ability to work in a fast-paced environment\n\n<Category 5: Personality Type>\n- Detail-oriented\n- Problem solver\n- Self-motivated\n- Adaptable\n\n<Category 6: Experience>\n- Experience maintaining and improving infrastructure in AWS\n- Experience maintaining TypeScript SDKs and writing internal and public documentation\n- No specific years of experience mentioned\n- Experience with observability, monitoring, and alerting for services"
 
-      // ---------------------- Map Nodes from Position text ---------------------
-      promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
-            dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
-            Do not have any other words except for skills. 
+      // printC(report, "0", "report", "b");
 
-            Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
+      // let idCounter = 1;
+
+      // report = report.replace(/(-\s+b\d+:)/g, (match) => {
+      //   return match.replace(/\d+/, idCounter++);
+      // });
+
+      // printC(report, "1", "report", "g");
+      // // ------------- Report ----------------
+
+
+      let nodeIDs
+      // // ---------------------- Map Nodes from Position text ---------------------
+      // promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
+      //       dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
+      //       Do not have any other words except for skills. 
+
+      //       Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
             
-            Job Position (delimiters <>): <${report}>
+      //       Job Position (delimiters <>): <${stringFromWebsite}>
 
-            Skills Result:
-            `;
+      //       Skills Result:
+      //       `;
 
-      let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
-      // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
-      printC(mapSkillText, "1", "mapSkillText", "g");
+      // let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
+      // // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
+      // printC(mapSkillText, "1", "mapSkillText", "g");
 
-      let nodeIDs;
-      try {
-        let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
-        printC(nodesN, "3", "nodesN", "p");
+      // nodeIDs;
+      // try {
+      //   let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
+      //   printC(nodesN, "3", "nodesN", "p");
 
-        nodeSave = nodesN.map((obj) => {
-          return {
-            _id: obj.nodeID,
-          };
-        });
-        nodeIDs = nodeSave.map((obj) => {
-          return {
-            nodeID: obj._id,
-          };
-        });
+      //   nodeSave = nodesN.map((obj) => {
+      //     return {
+      //       _id: obj.nodeID,
+      //     };
+      //   });
+      //   nodeIDs = nodeSave.map((obj) => {
+      //     return {
+      //       nodeID: obj._id,
+      //     };
+      //   });
 
-        printC(nodeSave, "4", "nodeSave", "r");
-      } catch (err) {
-        console.log("didn't create nodes = ");
-      }
-      // ---------------------- Map Nodes from Position text ---------------------
+      //   printC(nodeSave, "4", "nodeSave", "r");
+      // } catch (err) {
+      //   console.log("didn't create nodes = ");
+      // }
+      // // ---------------------- Map Nodes from Position text ---------------------
 
-      // --------------- positionText to Questions ---------------
+
+      // This is for GPT3 -> don't need it on GPT4
+      // // --------------- positionText to Questions ---------------
       questionData = [
         {
           questionID: "6478a3df3bbea5508ea72af7",
@@ -601,22 +632,30 @@ module.exports = {
         },
       ];
 
-      const interviewQuestionsForCandidate =
-        await positionTextToExtraQuestionsFunc(
-          questionData,
-          stringFromWebsite,
-          positionID
-        );
-      // --------------- positionText to Questions ---------------
+      // const interviewQuestionsForCandidate =
+      //   await positionTextToExtraQuestionsFunc(
+      //     questionData,
+      //     stringFromWebsite,
+      //     positionID
+      //   );
+      // // --------------- positionText to Questions ---------------
 
       if (nodeIDs) {
         positionData.nodes = nodeIDs;
       }
-      positionData.interviewQuestionsForPosition =
-        interviewQuestionsForCandidate;
-      positionData.positionsRequirements.content = report;
+      // positionData.interviewQuestionsForPosition =
+      //   interviewQuestionsForCandidate;
+      positionData.positionsRequirements.content = stringFromWebsite;
       positionData.positionsRequirements.originalContent = stringFromWebsite;
       positionData.positionsRequirements.positionPreparationMemory = false;
+
+
+      let positionsRequirements = {
+        ...positionData.positionsRequirements,
+        notesRequirConv: promptConvoQuestionsRes,
+      };
+
+      positionData.positionsRequirements = positionsRequirements;
 
       // update Mongo
       await positionData.save();
@@ -625,10 +664,15 @@ module.exports = {
       findRoleDescriptionAndBenefits(message, positionData);
 
 
+      // return {
+      //   report: report,
+      //   success: true,
+      //   interviewQuestionsForPosition: interviewQuestionsForCandidate,
+      // };
       return {
-        report: report,
+        report: stringFromWebsite,
         success: true,
-        interviewQuestionsForPosition: interviewQuestionsForCandidate,
+        interviewQuestionsForPosition: questionData,
       };
     } catch (err) {
       throw new ApolloError(
@@ -1508,6 +1552,46 @@ module.exports = {
           positionData.positionsRequirements.positionPreparationMemory = true;
         }
         // ----------- Calculate and Save Memory ------------
+
+
+        let nodeIDs
+        // ---------------------- Map Nodes from Position text ---------------------
+        promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
+              dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
+              Do not have any other words except for skills. 
+  
+              Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
+              
+              Job Position (delimiters <>): <${positionsRequirements}>
+  
+              Skills Result:
+              `;
+  
+        let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
+        // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
+        printC(mapSkillText, "1", "mapSkillText", "g");
+  
+        nodeIDs;
+        try {
+          let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
+          printC(nodesN, "3", "nodesN", "p");
+  
+          nodeSave = nodesN.map((obj) => {
+            return {
+              _id: obj.nodeID,
+            };
+          });
+          nodeIDs = nodeSave.map((obj) => {
+            return {
+              nodeID: obj._id,
+            };
+          });
+  
+          printC(nodeSave, "4", "nodeSave", "r");
+        } catch (err) {
+          console.log("didn't create nodes = ");
+        }
+        // ---------------------- Map Nodes from Position text ---------------------
 
         await positionData.save();
       }
