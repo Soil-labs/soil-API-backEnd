@@ -3,7 +3,8 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 const axios = require("axios");
 
-const { findBestEmbedings,useGPTchatSimple } = require("../utils/aiExtraModules");
+// const { useGPTchatSimple } = require("../utils/aiExtraModules");
+const { findBestEmbedings,useGPTchatSimple } = require("../utils/aiExtra_2_Modules");
 
 
 
@@ -68,113 +69,112 @@ async function onlyGPTchat(prompt, temperature = 0.7, chooseAPI = "API 1") {
 
 async function addQuestionToEdenAIFunc(content) {
 
-    console.log("change = ")
+  console.log("change = ")
 
-    let res 
+  let res 
 
-    const filter = {
-        label: "questionsEdenAI",
-      };
+  const filter = {
+    label: "questionsEdenAI",
+  };
 
+  bestKeywordsFromEmbed = await findBestEmbedings(
+    content,
+    filter,
+    (topK = 1)
+  );
 
-      bestKeywordsFromEmbed = await findBestEmbedings(
-        content,
-        filter,
-        (topK = 1)
-      );
+  console.log("bestKeywordsFromEmbed = " , bestKeywordsFromEmbed)
 
-      console.log("bestKeywordsFromEmbed = " , bestKeywordsFromEmbed)
+  let foundQuestion = false
 
-      let foundQuestion = false
+  if (bestKeywordsFromEmbed.length !=0){
 
-      if (bestKeywordsFromEmbed.length !=0){
+    if (bestKeywordsFromEmbed[0].score > 0.98){
+        foundQuestion = true
+    } else {
 
-        if (bestKeywordsFromEmbed[0].score > 0.98){
+        let promptSameQuestions =`
+        Is this two questions the same?
+        ${content}
+        ${bestKeywordsFromEmbed[0].metadata.text}
+
+        They are the same when the context of this questions is refering to the same think,
+
+        be extremly cretical, it has to be exactly the same question to say YES, in any other case you say NO
+
+        You can only answere YES or NO and nothing else! 
+
+        answere: `
+
+        const sameQuestion = await useGPTchatSimple(promptSameQuestions)
+        
+        console.log("sameQuestion = " , sameQuestion)
+
+        // if sameQuestion contain the word YES but it
+        if (sameQuestion.toLowerCase().includes("yes")){
             foundQuestion = true
         } else {
-
-            let promptSameQuestions =`
-            Is this two questions the same?
-            ${content}
-            ${bestKeywordsFromEmbed[0].metadata.text}
-
-            They are the same when the context of this questions is refering to the same think,
-
-            be extremly cretical, it has to be exactly the same question to say YES, in any other case you say NO
-
-            You can only answere YES or NO and nothing else! 
-
-            answere: `
-
-            const sameQuestion = await useGPTchatSimple(promptSameQuestions)
-            
-            console.log("sameQuestion = " , sameQuestion)
-
-            // if sameQuestion contain the word YES but it
-            if (sameQuestion.toLowerCase().includes("yes")){
-                foundQuestion = true
-            } else {
-                foundQuestion = false
-            }
-
+            foundQuestion = false
         }
 
-      } 
+    }
 
-      if (foundQuestion == true){
-        questionID = bestKeywordsFromEmbed[0].metadata._id
+  } 
 
-            const questionData = await QuestionsEdenAI.findOne({
-                _id: questionID,
-            });
+  if (foundQuestion == true){
+    questionID = bestKeywordsFromEmbed[0].metadata._id
 
-            console.log("questionData = " , questionData)
-
-            if (questionData != null && questionData != undefined){
-                res = {
-                    _id: questionData._id,
-                    content: questionData.content
-                }
-            } else {
-                foundQuestion = false
-            }
-       }
-
-      if (foundQuestion == false){
-        // add on mongoDB the new Question first
-        const newQuestion = await new QuestionsEdenAI({
-            content: content,
-            answeredQuestionByUsers: [],
-            questionOwnedByPositions: []
+        const questionData = await QuestionsEdenAI.findOne({
+            _id: questionID,
         });
 
-        const result = await newQuestion.save();
+        console.log("questionData = " , questionData)
 
-
-        console.log("change = 1")
-
-        // upsertDoc = await upsertEmbedingPineCone({
-        //     text: content,
-        //     _id: result._id,
-        //     label: "questionsEdenAI",
-        //   });
-        resTK = await addMemoryPineconeFunc({
-          memory: content,
-          userID: result._id,
-          label: "questionsEdenAI",
-        })
-
-
-          
-          res = {
-            _id: newQuestion._id,
-            content: newQuestion.content
+        if (questionData != null && questionData != undefined){
+            res = {
+                _id: questionData._id,
+                content: questionData.content
+            }
+        } else {
+            foundQuestion = false
         }
-    
-      }
+    }
+
+  if (foundQuestion == false){
+    // add on mongoDB the new Question first
+    const newQuestion = await new QuestionsEdenAI({
+        content: content,
+        answeredQuestionByUsers: [],
+        questionOwnedByPositions: []
+    });
+
+    const result = await newQuestion.save();
 
 
-      return res
+    console.log("change = 1")
+
+    // upsertDoc = await upsertEmbedingPineCone({
+    //     text: content,
+    //     _id: result._id,
+    //     label: "questionsEdenAI",
+    //   });
+    resTK = await addMemoryPineconeFunc({
+      memory: content,
+      userID: result._id,
+      label: "questionsEdenAI",
+    })
+
+
+      
+      res = {
+        _id: newQuestion._id,
+        content: newQuestion.content
+    }
+
+  }
+
+
+  return res
 
 }
   
@@ -188,6 +188,7 @@ async function addMultipleQuestionsToEdenAIFunc(questionsToAsk) {
         if (!question.questionID) { // it doesn't have a questionID
           if (question.questionContent) { 
             console.log("question.questionContent = " , question.questionContent)
+            console.log("change = " , i)
             res = await addQuestionToEdenAIFunc(question.questionContent);
 
             // update questionsToAsk

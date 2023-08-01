@@ -5,6 +5,7 @@ const positionModel = mongoose.Schema({
   name: String,
   url: String,
   companyID: mongoose.Schema.ObjectId,
+  mainUserID: String,
   employees: [{
     typeT: String,
     userID: String,
@@ -16,6 +17,7 @@ const positionModel = mongoose.Schema({
   positionsRequirements: {
     originalContent: String,
     content: String,
+    notesRequirConv: String,
     roleDescription: [String],
     benefits: [String],
     positionMemory: [{

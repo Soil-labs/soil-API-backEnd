@@ -58,6 +58,12 @@ const {
   findCompanyFromSlug,
 } = require("./query/companyQuery");
 
+
+const {
+  findQueryResponses,
+} = require("./query/queryResponseQuery");
+
+
 const {
   findMemories,
 } = require("./query/memoryPineconeQuery");
@@ -106,6 +112,7 @@ const {
   messageMapKG_V3,
   messageMapKG_V4,
   messageMapKG_V5,
+  findPrioritiesTrainEdenAI,
   edenGPTreplyMemory,askEdenUserPosition,
   edenGPTreplyChatAPI,
   edenGPTreplyChatAPI_V2,
@@ -218,6 +225,10 @@ module.exports = {
     findCompanyFromSlug,
 
 
+    // ------------- QUERY RESPONSE QUERY -----------------
+    findQueryResponses,
+
+
     // ------------- MEMORY PINECONE QUERY -----------------
     findMemories,
 
@@ -262,6 +273,7 @@ module.exports = {
     messageMapKG_V3,
     messageMapKG_V4,
     messageMapKG_V5,
+    findPrioritiesTrainEdenAI,
     edenGPTreplyMemory,askEdenUserPosition,
     edenGPTreplyChatAPI,
     edenGPTreplyChatAPI_V2,

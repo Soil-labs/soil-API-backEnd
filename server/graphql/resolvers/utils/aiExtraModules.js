@@ -264,6 +264,8 @@ async function useGPTchatSimple(
         resContent = await onlyGPTchat(prompt, temperature, apiKey);
       else if (useMode == "davinci") {
         resContent = await onlyGPTDavinci(prompt, temperature, apiKey);
+      } else if (useMode == "chatGPT4") {
+        resContent = await useGPT4Simple(prompt, temperature, apiKey);
       }
       success = true;
     } catch (e) {
@@ -288,6 +290,34 @@ async function useGPTchatSimple(
   // console.log("resContent = ", resContent);
 
   return resContent;
+}
+
+
+async function useGPT4Simple(prompt, temperature = 0.7,chooseAPI = "API 1") {
+  discussion = [
+    {
+      role: "user",
+      content: prompt,
+    },
+  ];
+
+  let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
+  response = await axios.post(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      messages: discussion,
+      model: "gpt-4",
+      temperature: temperature,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+    }
+  );
+
+  return response.data.choices[0].message.content;
 }
 
 
@@ -340,34 +370,6 @@ async function createEmbeddingsGPT(words_n) {
   return res;
 }
 
-async function findBestEmbedings(message, filter, topK = 3) {
-  const pinecone = new PineconeClient();
-  await pinecone.init({
-    environment: "us-east1-gcp",
-    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
-  });
-
-  const index = await pinecone.Index("profile-eden-information");
-
-  embed = await createEmbeddingsGPT(message);
-
-  let queryRequest = {
-    topK: topK,
-    vector: embed[0],
-    includeMetadata: true,
-  };
-
-  if (filter != undefined) {
-    queryRequest = {
-      ...queryRequest,
-      filter: filter,
-    };
-  }
-
-  const queryResponse = await index.query({ queryRequest });
-
-  return queryResponse.matches;
-}
 
 
 async function saveScoreToPositionCandidate(memberArray,positionID) {
@@ -468,14 +470,44 @@ async function findRoleDescriptionAndBenefits(message,positionID) {
   
 }
 
+async function findBestEmbedings(message, filter, topK = 3) {
+  const pinecone = new PineconeClient();
+  await pinecone.init({
+    environment: "us-east1-gcp",
+    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+  });
+
+  const index = await pinecone.Index("profile-eden-information");
+
+  embed = await createEmbeddingsGPT(message);
+
+  let queryRequest = {
+    topK: topK,
+    vector: embed[0],
+    includeMetadata: true,
+  };
+
+  if (filter != undefined) {
+    queryRequest = {
+      ...queryRequest,
+      filter: filter,
+    };
+  }
+
+  const queryResponse = await index.query({ queryRequest });
+
+  return queryResponse.matches;
+}
+
+
 
 module.exports = {
   wait,
   CandidateNotesEdenAIAPICallF,
-  findBestEmbedings,
   useGPTchatSimple,
   upsertEmbedingPineCone,
   saveScoreToPositionCandidate,
   findRoleDescriptionAndBenefits,
   useGPT4chat,
+  findBestEmbedings,
 };

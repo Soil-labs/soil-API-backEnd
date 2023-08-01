@@ -8,6 +8,8 @@ const {
   updateQuestionAskedConvoID,
   updatePositionInterviewedOfUser,
   findSummaryOfAnswers,
+  findQuestionsAsked,
+  updateNotesRequirmentsConversation,
   findAndUpdateConversationFunc,
   updateAnsweredQuestionFunc,
 } = require("../utils/conversationModules");
@@ -109,14 +111,15 @@ module.exports = {
 
     
 
-    console.log("change = " )
     
 
     try {
       
       let convData = await Conversation.find(searchQuery);
 
-      
+
+      // printC(convData,"1","convData","b")
+      // dd9
 
       for (let i = 0; i < convData.length; i++) {
         let userID = ""
@@ -153,7 +156,7 @@ module.exports = {
           CandidateNotesEdenAIAPICallF(userID, positionID);
         // --------------- Calculate candidateNotesEdenAI ---------------
 
-        await updatePositionInterviewedOfUser(convDataNow.userID);
+        await updatePositionInterviewedOfUser(convDataNow.userID,positionID);
 
 
         printC( convDataNow.updatedAt,"0"," convDataNow.updatedAt","b")
@@ -170,7 +173,7 @@ module.exports = {
         printC(positionID,"2","positionID","y")
 
 
-        if (minutesSinceLastUpdate > 1.2) {
+        if (minutesSinceLastUpdate > 2.3) {
           // ------------------ Delete old summaries from pinecone ------------------
           resTK = await deleteMemoriesPineconeFunc(filter)
           // ------------------ Delete old summaries from pinecone ------------------
@@ -236,12 +239,21 @@ module.exports = {
 
           printC(convDataNow,"0","convDataNow","b")
 
+          // // sdf9
+
+          if (convDataNow.positionTrainEdenAI == true) { // this is an alignment conversation
+            await updateNotesRequirmentsConversation(convDataNow); 
+          }
+
+          // ss0
+
+          if (convDataNow.questionsAnswered.length == 0) {
+            convDataNow = await findQuestionsAsked(convDataNow,convDataNow.positionID);
+          }
+
           convDataNow = await findSummaryOfAnswers(convDataNow);
 
-          // sdf0
 
-
-          // printC(convDataNow,"0","convDataNow","b")
 
 
           await convDataNow.save();

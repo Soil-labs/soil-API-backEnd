@@ -4,6 +4,7 @@ module.exports = `
         _id: ID
         name: String
         url: String
+        mainUser: Members
         company: Company
         candidatesReadyToDisplay: Boolean
         candidatesFlagAnalysisCreated: Boolean
@@ -20,6 +21,7 @@ module.exports = `
     type positionsRequirementsType { 
         originalContent: String
         content: String
+        notesRequirConv: String
         roleDescription: [String]
         benefits: [String]
         positionPreparationMemory: Boolean
@@ -169,6 +171,8 @@ module.exports = `
         _id: ID
         name: String
         companyID: ID
+        updatePosition: ID
+        mainUserID: ID
     }
     
     input updateUrlInput {

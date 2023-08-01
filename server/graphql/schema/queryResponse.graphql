@@ -1,0 +1,68 @@
+module.exports = `
+    
+    type QueryResponse {
+        _id: ID,
+        sender: senderType,
+        responder: responderType,
+        conversationID: ID,
+        phase: phaseQueryResponseEnum,
+        question: questionQueryType,
+        answer: answerType,
+
+    }
+
+    input findQueryResponsesInput {
+        _id: [ID]
+        senderID: ID
+        senderType: sendRespTypeEnum
+        responderID: ID
+        responderType: sendRespTypeEnum
+
+    }
+
+    input updateQueryResponseInput {
+        _id: ID
+        phase: phaseQueryResponseEnum
+        senderID: ID
+        senderType: sendRespTypeEnum
+        responderID: ID
+        responderType: sendRespTypeEnum
+        question: String
+    }
+
+    enum sendRespTypeEnum {
+        POSITION
+        USER
+    }
+
+    type senderType {
+        positionID: String,
+        userID: String,
+    }
+
+    type responderType {
+        positionID: String,
+        userID: String,
+    }
+
+    type questionQueryType {
+        content: String,
+    }
+
+    type answerType {
+        content: String,
+    }
+
+    enum phaseQueryResponseEnum {
+        QUERY
+        RESPONED
+        VIEWED
+        ARCHIVED
+    }
+
+
+    input addQuestionToEdenAIInput {
+        content: String
+    }
+
+`

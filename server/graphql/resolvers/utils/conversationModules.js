@@ -3,9 +3,12 @@ const { Conversation } = require("../../../models/conversationModel");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
 
+const { useGPT4chat} = require("../utils/aiExtraModules");
+
+
 const axios = require("axios");
 
-// const { useGPTchatSimple } = require("../utils/aiModules");
+const { useGPTchatSimple } = require("../utils/aiExtraModules");
 
 function chooseAPIkey(chooseAPI = "") {
   // openAI_keys = [
@@ -30,32 +33,32 @@ function chooseAPIkey(chooseAPI = "") {
   return key;
 }
 
-async function useGPTchatSimple(prompt, temperature = 0.7) {
-  discussion = [
-    {
-      role: "user",
-      content: prompt,
-    },
-  ];
+// async function useGPTchatSimple(prompt, temperature = 0.7) {
+//   discussion = [
+//     {
+//       role: "user",
+//       content: prompt,
+//     },
+//   ];
 
-  let OPENAI_API_KEY = chooseAPIkey();
-  response = await axios.post(
-    "https://api.openai.com/v1/chat/completions",
-    {
-      messages: discussion,
-      model: "gpt-3.5-turbo",
-      temperature: temperature,
-    },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-      },
-    }
-  );
+//   let OPENAI_API_KEY = chooseAPIkey();
+//   response = await axios.post(
+//     "https://api.openai.com/v1/chat/completions",
+//     {
+//       messages: discussion,
+//       model: "gpt-3.5-turbo",
+//       temperature: temperature,
+//     },
+//     {
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${OPENAI_API_KEY}`,
+//       },
+//     }
+//   );
 
-  return response.data.choices[0].message.content;
-}
+//   return response.data.choices[0].message.content;
+// }
 
 
 const { printC } = require("../../../printModule");
@@ -145,7 +148,7 @@ async function updateAnsweredQuestionFunc(
   return resultConv;
 }
 
-async function updatePositionInterviewedOfUser(userID) {
+async function updatePositionInterviewedOfUser(userID,positionID) {
   console.log("userID = ", userID);
 
   userData = await Members.findOne({ _id: userID }).select(
@@ -159,6 +162,9 @@ async function updatePositionInterviewedOfUser(userID) {
   );
 
   console.log("positionsAppliedIDs = ", positionsAppliedIDs);
+
+  // add also positionID
+  positionsAppliedIDs.push(positionID);
 
   positionsT = await Position.find({ _id: { $in: positionsAppliedIDs } });
 
@@ -253,6 +259,227 @@ async function findAndUpdateConversationFunc(userID, conversation, positionID,po
   // console.log("resultConv = " , resultConv)
 
   return resultConv;
+}
+
+async function updateNotesRequirmentsConversation(convDataNow) {
+
+  let positionIDn = convDataNow.positionID;
+
+  let positionData = await Position.findOne({
+    _id: positionIDn,
+  }).select("_id name positionsRequirements positionsRequirements");
+
+
+  if (positionData?.positionsRequirements?.notesRequirConv == undefined){ // its not been created yet
+
+    let requirments = positionData.positionsRequirements.originalContent
+
+
+    conversationPrompt = ""
+    convDataNow.conversation.forEach((item,idx) => {
+      conversationPrompt = conversationPrompt + item.role+ ": " + item.content + " \n\n"
+    })
+
+
+    
+    promptConvoQuestions = `
+    POSITION REQUIRMENTS: <${requirments}>
+
+    CONVERSATION: <${conversationPrompt}>
+
+    - you are a recruiter, your task is to create Notes that combine the POSITION REQUIRMENTS and the CONVERSATION above.
+    - the format will be on bullet points
+    - each bullet point can be from 1 to 2 sentenses
+    - you can create as many bullet points as you want
+
+    Position Notes:
+    `;
+
+    printC(promptConvoQuestions, "2", "promptConvoQuestions", "p");
+
+    const promptConvoQuestionsRes = await useGPTchatSimple(promptConvoQuestions,0.7,'API 2');
+
+    printC(promptConvoQuestionsRes, "2", "promptConvoQuestionsRes", "p");
+
+    
+    // save to mongo
+    let positionsRequirements = {
+      ...positionData.positionsRequirements,
+      notesRequirConv: promptConvoQuestionsRes,
+    };
+
+    positionData.positionsRequirements = positionsRequirements;
+
+    positionData = await positionData.save();
+
+
+  }
+
+
+}
+
+async function findQuestionsAsked(convDataNow,positionID) {
+
+
+  // ----------------- find questions to ask -----------------
+  positionData = await Position.findOne({ _id: positionID}).select('_id name questionsToAsk');
+
+  let questionsID = []
+  positionData.questionsToAsk.forEach((item) => {
+    questionsID.push(item.questionID)
+  })
+
+  let questionsToAsk = await QuestionsEdenAI.find({ _id: { $in: questionsID } })
+
+  questionsPrompt = ""
+  questionsArray = []
+  questionsArrayID = []
+  questionsToAsk.forEach((item,idx) => {
+    questionsPrompt = questionsPrompt + "Q" + (idx + 1).toString() + ": " + item.content + " "
+    questionsArray.push(item.content)
+    questionsArrayID.push(item._id)
+  })
+  // ----------------- find questions to ask -----------------
+
+  // printC(questionsPrompt, "0", "questionsPrompt", "b");
+
+
+  // printC(convDataNow, "0", "convDataNow", "b");
+
+  conversationPrompt = ""
+  countAssistant = 0
+  countUser = 0
+  convAssistantArray = []
+  convUserArray = []
+  positionAssistantToConversation = []
+  convDataNow.conversation.forEach((item,idx) => {
+    if (item.role == "assistant"){
+      countAssistant = countAssistant + 1
+      conversationPrompt = conversationPrompt + "A"+ countAssistant.toString() + ": " + item.content + " \n\n"
+      convAssistantArray.push(item)
+      positionAssistantToConversation.push(idx)
+    // } else {
+    //   countUser = countUser + 1
+    //   conversationPrompt = conversationPrompt + "U"+ countUser.toString() + ": " + item.content + " \n\n"
+    //   convUserArray.push(item)
+    }
+  })
+
+  // printC(positionAssistantToConversation, "0", "positionAssistantToConversation", "r");
+
+  // printC(conversationPrompt, "0", "conversationPrompt", "b");
+
+  // d9
+
+
+  // promptConvoQuestions = `
+  // CONVERSATION: <${conversationPrompt}>
+
+  // QUESTIONS: <${questionsPrompt}>
+
+  // - Find if any of the questions were answered 
+  // - results format - First question ID that was answered: then Ax ID asking the question then the rest of the messages coming from U or A discussing about this question
+  // - Result should be exactly on the format of the example
+
+  // example: 
+  //  Q2: A2, U2, A5, U7
+  //  Q5: A3, U3, A4, U4
+
+  // Result:
+  // `;
+  promptConvoQuestions = `
+  CONVERSATION: <${conversationPrompt}>
+
+  QUESTIONS: <${questionsPrompt}>
+
+  - Find when the first time the QUESTION where asked
+  - Format - First conversation ID(A) Start - End asking the question for the first time then the question ID(Q) that was asked
+
+  example: 
+  A1 - A3: Q1
+  A5 - A7: Q2
+
+  - Result should be exactly in the format of the example
+
+  Result:
+  `;
+
+  printC(promptConvoQuestions, "2", "promptConvoQuestions", "p");
+
+  const promptConvoQuestionsRes = await useGPTchatSimple(promptConvoQuestions,0.7,'API 1','chatGPT4');
+  // promptConvoQuestionsRes = `A1 - A2: Q1
+  // A4 - A5: Q2
+  // A2 - A3: Q3
+  // A3 - A4: Q4`
+
+  printC(promptConvoQuestionsRes, "2", "promptConvoQuestionsRes", "p");
+
+// dfl2
+  // // Split the string into an array of Qx blocks
+  // const qxBlocks = promptConvoQuestionsRes.split(/(?=Q\d:)/);
+
+
+
+  
+  // Split the string into an array of lines
+  const lines = promptConvoQuestionsRes.split('\n');
+
+  // Iterate over the lines and extract the components
+  const result = lines.map(line => {
+    // const components = line.match(/[QAU]\d+/g);
+    // return components ? components : [];
+    const numbers = line.match(/\d+/g).map(Number);
+    return numbers ? numbers : [];
+  });
+
+  printC(result, "2", "result", "p");
+  // d33
+
+  let questionsAnswered = []
+
+  // Add the questionsAnswered and subConversationAnswer
+  result.forEach((item,idx) => {
+    if (item.length == 3){
+      const questionNumber = item[2]
+
+      printC(questionNumber, "2", "questionNumber", "p");
+
+      if (questionNumber <= questionsArray.length){
+        questionsAnswered.push({
+          questionID: questionsArrayID[questionNumber-1],
+          question: questionsArray[questionNumber-1],
+          subConversationAnswer: []
+        })
+
+        // Find messages and add them to the convo  
+        if (item[0] <= positionAssistantToConversation.length && item[1] <= positionAssistantToConversation.length){
+          for (j=positionAssistantToConversation[item[0]-1];j<positionAssistantToConversation[item[1]-1];j++){
+
+            questionsAnswered[questionsAnswered.length-1].subConversationAnswer.push(
+              convDataNow.conversation[j]
+            )
+
+          }
+        }
+      }
+      
+      
+    }
+  })
+
+  // printC(questionsAnswered, "2", "questionsAnswered", "g");
+
+  // printC(questionsAnswered[0].subConversationAnswer, "2", "questionsAnswered[0].subConversationAnswer", "g");
+
+  // printC(questionsAnswered[1].subConversationAnswer, "2", "questionsAnswered[1].subConversationAnswer", "b");
+
+  // // sd3
+
+  convDataNow.questionsAnswered = questionsAnswered
+
+  return convDataNow
+
+
 }
 
 async function findSummaryOfAnswers(convDataNow) {
@@ -458,5 +685,7 @@ module.exports = {
   updateAnsweredQuestionFunc,
   findAndUpdateConversationFunc,
   findSummaryOfAnswers,
+  findQuestionsAsked,
+  updateNotesRequirmentsConversation,
   updatePositionInterviewedOfUser,
 };

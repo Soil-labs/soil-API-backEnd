@@ -154,15 +154,18 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
   let convData = convData_.pop();
 
   let promptConv = "";
-  for (let i = 0; i < convData.conversation.length; i++) {
-    let convDataNow = convData.conversation[i];
-    if (convDataNow.role == "assistant")
-      promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
-    else
-      promptConv = promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
-  }
+  if (convData) {
+    
+    for (let i = 0; i < convData.conversation.length; i++) {
+      let convDataNow = convData.conversation[i];
+      if (convDataNow.role == "assistant")
+        promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+      else
+        promptConv = promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
+    }
 
-  printC(promptConv, "2", "promptConv", "b");
+    printC(promptConv, "2", "promptConv", "b");
+  }
 
   promptReport = ` You are a professional Recruiter, have as input the Details of a Job Position and the Conversation with the Company Representation
   Job Position (delimiters <>): <${positionsRequirements}>
@@ -320,7 +323,10 @@ async function saveCVtoUserFunc(cvContent, userID, positionID) {
     // sss5
     // ----------- CV to Summary -------------
 
-    let positionData2 = await interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
+    // let positionData2 = await interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
+
+    interviewCreateCVNotesFunc(userData, cvContent);
+
 
 
     return {
@@ -816,6 +822,43 @@ Category 1:
     // scoreAll,
     reportPassFail: reportPoints,
   };
+}
+
+async function interviewCreateCVNotesFunc(
+  userData,
+  cvContent
+) {
+  try {
+    
+    let promptJOB_CV = `
+    candidate CV (delimiters <>) <${cvContent}>
+
+
+    - you are a recruiter, your task is to create Notes that represent the candidate CV in a concise and optimal format.
+    - the format will be on bullet points
+    - each bullet point can be from 1 to 2 sentenses
+    - you can create as many bullet points as you want
+
+    CV Notes:
+  `;
+    printC(promptJOB_CV, "3", "promptJOB_CV", "b");
+
+    infoCandidateForJob = await useGPTchatSimple(
+      promptJOB_CV,
+      0,
+      "API 2",
+    );
+
+    printC(infoCandidateForJob, "3", "infoCandidateForJob", "g");
+
+    userData.cvInfo.cvNotes = infoCandidateForJob;
+
+    userData = await userData.save();
+
+
+  } catch (err) {
+    console.log("err = ", err);
+  }
 }
 
 async function interviewQuestionCreationUserFunc(
@@ -3228,6 +3271,7 @@ module.exports = {
   createEmbeddingsGPT,
   askQuestionAgain,
   interviewQuestionCreationUserFunc,
+  interviewCreateCVNotesFunc,
   findConversationPrompt,
   conversationCVPositionToReportFunc,
   reportPassFailCVPositionConversationFunc,

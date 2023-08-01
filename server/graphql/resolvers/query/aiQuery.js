@@ -2,6 +2,9 @@ const { AI } = require("../../../models/aiModel");
 const { Node } = require("../../../models/nodeModal");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
+const { Company } = require("../../../models/companyModel");
+const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
+
 
 const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
@@ -275,8 +278,6 @@ async function findBestEmbedings(message, filter, topK = 3,tag) {
       };
     });
   }
-  // console.log("tag = " , tag)
-  // sd92
 
   return matchesT;
 }
@@ -620,6 +621,169 @@ module.exports = {
         err.extensions?.code || "findMessage",
         {
           component: "aiQuery > findMessage",
+        }
+      );
+    }
+  },
+  findPrioritiesTrainEdenAI: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
+    console.log(
+      "Mutation > findPrioritiesTrainEdenAI > args.fields = ",
+      args.fields
+    );
+
+    try {
+      if (!positionID) {
+        throw new ApolloError("positionID is required");
+      }
+
+      positionData = await Position.findOne({ _id: positionID }).select(
+        "_id positionsRequirements"
+      );
+
+
+
+      if (!positionData) {
+        throw new ApolloError("Position not found");
+      }
+
+      if (positionData.positionsRequirements?.priorities?.length > 0 && positionData.positionsRequirements?.tradeOffs?.length > 0) {
+
+        let prioritiesT = positionData.positionsRequirements.priorities;
+        let tradeoffsT = positionData.positionsRequirements.tradeOffs;
+
+        return {
+          success: true,
+          priorities: prioritiesT,
+          tradeOffs: tradeoffsT,
+        };
+
+      }
+
+      positionsRequirements =
+        positionData.positionsRequirements.originalContent;
+
+      printC(positionsRequirements, "3", "positionsRequirements", "b");
+
+
+      // --------------------------------- Find Priorities ---------------------------------
+      let promptNewQuestions = `
+        REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
+  
+        - Your Task is based on teh content to find the Priorities for this Job Position 
+        - you can use Maximum 1 sentence to explain why you choose a priority, maximum 5 priorities
+        - You would give the priorities from the highest at the Top to the lowest at the Bottom
+        - Choose priorities from (Cultural fit, Technical skills, Soft skills, Work experience, Leadership potential, Diversity and inclusion, Long-term prospects, Motivation and enthusiasm, Initiative and creativity, Flexibility, Reliability and work ethic, Collaboration skills, Strong references, Customer or client focus, Industry knowledge )
+
+        Example priority structure:
+         1. Priority Title - Reason based on Requirements in MAX 20 words
+         2. Priority Title - Reason based on Requirements in MAX 20 words
+        
+        Priorities:
+      `;
+
+      printC(promptNewQuestions, "3", "promptNewQuestions", "b");
+
+      prioritiesSuggestions = await useGPTchatSimple(
+        promptNewQuestions,
+        0,
+        "API 1"
+      );
+
+      printC(prioritiesSuggestions, "3", "prioritiesSuggestions", "p");
+
+      // prioritiesSuggestions = `1. Technical skills - Strong experience with Spring framework, NoSQL and SQL databases, and message queue systems (e.g Kafka).
+      // 2. Leadership potential - Lead technical decisions inside and across teams to improve technical excellence through lateral leadership.
+      // 3. Work experience - 4+ years experience working as a Backend Java Engineer.
+      // 4. Collaboration skills - Contribute to finding the best solutions for customer service products that make operations easier.
+      // 5. Motivation and enthusiasm - Enjoy working within an agile setup.`
+
+      const regex = /(\d+)\.\s+(.*)\s+-\s+(.*)/g;
+      const prioritiesArray = [];
+
+      let match;
+      while ((match = regex.exec(prioritiesSuggestions)) !== null) {
+        const questionObject = {
+          priority: match[2],
+          reason: match[3],
+        };
+        prioritiesArray.push(questionObject);
+      }
+
+      printC(prioritiesArray, "3", "prioritiesArray", "g");
+      // --------------------------------- Find Priorities ---------------------------------
+
+      // --------------------------------- Find TradeOffs ---------------------------------
+      let promptNewTradeOffs = `
+        REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
+  
+        - Your Task is based on teh content to find the TradeOffs for this Job Position 
+        - you can use Maximum 1 sentence to explain why you choose a priority, maximum 5 tradeOffs
+        - You would give the tradeOffs from the highest at the Top to the lowest at the Bottom
+        - Choose tradeOffs from (Quality vs. Quantity, Experience vs. Potential, Skills vs. Cultural Fit, Speed vs. Thoroughness, Internal vs. External Candidates, Role Flexibility vs. Specialization, Remote Work vs. Onsite Presence, Diversity vs. Cultural Homogeneity, Compensation vs. Non-monetary Benefits, Direct Hire vs. Contract-to-hire, Long-term vs. Short-term Fit, Local vs. International Candidates, Traditional vs. Innovative Sourcing, Employer Brand Visibility vs. Highly-targeted Approaches, Candidate Experience vs. Time Investment)
+        - You should choose the right tradeoff for this REQUIREMENTS
+
+        Example priority structure:
+         1. TradeOff1 VS TradeOff2 - Choose: TradeOff2 - Reason based on Requirements
+         2. TradeOff1 VS TradeOff2 - Choose: TradeOff1 - Reason based on Requirements
+        
+        TradeOffs:
+      `;
+
+      printC(promptNewTradeOffs, "3", "promptNewTradeOffs", "b");
+      
+
+      tradeOffsSuggestions = await useGPTchatSimple(
+        promptNewTradeOffs,
+        0,
+        "API 1"
+      );
+
+      printC(tradeOffsSuggestions, "3", "tradeOffsSuggestions", "p");
+
+      // tradeOffsSuggestions = `1. Quality vs. Quantity - Choose: Quality - The job position requires a strong understanding of software development best practices and the ability to design new products from scratch, indicating a need for high-quality work rather than a high quantity of work.
+      // 2. Experience vs. Potential - Choose: Experience - The job position specifically states a requirement of 4+ years of experience, indicating a preference for candidates with proven experience in the role rather than potential for growth.
+      // 3. Skills vs. Cultural Fit - Choose: Skills - The job position lists specific technical skills and experience with certain technologies, indicating a higher priority on skills rather than cultural fit.
+      // 4. Speed vs. Thoroughness - Choose: Thoroughness - The job position emphasizes the importance of code quality, testing, and deployment, indicating a need for thoroughness in the development process rather than speed.
+      // 5. Role Flexibility vs. Specialization - Choose: Specialization - The job position is specifically for a Senior Backend Java Engineer, indicating a need for candidates with specialized skills in this area rather than a more flexible role.`
+
+      // const regexT = /(\d+)\.\s+(.+?)\s+-\s+(.+?)(?=\d+\.|$)/gs;
+      const regexT = /(\d+\.\s+.+?)\s+-\s+(Choose:\s+.+?)\s+-\s+(.+?)(?=\d+\.|$)/gs;
+
+      const tradeoffsArray = [];
+      let matchT;
+      while ((matchT = regexT.exec(tradeOffsSuggestions)) != null) {
+
+        const tradeoffObject = {
+          tradeOff1: matchT[1].split(" vs. ")[0].replace(/^\d+\.\s*/, "").trim(),
+          tradeOff2: matchT[1].split(" vs. ")[1],
+          selected: matchT[2].replace("Choose:", "").trim(),
+          reason: matchT[3],
+        };
+        tradeoffsArray.push(tradeoffObject);
+      }
+
+      printC(tradeoffsArray, "3", "tradeoffsArray", "g");
+      // --------------------------------- Find TradeOffs ---------------------------------
+
+
+      // Save the priorities and tradeoffs to the Position
+      positionData.positionsRequirements.priorities = prioritiesArray;
+      positionData.positionsRequirements.tradeOffs = tradeoffsArray;
+      await positionData.save();
+      
+
+      return {
+        success: true,
+        priorities: prioritiesArray,
+        tradeOffs: tradeoffsArray,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findPrioritiesTrainEdenAI",
+        {
+          component: "aiMutation > findPrioritiesTrainEdenAI",
         }
       );
     }
@@ -1320,14 +1484,68 @@ module.exports = {
     try {
       // ------------ Find Modified questions ------------
       let positionData = await Position.findOne({ _id: positionID }).select(
-        "_id candidates interviewQuestionsForPosition positionsRequirements"
+        "_id companyID questionsToAsk candidates interviewQuestionsForPosition positionsRequirements"
       );
+
+      let memberData = await Members.findOne({ _id: userID }).select("_id discordName cvInfo")
+
 
       const candidate = positionData.candidates.find(
         (candidate) => candidate.userID.toString() == userID.toString()
       );
 
-      positionsRequirementsContent = positionData.positionsRequirements.originalContent
+      if (positionData.positionsRequirements.notesRequirConv == undefined) {
+        positionsRequirementsContent = positionData.positionsRequirements.originalContent
+      } else {
+        positionsRequirementsContent = positionData.positionsRequirements.notesRequirConv
+      }
+
+      printC(positionsRequirementsContent, "2", "positionsRequirementsContent", "g");
+      
+      tradeOffs = positionData.positionsRequirements.tradeOffs
+      
+      tradeOffsPrompt = ""
+      tradeOffs.forEach((item) => {
+        tradeOffsPrompt = tradeOffsPrompt + item.selected + ", "
+      })
+
+
+      priorities = positionData.positionsRequirements.priorities
+
+      prioritiesPrompt = ""
+      priorities.forEach((item,idx) => {
+        prioritiesPrompt = prioritiesPrompt + (idx + 1).toString() + ". " + item.priority + " "
+      })
+
+      let companyName = "Tesla"
+
+      if (positionData.companyID) {
+        let companyData = await Company.findOne({ _id: positionData.companyID }).select("_id name")
+
+        companyName = companyData.name
+
+        printC(companyName, "2", "companyName", "g");
+      }
+
+      let CVNotes = ""
+      if (memberData?.cvInfo?.cvNotes == undefined) {
+        CVNotes = memberData.cvInfo.cvContent
+      } else {
+        CVNotes = memberData.cvInfo.cvNotes
+      }
+      
+      let questionsID = []
+      positionData.questionsToAsk.forEach((item) => {
+        questionsID.push(item.questionID)
+      })
+
+      let questionsToAsk = await QuestionsEdenAI.find({ _id: { $in: questionsID } })
+
+      questionsPrompt = ""
+      questionsToAsk.forEach((item,idx) => {
+        questionsPrompt = questionsPrompt + (idx + 1).toString() + ". " + item.content + " "
+      })
+
 
       // ------------ Find Modified questions ------------
 
@@ -1336,25 +1554,79 @@ module.exports = {
       discussionT = conversation.map((item) => ({
         role: item.role,
         content: item.content,
-        }));
+      }));
 
-
-      let systemPrompt = `You're a world-class senior recruiter named Eden. You communicate very effectively, to the point yet with care & compassion. You're always as helpful and optimize everything for maximum alignment between you and your hiring manager in order to help them find the absolute best candidate possible. Whenever asked, you can help your hiring manager reason through multiple scenarios & tradeoffs. If the hiring manager is answering with very little new information, push for a little more information & clarifications. You love a little quirky joke from now and then. Ask one question at a time and wait for the hiring manager's response. Acknowledge each response with maximum one sentence by highlighting an interesting element in the answer or simply introducing the next question with a cool segway. keep your total amount of questions to maximum 10.`
+      let systemPrompt=""
       let userNewMessage = ""
-      if (discussionT.length >0){
-        userNewMessage = discussionT.pop().content
-      } 
+      let originalMessage = ""
 
-      const originalMessage = `
-      Based on this job description what clarifying questions would you ask to make sure there is a high level of alignment between you and the hiring manager? 
-      ${positionsRequirementsContent}
-      `
+      if (positionTrainEdenAI == true){ // If EdenAI is talking to the company employ for training 
+
+        systemPrompt = `You're a world-class senior recruiter named Eden. You communicate very effectively, to the point yet with care & compassion. You're always as helpful and optimize everything for maximum alignment between you and your hiring manager in order to help them find the absolute best candidate possible. Whenever asked, you can help your hiring manager reason through multiple scenarios & tradeoffs. If the hiring manager is answering with very little new information, push for a little more information & clarifications. You love a little quirky joke from now and then. Ask one question at a time and wait for the hiring manager's response. Acknowledge each response with maximum one sentence by highlighting an interesting element in the answer or simply introducing the next question with a cool segway. keep your total amount of questions to maximum 10.`
+        if (discussionT.length >0){
+          userNewMessage = discussionT.pop().content
+        } 
+
+        originalMessage = `
+        Based on this job description what clarifying questions would you ask to make sure there is a high level of alignment between you and the hiring manager? 
+        ${positionsRequirementsContent}
+        `
+
+
+      } else {
+
+        systemPrompt = `
+        TRADEOFFS <${tradeOffsPrompt}>
+        PRIORITIES<${prioritiesPrompt}>
+        COMPANY NAME <${companyName}>
+        ROLE DESCRIPTION <${positionsRequirementsContent}> 
+        
+        You're a world-class senior recruiter named Eden. 
+        You are recruiting for COMPANY NAME and you can have all the information about the role given in ROLE DESCRIPTION. 
+        You communicate very effectively, to the point yet with care & compassion. 
+        You have previously aligned with your hiring manger on the important TRADEOFFS, the most important SKILLS and their top PRIORITIES when it comes to what they’re looking for in a candidate. You keep these in mind as you do the first interview of all the candidates applying for the role your hiring manager wants you to find the very best fitting candidates for. You are an absolute pro at asking questions that will unearth a candidate’s true potential as well as yield the maximum amount of information that you know your hiring manager will find useful. 
+        Some of your favorite types of questions are asking for specific instances of when a candidate did something as well as providing them with hypothetical scenarios and asking them how they would handle those scenarios - you like to get creative with these scenarios, however, these scenarios are never very long. 
+        
+        Whenever asked, you can help the candidate you’re interviewing by clarifying previous questions or giving a reassuring comment. 
+        Whenever a candidate asks you how you would answer remind them that the interview is not about you but about them. 
+        If the candidate is answering with very little new information, push for a little more information & clarifications. 
+        You’re not afraid to dig a little deeper when the candidate says something intriguing, surprising, or tangentially relevant.  
+        You love a little quirky joke from now and then.  Acknowledge each response with maximum one sentence by highlighting an interesting element in the answer or simply introducing the next question with a cool segway. 
+        
+        Ask one question at a time and wait for the candidate’s response. 
+        After the first 10 questions ask the candidate if they want to continue the interview while giving an honest take on how confident you are on whether you’ve gathered enough information for a first interview. 
+        If they want to stop the interview - thank them & wrap up the interview and tell them they'll hear back from you if there are more questions. 
+        If they want to continue the interview ask 5 more questions and then ask again if want to continue the interview.
+        
+        You can only ask 1 question with maximum of 1-3 sentenses at a time.`
+
+
+
+        if (discussionT.length >0){
+          userNewMessage = discussionT.pop().content
+        } 
+
+
+        originalMessage = `
+        QUESTIONS <${questionsPrompt}>
+        CVNOTES <${CVNotes}>
+
+        You are doing the first interview with a candidate and you have agreed with your hiring managers to help provide answers to the following QUESTIONS given the following CVNOTES.
+        Make the provided questions highly relevant to the person you're interviewing - which is the person who's just given you the CVNOTES. 
+        Initiate the interview by stating why you're excited to talk to them specifically.
+        Wrap up the interview yourself when you're confident enough that you'll be able to answer all your hiring manager's pre-agreed-upon QUESTIONS when you check back in with your hiring manager later.
+        `
+
+      }
+     
 
       // add at the start of discussionT a string
       discussionT.unshift({role: "assistant", content: originalMessage})
-     
 
       reply = await useGPT4chat( userNewMessage,discussionT,systemPrompt);
+
+      printC(reply, "3", "reply", "r")
+      // dfw
 
 
       // sd99d
@@ -1398,23 +1670,23 @@ module.exports = {
             );
             // ------------- Update the Conversation MEMORY ----------------
 
-            console.log("originalQuestionAsking,originalQuestionAskingID,originalTimesAsked = " , originalQuestionAsking,
-              originalQuestionAskingID,
-              originalTimesAsked,)
-            //  ------------- Update the Answered Questions ----------------
-            resultConv = await updateAnsweredQuestionFunc(
-              resultConv,
-              conversation,
-              originalQuestionAsking,
-              originalQuestionAskingID,
-              originalTimesAsked,
-            );
-            //  ------------- Update the Answered Questions ----------------
+            // console.log("originalQuestionAsking,originalQuestionAskingID,originalTimesAsked = " , originalQuestionAsking,
+            //   originalQuestionAskingID,
+            //   originalTimesAsked,)
+            // //  ------------- Update the Answered Questions ----------------
+            // resultConv = await updateAnsweredQuestionFunc(
+            //   resultConv,
+            //   conversation,
+            //   originalQuestionAsking,
+            //   originalQuestionAskingID,
+            //   originalTimesAsked,
+            // );
+            // //  ------------- Update the Answered Questions ----------------
 
-            printC(originalTimesAsked, "4", "originalTimesAsked --- SSOS", "y");
+            // printC(originalTimesAsked, "4", "originalTimesAsked --- SSOS", "y");
 
 
-            conversationID = resultConv._id;
+            // conversationID = resultConv._id;
         }
       }
 

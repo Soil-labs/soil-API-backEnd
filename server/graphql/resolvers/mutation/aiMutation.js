@@ -25,6 +25,7 @@ const {
   MessageMapKG_V4APICallF,
   findConversationPrompt,
   interviewQuestionCreationUserFunc,
+  interviewCreateCVNotesFunc,
   conversationCVPositionToReportFunc,
   reportPassFailCVPositionConversationFunc,
   positionTextAndConvoToReportCriteriaFunc,
@@ -503,80 +504,111 @@ module.exports = {
 
 
     try {
-      promptReport = ` You have as input the Details of a Job Position
-      Job Position (delimiters <>): <${stringFromWebsite}>
+      //  ------------- Notes ----------------
+
+    
+      promptConvoQuestions = `
+      POSITION REQUIRMENTS: <${stringFromWebsite}>
+
+      - you are a recruiter, your task is to create Notes based on POSITION REQUIRMENTS that are Efficient and concise.
+      - the format will be on bullet points
+      - each bullet point can be from 1 to 2 sentenses
+      - you can create as many bullet points as you need
+
+      Position Notes:
+      `;
+
+      printC(promptConvoQuestions, "2", "promptConvoQuestions", "p");
+
+      const promptConvoQuestionsRes = await useGPTchatSimple(promptConvoQuestions,0.7,'API 1');
+
+      printC(promptConvoQuestionsRes, "2", "promptConvoQuestionsRes", "p");
 
 
-      The Recruiter Task is to create a report for the most important categories and subCategories the Candidate should have and will be evaluated!
+      //  ------------- Notes ----------------
 
 
-      - Every Category can have from  1 to 4 bullet points
-      - To include information in the output you must first find it in text of <Job Position> Do not make up fake information
-      - Include 2-4 categories from Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
-      - You need make really small bullet points maximum 15 words about what the Candidate should have to pass on every Category
-      - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc. 
+    
+      // // ------------- Report ----------------
+      // promptReport = ` You have as input the Details of a Job Position
+      // Job Position (delimiters <>): <${stringFromWebsite}>
 
-      For example: 
-        <Category 1: title>
-          - b1: small content max 15 words
-          - b2: small content max 15 words
-        <Category 2: title>
-          - b3: small content max 15 words
 
-      Answer:`;
-      let report = await useGPTchatSimple(promptReport, 0);
+      // The Recruiter Task is to create a report for the most important categories and subCategories the Candidate should have and will be evaluated!
 
-      // let report = "Category 1: Skills>\n- Experience with databases and SQL\n- Cloud experience, preferably with AWS\n- Programming experience\n- TypeScript experience is a plus\n\n<Category 2: Qualifications>\n- Experience building and maintaining backend systems\n- Experience with infrastructure improvements and scaling\n- Experience troubleshooting production issues and conducting root cause analysis\n- Experience conducting systems tests for security, performance, and availability\n\n<Category 3: Education>\n- No specific education requirements mentioned\n\n<Category 4: Culture Fit>\n- Team player\n- Willingness to work on everything on the backend side\n- Strong communication skills\n- Ability to work in a fast-paced environment\n\n<Category 5: Personality Type>\n- Detail-oriented\n- Problem solver\n- Self-motivated\n- Adaptable\n\n<Category 6: Experience>\n- Experience maintaining and improving infrastructure in AWS\n- Experience maintaining TypeScript SDKs and writing internal and public documentation\n- No specific years of experience mentioned\n- Experience with observability, monitoring, and alerting for services"
 
-      printC(report, "0", "report", "b");
+      // - Every Category can have from  1 to 4 bullet points
+      // - To include information in the output you must first find it in text of <Job Position> Do not make up fake information
+      // - Include 2-4 categories from Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
+      // - You need make really small bullet points maximum 15 words about what the Candidate should have to pass on every Category
+      // - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc. 
 
-      let idCounter = 1;
+      // For example: 
+      //   <Category 1: title>
+      //     - b1: small content max 15 words
+      //     - b2: small content max 15 words
+      //   <Category 2: title>
+      //     - b3: small content max 15 words
 
-      report = report.replace(/(-\s+b\d+:)/g, (match) => {
-        return match.replace(/\d+/, idCounter++);
-      });
+      // Answer:`;
+      // let report = await useGPTchatSimple(promptReport, 0);
 
-      printC(report, "1", "report", "g");
+      // // let report = "Category 1: Skills>\n- Experience with databases and SQL\n- Cloud experience, preferably with AWS\n- Programming experience\n- TypeScript experience is a plus\n\n<Category 2: Qualifications>\n- Experience building and maintaining backend systems\n- Experience with infrastructure improvements and scaling\n- Experience troubleshooting production issues and conducting root cause analysis\n- Experience conducting systems tests for security, performance, and availability\n\n<Category 3: Education>\n- No specific education requirements mentioned\n\n<Category 4: Culture Fit>\n- Team player\n- Willingness to work on everything on the backend side\n- Strong communication skills\n- Ability to work in a fast-paced environment\n\n<Category 5: Personality Type>\n- Detail-oriented\n- Problem solver\n- Self-motivated\n- Adaptable\n\n<Category 6: Experience>\n- Experience maintaining and improving infrastructure in AWS\n- Experience maintaining TypeScript SDKs and writing internal and public documentation\n- No specific years of experience mentioned\n- Experience with observability, monitoring, and alerting for services"
 
-      // ---------------------- Map Nodes from Position text ---------------------
-      promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
-            dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
-            Do not have any other words except for skills. 
+      // printC(report, "0", "report", "b");
 
-            Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
+      // let idCounter = 1;
+
+      // report = report.replace(/(-\s+b\d+:)/g, (match) => {
+      //   return match.replace(/\d+/, idCounter++);
+      // });
+
+      // printC(report, "1", "report", "g");
+      // // ------------- Report ----------------
+
+
+      let nodeIDs
+      // // ---------------------- Map Nodes from Position text ---------------------
+      // promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
+      //       dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
+      //       Do not have any other words except for skills. 
+
+      //       Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
             
-            Job Position (delimiters <>): <${report}>
+      //       Job Position (delimiters <>): <${stringFromWebsite}>
 
-            Skills Result:
-            `;
+      //       Skills Result:
+      //       `;
 
-      let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
-      // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
-      printC(mapSkillText, "1", "mapSkillText", "g");
+      // let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
+      // // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
+      // printC(mapSkillText, "1", "mapSkillText", "g");
 
-      let nodeIDs;
-      try {
-        let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
-        printC(nodesN, "3", "nodesN", "p");
+      // nodeIDs;
+      // try {
+      //   let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
+      //   printC(nodesN, "3", "nodesN", "p");
 
-        nodeSave = nodesN.map((obj) => {
-          return {
-            _id: obj.nodeID,
-          };
-        });
-        nodeIDs = nodeSave.map((obj) => {
-          return {
-            nodeID: obj._id,
-          };
-        });
+      //   nodeSave = nodesN.map((obj) => {
+      //     return {
+      //       _id: obj.nodeID,
+      //     };
+      //   });
+      //   nodeIDs = nodeSave.map((obj) => {
+      //     return {
+      //       nodeID: obj._id,
+      //     };
+      //   });
 
-        printC(nodeSave, "4", "nodeSave", "r");
-      } catch (err) {
-        console.log("didn't create nodes = ");
-      }
-      // ---------------------- Map Nodes from Position text ---------------------
+      //   printC(nodeSave, "4", "nodeSave", "r");
+      // } catch (err) {
+      //   console.log("didn't create nodes = ");
+      // }
+      // // ---------------------- Map Nodes from Position text ---------------------
 
-      // --------------- positionText to Questions ---------------
+
+      // This is for GPT3 -> don't need it on GPT4
+      // // --------------- positionText to Questions ---------------
       questionData = [
         {
           questionID: "6478a3df3bbea5508ea72af7",
@@ -600,22 +632,30 @@ module.exports = {
         },
       ];
 
-      const interviewQuestionsForCandidate =
-        await positionTextToExtraQuestionsFunc(
-          questionData,
-          stringFromWebsite,
-          positionID
-        );
-      // --------------- positionText to Questions ---------------
+      // const interviewQuestionsForCandidate =
+      //   await positionTextToExtraQuestionsFunc(
+      //     questionData,
+      //     stringFromWebsite,
+      //     positionID
+      //   );
+      // // --------------- positionText to Questions ---------------
 
       if (nodeIDs) {
         positionData.nodes = nodeIDs;
       }
-      positionData.interviewQuestionsForPosition =
-        interviewQuestionsForCandidate;
-      positionData.positionsRequirements.content = report;
+      // positionData.interviewQuestionsForPosition =
+      //   interviewQuestionsForCandidate;
+      positionData.positionsRequirements.content = stringFromWebsite;
       positionData.positionsRequirements.originalContent = stringFromWebsite;
       positionData.positionsRequirements.positionPreparationMemory = false;
+
+
+      let positionsRequirements = {
+        ...positionData.positionsRequirements,
+        notesRequirConv: promptConvoQuestionsRes,
+      };
+
+      positionData.positionsRequirements = positionsRequirements;
 
       // update Mongo
       await positionData.save();
@@ -624,10 +664,15 @@ module.exports = {
       findRoleDescriptionAndBenefits(message, positionData);
 
 
+      // return {
+      //   report: report,
+      //   success: true,
+      //   interviewQuestionsForPosition: interviewQuestionsForCandidate,
+      // };
       return {
-        report: report,
+        report: stringFromWebsite,
         success: true,
-        interviewQuestionsForPosition: interviewQuestionsForCandidate,
+        interviewQuestionsForPosition: questionData,
       };
     } catch (err) {
       throw new ApolloError(
@@ -870,227 +915,6 @@ module.exports = {
       );
     }
   },
-  findPrioritiesTrainEdenAI: async (parent, args, context, info) => {
-    const { positionID } = args.fields;
-    console.log(
-      "Mutation > findPrioritiesTrainEdenAI > args.fields = ",
-      args.fields
-    );
-
-    try {
-      if (!positionID) {
-        throw new ApolloError("positionID is required");
-      }
-
-      positionData = await Position.findOne({ _id: positionID }).select(
-        "_id positionsRequirements"
-      );
-
-      if (!positionData) {
-        throw new ApolloError("Position not found");
-      }
-
-      positionsRequirements =
-        positionData.positionsRequirements.originalContent;
-
-      // positionsRequirements = `We are looking for a UX Design Lead to join our team and support them in delivering the best user experience for the success of the products and the satisfaction of the customers.
-
-      // Our team works closely with market leaders in finance, healthcare, compliance, and other industries to design and develop strategic products that address complex workflow challenges.
-
-      // As a UX Design Lead, you will be responsible for delivering the best user experience, which makes your role extremely important to the success of the products and the satisfaction of the customers.
-
-      // We are especially interested if you have extensive experience with enterprise-level product solutions and domain expertise that aligns with our focus industries.
-
-      // What’s in it for you?
-
-      // You will have the opportunity to contribute your vision to our products and projects and help drive each engagement toward success. You will fully participate in the product design and development process – including project estimation, research, client-facing discovery, ideation, low and high fidelity wireframing, interactive prototyping, and visual design.
-
-      // Our collaborative environment emphasizes personal growth and support and will allow you to share your knowledge while also learning from colleagues.
-
-      // Requirements
-
-      // 8+ years of experience in UX design
-      // Experience conducting design sprints or workshops with clients
-      // Experience in interface design for web and mobile applications
-      // Experience in leading and managing the design team
-      // Excellent interpersonal and communication skills
-      // Detail-oriented
-      // Critical thinking skills
-      // Strong knowledge of Sketch, Figma, Adobe CC (Photoshop, Illustrator), Principle, InVision/Marvel App
-      // Understanding of methodologies such as Design Thinking & Human Centered Design
-      // Experience designing complex enterprise projects (creating and supporting design system/Apple & Material Design guidelines)
-      // Ability to apply a high-fidelity wireframe/prototype approach to create a user flow from scratch
-      // Proactivity and ability to solve tasks (accept criticism and explain design options)
-      // A portfolio that demonstrates the above skills
-      // English - Upper-Intermediate
-
-      // Responsibilities
-
-      // Conduct design sprints or workshops to collect and evaluate business goals and user needs.
-      // Conduct and analyze stakeholder interviews & user surveys
-      // Create pitch-decks and visual concepts of products
-      // Conduct UX audits of existing products to reveal gaps in UX
-      // Develop customer journey maps and flow-charts for the products
-      // Create wireframes, clickable prototypes, and new UI elements for products
-      // Deliver an outstanding user experience through an exceptional and intuitive application design
-      // Provide leadership and direction for a team of designers
-      // Develop and maintain design systems for the products
-
-      // About Windmill
-
-      // Windmill design & build digital product experiences which delight, since 2012! We are a product delivery company dedicated to delivering impactful digital products and solutions, that resolve modern challenges.
-
-      // With our global operation headquartered in Switzerland, celebrating and seeking diversity and teams based in the UK, USA, Portugal, South Africa, Germany, Ukraine and India.
-
-      // Interested in learning more? Take a look at our website: www.windmill.digital/about/
-
-      // What We Offer
-
-      // Firstly, we offer the chance to be part of an experience driven company, who put you firmly in the driver’s seat of your own development. Operating on a remote first principle, we give our teams the flexibility to work from where, when and how they like. As long as you meet the requirements of your role (OKR, responsibilities etc) and are available for key meetings, the how is up to you.
-
-      // In Addition To Experience, You Get
-
-      // Competitive compensation and benefits
-      // Working as part of a diverse, international team
-      // Interesting tasks and challenges, where you can be creative and take ownership
-      // Opportunities for career enhancement
-      // Opportunity to make a positive impact on the team
-
-      // Equal Opportunities At Windmill
-
-      // Windmill Digital is an equal opportunities employer that strongly believes in workplace diversity. We consider all applicants regardless of their age, religion, ethnicity, sexual orientation or disability.
-
-      // Think you’d be a good fit for the role? Send us your CV now!
-
-      // For more information, please visit our company website: https://www.windmill.digital.`
-
-      printC(positionsRequirements, "3", "positionsRequirements", "b");
-      // sd02
-
-
-
-      // --------------------------------- Find Priorities ---------------------------------
-      let promptNewQuestions = `
-        REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
-  
-        - Your Task is based on teh content to find the Priorities for this Job Position 
-        - you can use Maximum 1 sentence to explain why you choose a priority, maximum 5 priorities
-        - You would give the priorities from the highest at the Top to the lowest at the Bottom
-        - Choose priorities from (Cultural fit, Technical skills, Soft skills, Work experience, Leadership potential, Diversity and inclusion, Long-term prospects, Motivation and enthusiasm, Initiative and creativity, Flexibility, Reliability and work ethic, Collaboration skills, Strong references, Customer or client focus, Industry knowledge )
-
-        Example priority structure:
-         1. Priority Title - Reason based on Requirements in MAX 20 words
-         2. Priority Title - Reason based on Requirements in MAX 20 words
-        
-        Priorities:
-      `;
-
-      printC(promptNewQuestions, "3", "promptNewQuestions", "b");
-
-      prioritiesSuggestions = await useGPTchatSimple(
-        promptNewQuestions,
-        0,
-        "API 1"
-      );
-
-      printC(prioritiesSuggestions, "3", "prioritiesSuggestions", "p");
-
-      // prioritiesSuggestions = `1. Technical skills - Strong experience with Spring framework, NoSQL and SQL databases, and message queue systems (e.g Kafka).
-      // 2. Leadership potential - Lead technical decisions inside and across teams to improve technical excellence through lateral leadership.
-      // 3. Work experience - 4+ years experience working as a Backend Java Engineer.
-      // 4. Collaboration skills - Contribute to finding the best solutions for customer service products that make operations easier.
-      // 5. Motivation and enthusiasm - Enjoy working within an agile setup.`
-
-      const regex = /(\d+)\.\s+(.*)\s+-\s+(.*)/g;
-      const prioritiesArray = [];
-
-      let match;
-      while ((match = regex.exec(prioritiesSuggestions)) !== null) {
-        const questionObject = {
-          priority: match[2],
-          reason: match[3],
-        };
-        prioritiesArray.push(questionObject);
-      }
-
-      printC(prioritiesArray, "3", "prioritiesArray", "g");
-      // --------------------------------- Find Priorities ---------------------------------
-
-      // --------------------------------- Find TradeOffs ---------------------------------
-      let promptNewTradeOffs = `
-        REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
-  
-        - Your Task is based on teh content to find the TradeOffs for this Job Position 
-        - you can use Maximum 1 sentence to explain why you choose a priority, maximum 5 tradeOffs
-        - You would give the tradeOffs from the highest at the Top to the lowest at the Bottom
-        - Choose tradeOffs from (Quality vs. Quantity, Experience vs. Potential, Skills vs. Cultural Fit, Speed vs. Thoroughness, Internal vs. External Candidates, Role Flexibility vs. Specialization, Remote Work vs. Onsite Presence, Diversity vs. Cultural Homogeneity, Compensation vs. Non-monetary Benefits, Direct Hire vs. Contract-to-hire, Long-term vs. Short-term Fit, Local vs. International Candidates, Traditional vs. Innovative Sourcing, Employer Brand Visibility vs. Highly-targeted Approaches, Candidate Experience vs. Time Investment)
-        - You should choose the right tradeoff for this REQUIREMENTS
-
-        Example priority structure:
-         1. TradeOff1 VS TradeOff2 - Choose: TradeOff2 - Reason based on Requirements
-         2. TradeOff1 VS TradeOff2 - Choose: TradeOff1 - Reason based on Requirements
-        
-        TradeOffs:
-      `;
-
-      printC(promptNewTradeOffs, "3", "promptNewTradeOffs", "b");
-      
-
-      tradeOffsSuggestions = await useGPTchatSimple(
-        promptNewTradeOffs,
-        0,
-        "API 1"
-      );
-
-      printC(tradeOffsSuggestions, "3", "tradeOffsSuggestions", "p");
-
-      // tradeOffsSuggestions = `1. Quality vs. Quantity - Choose: Quality - The job position requires a strong understanding of software development best practices and the ability to design new products from scratch, indicating a need for high-quality work rather than a high quantity of work.
-      // 2. Experience vs. Potential - Choose: Experience - The job position specifically states a requirement of 4+ years of experience, indicating a preference for candidates with proven experience in the role rather than potential for growth.
-      // 3. Skills vs. Cultural Fit - Choose: Skills - The job position lists specific technical skills and experience with certain technologies, indicating a higher priority on skills rather than cultural fit.
-      // 4. Speed vs. Thoroughness - Choose: Thoroughness - The job position emphasizes the importance of code quality, testing, and deployment, indicating a need for thoroughness in the development process rather than speed.
-      // 5. Role Flexibility vs. Specialization - Choose: Specialization - The job position is specifically for a Senior Backend Java Engineer, indicating a need for candidates with specialized skills in this area rather than a more flexible role.`
-
-      // const regexT = /(\d+)\.\s+(.+?)\s+-\s+(.+?)(?=\d+\.|$)/gs;
-      const regexT = /(\d+\.\s+.+?)\s+-\s+(Choose:\s+.+?)\s+-\s+(.+?)(?=\d+\.|$)/gs;
-
-      const tradeoffsArray = [];
-      let matchT;
-      while ((matchT = regexT.exec(tradeOffsSuggestions)) != null) {
-
-        const tradeoffObject = {
-          tradeOff1: matchT[1].split(" vs. ")[0].replace(/^\d+\.\s*/, "").trim(),
-          tradeOff2: matchT[1].split(" vs. ")[1],
-          selected: matchT[2].replace("Choose:", "").trim(),
-          reason: matchT[3],
-        };
-        tradeoffsArray.push(tradeoffObject);
-      }
-
-      printC(tradeoffsArray, "3", "tradeoffsArray", "g");
-      // --------------------------------- Find TradeOffs ---------------------------------
-
-
-      // Save the priorities and tradeoffs to the Position
-      positionData.positionsRequirements.priorities = prioritiesArray;
-      positionData.positionsRequirements.tradeOffs = tradeoffsArray;
-      await positionData.save();
-      
-
-      return {
-        success: true,
-        priorities: prioritiesArray,
-        tradeOffs: tradeoffsArray,
-      };
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "findPrioritiesTrainEdenAI",
-        {
-          component: "aiMutation > findPrioritiesTrainEdenAI",
-        }
-      );
-    }
-  },
 
   saveCVtoUser: async (parent, args, context, info) => {
     const { cvContent, userID, positionID } = args.fields;
@@ -1208,31 +1032,26 @@ module.exports = {
       const experienceAreas = extractedText[5]
       console.log("Experience Improvement:", experienceAreas);
 
-       const mainSkills = extractedText[1]
-        .split(", ");
+       const mainSkills = extractedText[1].split(", ");
 
       console.log("Main Skills:", mainSkills);
-
       printC(extractedText, "3", "extractedText", "b");
 
-
-      // sdf0
-
-      // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
-
-      // cvSummary = `
-      // Ateet Tiwari is a Full Stack Developer with experience in Front-End, Back-End, Database, Messaging Services, and UI Development. He has a strong proficiency in React, Redux, Node, Express, Python, SQL, and MongoDB. Ateet has led initiatives and teams, improved product performance, and designed in-house frameworks and systems. He is a Polygon Fellowship Graduate and has extensive knowledge in web3 development.
-      // `
-
+      
       // ----------- CV to Summary -------------
 
-      interviewQuestionCreationUserFunc(positionID, userID, cvContent);
+      // interviewQuestionCreationUserFunc(positionID, userID, cvContent); // GPT3 Interview
       // sdf00
 
-      await wait(5000);
+      interviewCreateCVNotesFunc(userData, cvContent); // GPT4 Interview
+
+
+      // await wait(5000);
+
+
       //publish the userID of the saved cv
       pubsub.publish("USER_CV_SAVED", {
-        userCVSavedToDB: { userID, cvSummary },
+        userCVSavedToDB: { userID, cvContent },
       });
       return {
         success: true,
@@ -1733,6 +1552,46 @@ module.exports = {
           positionData.positionsRequirements.positionPreparationMemory = true;
         }
         // ----------- Calculate and Save Memory ------------
+
+
+        let nodeIDs
+        // ---------------------- Map Nodes from Position text ---------------------
+        promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
+              dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
+              Do not have any other words except for skills. 
+  
+              Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
+              
+              Job Position (delimiters <>): <${positionsRequirements}>
+  
+              Skills Result:
+              `;
+  
+        let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
+        // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
+        printC(mapSkillText, "1", "mapSkillText", "g");
+  
+        nodeIDs;
+        try {
+          let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
+          printC(nodesN, "3", "nodesN", "p");
+  
+          nodeSave = nodesN.map((obj) => {
+            return {
+              _id: obj.nodeID,
+            };
+          });
+          nodeIDs = nodeSave.map((obj) => {
+            return {
+              nodeID: obj._id,
+            };
+          });
+  
+          printC(nodeSave, "4", "nodeSave", "r");
+        } catch (err) {
+          console.log("didn't create nodes = ");
+        }
+        // ---------------------- Map Nodes from Position text ---------------------
 
         await positionData.save();
       }

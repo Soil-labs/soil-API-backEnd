@@ -14,9 +14,20 @@ module.exports = `
 
         summary: [summaryType],
 
+        typeConvo: typeConvoEnum
+
         questionsAnswered: [questionAnsweredType],
         
         updatedAt: Date,
+    }
+    
+    enum typeConvoEnum {
+        QUERY_RESPONSE
+        INTERVIEW
+        ALIGN
+        ASK_OPPORTUNITY
+        ASK_CANDIDATE
+        ASK_TALENT_LIST
     }
 
     type questionAnsweredType {
@@ -62,8 +73,9 @@ module.exports = `
     input findConversationsInput {
         _id: [ID]
         userID: [String]
+        positionID: [String]
         convKey: [String]
-
+        positionTrainEdenAI: Boolean
         summaryReady: Boolean,
     }
 

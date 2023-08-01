@@ -100,6 +100,11 @@ module.exports = `
         addEmployeesCompany(fields:addEmployeesCompanyInput): Company
 
 
+         # ------------- QUERY RESPONSE MUTATION -----------------
+        updateQueryResponse(fields:updateQueryResponseInput): QueryResponse
+
+
+
         # ------------- MEMORY PINECONE MUTATION -----------------
         addMemory(fields:addMemoryInput): MemoryPinecone
         deleteMemories(fields:deleteMemoriesInput): [MemoryPinecone]
@@ -154,7 +159,6 @@ module.exports = `
         conversationCVPositionToReport(fields: conversationCVPositionToReportInput): conversationCVPositionToReportOutput
         positionTextAndConvoToReportCriteria(fields: positionTextAndConvoToReportCriteriaInput): positionTextAndConvoToReportCriteriaOutput
         positionSuggestQuestionsAskCandidate(fields: positionSuggestQuestionsAskCandidateInput): positionSuggestQuestionsAskCandidateOutput
-        findPrioritiesTrainEdenAI(fields: findPrioritiesTrainEdenAIInput): findPrioritiesTrainEdenAIOutput
         saveCVtoUser(fields: saveCVtoUserInput): saveCVtoUserOutput
         autoUpdateUserInfoFromCV(fields: autoUpdateUserInfoFromCVInput): autoUpdateUserInfoFromCVOutput
         autoUpdateMemoryFromCV(fields: autoUpdateMemoryFromCVInput): autoUpdateMemoryFromCVOutput

@@ -75,6 +75,10 @@ module.exports = `
             findCompanyFromSlug(fields:findCompanyFromSlugInput): Company
 
 
+           #  ---------- QUERY RESPONSE QUERY -------
+            findQueryResponses(fields:findQueryResponsesInput): [QueryResponse]
+
+
            #  ---------- MEMORY PINECONE QUERY -------
 
             findMemories(fields:findMemoriesInput): [MemoryPinecone]
@@ -131,6 +135,7 @@ module.exports = `
           messageMapKG_V4(fields: messageMapKG_V4Input): messageMapKG_V4Output
           messageMapKG_V5(fields: messageMapKG_V5Input): messageMapKG_V5Output
           edenGPTreplyMemory(fields: edenGPTreplyMemoryInput): edenGPTreplyMemoryOutput
+          findPrioritiesTrainEdenAI(fields: findPrioritiesTrainEdenAIInput): findPrioritiesTrainEdenAIOutput
           askEdenUserPosition(fields: askEdenUserPositionInput): askEdenUserPositionOutput
           edenGPTreplyChatAPI(fields: edenGPTreplyChatAPIInput): edenGPTreplyChatAPIOutput
           edenGPTreplyChatAPI_V2(fields: edenGPTreplyChatAPI_V2Input): edenGPTreplyChatAPI_V2Output

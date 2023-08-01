@@ -77,6 +77,10 @@ const {
 } = require("./mutation/companyMutation");
 
 const {
+  updateQueryResponse
+} = require("./mutation/queryResponseMutation");
+
+const {
   addMemory,
   deleteMemories,
 } = require("./mutation/memoryPineconeMutation");
@@ -136,7 +140,6 @@ const {
   conversationCVPositionToReport,
   positionTextAndConvoToReportCriteria,
   positionSuggestQuestionsAskCandidate,
-  findPrioritiesTrainEdenAI,
   saveCVtoUser,
   autoUpdateUserInfoFromCV,
   addMessages,
@@ -235,6 +238,9 @@ module.exports = {
     updateUrlCompany,
     addEmployeesCompany,
 
+    // ------------- QUERY RESPONSE MUTATION -----------------
+    updateQueryResponse,
+
     // ------------- MEMORY PINECONE MUTATION -----------------
     addMemory,
     deleteMemories,
@@ -299,7 +305,6 @@ module.exports = {
     conversationCVPositionToReport,
     positionTextAndConvoToReportCriteria,
     positionSuggestQuestionsAskCandidate,
-    findPrioritiesTrainEdenAI,
     saveCVtoUser,
     autoUpdateUserInfoFromCV,
     addMessages,
