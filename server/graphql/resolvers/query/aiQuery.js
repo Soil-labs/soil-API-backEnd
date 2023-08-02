@@ -135,7 +135,8 @@ async function useGPTchat(
   systemPrompt,
   userQuestion = "",
   temperature = 0.7,
-  chooseAPI = "API 1"
+  chooseAPI = "API 1",
+  useMode = "chatGPT"
 ) {
   let discussion = [...discussionOld];
 
@@ -153,6 +154,13 @@ async function useGPTchat(
 
   // console.log("discussion = ", discussion);
   // sdf
+
+  let model = "gpt-3.5-turbo";
+  if (useMode == "chatGPT") {
+    model = "gpt-3.5-turbo";
+  } else if (useMode == "chatGPT4") {
+    model = "gpt-4"
+  }
 
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
   response = await axios.post(
@@ -3701,8 +3709,29 @@ module.exports = {
   askEdenUserPosition: async (parent, args, context, info) => {
     const {  userID,positionID,conversation,whatToAsk } = args.fields;
     console.log("Query > askEdenUserPosition > args.fields = ", args.fields);
+
     try {
+
+      let positionData = await Position.findOne({
+        _id: positionID,
+      }).select('_id name candidates')
+
       
+      usersIDposition = positionData.candidates.map((user) => user.userID);
+
+      usersPosData = await Members.find({
+        _id: { $in: usersIDposition },
+      }).select('_id discordName')
+
+      // create object with key the _id of user and value the discordName
+      usersPosData = usersPosData.reduce((map, obj) => {
+        map[obj._id] = {
+          name: obj.discordName
+        };
+        return map;
+      }, {});
+      
+
 
       let message = ""
       let beforeMessage = ""
@@ -3740,6 +3769,7 @@ module.exports = {
       }
       
 
+      console.log("change = " )
 
 
       // ---------------------- find Memory Best Embedings ----------------------
@@ -3755,7 +3785,23 @@ module.exports = {
 
         longTermMemories = await findBestEmbedings(prompt_conversation, filter, (topK = 8));
 
-        
+      } else if (whatToAsk=="ALL_CANDIDATES_OF_COMPANY"){
+
+        filter.label = {"$in": ["CV_user_memory","conv_with_user_memory"]}
+        if (!userID) throw new Error("There is no userID")
+        filter._id = {"$in": usersIDposition};
+        longTermMemories_userCV = await findBestEmbedings(prompt_conversation, filter, (topK = 10), "User");
+
+
+        filter.label =  {"$in": ["requirements_position_memory","conv_for_position_memory"]}
+        if (!positionID) throw new Error("There is no positionID")
+        filter._id = positionID;
+        longTermMemories_position = await findBestEmbedings(prompt_conversation, filter, (topK = 5),"Company");
+
+
+        longTermMemories = longTermMemories_position.concat(longTermMemories_userCV)
+
+
 
       } else { //if (whatToAsk=="CANDIDATE_OF_COMPANY"){
         filter.label = {"$in": ["CV_user_memory"]}
@@ -3773,7 +3819,6 @@ module.exports = {
         filter.label =  {"$in": ["requirements_position_memory","conv_for_position_memory"]}
         if (!positionID) throw new Error("There is no positionID")
         filter._id = positionID;
-
         longTermMemories_position = await findBestEmbedings(prompt_conversation, filter, (topK = 4),"Company");
         // longTermMemories_position = await findBestEmbedings(prompt_conversation, filter, (topK = 4));
 
@@ -3788,23 +3833,12 @@ module.exports = {
           prompt_longTermMemory + "\n Info " + (i+1) +":" + longTermMemories[i].metadata.text;
       }
 
-      printC(longTermMemories, "0", "longTermMemories", "g");
-      printC(prompt_longTermMemory, "1", "prompt_longTermMemory", "g");
+      // printC(longTermMemories, "0", "longTermMemories", "g");
+      // printC(prompt_longTermMemory, "1", "prompt_longTermMemory", "g");
       // sdf5
       // ---------------------- find Memory Best Embedings ----------------------
 
-
-      // console.log("longTermMemories = " , longTermMemories)
-      // ads32
-
-      // let prompt_longTermMemory = "";
-      // for (let i = 0; i < longTermMemories.length; i++) {
-      //   prompt_longTermMemory =
-      //     prompt_longTermMemory + "\n Info " + (i+1) +": <" + longTermMemories[i].metadata.text +">";
-      // }
-
-      // console.log("prompt_longTermMemory = ", prompt_longTermMemory);
-      // // asdf
+      
 
       prompot_General = `
       You have as input: 
@@ -3854,10 +3888,19 @@ module.exports = {
       printC(infoAndScore, "2", "infoAndScore", "g");
 
       let prompt_relevantInfo = "";
+      let prompt_relevantInfoPosition = "";
+      let prompt_relevantInfoUser = "";
       for (let i = 0; i < longTermMemories.length; i++) {
         if (infoAndScore[i].score > 6) {
-          prompt_relevantInfo =
-            prompt_relevantInfo + "\n Info " + (i+1) +": <" + longTermMemories[i].metadata.text +">";
+            prompt_relevantInfo = prompt_relevantInfo + `\n Info ${i+1}: <${longTermMemories[i].metadata.text}`;
+
+            if (usersPosData[longTermMemories[i].metadata._id]){
+              prompt_relevantInfo = prompt_relevantInfo + `User: ${usersPosData[longTermMemories[i].metadata._id].name}>`;
+              prompt_relevantInfoUser = prompt_relevantInfoUser + `\n Info ${i+1}: <${longTermMemories[i].metadata.text}User: ${usersPosData[longTermMemories[i].metadata._id].name}>`;
+            } else {
+              prompt_relevantInfo = prompt_relevantInfo + `>`;
+              prompt_relevantInfoPosition = prompt_relevantInfoPosition + `\n Info ${i+1}: <${longTermMemories[i].metadata.text}>`;
+            }
         }
       }
 
@@ -3865,21 +3908,44 @@ module.exports = {
         prompt_relevantInfo = prompt_longTermMemory
       }
 
+      // printC(prompt_relevantInfo, "3", "prompt_relevantInfo", "g");
 
-      prompot_replyQuestion = `
-      Your input: 
-      1) RELATED INFO about the Candidate (delimited by ||): |${prompt_relevantInfo}|
+      let prompot_replyQuestion = ""
 
-      2) Previous Message Conversation (delimited by ||): |${prompt_beforeMessage}|
+      if (whatToAsk=="ALL_CANDIDATES_OF_COMPANY"){
 
-      3) QUESTION from Recruiter (delimited by ||): |${message}|
+        prompot_replyQuestion = `
+        Your input: 
+        1) RELATED INFO User (delimited by ||): |${prompt_relevantInfoUser}|
 
-      - Your task is to reply to the QUESTION with a short 1-2 sentence answer
-      - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
-      - Be creative if you don't have enough information
+        2) RELATED INFO Position (delimited by ||): |${prompt_relevantInfoPosition}|
 
-        Answer to question: 
-      `;
+        3) Previous Message Conversation (delimited by ||): |${prompt_beforeMessage}|
+
+        4) QUESTION from Recruiter (delimited by ||): |${message}|
+
+        - Your task is to reply to the QUESTION with a short 1-3 sentence answer
+        - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
+        - Be creative if you don't have enough information
+
+          Answer to question: 
+        `;
+      } else {
+        prompot_replyQuestion = `
+        Your input: 
+        1) RELATED INFO (delimited by ||): |${prompt_relevantInfo}|
+
+        2) Previous Message Conversation (delimited by ||): |${prompt_beforeMessage}|
+
+        3) QUESTION from Recruiter (delimited by ||): |${message}|
+
+        - Your task is to reply to the QUESTION with a short 1-3 sentence answer
+        - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
+        - Be creative if you don't have enough information
+
+          Answer to question: 
+        `;
+      }
 
       printC(prompot_replyQuestion, "4", "prompot_replyQuestion", "g");
 
@@ -3897,30 +3963,58 @@ module.exports = {
       });
 
 
+      let systemPrompt = ""
+      let prompt_relatedInfo = ""
+      if (whatToAsk=="ALL_CANDIDATES_OF_COMPANY"){
+        systemPrompt = `
+        - Your task is to reply to the QUESTION with a short 1-3 sentence answer
+        - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
+        - Be creative if you don't have enough information` 
+        
+
+        prompt_relatedInfo = `
+        RELATED INFO User (delimited by ||): |${prompt_relevantInfoUser}|
+
+        RELATED INFO Position (delimited by ||): |${prompt_relevantInfoPosition}|
+
+        ${systemPrompt}
 
 
-      const systemPrompt = `
-      - Your task is to reply to the QUESTION with a short 1-3 sentence answer
-      - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
-      - Be creative if you don't have enough information` 
+        Question to Answer: 
+        `
+      } else {
+        systemPrompt = `
+        - Your task is to reply to the QUESTION with a short 1-3 sentence answer
+        - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
+        - Be creative if you don't have enough information` 
+        
+
+        prompt_relatedInfo = `
+        RELATED INFO (delimited by ||): |${prompt_relevantInfo}|
+
+        ${systemPrompt}
+
+
+        Question to Answer: 
+        `
+      }
+
       
-
-      prompt_relatedInfo = `
-      RELATED INFO about the Candidate (delimited by ||): |${prompt_relevantInfo}|
-
-      ${systemPrompt}
-
-
-      Question to Answer: 
-      `
-
-      
+      // replyQuestionGPT = await useGPTchat(
+      //   prompt_relatedInfo,
+      //   conversation_use,
+      //   systemPrompt,
+      //   lastMessage?.content,
+      //   0.99,
+      // );
       replyQuestionGPT = await useGPTchat(
         prompt_relatedInfo,
         conversation_use,
         systemPrompt,
         lastMessage?.content,
         0.99,
+        "API 1",
+        "chatGPT4",
       );
 
       // replyQuestionGPT = await useGPTchatSimple(prompot_replyQuestion,0.95,"API 2");
