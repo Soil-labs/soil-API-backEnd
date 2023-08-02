@@ -415,6 +415,7 @@ module.exports = `
     enum whatToAskEnum {
         CANDIDATE_OF_COMPANY
         COMPANY
+        ALL_CANDIDATES_OF_COMPANY
     }
 
     type edenGPTCreateProfileExperienceChatAPIOutput {
