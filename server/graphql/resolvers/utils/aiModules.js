@@ -726,24 +726,48 @@ Category 1:
 
   // sdf12
 
-  //   report  = `
-  //   <Category 1: Education>
-  //   - b1: 10 - MS in Computer Science, Engineering, Math, Science or related field. PhD preferred.
+//     report  = `
+//     Category 1:
+//     - b1: 0 - No Info
+//     - b2: 0 - No Info
+//     - b3: 0 - No Info
 
-  // <Category 2: Experience>
-  //   - b2: 10 - Over 11 years of experience in Computer Vision, Machine Learning, and Robotics.
-  //   - b3: 10 - Proven track record of excellence in applying Machine Learning techniques for solving difficult real world problems.
+// Category 2:
+//     - b4: 5 - The candidate has a Bachelor's degree in Computer Science, which is not directly relevant but still a technical field.
 
-  // <Category 3: Skills>
-  //   - b4: 10 - Experience with cutting-edge technologies such as Pytorch, TensorFlow, and CUDA.
+// Category 3:
+//     - b5: 0 - No Info
 
-  // <Category 4: Job Responsibilities>
-  //   - b5: 10 - Experience in leading teams and managing projects.
-  //   - b5: 10 - Experience in applying Deep Learning techniques to challenging real world problems.
+// Category 4:
+//     - b6: 5 - The candidate has experience in collaborating with cross-functional teams and mentoring junior developers, which indicates good communication skills.
 
-  // <Category 5: Diversity and Inclusion>
-  //   - b6: 10 - Equal Opportunity Employer and a good fit for the culture.
-  //   `
+// Category 5:
+//     - b7: 0 - No Info
+
+// Category 6:
+//     - b8: 5 - The candidate has experience in designing and developing software solutions, which indicates some level of autonomy in projects.
+
+// Category 7:
+//     - b9: 7 - The candidate has demonstrated the ability to work collaboratively with cross-functional teams.
+
+// Category 8:
+//     - b10: 5 - The candidate's experience in software development and deployment indicates good organizational skills and attention to detail.
+
+// Category 9:
+//     - b11: 5 - The candidate's experience in using various technologies and platforms indicates flexibility and adaptability.
+
+// Category 10:
+//     - b12: 0 - No Info
+
+// Category 11:
+//     - b13: 0 - No Info
+
+// Category 12:
+//     - b14: 0 - No Info
+
+// Category 13:
+//     - b15: 0 - No Info
+//     `
 
   printC(report, "4", "report", "g");
 
@@ -789,10 +813,14 @@ Category 1:
       reason: merged[id].reason,
     });
 
+    // console.log("merged[id].score = " , merged[id].score)
+    // printC(merged[id].score, "4", "merged[id].score", "r")
+
     if (
       merged[id].score != undefined &&
       merged[id].score != null &&
-      merged[id].score != "N/A"
+      merged[id].score != "N/A" && 
+      merged[id].score > 3
     ) {
       scoreAll += merged[id].score;
       nAll += 1;
@@ -800,6 +828,10 @@ Category 1:
   }
 
   scoreAll = parseInt(scoreAll / nAll) * 10;
+
+  // printC(scoreAll, "4", "scoreAll", "b");
+
+  // dd0d
 
   printC(reportPoints, "6", "reportPoints", "b");
 
