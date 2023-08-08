@@ -1427,6 +1427,105 @@ module.exports = {
       );
     }
   },
+  updatePrioritiesTradeOffs: async (parent, args, context, info) => {
+    const { positionID, priorities,tradeOffs, } = args.fields;
+    console.log(
+      "Mutation > updatePrioritiesTradeOffs > args.fields = ",
+      args.fields
+    );
+
+    // find the positionID
+    positionData =  await Position.findOne({
+      _id: positionID,
+    }).select('_id name positionsRequirements');
+
+    if (!positionData) {
+      throw new ApolloError(
+        "Position not found",
+        "POSITION_NOT_FOUND",
+      )
+    }
+
+    try {
+
+      // // ---------------- Priorities ----------------
+      // let prioritiesNow = positionData.positionsRequirements.priorities;
+      // console.log("prioritiesNow = " , prioritiesNow)
+
+      // if (prioritiesNow?.length > 0 && priorities?.length > 0){
+
+      //   let prioritiesNowObj = {};
+      //   for (let i = 0; i < prioritiesNow.length; i++) {
+      //     prioritiesNowObj[prioritiesNow[i].priority] = prioritiesNow[i];
+      //   }
+
+      //   let prioritiesNew = []
+      //   for (let i = 0; i < priorities.length; i++) {
+      //     prioritiesNew.push(prioritiesNowObj[priorities[i].priority])
+      //   }
+
+      //   console.log("prioritiesNew = " , prioritiesNew)
+
+      //   positionData.positionsRequirements.priorities = prioritiesNew;
+        
+
+      // } else {
+      //   positionData.positionsRequirements.priorities = priorities;
+      // }
+      // // ---------------- Priorities ----------------
+
+
+      // ---------------- Trade Offs ----------------
+      let tradeOffsNow = positionData.positionsRequirements.tradeOffs;
+
+      if (tradeOffsNow?.length > 0 && tradeOffs?.length > 0){
+
+        let tradeOffsObj = {};
+        for (let i = 0; i < tradeOffs.length; i++) {
+          key = tradeOffs[i].tradeOff1 + "_" + tradeOffs[i].tradeOff2;
+          tradeOffsObj[key] = tradeOffs[i];
+        }
+
+        let tradeOffsNew = []
+        for (let i = 0; i < tradeOffsNow.length; i++) {
+          key = tradeOffsNow[i].tradeOff1 + "_" + tradeOffsNow[i].tradeOff2;
+          if (tradeOffsObj[key]){
+            // tradeOffsNew.push(tradeOffsObj[key])
+            tradeOffsNew.push({
+              tradeOff1: tradeOffsObj[key].tradeOff1,
+              tradeOff2: tradeOffsObj[key].tradeOff2,
+              reason: tradeOffsNow[i].reason,
+              selected: tradeOffsObj[key].selected,
+            })
+            // tradeOffsNew.push(tradeOffsNow[i])
+          } else {
+            tradeOffsNew.push(tradeOffsNow[i])
+          }
+
+        }
+
+        positionData.positionsRequirements.tradeOffs = tradeOffsNew;
+        
+
+      }
+      // ---------------- Trade Offs ----------------
+
+      await positionData.save();
+      
+      return {
+        priorities: positionData.positionsRequirements.priorities,
+        tradeOffs: positionData.positionsRequirements.tradeOffs,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updatePrioritiesTradeOffs",
+        {
+          component: "aiMutation > updatePrioritiesTradeOffs",
+        }
+      );
+    }
+  },
   autoUpdateMemoryFromPositionRequirments: async (
     parent,
     args,
