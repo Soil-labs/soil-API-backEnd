@@ -165,6 +165,7 @@ module.exports = `
         autoUpdateUserInfoFromCV(fields: autoUpdateUserInfoFromCVInput): autoUpdateUserInfoFromCVOutput
         autoUpdateMemoryFromCV(fields: autoUpdateMemoryFromCVInput): autoUpdateMemoryFromCVOutput
         autoUpdateMemoryFromPositionRequirments(fields: autoUpdateMemoryFromPositionRequirmentsInput): autoUpdateMemoryFromPositionRequirmentsOutput
+        updatePrioritiesTradeOffs(fields: updatePrioritiesTradeOffsInput): updatePrioritiesTradeOffsOutput
         addMessages(fields: addMessagesInput): [AI]
         secondInterviewLetter(fields: secondInterviewLetterInput): secondInterviewLetterOutput
         rejectionLetter(fields: rejectionLetterInput): rejectionLetterOutput

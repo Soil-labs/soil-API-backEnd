@@ -183,6 +183,28 @@ module.exports = `
         positionIDs: [ID]
     }
 
+    input tradeOffsInput {
+        tradeOff1: String,
+        tradeOff2: String,
+        selected: String,
+    }
+
+    input prioritiesInput {
+        priority: String,
+    }
+
+    input updatePrioritiesTradeOffsInput {
+        positionID: ID
+        priorities: [prioritiesInput]
+        tradeOffs: [tradeOffsInput]
+    }
+
+    type updatePrioritiesTradeOffsOutput {
+        success: Boolean
+        priorities: [prioritiesType]
+        tradeOffs: [tradeOffsType]
+    }
+
     type autoUpdateMemoryFromPositionRequirmentsOutput {
         positions: [Position]
     }
