@@ -34,26 +34,41 @@ const { arrayToObj } = require("../utils/endorsementModules");
 
 module.exports = {
   updatePosition: async (parent, args, context, info) => {
-    const { _id, name, companyID,mainUserID } = args.fields;
+    const { _id, name,icon,mainUserID } = args.fields;
+    let { companyID } = args.fields;
     console.log("Mutation > updatePosition > args.fields = ", args.fields);
 
     try {
       let positionData;
-      let companyData = await Company.findOne({ _id: companyID });
 
-      if (!companyData) {
-        throw new ApolloError("Could not find Company", "updatePosition", {
-          component: "positionMutation > updatePosition",
-        });
+
+      let companyData
+
+      if (!_id && !companyID) {
+        throw new ApolloError(
+          "Position ID or Company ID is required",
+          "updatePosition",
+          { component: "positionMutation > updatePosition" }
+        );
       }
+
+
+      if (companyID) {
+        companyData = await Company.findOne({ _id: companyID });
+      }
+
+      console.log("change = 1" )
+      
       if (_id) {
         positionData = await Position.findOne({ _id });
 
         if (name) positionData.name = name;
         if (companyID) positionData.companyID = companyID;
+        if (icon) positionData.icon = icon;
       } else {
         positionData = await new Position({
           name,
+          icon,
           companyID,
           mainUserID,
           talentList: [
@@ -67,7 +82,25 @@ module.exports = {
         });
       }
 
+
+      if (!companyID) {
+        companyID = positionData.companyID;
+
+        companyData = await Company.findOne({ _id: companyID });
+      }
+
+
+      if (!companyData) {
+        throw new ApolloError("Could not find Company", "updatePosition", {
+          component: "positionMutation > updatePosition",
+        });
+      }
+
+
       await positionData.save();
+
+
+      
 
       console.log("positionData = ", positionData);
       // sdf0

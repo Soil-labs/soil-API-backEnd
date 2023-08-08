@@ -3,6 +3,7 @@ require("dotenv").config();
 
 const positionModel = mongoose.Schema({
   name: String,
+  icon: String,
   url: String,
   companyID: mongoose.Schema.ObjectId,
   mainUserID: String,
