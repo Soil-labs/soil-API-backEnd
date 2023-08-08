@@ -102,6 +102,8 @@ module.exports = `
 
          # ------------- QUERY RESPONSE MUTATION -----------------
         updateQueryResponse(fields:updateQueryResponseInput): QueryResponse
+        respondToQuery(fields:respondToQueryInput): QueryResponse
+        deleteQueryResponse(fields:deleteQueryResponseInput): QueryResponse
 
 
 

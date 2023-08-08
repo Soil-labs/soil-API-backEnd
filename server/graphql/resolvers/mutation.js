@@ -77,7 +77,7 @@ const {
 } = require("./mutation/companyMutation");
 
 const {
-  updateQueryResponse
+  updateQueryResponse,respondToQuery,deleteQueryResponse,queryResponseUpdated,
 } = require("./mutation/queryResponseMutation");
 
 const {
@@ -239,7 +239,7 @@ module.exports = {
     addEmployeesCompany,
 
     // ------------- QUERY RESPONSE MUTATION -----------------
-    updateQueryResponse,
+    updateQueryResponse,respondToQuery,deleteQueryResponse,
 
     // ------------- MEMORY PINECONE MUTATION -----------------
     addMemory,
@@ -330,6 +330,7 @@ module.exports = {
   Subscription: {
     memberUpdated,
     roomUpdated,
+    queryResponseUpdated,
     memberUpdatedInRoom,
     userCVSavedToDB,
   },

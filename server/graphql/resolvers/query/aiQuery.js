@@ -1645,6 +1645,9 @@ module.exports = {
         Make the provided questions highly relevant to the person you're interviewing - which is the person who's just given you the CVNOTES. 
         Initiate the interview by stating why you're excited to talk to them specifically.
         Wrap up the interview yourself when you're confident enough that you'll be able to answer all your hiring manager's pre-agreed-upon QUESTIONS when you check back in with your hiring manager later.
+
+
+        Start the conversation and ask the first question, you can only ask 1 question at a time:
         `
 
       }
