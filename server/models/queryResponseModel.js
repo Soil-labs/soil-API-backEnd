@@ -14,7 +14,7 @@ const queryResponseModel = mongoose.Schema({
   conversationID: String,
   phase: {
     type: String,
-    enum: ["QUERY", "RESPONED","VIEWED","ARCHIVED"],
+    enum: ["QUERY", "RESPONDED","VIEWED","ARCHIVED"],
   },
   question: {
     content: String,

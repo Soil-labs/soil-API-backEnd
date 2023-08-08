@@ -61,6 +61,9 @@ const {
   SkillSubCategory,
 } = require("./objectResolvers/skillSubCategoryResolver");
 const {
+  QueryResponse,
+} = require("./objectResolvers/queryResponseResolver");
+const {
   ProjectUpdate,
   findAllProjectsTeamsAnouncmentsOutput,
   teamsType,
@@ -123,6 +126,7 @@ module.exports = {
   QuestionType,
   SkillCategory,
   SkillSubCategory,
+  QueryResponse,
   ProjectUpdate,
   findAllProjectsTeamsAnouncmentsOutput,
   teamsType,

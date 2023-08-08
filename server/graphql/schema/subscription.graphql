@@ -2,6 +2,7 @@ module.exports = `
     type Subscription {
         memberUpdated(fields: findMembersInput): Members
         roomUpdated(fields: findRoomsInput): Rooms
+        queryResponseUpdated(fields: queryResponseUpdatedInput): QueryResponse
         memberUpdatedInRoom(fields: findRoomsInput): Members
         userCVSavedToDB: AddCVToUserOutput
     }

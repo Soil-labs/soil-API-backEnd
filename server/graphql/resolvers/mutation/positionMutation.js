@@ -738,15 +738,11 @@ module.exports = {
           let jobRequirementsScore = 0;
           let jobRequirementsScoreCount = 0;
           if (candidate?.compareCandidatePosition?.reportPassFail) {
-            for (
-              let k = 0;
-              k < candidate?.compareCandidatePosition?.reportPassFail.length;
-              k++
-            ) {
+            for (let k = 0;k < candidate?.compareCandidatePosition?.reportPassFail.length;k++) {
               let score =
                 candidate?.compareCandidatePosition?.reportPassFail[k].score;
 
-              if (score != undefined) {
+              if (score != undefined && score > 3) {
                 jobRequirementsScore += score;
                 jobRequirementsScoreCount += 1;
               }
@@ -765,10 +761,12 @@ module.exports = {
 
           // ------------------- Background Analysis -------------------
           let instructionsScore = "";
-          if (backgroundScore > 82) {
-            instructionsScore =
-              "Be really positive Find all the reasons that it is a great fit";
+          if (backgroundScore > 70) {
+            instructionsScore = "Be really positive Find all the reasons that it is a great fit";
           } else if (backgroundScore > 50) {
+            instructionsScore =
+              "Be positive but also fair find the reasons that will work and report them";
+          } else if (backgroundScore > 30) {
             instructionsScore =
               "Be neutral find the reasons that will work and don't work and report them";
           } else {
@@ -808,10 +806,12 @@ module.exports = {
 
           // ------------------- Skill Analysis -------------------
           instructionsScore = "";
-          if (skillScore > 75) {
+          if (skillScore > 70) {
+            instructionsScore = "Be really positive Find all the reasons that it is a great fit";
+          } else if (skillScore > 50) {
             instructionsScore =
-              "Be really positive Find all the reasons that it is a great fit";
-          } else if (skillScore > 60) {
+              "Be positive but also fair find the reasons that will work and report them";
+          } else if (skillScore > 30) {
             instructionsScore =
               "Be neutral find the reasons that will work and don't work and report them";
           } else {
@@ -846,10 +846,12 @@ module.exports = {
 
           // ------------------- JobRequirements Analysis -------------------
           instructionsScore = "";
-          if (jobRequirementsScore > 75) {
+          if (jobRequirementsScore > 70) {
+            instructionsScore = "Be really positive Find all the reasons that it is a great fit";
+          } else if (jobRequirementsScore > 50) {
             instructionsScore =
-              "Be really positive Find all the reasons that it is a great fit";
-          } else if (jobRequirementsScore > 60) {
+              "Be positive but also fair find the reasons that will work and report them";
+          } else if (jobRequirementsScore > 30) {
             instructionsScore =
               "Be neutral find the reasons that will work and don't work and report them";
           } else {
