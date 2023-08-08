@@ -3,6 +3,7 @@ module.exports = `
     type Position {
         _id: ID
         name: String
+        icon: String
         url: String
         mainUser: Members
         company: Company
@@ -173,6 +174,8 @@ module.exports = `
         companyID: ID
         updatePosition: ID
         mainUserID: ID
+        icon: String,
+
     }
     
     input updateUrlInput {
