@@ -1,0 +1,16 @@
+module.exports = `
+
+    
+
+    input whatsAppInput {
+        body: String
+        to: String
+        from: String
+    }
+
+    
+
+   
+
+
+`
