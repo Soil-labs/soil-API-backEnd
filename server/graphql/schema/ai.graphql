@@ -96,6 +96,7 @@ module.exports = `
 
     input positionTextAndConvoToReportCriteriaInput {
         positionID: ID
+        updatedReport: String
     }
 
     type positionTextAndConvoToReportCriteriaOutput {

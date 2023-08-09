@@ -787,19 +787,51 @@ module.exports = {
   },
 
   positionTextAndConvoToReportCriteria: async (parent, args, context, info) => {
-    const { positionID } = args.fields;
+    const { positionID, updatedReport } = args.fields;
     console.log(
       "Mutation > positionTextAndConvoToReportCriteria > args.fields = ",
       args.fields
     );
 
+    if (!positionID) {
+      throw new ApolloError("positionID is required");
+    }
+
+    positionData = await Position.findOne({ _id: positionID }).select(
+      "_id positionsRequirements"
+    );
+
+
+
+    if (!positionData) {
+      throw new ApolloError("Position not found");
+    }
+
+    let report 
+
     try {
+
+
+      if (positionData.positionsRequirements?.content && !updatedReport) {
+
+        return {
+          success: true,
+          report: positionData.positionsRequirements?.content
+        };
+
+      }
+
       // --------------- Report ---------
-      const report = await positionTextAndConvoToReportCriteriaFunc(positionID);
+      if (!updatedReport) {
+        report = await positionTextAndConvoToReportCriteriaFunc(positionID);
 
-      console.log("report = ", report);
+        console.log("report = ", report);
 
-      positionData.positionsRequirements.content = report;
+        positionData.positionsRequirements.content = report;
+      } else {
+        positionData.positionsRequirements.content = updatedReport;
+        report = updatedReport;
+      }
       // --------------- Report ---------
 
       await positionData.save();
