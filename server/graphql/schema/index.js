@@ -27,7 +27,6 @@ const subscription = require("./subscription.graphql");
 const chatType = require("./chat.graphql");
 const aiType = require("./ai.graphql");
 const edenMetricsType = require("./edenMetrics.graphql");
-const whatsAppType = require("./whatsapp.graphql")
 
 const typeDefs = gql`
   ${query}
@@ -57,7 +56,6 @@ const typeDefs = gql`
   ${chatType}
   ${aiType}
   ${edenMetricsType}
-  ${whatsAppType}
   ${subscription}
 `;
 
