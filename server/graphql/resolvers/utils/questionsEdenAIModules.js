@@ -67,7 +67,7 @@ async function onlyGPTchat(prompt, temperature = 0.7, chooseAPI = "API 1") {
 }
 
 
-async function addQuestionToEdenAIFunc(content) {
+async function addQuestionToEdenAIFunc(content,category = undefined) {
 
   console.log("change = ")
 
@@ -138,12 +138,19 @@ async function addQuestionToEdenAIFunc(content) {
         } else {
             foundQuestion = false
         }
+
+        // update category
+        if (category != undefined){
+            questionData.category = category
+            await questionData.save()
+        }
     }
 
   if (foundQuestion == false){
     // add on mongoDB the new Question first
     const newQuestion = await new QuestionsEdenAI({
         content: content,
+        category: category,
         answeredQuestionByUsers: [],
         questionOwnedByPositions: []
     });
@@ -189,7 +196,7 @@ async function addMultipleQuestionsToEdenAIFunc(questionsToAsk) {
           if (question.questionContent) { 
             console.log("question.questionContent = " , question.questionContent)
             console.log("change = " , i)
-            res = await addQuestionToEdenAIFunc(question.questionContent);
+            res = await addQuestionToEdenAIFunc(question.questionContent,question.category);
 
             // update questionsToAsk
             questionsToAsk[i].questionID = res._id;
