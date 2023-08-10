@@ -43,13 +43,17 @@ module.exports = {
     }
     if (userID) {
       searchQuery_and.push({ userID: userID });
-    } else if (convKey != undefined){
+    } 
+    if (convKey != undefined){
       searchQuery_and.push({ convKey: convKey });
-    } else if (summaryReady != undefined) {
+    } 
+    if (summaryReady != undefined) {
       searchQuery_and.push({ summaryReady: summaryReady });
-    } else if (positionTrainEdenAI != undefined) {
+    } 
+    if (positionTrainEdenAI != undefined) {
       searchQuery_and.push({ positionTrainEdenAI: positionTrainEdenAI });
-    } else if (positionID) {
+    } 
+    if (positionID) {
       searchQuery_and.push({ positionID: positionID });
     } 
 
@@ -62,6 +66,9 @@ module.exports = {
     }
 
     try {
+
+      console.log("searchQuery = " , searchQuery)
+      console.log("searchQuery = " , searchQuery['$and'])
 
       let convData = await Conversation.find(searchQuery);
 
