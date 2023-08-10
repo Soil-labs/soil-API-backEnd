@@ -136,6 +136,23 @@ const positionModel = mongoose.Schema({
       }
     }
   }],
+  generalDetails: {
+    startDate: String,
+    visaRequired: Boolean,
+    officePolicy: String,
+    officeLocation: String,
+    contractType: String,
+    contractDuration: String,
+    socials: {
+      portfolio: String,
+      linkedin: String,
+      twitter: String,
+      telegram: String,
+      github: String,
+      lens: String,
+      custom: [String],
+    }
+  }
 
 });
 
