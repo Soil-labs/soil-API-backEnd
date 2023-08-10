@@ -2,6 +2,8 @@ const { AI } = require("../../../models/aiModel");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
 const { Conversation } = require("../../../models/conversationModel");
+const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
+
 
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
@@ -866,12 +868,60 @@ module.exports = {
       }
 
       positionData = await Position.findOne({ _id: positionID }).select(
-        "_id positionsRequirements"
+        "_id positionsRequirements questionsToAsk"
       );
 
       if (!positionData) {
         throw new ApolloError("Position not found");
       }
+      
+
+      console.log("positionData.questionsToAsk = " , positionData.questionsToAsk)
+
+      // ---------- If the quesitons are already calculated -------------
+      if (positionData.questionsToAsk.length > 0) {
+        questionIDs = [];
+        positionData.questionsToAsk.forEach((question) => {
+          questionIDs.push(question.questionID);
+        })
+
+        console.log("questionIDs = " , questionIDs)
+
+        //get the questions from the DB
+        questionData = await QuestionsEdenAI.find({
+          _id: { $in: questionIDs },
+        }).select("_id content category");
+
+        console.log("questionData = " , questionData)
+        
+
+        if (questionData.length > 0) {
+
+
+          // change format of the questionData
+          questionData = questionData.map((question) => {
+            return {
+              question: question.content,
+              category: question.category,
+            }
+          })
+
+          // if and of the questionData is category null then don't reuturn it 
+          questionData = questionData.filter((question) => {
+            return question.category != null
+          })
+
+
+          return {
+            success: true,
+            questionSuggest: questionData,
+          }
+        }
+
+      }
+      // ---------- If the quesitons are already calculated -------------
+
+
 
       positionsRequirements = positionData.positionsRequirements.content;
 

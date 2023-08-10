@@ -81,6 +81,7 @@ module.exports = `
     type QuestionType {
         question: QuestionsEdenAI
         bestAnswer: String
+        category: String
     }
 
     type CandidateType {
@@ -187,6 +188,7 @@ module.exports = `
         questionID: ID
         questionContent: String
         bestAnswer: String
+        category: String
     }
 
     input CandidateTypeInput {
