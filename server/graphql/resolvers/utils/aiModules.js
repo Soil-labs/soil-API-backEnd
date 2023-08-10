@@ -138,8 +138,16 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
     throw new ApolloError("Position not found");
   }
 
+
   positionsRequirements = positionData.positionsRequirements.originalContent;
   // printC(positionData,"0","positionData","b")
+
+  // console.log("positionData.positionsRequirements = " , positionData.positionsRequirements)
+  // sdf9
+
+  if (!positionsRequirements) {
+    throw new ApolloError("positionsRequirements not found this means that you didn't do the alignment yet");
+  }
 
   positionsRequirements = positionsRequirements.replace(/b\d+:\s/g, "");
   printC(positionsRequirements, "0.5", "positionsRequirements", "b");
@@ -152,6 +160,9 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
   printC(convData_, "1", "convData", "p");
 
   let convData = convData_.pop();
+
+  printC(convData, "1", "convData", "p");
+  // d92
 
   let promptConv = "";
   if (convData) {
@@ -166,6 +177,10 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
 
     printC(promptConv, "2", "promptConv", "b");
   }
+
+  console.log("positionsRequirements = " , positionsRequirements)
+  console.log("promptConv = " , promptConv)
+  // sd9
 
   promptReport = ` You are a professional Recruiter, have as input the Details of a Job Position and the Conversation with the Company Representation
   Job Position (delimiters <>): <${positionsRequirements}>
@@ -190,8 +205,11 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
     <Category 2: title>
       - b3: small content max 15 words
 
-  Answer like the example for every <Category>:`;
+  Answer like the example for every <Category> and always use on the categories <> like the example:`;
   let report = await useGPTchatSimple(promptReport, 0);
+
+  printC(report, "3", "report", "b");
+  // d923
 
   let idCounter = 1;
 
