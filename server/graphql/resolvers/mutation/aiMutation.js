@@ -647,7 +647,6 @@ module.exports = {
       }
       // positionData.interviewQuestionsForPosition =
       //   interviewQuestionsForCandidate;
-      positionData.positionsRequirements.content = stringFromWebsite;
       positionData.positionsRequirements.originalContent = stringFromWebsite;
       positionData.positionsRequirements.positionPreparationMemory = false;
 
@@ -816,12 +815,16 @@ module.exports = {
 
       if (positionData.positionsRequirements?.content && !updatedReport) {
 
+        console.log("change = ",positionData.positionsRequirements?.content )
+
         return {
           success: true,
           report: positionData.positionsRequirements?.content
         };
 
       }
+
+      // console.log("change = " , change)
 
       // --------------- Report ---------
       if (!updatedReport) {
