@@ -26,7 +26,7 @@ module.exports = {
       throw new ApolloError(
         err.message,
         err.extensions?.code || "sendWhatsAppMessage",
-        { component: "whatsappQuery > sendWhatsAppMessage" }
+        { component: "whatsappQuery > sendWhatsappMessage" }
       );
     }
   },
