@@ -813,16 +813,16 @@ module.exports = {
     try {
 
 
-      // if (positionData.positionsRequirements?.content && !updatedReport) {
+      if (positionData.positionsRequirements?.content && !updatedReport) {
 
-      //   console.log("change = ",positionData.positionsRequirements?.content )
+        console.log("change = ",positionData.positionsRequirements?.content )
 
-      //   return {
-      //     success: true,
-      //     report: positionData.positionsRequirements?.content
-      //   };
+        return {
+          success: true,
+          report: positionData.positionsRequirements?.content
+        };
 
-      // }
+      }
 
       // console.log("change = " , change)
 
