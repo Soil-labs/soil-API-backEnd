@@ -153,8 +153,6 @@ const {
 
 const { findEndorsementLink } = require("./query/endorsementQuery");
 
-const { sendWhatsAppMessage } = require("./query/whatsAppQuery")
-
 const { errors } = require("./query/errorQuery");
 
 module.exports = {
@@ -313,8 +311,5 @@ module.exports = {
 
     //----------- EDEN ENDORSEMENT QUERY ------------------
     findEndorsementLink,
-
-    //----------- WHATSAPP QUERY --------------------
-    sendWhatsAppMessage,
   },
 };
