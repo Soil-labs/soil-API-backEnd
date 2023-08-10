@@ -11,7 +11,7 @@ module.exports = {
 
     if (!from || !to || !body) {
       throw new Error(
-        "The message body, the to phone number and the from number are required"
+        "The message body, the to phone number and the from number are required fields"
       );
     }
 
