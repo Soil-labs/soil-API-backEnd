@@ -131,6 +131,58 @@ module.exports = {
       );
     }
   },
+  updatePositionGeneralDetails: async (parent, args, context, info) => {
+    const {_id, startDate, visaRequired, officePolicy, 
+      officeLocation, contractType, contractDuration, socials } = args.fields;
+    console.log("Mutation > updatePositionGeneralDetails > args.fields = ", args.fields);
+
+    try {
+
+      if (!_id)
+      throw new ApolloError("Position ID is required", "updateUrl", {
+        component: "positionMutation > updateUrl",
+      });
+
+      positionData = await Position.findOne({ _id: _id });
+
+      if (!positionData)
+        throw new ApolloError("Position not found", "updateUrl", {
+          component: "positionMutation > updateUrl",
+        });
+
+
+      if (startDate) positionData.generalDetails.startDate = startDate;
+      if (visaRequired) positionData.generalDetails.visaRequired = visaRequired;
+      if (officePolicy) positionData.generalDetails.officePolicy = officePolicy;
+      if (officeLocation) positionData.generalDetails.officeLocation = officeLocation;
+      if (contractType) positionData.generalDetails.contractType = contractType;
+      if (contractDuration) positionData.generalDetails.contractDuration = contractDuration;
+
+
+
+      if (socials){
+        if (socials.portfolio) positionData.generalDetails.socials.portfolio = socials.portfolio;
+        if (socials.linkedin) positionData.generalDetails.socials.linkedin = socials.linkedin;
+        if (socials.twitter) positionData.generalDetails.socials.twitter = socials.twitter;
+        if (socials.telegram) positionData.generalDetails.socials.telegram = socials.telegram;
+        if (socials.github) positionData.generalDetails.socials.github = socials.github;
+        if (socials.lens) positionData.generalDetails.socials.lens = socials.lens;
+        if (socials.custom) positionData.generalDetails.socials.custom = socials.custom;
+      }
+
+
+
+      await positionData.save();
+      
+      return positionData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updatePositionGeneralDetails",
+        { component: "positionMutation > updatePositionGeneralDetails" }
+      );
+    }
+  },
   updateUrl: async (parent, args, context, info) => {
     const { positionID } = args.fields;
     let { url } = args.fields;

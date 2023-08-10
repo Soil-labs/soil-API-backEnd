@@ -54,7 +54,7 @@ const {
 const { addQuestionToEdenAI } = require("./mutation/questionsEdenAIMutation");
 
 const {
-  updatePosition,
+  updatePosition,updatePositionGeneralDetails,
   updateUrl,
   addQuestionsToAskPosition,
   interviewQuestionCreationUser,
@@ -218,7 +218,7 @@ module.exports = {
     addQuestionToEdenAI,
 
     // ------------- POSITION MUTATION -----------------
-    updatePosition,
+    updatePosition,updatePositionGeneralDetails,
     updateUrl,
     addQuestionsToAskPosition,
     interviewQuestionCreationUser,

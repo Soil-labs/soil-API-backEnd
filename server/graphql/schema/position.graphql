@@ -17,6 +17,7 @@ module.exports = `
         convRecruiterReadyToDisplay: Boolean
         talentList: [talentListType]
         candidates: [CandidateType]
+        generalDetails: generalDetailsType
     }
 
     type positionsRequirementsType { 
@@ -142,6 +143,48 @@ module.exports = `
     type CV_ConvoToPositionType {
         content: String,
         score: Float,
+    }
+
+    type generalDetailsType {
+        startDate: String,
+        visaRequired: Boolean,
+        officePolicy: String,
+        officeLocation: String,
+        contractType: String,
+        contractDuration: String,
+        socials: socialsType,
+    }
+
+    type socialsType {
+        portfolio: String,
+        linkedin: String,
+        twitter: String,
+        telegram: String,
+        github: String,
+        lens: String,
+        custom: [String],
+    }
+
+    input updatePositionGeneralDetailsInput {
+        _id: ID
+        startDate: String,
+        visaRequired: Boolean,
+        officePolicy: String,
+        officeLocation: String,
+        contractType: String,
+        contractDuration: String,
+        socials: socialsInput,
+
+    }
+
+    input socialsInput {
+        portfolio: String,
+        linkedin: String,
+        twitter: String,
+        telegram: String,
+        github: String,
+        lens: String,
+        custom: [String],
     }
 
     type notesInterviewType {

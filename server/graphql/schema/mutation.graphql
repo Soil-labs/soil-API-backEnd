@@ -79,6 +79,7 @@ module.exports = `
 
         # ------------- POSITION MUTATION -----------------
         updatePosition(fields:updatePositionInput): Position
+        updatePositionGeneralDetails(fields:updatePositionGeneralDetailsInput): Position
         updateUrl(fields:updateUrlInput): Position
         addQuestionsToAskPosition(fields:addQuestionsToAskPositionInput): Position
         interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Position
