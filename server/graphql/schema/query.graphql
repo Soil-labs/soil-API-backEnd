@@ -177,7 +177,5 @@ module.exports = `
           # ---------- EDEN ENDORSEMENT QUERY ----------------
           findEndorsementLink(fields: findEndorsementLinkInput): [EndorsementLink]
 
-          # ------------ WHATSAPP QUERY -----------------------
-          sendWhatsAppMessage(fields: whatsAppInput):Boolean
         }
 `;
