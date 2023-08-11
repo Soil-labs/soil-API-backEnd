@@ -153,7 +153,9 @@ const {
 
 const { findEndorsementLink } = require("./query/endorsementQuery");
 
-const { sendWhatsAppMessage } = require("./query/whatsAppQuery")
+const { sendWhatsAppMessage } = require("./query/whatsAppQuery");
+
+const { sendEmailViaSendGrid } = require("./query/emailQuery")
 
 const { errors } = require("./query/errorQuery");
 
@@ -314,5 +316,8 @@ module.exports = {
     //----------- EDEN ENDORSEMENT QUERY ------------------
     findEndorsementLink,
     sendWhatsAppMessage,
+
+    //-------------- SEND EMAIL QUERY --------------------
+    sendEmailViaSendGrid,
   },
 };
