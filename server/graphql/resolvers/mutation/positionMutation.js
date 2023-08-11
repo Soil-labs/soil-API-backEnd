@@ -34,26 +34,41 @@ const { arrayToObj } = require("../utils/endorsementModules");
 
 module.exports = {
   updatePosition: async (parent, args, context, info) => {
-    const { _id, name, companyID,mainUserID } = args.fields;
+    const { _id, name,icon,mainUserID } = args.fields;
+    let { companyID } = args.fields;
     console.log("Mutation > updatePosition > args.fields = ", args.fields);
 
     try {
       let positionData;
-      let companyData = await Company.findOne({ _id: companyID });
 
-      if (!companyData) {
-        throw new ApolloError("Could not find Company", "updatePosition", {
-          component: "positionMutation > updatePosition",
-        });
+
+      let companyData
+
+      if (!_id && !companyID) {
+        throw new ApolloError(
+          "Position ID or Company ID is required",
+          "updatePosition",
+          { component: "positionMutation > updatePosition" }
+        );
       }
+
+
+      if (companyID) {
+        companyData = await Company.findOne({ _id: companyID });
+      }
+
+      console.log("change = 1" )
+      
       if (_id) {
         positionData = await Position.findOne({ _id });
 
         if (name) positionData.name = name;
         if (companyID) positionData.companyID = companyID;
+        if (icon) positionData.icon = icon;
       } else {
         positionData = await new Position({
           name,
+          icon,
           companyID,
           mainUserID,
           talentList: [
@@ -67,7 +82,25 @@ module.exports = {
         });
       }
 
+
+      if (!companyID) {
+        companyID = positionData.companyID;
+
+        companyData = await Company.findOne({ _id: companyID });
+      }
+
+
+      if (!companyData) {
+        throw new ApolloError("Could not find Company", "updatePosition", {
+          component: "positionMutation > updatePosition",
+        });
+      }
+
+
       await positionData.save();
+
+
+      
 
       console.log("positionData = ", positionData);
       // sdf0
@@ -95,6 +128,58 @@ module.exports = {
         err.message,
         err.extensions?.code || "updatePosition",
         { component: "positionMutation > updatePosition" }
+      );
+    }
+  },
+  updatePositionGeneralDetails: async (parent, args, context, info) => {
+    const {_id, startDate, visaRequired, officePolicy, 
+      officeLocation, contractType, contractDuration, socials } = args.fields;
+    console.log("Mutation > updatePositionGeneralDetails > args.fields = ", args.fields);
+
+    try {
+
+      if (!_id)
+      throw new ApolloError("Position ID is required", "updateUrl", {
+        component: "positionMutation > updateUrl",
+      });
+
+      positionData = await Position.findOne({ _id: _id });
+
+      if (!positionData)
+        throw new ApolloError("Position not found", "updateUrl", {
+          component: "positionMutation > updateUrl",
+        });
+
+
+      if (startDate) positionData.generalDetails.startDate = startDate;
+      if (visaRequired) positionData.generalDetails.visaRequired = visaRequired;
+      if (officePolicy) positionData.generalDetails.officePolicy = officePolicy;
+      if (officeLocation) positionData.generalDetails.officeLocation = officeLocation;
+      if (contractType) positionData.generalDetails.contractType = contractType;
+      if (contractDuration) positionData.generalDetails.contractDuration = contractDuration;
+
+
+
+      if (socials){
+        if (socials.portfolio) positionData.generalDetails.socials.portfolio = socials.portfolio;
+        if (socials.linkedin) positionData.generalDetails.socials.linkedin = socials.linkedin;
+        if (socials.twitter) positionData.generalDetails.socials.twitter = socials.twitter;
+        if (socials.telegram) positionData.generalDetails.socials.telegram = socials.telegram;
+        if (socials.github) positionData.generalDetails.socials.github = socials.github;
+        if (socials.lens) positionData.generalDetails.socials.lens = socials.lens;
+        if (socials.custom) positionData.generalDetails.socials.custom = socials.custom;
+      }
+
+
+
+      await positionData.save();
+      
+      return positionData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updatePositionGeneralDetails",
+        { component: "positionMutation > updatePositionGeneralDetails" }
       );
     }
   },
@@ -738,15 +823,11 @@ module.exports = {
           let jobRequirementsScore = 0;
           let jobRequirementsScoreCount = 0;
           if (candidate?.compareCandidatePosition?.reportPassFail) {
-            for (
-              let k = 0;
-              k < candidate?.compareCandidatePosition?.reportPassFail.length;
-              k++
-            ) {
+            for (let k = 0;k < candidate?.compareCandidatePosition?.reportPassFail.length;k++) {
               let score =
                 candidate?.compareCandidatePosition?.reportPassFail[k].score;
 
-              if (score != undefined) {
+              if (score != undefined && score > 3) {
                 jobRequirementsScore += score;
                 jobRequirementsScoreCount += 1;
               }
@@ -765,10 +846,12 @@ module.exports = {
 
           // ------------------- Background Analysis -------------------
           let instructionsScore = "";
-          if (backgroundScore > 82) {
-            instructionsScore =
-              "Be really positive Find all the reasons that it is a great fit";
+          if (backgroundScore > 70) {
+            instructionsScore = "Be really positive Find all the reasons that it is a great fit";
           } else if (backgroundScore > 50) {
+            instructionsScore =
+              "Be positive but also fair find the reasons that will work and report them";
+          } else if (backgroundScore > 30) {
             instructionsScore =
               "Be neutral find the reasons that will work and don't work and report them";
           } else {
@@ -808,10 +891,12 @@ module.exports = {
 
           // ------------------- Skill Analysis -------------------
           instructionsScore = "";
-          if (skillScore > 75) {
+          if (skillScore > 70) {
+            instructionsScore = "Be really positive Find all the reasons that it is a great fit";
+          } else if (skillScore > 50) {
             instructionsScore =
-              "Be really positive Find all the reasons that it is a great fit";
-          } else if (skillScore > 60) {
+              "Be positive but also fair find the reasons that will work and report them";
+          } else if (skillScore > 30) {
             instructionsScore =
               "Be neutral find the reasons that will work and don't work and report them";
           } else {
@@ -846,10 +931,12 @@ module.exports = {
 
           // ------------------- JobRequirements Analysis -------------------
           instructionsScore = "";
-          if (jobRequirementsScore > 75) {
+          if (jobRequirementsScore > 70) {
+            instructionsScore = "Be really positive Find all the reasons that it is a great fit";
+          } else if (jobRequirementsScore > 50) {
             instructionsScore =
-              "Be really positive Find all the reasons that it is a great fit";
-          } else if (jobRequirementsScore > 60) {
+              "Be positive but also fair find the reasons that will work and report them";
+          } else if (jobRequirementsScore > 30) {
             instructionsScore =
               "Be neutral find the reasons that will work and don't work and report them";
           } else {

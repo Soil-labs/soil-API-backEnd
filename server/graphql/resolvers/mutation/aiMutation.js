@@ -2,6 +2,8 @@ const { AI } = require("../../../models/aiModel");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
 const { Conversation } = require("../../../models/conversationModel");
+const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
+
 
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
@@ -645,7 +647,6 @@ module.exports = {
       }
       // positionData.interviewQuestionsForPosition =
       //   interviewQuestionsForCandidate;
-      positionData.positionsRequirements.content = stringFromWebsite;
       positionData.positionsRequirements.originalContent = stringFromWebsite;
       positionData.positionsRequirements.positionPreparationMemory = false;
 
@@ -787,19 +788,55 @@ module.exports = {
   },
 
   positionTextAndConvoToReportCriteria: async (parent, args, context, info) => {
-    const { positionID } = args.fields;
+    const { positionID, updatedReport } = args.fields;
     console.log(
       "Mutation > positionTextAndConvoToReportCriteria > args.fields = ",
       args.fields
     );
 
+    if (!positionID) {
+      throw new ApolloError("positionID is required");
+    }
+
+    positionData = await Position.findOne({ _id: positionID }).select(
+      "_id positionsRequirements"
+    );
+
+
+
+    if (!positionData) {
+      throw new ApolloError("Position not found");
+    }
+
+    let report 
+
     try {
+
+
+      if (positionData.positionsRequirements?.content && !updatedReport) {
+
+        console.log("change = ",positionData.positionsRequirements?.content )
+
+        return {
+          success: true,
+          report: positionData.positionsRequirements?.content
+        };
+
+      }
+
+      // console.log("change = " , change)
+
       // --------------- Report ---------
-      const report = await positionTextAndConvoToReportCriteriaFunc(positionID);
+      if (!updatedReport) {
+        report = await positionTextAndConvoToReportCriteriaFunc(positionID);
 
-      console.log("report = ", report);
+        console.log("report = ", report);
 
-      positionData.positionsRequirements.content = report;
+        positionData.positionsRequirements.content = report;
+      } else {
+        positionData.positionsRequirements.content = updatedReport;
+        report = updatedReport;
+      }
       // --------------- Report ---------
 
       await positionData.save();
@@ -834,12 +871,60 @@ module.exports = {
       }
 
       positionData = await Position.findOne({ _id: positionID }).select(
-        "_id positionsRequirements"
+        "_id positionsRequirements questionsToAsk"
       );
 
       if (!positionData) {
         throw new ApolloError("Position not found");
       }
+      
+
+      console.log("positionData.questionsToAsk = " , positionData.questionsToAsk)
+
+      // ---------- If the quesitons are already calculated -------------
+      if (positionData.questionsToAsk.length > 0) {
+        questionIDs = [];
+        positionData.questionsToAsk.forEach((question) => {
+          questionIDs.push(question.questionID);
+        })
+
+        console.log("questionIDs = " , questionIDs)
+
+        //get the questions from the DB
+        questionData = await QuestionsEdenAI.find({
+          _id: { $in: questionIDs },
+        }).select("_id content category");
+
+        console.log("questionData = " , questionData)
+        
+
+        if (questionData.length > 0) {
+
+
+          // change format of the questionData
+          questionData = questionData.map((question) => {
+            return {
+              question: question.content,
+              category: question.category,
+            }
+          })
+
+          // if and of the questionData is category null then don't reuturn it 
+          questionData = questionData.filter((question) => {
+            return question.category != null
+          })
+
+
+          return {
+            success: true,
+            questionSuggest: questionData,
+          }
+        }
+
+      }
+      // ---------- If the quesitons are already calculated -------------
+
+
 
       positionsRequirements = positionData.positionsRequirements.content;
 
@@ -1423,6 +1508,105 @@ module.exports = {
         err.extensions?.code || "autoUpdateMemoryFromCV",
         {
           component: "aiMutation > autoUpdateMemoryFromCV",
+        }
+      );
+    }
+  },
+  updatePrioritiesTradeOffs: async (parent, args, context, info) => {
+    const { positionID, priorities,tradeOffs, } = args.fields;
+    console.log(
+      "Mutation > updatePrioritiesTradeOffs > args.fields = ",
+      args.fields
+    );
+
+    // find the positionID
+    positionData =  await Position.findOne({
+      _id: positionID,
+    }).select('_id name positionsRequirements');
+
+    if (!positionData) {
+      throw new ApolloError(
+        "Position not found",
+        "POSITION_NOT_FOUND",
+      )
+    }
+
+    try {
+
+      // // ---------------- Priorities ----------------
+      // let prioritiesNow = positionData.positionsRequirements.priorities;
+      // console.log("prioritiesNow = " , prioritiesNow)
+
+      // if (prioritiesNow?.length > 0 && priorities?.length > 0){
+
+      //   let prioritiesNowObj = {};
+      //   for (let i = 0; i < prioritiesNow.length; i++) {
+      //     prioritiesNowObj[prioritiesNow[i].priority] = prioritiesNow[i];
+      //   }
+
+      //   let prioritiesNew = []
+      //   for (let i = 0; i < priorities.length; i++) {
+      //     prioritiesNew.push(prioritiesNowObj[priorities[i].priority])
+      //   }
+
+      //   console.log("prioritiesNew = " , prioritiesNew)
+
+      //   positionData.positionsRequirements.priorities = prioritiesNew;
+        
+
+      // } else {
+      //   positionData.positionsRequirements.priorities = priorities;
+      // }
+      // // ---------------- Priorities ----------------
+
+
+      // ---------------- Trade Offs ----------------
+      let tradeOffsNow = positionData.positionsRequirements.tradeOffs;
+
+      if (tradeOffsNow?.length > 0 && tradeOffs?.length > 0){
+
+        let tradeOffsObj = {};
+        for (let i = 0; i < tradeOffs.length; i++) {
+          key = tradeOffs[i].tradeOff1 + "_" + tradeOffs[i].tradeOff2;
+          tradeOffsObj[key] = tradeOffs[i];
+        }
+
+        let tradeOffsNew = []
+        for (let i = 0; i < tradeOffsNow.length; i++) {
+          key = tradeOffsNow[i].tradeOff1 + "_" + tradeOffsNow[i].tradeOff2;
+          if (tradeOffsObj[key]){
+            // tradeOffsNew.push(tradeOffsObj[key])
+            tradeOffsNew.push({
+              tradeOff1: tradeOffsObj[key].tradeOff1,
+              tradeOff2: tradeOffsObj[key].tradeOff2,
+              reason: tradeOffsNow[i].reason,
+              selected: tradeOffsObj[key].selected,
+            })
+            // tradeOffsNew.push(tradeOffsNow[i])
+          } else {
+            tradeOffsNew.push(tradeOffsNow[i])
+          }
+
+        }
+
+        positionData.positionsRequirements.tradeOffs = tradeOffsNew;
+        
+
+      }
+      // ---------------- Trade Offs ----------------
+
+      await positionData.save();
+      
+      return {
+        priorities: positionData.positionsRequirements.priorities,
+        tradeOffs: positionData.positionsRequirements.tradeOffs,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updatePrioritiesTradeOffs",
+        {
+          component: "aiMutation > updatePrioritiesTradeOffs",
         }
       );
     }

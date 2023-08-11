@@ -96,6 +96,7 @@ module.exports = `
 
     input positionTextAndConvoToReportCriteriaInput {
         positionID: ID
+        updatedReport: String
     }
 
     type positionTextAndConvoToReportCriteriaOutput {
@@ -181,6 +182,28 @@ module.exports = `
 
     input autoUpdateMemoryFromPositionRequirmentsInput {
         positionIDs: [ID]
+    }
+
+    input tradeOffsInput {
+        tradeOff1: String,
+        tradeOff2: String,
+        selected: String,
+    }
+
+    input prioritiesInput {
+        priority: String,
+    }
+
+    input updatePrioritiesTradeOffsInput {
+        positionID: ID
+        priorities: [prioritiesInput]
+        tradeOffs: [tradeOffsInput]
+    }
+
+    type updatePrioritiesTradeOffsOutput {
+        success: Boolean
+        priorities: [prioritiesType]
+        tradeOffs: [tradeOffsType]
     }
 
     type autoUpdateMemoryFromPositionRequirmentsOutput {
@@ -415,6 +438,7 @@ module.exports = `
     enum whatToAskEnum {
         CANDIDATE_OF_COMPANY
         COMPANY
+        ALL_CANDIDATES_OF_COMPANY
     }
 
     type edenGPTCreateProfileExperienceChatAPIOutput {

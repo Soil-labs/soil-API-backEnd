@@ -79,6 +79,7 @@ module.exports = `
 
         # ------------- POSITION MUTATION -----------------
         updatePosition(fields:updatePositionInput): Position
+        updatePositionGeneralDetails(fields:updatePositionGeneralDetailsInput): Position
         updateUrl(fields:updateUrlInput): Position
         addQuestionsToAskPosition(fields:addQuestionsToAskPositionInput): Position
         interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Position
@@ -102,6 +103,8 @@ module.exports = `
 
          # ------------- QUERY RESPONSE MUTATION -----------------
         updateQueryResponse(fields:updateQueryResponseInput): QueryResponse
+        respondToQuery(fields:respondToQueryInput): QueryResponse
+        deleteQueryResponse(fields:deleteQueryResponseInput): QueryResponse
 
 
 
@@ -163,6 +166,7 @@ module.exports = `
         autoUpdateUserInfoFromCV(fields: autoUpdateUserInfoFromCVInput): autoUpdateUserInfoFromCVOutput
         autoUpdateMemoryFromCV(fields: autoUpdateMemoryFromCVInput): autoUpdateMemoryFromCVOutput
         autoUpdateMemoryFromPositionRequirments(fields: autoUpdateMemoryFromPositionRequirmentsInput): autoUpdateMemoryFromPositionRequirmentsOutput
+        updatePrioritiesTradeOffs(fields: updatePrioritiesTradeOffsInput): updatePrioritiesTradeOffsOutput
         addMessages(fields: addMessagesInput): [AI]
         secondInterviewLetter(fields: secondInterviewLetterInput): secondInterviewLetterOutput
         rejectionLetter(fields: rejectionLetterInput): rejectionLetterOutput

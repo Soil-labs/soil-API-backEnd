@@ -7,6 +7,7 @@ const questionsEdenAIModel = mongoose.Schema({
   contentSmall: String,
   answeredQuestionByUsers: [String],
   questionOwnedByPositions: [mongoose.Schema.ObjectId],
+  category: String,
 });
 
 const QuestionsEdenAI = mongoose.model("QuestionsEdenAI", questionsEdenAIModel);

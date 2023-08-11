@@ -54,7 +54,7 @@ const {
 const { addQuestionToEdenAI } = require("./mutation/questionsEdenAIMutation");
 
 const {
-  updatePosition,
+  updatePosition,updatePositionGeneralDetails,
   updateUrl,
   addQuestionsToAskPosition,
   interviewQuestionCreationUser,
@@ -77,7 +77,7 @@ const {
 } = require("./mutation/companyMutation");
 
 const {
-  updateQueryResponse
+  updateQueryResponse,respondToQuery,deleteQueryResponse,queryResponseUpdated,
 } = require("./mutation/queryResponseMutation");
 
 const {
@@ -147,7 +147,7 @@ const {
   useAI_OnMessage,
   messageToGPT,
   autoUpdateMemoryFromCV,
-  autoUpdateMemoryFromPositionRequirments,
+  autoUpdateMemoryFromPositionRequirments,updatePrioritiesTradeOffs,
   inputToGPT,
   CVtoSummary,
   CVtoJobs,
@@ -218,7 +218,7 @@ module.exports = {
     addQuestionToEdenAI,
 
     // ------------- POSITION MUTATION -----------------
-    updatePosition,
+    updatePosition,updatePositionGeneralDetails,
     updateUrl,
     addQuestionsToAskPosition,
     interviewQuestionCreationUser,
@@ -239,7 +239,7 @@ module.exports = {
     addEmployeesCompany,
 
     // ------------- QUERY RESPONSE MUTATION -----------------
-    updateQueryResponse,
+    updateQueryResponse,respondToQuery,deleteQueryResponse,
 
     // ------------- MEMORY PINECONE MUTATION -----------------
     addMemory,
@@ -312,7 +312,7 @@ module.exports = {
     useAI_OnMessage,
     messageToGPT,
     autoUpdateMemoryFromCV,
-    autoUpdateMemoryFromPositionRequirments,
+    autoUpdateMemoryFromPositionRequirments,updatePrioritiesTradeOffs,
     inputToGPT,
     CVtoSummary,
     CVtoJobs,
@@ -330,6 +330,7 @@ module.exports = {
   Subscription: {
     memberUpdated,
     roomUpdated,
+    queryResponseUpdated,
     memberUpdatedInRoom,
     userCVSavedToDB,
   },

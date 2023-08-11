@@ -3,6 +3,7 @@ require("dotenv").config();
 
 const positionModel = mongoose.Schema({
   name: String,
+  icon: String,
   url: String,
   companyID: mongoose.Schema.ObjectId,
   mainUserID: String,
@@ -135,6 +136,23 @@ const positionModel = mongoose.Schema({
       }
     }
   }],
+  generalDetails: {
+    startDate: String,
+    visaRequired: Boolean,
+    officePolicy: String,
+    officeLocation: String,
+    contractType: String,
+    contractDuration: String,
+    socials: {
+      portfolio: String,
+      linkedin: String,
+      twitter: String,
+      telegram: String,
+      github: String,
+      lens: String,
+      custom: [String],
+    }
+  }
 
 });
 

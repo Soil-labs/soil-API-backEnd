@@ -4,7 +4,7 @@ module.exports = `
         _id: ID,
         sender: senderType,
         responder: responderType,
-        conversationID: ID,
+        conversation: Conversation,
         phase: phaseQueryResponseEnum,
         question: questionQueryType,
         answer: answerType,
@@ -17,7 +17,16 @@ module.exports = `
         senderType: sendRespTypeEnum
         responderID: ID
         responderType: sendRespTypeEnum
+        phase: phaseQueryResponseEnum
+    }
 
+    input queryResponseUpdatedInput {
+        _id: [ID]
+        senderID: ID
+        senderType: sendRespTypeEnum
+        responderID: ID
+        responderType: sendRespTypeEnum
+        phase: phaseQueryResponseEnum
     }
 
     input updateQueryResponseInput {
@@ -28,6 +37,17 @@ module.exports = `
         responderID: ID
         responderType: sendRespTypeEnum
         question: String
+        answer: String
+        conversationID: ID
+    }
+
+    input respondToQueryInput {
+        _id: ID
+        conversationID: ID
+    }
+
+    input deleteQueryResponseInput {
+        _id: ID
     }
 
     enum sendRespTypeEnum {
@@ -55,7 +75,7 @@ module.exports = `
 
     enum phaseQueryResponseEnum {
         QUERY
-        RESPONED
+        RESPONDED
         VIEWED
         ARCHIVED
     }

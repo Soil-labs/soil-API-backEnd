@@ -3,6 +3,7 @@ module.exports = `
     type Position {
         _id: ID
         name: String
+        icon: String
         url: String
         mainUser: Members
         company: Company
@@ -16,6 +17,7 @@ module.exports = `
         convRecruiterReadyToDisplay: Boolean
         talentList: [talentListType]
         candidates: [CandidateType]
+        generalDetails: generalDetailsType
     }
 
     type positionsRequirementsType { 
@@ -80,6 +82,7 @@ module.exports = `
     type QuestionType {
         question: QuestionsEdenAI
         bestAnswer: String
+        category: String
     }
 
     type CandidateType {
@@ -142,6 +145,48 @@ module.exports = `
         score: Float,
     }
 
+    type generalDetailsType {
+        startDate: String,
+        visaRequired: Boolean,
+        officePolicy: String,
+        officeLocation: String,
+        contractType: String,
+        contractDuration: String,
+        socials: socialsType,
+    }
+
+    type socialsType {
+        portfolio: String,
+        linkedin: String,
+        twitter: String,
+        telegram: String,
+        github: String,
+        lens: String,
+        custom: [String],
+    }
+
+    input updatePositionGeneralDetailsInput {
+        _id: ID
+        startDate: String,
+        visaRequired: Boolean,
+        officePolicy: String,
+        officeLocation: String,
+        contractType: String,
+        contractDuration: String,
+        socials: socialsInput,
+
+    }
+
+    input socialsInput {
+        portfolio: String,
+        linkedin: String,
+        twitter: String,
+        telegram: String,
+        github: String,
+        lens: String,
+        custom: [String],
+    }
+
     type notesInterviewType {
         categoryName: String,
         score: Float,
@@ -173,6 +218,8 @@ module.exports = `
         companyID: ID
         updatePosition: ID
         mainUserID: ID
+        icon: String,
+
     }
     
     input updateUrlInput {
@@ -184,6 +231,7 @@ module.exports = `
         questionID: ID
         questionContent: String
         bestAnswer: String
+        category: String
     }
 
     input CandidateTypeInput {

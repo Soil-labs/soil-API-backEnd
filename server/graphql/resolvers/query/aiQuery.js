@@ -135,7 +135,8 @@ async function useGPTchat(
   systemPrompt,
   userQuestion = "",
   temperature = 0.7,
-  chooseAPI = "API 1"
+  chooseAPI = "API 1",
+  useMode = "chatGPT"
 ) {
   let discussion = [...discussionOld];
 
@@ -153,6 +154,13 @@ async function useGPTchat(
 
   // console.log("discussion = ", discussion);
   // sdf
+
+  let model = "gpt-3.5-turbo";
+  if (useMode == "chatGPT") {
+    model = "gpt-3.5-turbo";
+  } else if (useMode == "chatGPT4") {
+    model = "gpt-4"
+  }
 
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
   response = await axios.post(
@@ -647,6 +655,7 @@ module.exports = {
         throw new ApolloError("Position not found");
       }
 
+      // if (false){
       if (positionData.positionsRequirements?.priorities?.length > 0 && positionData.positionsRequirements?.tradeOffs?.length > 0) {
 
         let prioritiesT = positionData.positionsRequirements.priorities;
@@ -1562,13 +1571,35 @@ module.exports = {
 
       if (positionTrainEdenAI == true){ // If EdenAI is talking to the company employ for training 
 
-        systemPrompt = `You're a world-class senior recruiter named Eden. You communicate very effectively, to the point yet with care & compassion. You're always as helpful and optimize everything for maximum alignment between you and your hiring manager in order to help them find the absolute best candidate possible. Whenever asked, you can help your hiring manager reason through multiple scenarios & tradeoffs. If the hiring manager is answering with very little new information, push for a little more information & clarifications. You love a little quirky joke from now and then. Ask one question at a time and wait for the hiring manager's response. Acknowledge each response with maximum one sentence by highlighting an interesting element in the answer or simply introducing the next question with a cool segway. keep your total amount of questions to maximum 10.`
+        // systemPrompt = `You're a world-class senior recruiter named Eden. You communicate very effectively, to the point yet with care & compassion. You're always as helpful and optimize everything for maximum alignment between you and your hiring manager in order to help them find the absolute best candidate possible. Whenever asked, you can help your hiring manager reason through multiple scenarios & tradeoffs. If the hiring manager is answering with very little new information, push for a little more information & clarifications. You love a little quirky joke from now and then. Ask one question at a time and wait for the hiring manager's response. Acknowledge each response with maximum one sentence by highlighting an interesting element in the answer or simply introducing the next question with a cool segway. keep your total amount of questions to maximum 10.`
+        systemPrompt = `
+        You're a world-class senior recruiter named Eden. 
+        You communicate very effectively, to the point yet with care & compassion. 
+        You're always as helpful and optimize everything for maximum alignment between you and your hiring manager in order to help them find the absolute best candidate possible. 
+
+        Whenever asked, you can help your hiring manager reason through multiple scenarios & tradeoffs. 
+        If the hiring manager is answering with very little new information, push for a little more information & clarifications. You love a little quirky joke from now and then. 
+        Ask one question at a time and wait for the hiring manager's response. 
+
+        Acknowledge each response with maximum one sentence by highlighting an interesting element in the answer or simply introducing the next question with a cool segway. 
+
+        It is absolutely imperative you ask one question at a time and wait for the hiring manager's response. 
+        After the first 10 questions ask the hiring manager if they want to continue the interview while giving an honest take on how confident you are on whether you’ve gathered enough information to start doing screenings. 
+        If they want to stop the alignment conversation - thank them & wrap up the conversation and tell them they'll hear back from you if there are more questions. 
+        If they want to continue the alignment conversation ask 5 more questions and then ask again if want to continue the conversation.
+        `
         if (discussionT.length >0){
           userNewMessage = discussionT.pop().content
         } 
 
+        // originalMessage = `
+        // Based on this job description what clarifying questions would you ask to make sure there is a high level of alignment between you and the hiring manager? 
+        // ${positionsRequirementsContent}
+        // `
+
         originalMessage = `
-        Based on this job description what clarifying questions would you ask to make sure there is a high level of alignment between you and the hiring manager? 
+        Based on this job description what additional questions would you ask to make sure there is a high level of alignment between you and the hiring manager? Be specific & intentional with your questions. 
+        One of your main objectives is to make the hiring manager feel understood through the thoughtfulness & thoroughness of your questions.
         ${positionsRequirementsContent}
         `
 
@@ -1584,21 +1615,21 @@ module.exports = {
         You're a world-class senior recruiter named Eden. 
         You are recruiting for COMPANY NAME and you can have all the information about the role given in ROLE DESCRIPTION. 
         You communicate very effectively, to the point yet with care & compassion. 
-        You have previously aligned with your hiring manger on the important TRADEOFFS, the most important SKILLS and their top PRIORITIES when it comes to what they’re looking for in a candidate. You keep these in mind as you do the first interview of all the candidates applying for the role your hiring manager wants you to find the very best fitting candidates for. You are an absolute pro at asking questions that will unearth a candidate’s true potential as well as yield the maximum amount of information that you know your hiring manager will find useful. 
+        You have previously aligned with your hiring manger on the important TRADEOFFS, the most important SKILLS and their top PRIORITIES when it comes to what they’re looking for in a candidate. 
+        You keep these in mind as you do the first interview of all the candidates applying for the role your hiring manager wants you to find the very best fitting candidates for. 
+        You are an absolute pro at asking questions that will unearth a candidate’s true potential as well as yield the maximum amount of information that you know your hiring manager will find useful. 
         Some of your favorite types of questions are asking for specific instances of when a candidate did something as well as providing them with hypothetical scenarios and asking them how they would handle those scenarios - you like to get creative with these scenarios, however, these scenarios are never very long. 
-        
+
         Whenever asked, you can help the candidate you’re interviewing by clarifying previous questions or giving a reassuring comment. 
         Whenever a candidate asks you how you would answer remind them that the interview is not about you but about them. 
         If the candidate is answering with very little new information, push for a little more information & clarifications. 
-        You’re not afraid to dig a little deeper when the candidate says something intriguing, surprising, or tangentially relevant.  
-        You love a little quirky joke from now and then.  Acknowledge each response with maximum one sentence by highlighting an interesting element in the answer or simply introducing the next question with a cool segway. 
-        
-        Ask one question at a time and wait for the candidate’s response. 
+        You’re not afraid to dig a little deeper when the candidate says something intriguing, surprising, or tangentially relevant. 
+        You love a little quirky joke from now and then. Acknowledge each response with maximum one sentence by highlighting an interesting element in the answer or simply introducing the next question with a cool segway. 
+
+        It is absolutely imperative you ask one question at a time and wait for the candidate’s response. 
         After the first 10 questions ask the candidate if they want to continue the interview while giving an honest take on how confident you are on whether you’ve gathered enough information for a first interview. 
         If they want to stop the interview - thank them & wrap up the interview and tell them they'll hear back from you if there are more questions. 
-        If they want to continue the interview ask 5 more questions and then ask again if want to continue the interview.
-        
-        You can only ask 1 question with maximum of 1-3 sentenses at a time.`
+        If they want to continue the interview ask 5 more questions and then ask again if want to continue the interview.`
 
 
 
@@ -1615,6 +1646,9 @@ module.exports = {
         Make the provided questions highly relevant to the person you're interviewing - which is the person who's just given you the CVNOTES. 
         Initiate the interview by stating why you're excited to talk to them specifically.
         Wrap up the interview yourself when you're confident enough that you'll be able to answer all your hiring manager's pre-agreed-upon QUESTIONS when you check back in with your hiring manager later.
+
+
+        Start the conversation and ask the first question, you can only ask 1 question at a time:
         `
 
       }
@@ -3701,8 +3735,29 @@ module.exports = {
   askEdenUserPosition: async (parent, args, context, info) => {
     const {  userID,positionID,conversation,whatToAsk } = args.fields;
     console.log("Query > askEdenUserPosition > args.fields = ", args.fields);
+
     try {
+
+      let positionData = await Position.findOne({
+        _id: positionID,
+      }).select('_id name candidates')
+
       
+      usersIDposition = positionData.candidates.map((user) => user.userID);
+
+      usersPosData = await Members.find({
+        _id: { $in: usersIDposition },
+      }).select('_id discordName')
+
+      // create object with key the _id of user and value the discordName
+      usersPosData = usersPosData.reduce((map, obj) => {
+        map[obj._id] = {
+          name: obj.discordName
+        };
+        return map;
+      }, {});
+      
+
 
       let message = ""
       let beforeMessage = ""
@@ -3740,6 +3795,7 @@ module.exports = {
       }
       
 
+      console.log("change = " )
 
 
       // ---------------------- find Memory Best Embedings ----------------------
@@ -3755,7 +3811,23 @@ module.exports = {
 
         longTermMemories = await findBestEmbedings(prompt_conversation, filter, (topK = 8));
 
-        
+      } else if (whatToAsk=="ALL_CANDIDATES_OF_COMPANY"){
+
+        filter.label = {"$in": ["CV_user_memory","conv_with_user_memory"]}
+        if (!userID) throw new Error("There is no userID")
+        filter._id = {"$in": usersIDposition};
+        longTermMemories_userCV = await findBestEmbedings(prompt_conversation, filter, (topK = 10), "User");
+
+
+        filter.label =  {"$in": ["requirements_position_memory","conv_for_position_memory"]}
+        if (!positionID) throw new Error("There is no positionID")
+        filter._id = positionID;
+        longTermMemories_position = await findBestEmbedings(prompt_conversation, filter, (topK = 5),"Company");
+
+
+        longTermMemories = longTermMemories_position.concat(longTermMemories_userCV)
+
+
 
       } else { //if (whatToAsk=="CANDIDATE_OF_COMPANY"){
         filter.label = {"$in": ["CV_user_memory"]}
@@ -3773,7 +3845,6 @@ module.exports = {
         filter.label =  {"$in": ["requirements_position_memory","conv_for_position_memory"]}
         if (!positionID) throw new Error("There is no positionID")
         filter._id = positionID;
-
         longTermMemories_position = await findBestEmbedings(prompt_conversation, filter, (topK = 4),"Company");
         // longTermMemories_position = await findBestEmbedings(prompt_conversation, filter, (topK = 4));
 
@@ -3788,23 +3859,12 @@ module.exports = {
           prompt_longTermMemory + "\n Info " + (i+1) +":" + longTermMemories[i].metadata.text;
       }
 
-      printC(longTermMemories, "0", "longTermMemories", "g");
-      printC(prompt_longTermMemory, "1", "prompt_longTermMemory", "g");
+      // printC(longTermMemories, "0", "longTermMemories", "g");
+      // printC(prompt_longTermMemory, "1", "prompt_longTermMemory", "g");
       // sdf5
       // ---------------------- find Memory Best Embedings ----------------------
 
-
-      // console.log("longTermMemories = " , longTermMemories)
-      // ads32
-
-      // let prompt_longTermMemory = "";
-      // for (let i = 0; i < longTermMemories.length; i++) {
-      //   prompt_longTermMemory =
-      //     prompt_longTermMemory + "\n Info " + (i+1) +": <" + longTermMemories[i].metadata.text +">";
-      // }
-
-      // console.log("prompt_longTermMemory = ", prompt_longTermMemory);
-      // // asdf
+      
 
       prompot_General = `
       You have as input: 
@@ -3854,10 +3914,19 @@ module.exports = {
       printC(infoAndScore, "2", "infoAndScore", "g");
 
       let prompt_relevantInfo = "";
+      let prompt_relevantInfoPosition = "";
+      let prompt_relevantInfoUser = "";
       for (let i = 0; i < longTermMemories.length; i++) {
         if (infoAndScore[i].score > 6) {
-          prompt_relevantInfo =
-            prompt_relevantInfo + "\n Info " + (i+1) +": <" + longTermMemories[i].metadata.text +">";
+            prompt_relevantInfo = prompt_relevantInfo + `\n Info ${i+1}: <${longTermMemories[i].metadata.text}`;
+
+            if (usersPosData[longTermMemories[i].metadata._id]){
+              prompt_relevantInfo = prompt_relevantInfo + `User: ${usersPosData[longTermMemories[i].metadata._id].name}>`;
+              prompt_relevantInfoUser = prompt_relevantInfoUser + `\n Info ${i+1}: <${longTermMemories[i].metadata.text}User: ${usersPosData[longTermMemories[i].metadata._id].name}>`;
+            } else {
+              prompt_relevantInfo = prompt_relevantInfo + `>`;
+              prompt_relevantInfoPosition = prompt_relevantInfoPosition + `\n Info ${i+1}: <${longTermMemories[i].metadata.text}>`;
+            }
         }
       }
 
@@ -3865,21 +3934,44 @@ module.exports = {
         prompt_relevantInfo = prompt_longTermMemory
       }
 
+      // printC(prompt_relevantInfo, "3", "prompt_relevantInfo", "g");
 
-      prompot_replyQuestion = `
-      Your input: 
-      1) RELATED INFO about the Candidate (delimited by ||): |${prompt_relevantInfo}|
+      let prompot_replyQuestion = ""
 
-      2) Previous Message Conversation (delimited by ||): |${prompt_beforeMessage}|
+      if (whatToAsk=="ALL_CANDIDATES_OF_COMPANY"){
 
-      3) QUESTION from Recruiter (delimited by ||): |${message}|
+        prompot_replyQuestion = `
+        Your input: 
+        1) RELATED INFO User (delimited by ||): |${prompt_relevantInfoUser}|
 
-      - Your task is to reply to the QUESTION with a short 1-2 sentence answer
-      - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
-      - Be creative if you don't have enough information
+        2) RELATED INFO Position (delimited by ||): |${prompt_relevantInfoPosition}|
 
-        Answer to question: 
-      `;
+        3) Previous Message Conversation (delimited by ||): |${prompt_beforeMessage}|
+
+        4) QUESTION from Recruiter (delimited by ||): |${message}|
+
+        - Your task is to reply to the QUESTION with a short 1-3 sentence answer
+        - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
+        - Be creative if you don't have enough information
+
+          Answer to question: 
+        `;
+      } else {
+        prompot_replyQuestion = `
+        Your input: 
+        1) RELATED INFO (delimited by ||): |${prompt_relevantInfo}|
+
+        2) Previous Message Conversation (delimited by ||): |${prompt_beforeMessage}|
+
+        3) QUESTION from Recruiter (delimited by ||): |${message}|
+
+        - Your task is to reply to the QUESTION with a short 1-3 sentence answer
+        - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
+        - Be creative if you don't have enough information
+
+          Answer to question: 
+        `;
+      }
 
       printC(prompot_replyQuestion, "4", "prompot_replyQuestion", "g");
 
@@ -3897,30 +3989,58 @@ module.exports = {
       });
 
 
+      let systemPrompt = ""
+      let prompt_relatedInfo = ""
+      if (whatToAsk=="ALL_CANDIDATES_OF_COMPANY"){
+        systemPrompt = `
+        - Your task is to reply to the QUESTION with a short 1-3 sentence answer
+        - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
+        - Be creative if you don't have enough information` 
+        
+
+        prompt_relatedInfo = `
+        RELATED INFO User (delimited by ||): |${prompt_relevantInfoUser}|
+
+        RELATED INFO Position (delimited by ||): |${prompt_relevantInfoPosition}|
+
+        ${systemPrompt}
 
 
-      const systemPrompt = `
-      - Your task is to reply to the QUESTION with a short 1-3 sentence answer
-      - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
-      - Be creative if you don't have enough information` 
+        Question to Answer: 
+        `
+      } else {
+        systemPrompt = `
+        - Your task is to reply to the QUESTION with a short 1-3 sentence answer
+        - use whatever you need from RELATED INFO to reply to the QUESTION with relevant and useful information
+        - Be creative if you don't have enough information` 
+        
+
+        prompt_relatedInfo = `
+        RELATED INFO (delimited by ||): |${prompt_relevantInfo}|
+
+        ${systemPrompt}
+
+
+        Question to Answer: 
+        `
+      }
+
       
-
-      prompt_relatedInfo = `
-      RELATED INFO about the Candidate (delimited by ||): |${prompt_relevantInfo}|
-
-      ${systemPrompt}
-
-
-      Question to Answer: 
-      `
-
-      
+      // replyQuestionGPT = await useGPTchat(
+      //   prompt_relatedInfo,
+      //   conversation_use,
+      //   systemPrompt,
+      //   lastMessage?.content,
+      //   0.99,
+      // );
       replyQuestionGPT = await useGPTchat(
         prompt_relatedInfo,
         conversation_use,
         systemPrompt,
         lastMessage?.content,
         0.99,
+        "API 1",
+        "chatGPT4",
       );
 
       // replyQuestionGPT = await useGPTchatSimple(prompot_replyQuestion,0.95,"API 2");
