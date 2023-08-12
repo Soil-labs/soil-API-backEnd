@@ -655,9 +655,34 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
 
   // sd0
 
-  let convoCandidateRecruiterPrompt = await findConversationPrompt(
-    conversationID,"Candidate"
-  );
+  // let convoCandidateRecruiterPrompt = await findConversationPrompt(
+  //   conversationID,"Candidate"
+  // );
+
+  // ----------- prompt for conversation -------------
+  let name = "Candidate"
+  positionOR = { $or: [{ positionID: positionID }, { extraPositionsID: positionID }] }
+
+  let convData_ = await Conversation.find({
+    $and: [{ userID: memberID }, positionOR],
+  }).select("_id userID conversation");
+
+  
+  let convData = convData_.pop();
+
+  let promptConv = "";
+  if (convData) {
+    for (let i = 0; i < convData.conversation.length; i++) {
+      let convDataNow = convData.conversation[i];
+      if (convDataNow.role == "assistant")
+        promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+      else
+        promptConv = promptConv + name + ": " + convDataNow.content + " \n\n";
+    }
+  }
+  let convoCandidateRecruiterPrompt =  promptConv
+  // ----------- prompt for conversation -------------
+
 
   // convoCandidateRecruiterPrompt =  `Candidate: mi9
   // Recruiter: Can you provide examples of web UI applications you have built using TypeScript and React?
@@ -681,7 +706,6 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
     "p"
   );
 
-  // sd8
 
 //   promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
 
@@ -755,36 +779,6 @@ Category 1:
 
 // Category 3:
 //     - b5: 0 - No Info
-
-// Category 4:
-//     - b6: 5 - The candidate has experience in collaborating with cross-functional teams and mentoring junior developers, which indicates good communication skills.
-
-// Category 5:
-//     - b7: 0 - No Info
-
-// Category 6:
-//     - b8: 5 - The candidate has experience in designing and developing software solutions, which indicates some level of autonomy in projects.
-
-// Category 7:
-//     - b9: 7 - The candidate has demonstrated the ability to work collaboratively with cross-functional teams.
-
-// Category 8:
-//     - b10: 5 - The candidate's experience in software development and deployment indicates good organizational skills and attention to detail.
-
-// Category 9:
-//     - b11: 5 - The candidate's experience in using various technologies and platforms indicates flexibility and adaptability.
-
-// Category 10:
-//     - b12: 0 - No Info
-
-// Category 11:
-//     - b13: 0 - No Info
-
-// Category 12:
-//     - b14: 0 - No Info
-
-// Category 13:
-//     - b15: 0 - No Info
 //     `
 
   printC(report, "4", "report", "g");
@@ -871,6 +865,7 @@ Category 1:
     // categoriesT,
     // scoreAll,
     reportPassFail: reportPoints,
+    positionData: positionData,
   };
 }
 

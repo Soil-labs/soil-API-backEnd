@@ -263,8 +263,14 @@ module.exports = `
         positionID: ID
         userID: ID
         cvContent: String
-
     }
+
+    input moveCandidateToPositionInput {
+        userID: ID
+        positionOldID: ID
+        positionNewID: ID
+    }
+
     input deleteQuestionsToAskPositionInput {
         positionID: ID
         questionID: ID

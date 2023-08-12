@@ -54,7 +54,8 @@ module.exports = {
       searchQuery_and.push({ positionTrainEdenAI: positionTrainEdenAI });
     } 
     if (positionID) {
-      searchQuery_and.push({ positionID: positionID });
+      // searchQuery_and.push({ positionID: positionID });
+      searchQuery_and.push({ $or: [{ positionID: positionID }, { extraPositionsID: { $in: positionID } }] });
     } 
 
     if (searchQuery_and.length > 0) {

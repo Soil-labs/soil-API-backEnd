@@ -5,6 +5,7 @@ const conversationSchema = mongoose.Schema({
   userID: String,
   convKey: String, // part of first 3 messages concatenated
   positionID: String,
+  extraPositionsID: [String],
   positionTrainEdenAI: Boolean,
 
   conversation: [
