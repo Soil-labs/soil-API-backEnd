@@ -279,41 +279,39 @@ module.exports = {
     let positionNewData = await Position.findOne({ _id: positionNewID });
     if (!positionNewData) throw new ApolloError("positionNew not found");
 
-    console.log("change = 1" )
-
-
 
     if (!userID) throw new ApolloError("userID is required");
     let memberData = await Members.findOne({ _id: userID })
     if (!memberData) throw new ApolloError("user not found");
     
-    console.log("change = 2" )
 
     try {
 
 
         // ----------------- add candidate to New position -----------------
-        let index_ = positionNewData.candidates.findIndex(
+        let index_candNewPos = positionNewData.candidates.findIndex(
           (x) => x.userID.toString() == userID.toString()
         );
   
-        if (index_ == -1) {
+        if (index_candNewPos == -1) {
           positionNewData.candidates.push({
             userID: userID,
             analysisCandidateEdenAI: {
               flagAnalysisCreated: false,
             }
           });
+
+          index_candNewPos = positionNewData.candidates.length - 1;
   
           await positionNewData.save();
         }
         // ----------------- add candidate to New position -----------------
         
 
-        // // ----------------- Calculate Score Job Report Candidate --------------
-        // const res = await reportPassFailCVPositionConversationFunc(userID, positionNewID)
-        // positionNewData = res.positionData
-        // // ----------------- Calculate Score Job Report Candidate --------------
+        // ----------------- Calculate Score Job Report Candidate --------------
+        const res = await reportPassFailCVPositionConversationFunc(userID, positionNewID)
+        positionNewData = res.positionData
+        // ----------------- Calculate Score Job Report Candidate --------------
 
 
 
@@ -344,6 +342,37 @@ module.exports = {
         // ------------- Candidate Eden Analysis for Position -------------
         positionNewData = await candidateEdenAnalysisPositionFunc(positionNewData)
         // ------------- Candidate Eden Analysis for Position -------------
+
+        // ------------- Move the summaryQuestions from old to new position -------------
+
+        // find the candidate on old position
+        let index_candOldPos = positionOldData.candidates.findIndex(
+          (x) => x.userID.toString() == userID.toString()
+        );
+
+        let summaryQuestions = undefined
+
+        if (index_candOldPos != -1) 
+          summaryQuestions = positionOldData.candidates[index_candOldPos]?.summaryQuestions
+
+        if (summaryQuestions) {
+          positionNewData.candidates[index_candNewPos].summaryQuestions = summaryQuestions
+        }
+        // ------------- Move the summaryQuestions from old to new position -------------
+
+
+        // ------------- Move the Candidate Notes Interview from old to new position -------------
+
+        if (index_candOldPos != -1) 
+          notesInterview = positionOldData.candidates[index_candOldPos]?.notesInterview
+
+        if (notesInterview) {
+          positionNewData.candidates[index_candNewPos].notesInterview = notesInterview
+        }
+        // ------------- Move the Candidate Notes Interview from old to new position -------------
+
+        await positionNewData.save()
+
 
         return positionNewData;
     } catch (err) {
