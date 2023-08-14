@@ -8,6 +8,7 @@ const { Node } = require("../../../models/nodeModal");
 const { Conversation } = require("../../../models/conversationModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
+const { wait } = require("../utils/aiExtraModules");
 
 
 const {
@@ -314,6 +315,7 @@ module.exports = {
         // ----------------- Calculate Score Job Report Candidate --------------
 
 
+        wait(5000)
 
 
         // ----------------- find the conversation and add the positionNewID -----------------
@@ -343,8 +345,9 @@ module.exports = {
         positionNewData = await candidateEdenAnalysisPositionFunc(positionNewData)
         // ------------- Candidate Eden Analysis for Position -------------
 
-        // ------------- Move the summaryQuestions from old to new position -------------
+        wait(5000)
 
+        // ------------- Move the summaryQuestions from old to new position -------------
         // find the candidate on old position
         let index_candOldPos = positionOldData.candidates.findIndex(
           (x) => x.userID.toString() == userID.toString()

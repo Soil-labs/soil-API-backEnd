@@ -17,6 +17,16 @@ const companyModel = mongoose.Schema({
       positionID: mongoose.Schema.ObjectId,
     },
   ],
+  communitySubscribers: [
+    {
+      positionID: mongoose.Schema.ObjectId,
+      companyID: mongoose.Schema.ObjectId,
+    }
+  ],
+  type: {
+    type: String,
+    enum: ["COMPANY", "COMMUNITY"],
+  },
 });
 
 const Company = mongoose.model("Company", companyModel);
