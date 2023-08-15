@@ -4,7 +4,7 @@ const { Company } = require("../../../models/companyModel");
 
 module.exports = {
   updateCompany: async (parent, args, context, info) => {
-    const { _id, name, slug, type, addCompanySubscribersID,addPositionSubscribersID } = args.fields;
+    const { _id, name, slug, description, type, addCompanySubscribersID,addPositionSubscribersID } = args.fields;
     console.log("Mutation > updateCompany > args.fields = ", args.fields);
 
     try {
@@ -50,6 +50,7 @@ module.exports = {
         if (type) companyData.type = type;
         if (addCompanySubscribersID) companyData.communitySubscribers = communitySubscribers;
         if (addPositionSubscribersID) companyData.communitySubscribers = communitySubscribers;
+        if (description) companyData.description = description;
         
       } else {
         const companyWithSameSlug = await Company.findOne({ slug: slug });
@@ -87,6 +88,7 @@ module.exports = {
           name,
           slug,
           type,
+          description,
           communitySubscribers,
         });
 
