@@ -5,6 +5,7 @@ const companyModel = mongoose.Schema({
   name: String,
   url: String,
   slug: String,
+  description: String,
   employees: [
     {
       typeT: String,
@@ -27,6 +28,7 @@ const companyModel = mongoose.Schema({
     type: String,
     enum: ["COMPANY", "COMMUNITY"],
   },
+  skillsNum: Number,
 });
 
 const Company = mongoose.model("Company", companyModel);

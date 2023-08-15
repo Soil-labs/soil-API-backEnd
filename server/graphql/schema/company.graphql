@@ -5,12 +5,15 @@ module.exports = `
         name: String
         url: String
         slug: String
+        description: String,
         employees: [EmployeeType]
         positions: [Position]
         communitySubscribers: [communitySubscribersType]
         positionSubscribersCommunity: [Position]
         companySubscribersCommunity: [Company]
         type: typeCompany
+        candidatesNum: Int
+        skillsNum: Int
     }
 
     type communitySubscribersType {
@@ -30,6 +33,7 @@ module.exports = `
         type: typeCompany
         addCompanySubscribersID: [ID]
         addPositionSubscribersID: [ID]
+        description: String
     }
     
     input updateUrlInput {
