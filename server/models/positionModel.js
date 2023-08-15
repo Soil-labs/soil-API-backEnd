@@ -7,6 +7,12 @@ const positionModel = mongoose.Schema({
   url: String,
   companyID: mongoose.Schema.ObjectId,
   mainUserID: String,
+  conduct: {
+    number: String,
+    whatsappNumber: String,
+    email: String,
+    telegram: String,
+  },
   employees: [{
     typeT: String,
     userID: String,

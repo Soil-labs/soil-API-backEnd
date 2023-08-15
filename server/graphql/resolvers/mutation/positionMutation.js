@@ -38,7 +38,7 @@ const { arrayToObj } = require("../utils/endorsementModules");
 
 module.exports = {
   updatePosition: async (parent, args, context, info) => {
-    const { _id, name,icon,mainUserID } = args.fields;
+    const { _id, name,icon,conduct,mainUserID } = args.fields;
     let { companyID } = args.fields;
     console.log("Mutation > updatePosition > args.fields = ", args.fields);
 
@@ -69,12 +69,25 @@ module.exports = {
         if (name) positionData.name = name;
         if (companyID) positionData.companyID = companyID;
         if (icon) positionData.icon = icon;
+
+        // ----------------- conduct ----------------
+        if (conduct) {
+          if (conduct.number){ positionData.conduct.number = conduct.number;}
+
+          if (conduct.whatsappNumber){ positionData.conduct.whatsappNumber = conduct.whatsappNumber;}
+
+          if (conduct.email){ positionData.conduct.email = conduct.email;}
+
+          if (conduct.telegram){ positionData.conduct.telegram = conduct.telegram;}
+        }
+        // ----------------- conduct ----------------
       } else {
         positionData = await new Position({
           name,
           icon,
           companyID,
           mainUserID,
+          conduct,
           talentList: [
             {
               name: "Accepted",

@@ -11,6 +11,8 @@ module.exports = `
         bio: String
         oneLiner: String
 
+        conduct: conductType
+
         onbording: onboardingType
 
         positionsApplied: [positionsAppliedType]
@@ -76,6 +78,13 @@ module.exports = `
         reviewSummary: reviewSummaryType     
 
         preferences: preferencesType
+    }
+
+    type conductType {
+        number: String,
+        whatsappNumber: String,
+        email: String,
+        telegram: String,
     }
 
     type positionsAppliedType {
@@ -532,6 +541,13 @@ module.exports = `
 
     }
 
+    input conductInput {
+        number: String,
+        whatsappNumber: String,
+        email: String,
+        telegram: String,
+    }
+
 
     input updateMemberInput {
         _id: ID
@@ -539,6 +555,9 @@ module.exports = `
         discordAvatar: String
         discriminator: String
         bio: String
+
+        conduct: conductInput
+        
 
         onbording: onboardingInput
 
