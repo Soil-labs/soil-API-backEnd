@@ -8,12 +8,15 @@ const { Node } = require("../../../models/nodeModal");
 const { Conversation } = require("../../../models/conversationModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
+const { wait } = require("../utils/aiExtraModules");
+
+
 const {
   addMultipleQuestionsToEdenAIFunc,
   updateQuestionSmall,
 } = require("../utils/questionsEdenAIModules");
 
-const { checkAndAddPositionToMember } = require("../utils/positionModules");
+const { checkAndAddPositionToMember,candidateEdenAnalysisPositionFunc } = require("../utils/positionModules");
 
 const { printC } = require("../../../printModule");
 
@@ -21,6 +24,7 @@ const {
   // deletePineCone,
   getMemory,
   interviewQuestionCreationUserFunc,
+  reportPassFailCVPositionConversationFunc,
 } = require("../utils/aiModules");
 
 const { useGPTchatSimple } = require("../utils/aiExtraModules");
@@ -34,7 +38,7 @@ const { arrayToObj } = require("../utils/endorsementModules");
 
 module.exports = {
   updatePosition: async (parent, args, context, info) => {
-    const { _id, name,icon,mainUserID } = args.fields;
+    const { _id, name,icon,conduct,mainUserID } = args.fields;
     let { companyID } = args.fields;
     console.log("Mutation > updatePosition > args.fields = ", args.fields);
 
@@ -65,12 +69,25 @@ module.exports = {
         if (name) positionData.name = name;
         if (companyID) positionData.companyID = companyID;
         if (icon) positionData.icon = icon;
+
+        // ----------------- conduct ----------------
+        if (conduct) {
+          if (conduct.number){ positionData.conduct.number = conduct.number;}
+
+          if (conduct.whatsappNumber){ positionData.conduct.whatsappNumber = conduct.whatsappNumber;}
+
+          if (conduct.email){ positionData.conduct.email = conduct.email;}
+
+          if (conduct.telegram){ positionData.conduct.telegram = conduct.telegram;}
+        }
+        // ----------------- conduct ----------------
       } else {
         positionData = await new Position({
           name,
           icon,
           companyID,
           mainUserID,
+          conduct,
           talentList: [
             {
               name: "Accepted",
@@ -255,6 +272,130 @@ module.exports = {
         err.message,
         err.extensions?.code || "interviewQuestionCreationUser",
         { component: "positionMutation > interviewQuestionCreationUser" }
+      );
+    }
+  },
+  moveCandidateToPosition: async (parent, args, context, info) => {
+    const {userID,positionOldID,positionNewID } = args.fields;
+    console.log(
+      "Mutation > moveCandidateToPosition > args.fields = ",
+      args.fields
+    );
+
+    
+    if (!positionOldID) throw new ApolloError("positionOldID is required");
+    let positionOldData = await Position.findOne({ _id: positionOldID });
+    if (!positionOldData) throw new ApolloError("positionOld not found");
+
+
+
+    if (!positionNewID) throw new ApolloError("positionNewID is required");
+    let positionNewData = await Position.findOne({ _id: positionNewID });
+    if (!positionNewData) throw new ApolloError("positionNew not found");
+
+
+    if (!userID) throw new ApolloError("userID is required");
+    let memberData = await Members.findOne({ _id: userID })
+    if (!memberData) throw new ApolloError("user not found");
+    
+
+    try {
+
+
+        // ----------------- add candidate to New position -----------------
+        let index_candNewPos = positionNewData.candidates.findIndex(
+          (x) => x.userID.toString() == userID.toString()
+        );
+  
+        if (index_candNewPos == -1) {
+          positionNewData.candidates.push({
+            userID: userID,
+            analysisCandidateEdenAI: {
+              flagAnalysisCreated: false,
+            }
+          });
+
+          index_candNewPos = positionNewData.candidates.length - 1;
+  
+          await positionNewData.save();
+        }
+        // ----------------- add candidate to New position -----------------
+        
+
+        // ----------------- Calculate Score Job Report Candidate --------------
+        const res = await reportPassFailCVPositionConversationFunc(userID, positionNewID)
+        positionNewData = res.positionData
+        // ----------------- Calculate Score Job Report Candidate --------------
+
+
+        wait(5000)
+
+
+        // ----------------- find the conversation and add the positionNewID -----------------
+        let conversationData = await Conversation.find({
+            $and: [{ userID: userID }, { positionID: positionOldID }],
+        });
+
+        // take only the last conv
+        conversationData = conversationData[conversationData.length - 1];
+
+        // add the positionNewID to the conversation
+        extraPositionsIDArr = conversationData.extraPositionsID 
+
+        if (!extraPositionsIDArr) extraPositionsIDArr = []
+        
+        // if the positionNewID is not already in the array
+        if (!extraPositionsIDArr.includes(positionNewID))
+          extraPositionsIDArr.push(positionNewID)
+
+        conversationData.extraPositionsID = extraPositionsIDArr
+
+        await conversationData.save()
+        // ----------------- find the conversation and add the positionNewID -----------------
+
+
+        // ------------- Candidate Eden Analysis for Position -------------
+        positionNewData = await candidateEdenAnalysisPositionFunc(positionNewData)
+        // ------------- Candidate Eden Analysis for Position -------------
+
+        wait(5000)
+
+        // ------------- Move the summaryQuestions from old to new position -------------
+        // find the candidate on old position
+        let index_candOldPos = positionOldData.candidates.findIndex(
+          (x) => x.userID.toString() == userID.toString()
+        );
+
+        let summaryQuestions = undefined
+
+        if (index_candOldPos != -1) 
+          summaryQuestions = positionOldData.candidates[index_candOldPos]?.summaryQuestions
+
+        if (summaryQuestions) {
+          positionNewData.candidates[index_candNewPos].summaryQuestions = summaryQuestions
+        }
+        // ------------- Move the summaryQuestions from old to new position -------------
+
+
+        // ------------- Move the Candidate Notes Interview from old to new position -------------
+
+        if (index_candOldPos != -1) 
+          notesInterview = positionOldData.candidates[index_candOldPos]?.notesInterview
+
+        if (notesInterview) {
+          positionNewData.candidates[index_candNewPos].notesInterview = notesInterview
+        }
+        // ------------- Move the Candidate Notes Interview from old to new position -------------
+
+        await positionNewData.save()
+
+
+        return positionNewData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "moveCandidateToPosition",
+        { component: "positionMutation > moveCandidateToPosition" }
       );
     }
   },
@@ -762,247 +903,21 @@ module.exports = {
     );
 
     if (positionIDs)
-      positionData = await Position.find({
+      positionsData = await Position.find({
         _id: positionIDs,
         // candidatesFlagAnalysisCreated: { $ne: true } // SOS 🆘 - uncomment!!!
       });
     else
-      positionData = await Position.find({
+      positionsData = await Position.find({
         candidatesFlagAnalysisCreated: { $ne: true },
       });
 
     try {
-      for (let i = 0; i < positionData.length; i++) {
-        // Loop on positions
-        const position = positionData[i];
-
-        for (let j = 0; j < position.candidates.length; j++) {
-          // for (let j = 0;j<1;j++){
-
-          candidate = position.candidates[j];
-
-          if (candidate?.analysisCandidateEdenAI?.flagAnalysisCreated == true)
-            continue;
-
-          // printC(candidate.userID,"0","candidate.userID","b")
-          // printC(candidate.analysisCandidateEdenAI,"1","candidate.analysisCandidateEdenAI","b")
-
-          positionRequirements = position.positionsRequirements.content;
-
-          // printC(positionRequirements,"2","positionRequirements","b")
-
-          // find member on mongo
-          memberData = await Members.findOne({ _id: candidate.userID }).select(
-            "_id discordName cvInfo"
-          );
-
-          cvMember = memberData.cvInfo.cvContent;
-
-          // printC(cvMember,"3","cvMember","b")
-
-          // printC(memberData?.cvInfo?.cvMemory,"4","memberData?.cvInfo?.cvMemory","b")
-
-          // combine the cvMemory for Prompt
-          prompt_cv = "";
-          if (memberData?.cvInfo?.cvMemory) {
-            prompt_cv = memberData?.cvInfo?.cvMemory
-              ?.map((memory) => memory.memoryContent)
-              .join(" \n\n ");
-          } else {
-            prompt_cv = memberData?.cvInfo?.cvContent;
-          }
-
-          // printC(prompt_cv,"5","prompt_cv","b")
-
-          // ------------------- Find the Score ----------------------
-          // Background Score
-          let matchScore = candidate.overallScore;
-          // Skill Score
-          let skillScore = candidate.skillScore;
-          //JobRequirement Score
-          let jobRequirementsScore = 0;
-          let jobRequirementsScoreCount = 0;
-          if (candidate?.compareCandidatePosition?.reportPassFail) {
-            for (let k = 0;k < candidate?.compareCandidatePosition?.reportPassFail.length;k++) {
-              let score =
-                candidate?.compareCandidatePosition?.reportPassFail[k].score;
-
-              if (score != undefined && score > 3) {
-                jobRequirementsScore += score;
-                jobRequirementsScoreCount += 1;
-              }
-            }
-          }
-
-          if (jobRequirementsScoreCount > 0) {
-            jobRequirementsScore =
-              (jobRequirementsScore / jobRequirementsScoreCount) * 10;
-          }
-
-          let backgroundScore =
-            (matchScore + skillScore + jobRequirementsScore) / 3;
-
-          // ------------------- Find the Score ----------------------
-
-          // ------------------- Background Analysis -------------------
-          let instructionsScore = "";
-          if (backgroundScore > 70) {
-            instructionsScore = "Be really positive Find all the reasons that it is a great fit";
-          } else if (backgroundScore > 50) {
-            instructionsScore =
-              "Be positive but also fair find the reasons that will work and report them";
-          } else if (backgroundScore > 30) {
-            instructionsScore =
-              "Be neutral find the reasons that will work and don't work and report them";
-          } else {
-            instructionsScore =
-              "Be really negative find all the reasons that it will not be a good fit";
-          }
-
-          promptBackground = `
-            You are an Interviewer, you need for an opinion and then create a summary if a candidate is a good fit for the position.
-
-            - JOB POSITION (delimited by <>) < ${positionRequirements} >
-    
-            - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
-    
-            - Understand the JOB POSITION, and analyze the CANDIDATE INFO
-            - Analyze why the candidate fit or or NOT for this position based on specific previous relevant positions and relevant education that the candidate had 
-
-            ${instructionsScore}
-            
-            Summary in 2 sentences basing analysis on specific names of previous jobs MAX 45 words: 
-            `;
-
-          // printC(promptBackground,"6","promptBackground","g")
-
-          backgroundAnalysis = await useGPTchatSimple(
-            promptBackground,
-            0.7,
-            "API 2"
-          );
-
-          printC(backgroundScore, "7", "backgroundScore", "p");
-          printC(instructionsScore, "7", "instructionsScore", "r");
-
-          printC(backgroundAnalysis, "7", "backgroundAnalysis", "g");
-
-          // ------------------- Background Analysis -------------------
-
-          // ------------------- Skill Analysis -------------------
-          instructionsScore = "";
-          if (skillScore > 70) {
-            instructionsScore = "Be really positive Find all the reasons that it is a great fit";
-          } else if (skillScore > 50) {
-            instructionsScore =
-              "Be positive but also fair find the reasons that will work and report them";
-          } else if (skillScore > 30) {
-            instructionsScore =
-              "Be neutral find the reasons that will work and don't work and report them";
-          } else {
-            instructionsScore =
-              "Be really negative find all the reasons that it will not be a good fit";
-          }
-          promptSkill = `
-            You are an Interviewer, you need for an opinion and then create a summary if a candidate is a good fit for the position specifically focusing on the skills of the candidate.
-
-            - JOB POSITION (delimited by <>) < ${positionRequirements} >
-    
-            - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
-    
-            - Understand the JOB POSITION, and analyze the CANDIDATE INFO
-            - Analyze why the candidate fit or NOT for this position specifically focusing on the skills
-            - Go straight to the point!! don't unnecessary words and don't repeat yourself
-
-            ${instructionsScore}
-
-            
-            Summary of skill analysis in only 1.5 sentences MAX 45 words: 
-            `;
-
-          // printC(promptSkill,"6","promptSkill","g")
-
-          skillAnalysis = await useGPTchatSimple(promptSkill, 0.7, "API 1");
-
-          printC(skillScore, "7", "skillScore", "p");
-          printC(instructionsScore, "7", "instructionsScore", "r");
-          printC(skillAnalysis, "7", "skillAnalysis", "g");
-          // ------------------- Skill Analysis -------------------
-
-          // ------------------- JobRequirements Analysis -------------------
-          instructionsScore = "";
-          if (jobRequirementsScore > 70) {
-            instructionsScore = "Be really positive Find all the reasons that it is a great fit";
-          } else if (jobRequirementsScore > 50) {
-            instructionsScore =
-              "Be positive but also fair find the reasons that will work and report them";
-          } else if (jobRequirementsScore > 30) {
-            instructionsScore =
-              "Be neutral find the reasons that will work and don't work and report them";
-          } else {
-            instructionsScore =
-              "Be really negative find all the reasons that it will not be a good fit";
-          }
-          promptJobRequirements = `
-            You are an Interviewer, you need for an opinion and then create a summary if a candidate is a good fit for the position specifically focusing on the Requirements of this positions and if they are fulfilled
-
-            - JOB POSITION (delimited by <>) < ${positionRequirements} >
-    
-            - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
-    
-            - Understand the JOB POSITION, and analyze the CANDIDATE INFO
-            - Analyze why the candidate fit or NOT for this position focusing on the Requirements of this positions
-            - Don't talk about Skills!
-            - Go straight to the point!! don't unnecessary words and don't repeat yourself
-            
-            ${instructionsScore}
-
-            Summary the most interesting info in only 1.5 sentences MAX 45 words: 
-            `;
-
-          // printC(promptJobRequirements,"6","promptJobRequirements","g")
-
-          jobRequirementsAnalysis = await useGPTchatSimple(
-            promptJobRequirements,
-            0.7,
-            "API 2"
-          );
-
-          printC(jobRequirementsScore, "7", "jobRequirementsScore", "p");
-          printC(instructionsScore, "7", "instructionsScore", "r");
-
-          printC(jobRequirementsAnalysis, "7", "jobRequirementsAnalysis", "g");
-          // ------------------- JobRequirements Analysis -------------------
-
-          // ------------ Add to candidate ------------
-          positionData[i].candidates[j].analysisCandidateEdenAI = {
-            ...positionData[i].candidates[j].analysisCandidateEdenAI,
-            background: {
-              content: backgroundAnalysis,
-            },
-            fitRequirements: {
-              content: jobRequirementsAnalysis,
-            },
-            skills: {
-              content: skillAnalysis,
-            },
-            flagAnalysisCreated: true,
-          };
-
-          // // ------------ Add to candidate ------------
-
-          // sd0
-        }
-
-        // ------------ Add to position ------------
-        positionData[i].candidatesFlagAnalysisCreated = true;
-        // ------------ Add to position ------------
-
-        // save it to mongo
-        await positionData[i].save();
+      for (let i = 0; i < positionsData.length; i++) {
+        positionsData[i] = await candidateEdenAnalysisPositionFunc(positionsData[i])
       }
 
-      return positionData;
+      return positionsData;
     } catch (err) {
       throw new ApolloError(
         err.message,

@@ -5,8 +5,20 @@ module.exports = `
         name: String
         url: String
         slug: String
+        description: String,
         employees: [EmployeeType]
         positions: [Position]
+        communitySubscribers: [communitySubscribersType]
+        positionSubscribersCommunity: [Position]
+        companySubscribersCommunity: [Company]
+        type: typeCompany
+        candidatesNum: Int
+        skillsNum: Int
+    }
+
+    type communitySubscribersType {
+        positionID: ID
+        companyID: ID
     }
 
     type EmployeeType {
@@ -18,6 +30,10 @@ module.exports = `
         _id: ID
         name: String
         slug: String
+        type: typeCompany
+        addCompanySubscribersID: [ID]
+        addPositionSubscribersID: [ID]
+        description: String
     }
     
     input updateUrlInput {
@@ -46,5 +62,10 @@ module.exports = `
         companyID: ID
         employees: [EmployeeTypeInput]
     }  
+
+     enum typeCompany {
+        COMPANY
+        COMMUNITY
+    }
 
 `

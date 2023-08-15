@@ -83,6 +83,7 @@ module.exports = `
         updateUrl(fields:updateUrlInput): Position
         addQuestionsToAskPosition(fields:addQuestionsToAskPositionInput): Position
         interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Position
+        moveCandidateToPosition(fields:moveCandidateToPositionInput): Position
         deleteQuestionsToAskPosition(fields:deleteQuestionsToAskPositionInput): Position
         addCandidatesPosition(fields:addCandidatesPositionInput): Position
         deletePositionCandidate(fields:deletePositionCandidateInput): Position

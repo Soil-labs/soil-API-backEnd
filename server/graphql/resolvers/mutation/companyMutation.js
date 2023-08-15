@@ -4,7 +4,7 @@ const { Company } = require("../../../models/companyModel");
 
 module.exports = {
   updateCompany: async (parent, args, context, info) => {
-    const { _id, name, slug } = args.fields;
+    const { _id, name, slug, description, type, addCompanySubscribersID,addPositionSubscribersID } = args.fields;
     console.log("Mutation > updateCompany > args.fields = ", args.fields);
 
     try {
@@ -12,10 +12,46 @@ module.exports = {
       if (_id) {
         companyData = await Company.findOne({ _id });
 
+
+        //  ----------- communitySubscribers -----------
+        communitySubscribers = companyData.communitySubscribers;
+
+        if (addCompanySubscribersID) {
+          // check if the addCompanySubscribersID exist inside communitySubscribers.companyID if they don't add them
+          addCompanySubscribersID.forEach((companyID) => {
+              const index = communitySubscribers.findIndex((subscriber) => {
+                return subscriber?.companyID?.toString() == companyID?.toString();
+              });
+              if (index == -1) {
+                communitySubscribers.push({
+                  companyID: companyID,
+                });
+              }
+          });
+        }
+
+        if (addPositionSubscribersID) {
+          addPositionSubscribersID.forEach((positionID) => {
+            const index = communitySubscribers.findIndex((subscriber) => {
+              return subscriber?.positionID?.toString() == positionID?.toString();
+            });
+            if (index == -1) {
+              communitySubscribers.push({
+                positionID: positionID,
+              });
+            }
+          });
+        }
+        //  ----------- communitySubscribers -----------
+
         // update
         if (name) companyData.name = name;
         if (slug) companyData.slug = slug;
-        await companyData.save();
+        if (type) companyData.type = type;
+        if (addCompanySubscribersID) companyData.communitySubscribers = communitySubscribers;
+        if (addPositionSubscribersID) companyData.communitySubscribers = communitySubscribers;
+        if (description) companyData.description = description;
+        
       } else {
         const companyWithSameSlug = await Company.findOne({ slug: slug });
         if (companyWithSameSlug) {
@@ -26,19 +62,40 @@ module.exports = {
           );
         }
 
+        //  ----------- communitySubscribers -----------
+        communitySubscribers = [];
+
+        if (addCompanySubscribersID) {
+
+          addCompanySubscribersID.forEach((companyID) => {
+            communitySubscribers.push({
+              companyID: companyID,
+            });
+          });
+        }
+
+        if (addPositionSubscribersID) {
+          addPositionSubscribersID.forEach((positionID) => {
+            communitySubscribers.push({
+              positionID: positionID,
+            });
+          });
+        }
+        //  ----------- communitySubscribers -----------
+
+
         companyData = await new Company({
           name,
           slug,
+          type,
+          description,
+          communitySubscribers,
         });
 
-        await companyData.save();
       }
+      await companyData.save();
 
-      return {
-        _id: companyData._id,
-        name: companyData.name,
-        slug: companyData.slug,
-      };
+      return companyData
     } catch (err) {
       throw new ApolloError(
         err.message,

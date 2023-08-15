@@ -180,5 +180,8 @@ module.exports = `
            # ---------- WHATSAPP QUERY ------------------------
           sendWhatsAppMessage(fields: whatsAppInput ):Boolean
 
+          # ---------- EMAIL QUERY ----------------------------
+          sendEmailViaSendGrid(fields: emailInput): Boolean
+
         }
 `;

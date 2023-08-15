@@ -20,6 +20,13 @@ const memberSchema = mongoose.Schema({
   bio: String,
   oneLiner: String,
 
+  conduct: {
+    number: String,
+    whatsappNumber: String,
+    email: String,
+    telegram: String,
+  },
+
   onbording: {
     signup: {
       type: Boolean,

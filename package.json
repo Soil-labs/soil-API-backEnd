@@ -13,7 +13,7 @@
     "@elastic/elasticsearch": "^8.1.0",
     "@graphql-tools/schema": "^9.0.1",
     "@pinecone-database/pinecone": "^0.0.9",
-    "@sendgrid/mail": "^7.6.1",
+    "@sendgrid/mail": "^7.7.0",
     "airtable": "^0.11.4",
     "apollo-server": "^3.10.2",
     "arweave": "^1.11.6",

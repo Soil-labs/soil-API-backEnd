@@ -6,6 +6,7 @@ module.exports = `
         icon: String
         url: String
         mainUser: Members
+        conduct: conductType
         company: Company
         candidatesReadyToDisplay: Boolean
         candidatesFlagAnalysisCreated: Boolean
@@ -216,6 +217,7 @@ module.exports = `
         _id: ID
         name: String
         companyID: ID
+        conduct: conductInput
         updatePosition: ID
         mainUserID: ID
         icon: String,
@@ -263,8 +265,14 @@ module.exports = `
         positionID: ID
         userID: ID
         cvContent: String
-
     }
+
+    input moveCandidateToPositionInput {
+        userID: ID
+        positionOldID: ID
+        positionNewID: ID
+    }
+
     input deleteQuestionsToAskPositionInput {
         positionID: ID
         questionID: ID

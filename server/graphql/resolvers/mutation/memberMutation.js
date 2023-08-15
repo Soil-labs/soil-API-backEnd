@@ -316,6 +316,7 @@ module.exports = {
         discordAvatar,
         discriminator,
         bio,
+        conduct,
         hoursPerWeek,
         previousProjects,
         interest,
@@ -362,6 +363,19 @@ module.exports = {
 
       
       if (location) fields = { ...fields, location };
+
+      // ----------------- conduct ----------------
+      fields = { ...fields, conduct: { ...user.conduct } };
+      if (conduct) {
+        if (conduct.number){ fields = { ...fields,conduct: {...fields.conduct,number: conduct.number,}};}
+
+        if (conduct.whatsappNumber){ fields = { ...fields,conduct: {...fields.conduct,whatsappNumber: conduct.whatsappNumber,}};}
+
+        if (conduct.email){ fields = { ...fields,conduct: {...fields.conduct,email: conduct.email,}};}
+
+        if (conduct.telegram){ fields = { ...fields,conduct: {...fields.conduct,telegram: conduct.telegram,}};}
+      }
+      // ----------------- conduct ----------------
 
       let membersData = await Members.findOne({ _id: fields._id });
       let membersDataOriginal = membersData;
