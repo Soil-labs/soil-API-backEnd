@@ -387,24 +387,31 @@ async function findQuestionsAsked(convDataNow,positionID) {
 
   // Result:
   // `;
+
+printC(questionsPrompt, "0", "questionsPrompt", "b");
+printC(conversationPrompt, "0", "conversationPrompt", "b");
+
+// sdf9
+
   promptConvoQuestions = `
   CONVERSATION: <${conversationPrompt}>
 
   QUESTIONS: <${questionsPrompt}>
 
   - Find when the first time the QUESTION where asked
-  - Format - First conversation ID(A) Start - End asking the question for the first time then the question ID(Q) that was asked
+  - Format - First conversation ID(A) asking the question then the question ID(Q) that was asked
 
   example: 
-  A1 - A3: Q1
-  A5 - A7: Q2
+  A1: Q4
+  A3: Q2
+  ...
 
   - Result should be exactly in the format of the example
 
   Result:
   `;
 
-  printC(promptConvoQuestions, "2", "promptConvoQuestions", "p");
+  // printC(promptConvoQuestions, "2", "promptConvoQuestions", "p");
 
   const promptConvoQuestionsRes = await useGPTchatSimple(promptConvoQuestions,0.7,'API 1','chatGPT4');
   // promptConvoQuestionsRes = `A1 - A2: Q1
@@ -413,6 +420,8 @@ async function findQuestionsAsked(convDataNow,positionID) {
   // A3 - A4: Q4`
 
   printC(promptConvoQuestionsRes, "2", "promptConvoQuestionsRes", "p");
+
+  // df0
 
 // dfl2
   // // Split the string into an array of Qx blocks
@@ -439,8 +448,8 @@ async function findQuestionsAsked(convDataNow,positionID) {
 
   // Add the questionsAnswered and subConversationAnswer
   result.forEach((item,idx) => {
-    if (item.length == 3){
-      const questionNumber = item[2]
+    if (item.length == 2){
+      const questionNumber = item[1]
 
       printC(questionNumber, "2", "questionNumber", "p");
 
@@ -451,9 +460,14 @@ async function findQuestionsAsked(convDataNow,positionID) {
           subConversationAnswer: []
         })
 
+        startC = item[0]
+
         // Find messages and add them to the convo  
-        if (item[0] <= positionAssistantToConversation.length && item[1] <= positionAssistantToConversation.length){
-          for (j=positionAssistantToConversation[item[0]-1];j<positionAssistantToConversation[item[1]-1];j++){
+        if (startC <= positionAssistantToConversation.length){
+
+          printC(startC, "2", "startC", "p");
+
+          for (j=positionAssistantToConversation[startC-1];j<positionAssistantToConversation[startC-1] + 2;j++){
 
             questionsAnswered[questionsAnswered.length-1].subConversationAnswer.push(
               convDataNow.conversation[j]
@@ -466,6 +480,13 @@ async function findQuestionsAsked(convDataNow,positionID) {
       
     }
   })
+
+
+
+  // printC(questionsAnswered[0].subConversationAnswer, "2", "questionsAnswered", "g");
+  // printC(questionsAnswered[1].subConversationAnswer, "3", "questionsAnswered", "g");
+
+  // sd3
 
   // printC(questionsAnswered, "2", "questionsAnswered", "g");
 
