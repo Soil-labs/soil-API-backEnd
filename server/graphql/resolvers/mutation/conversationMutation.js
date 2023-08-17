@@ -156,7 +156,10 @@ module.exports = {
           CandidateNotesEdenAIAPICallF(userID, positionID);
         // --------------- Calculate candidateNotesEdenAI ---------------
 
-        await updatePositionInterviewedOfUser(convDataNow.userID,positionID);
+        if (positionTrainEdenAI == true) { 
+        } else {
+          await updatePositionInterviewedOfUser(convDataNow.userID,positionID);
+        }
 
 
         printC( convDataNow.updatedAt,"0"," convDataNow.updatedAt","b")
