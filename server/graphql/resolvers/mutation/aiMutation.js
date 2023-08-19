@@ -1617,16 +1617,16 @@ module.exports = {
     context,
     info
   ) => {
-    const { positionsID } = args.fields;
+    const { positionIDs } = args.fields;
     console.log(
       "Mutation > autoUpdateMemoryFromPositionRequirments > args.fields = ",
       args.fields
     );
 
     try {
-      if (positionsID)
+      if (positionIDs)
         positionsData = await Position.find({
-          _id: positionsID,
+          _id: positionIDs,
           // "cvInfo.cvPreparationMemory": { $ne: true },
           // "cvInfo.cvContent": { $ne: null },
         });
@@ -1638,7 +1638,8 @@ module.exports = {
         });
       }
 
-      printC(positionsData, "1", "positionsData", "b");
+      // printC(positionsData, "1", "positionsData", "b");
+      // printC(positionIDs, "1", "positionIDs", "b");
       // df0
 
       for (let i = 0; i < positionsData.length; i++) {
@@ -1683,26 +1684,7 @@ module.exports = {
           // - Antmicro uses innovative development methodologies to stay at the forefront of the industry.
           // - The team members become early adopters of the latest processing platforms from vendors such as NVIDIA, NXP, or Xilinx.
           // - The team is responsible for designing AI system architectures for tasks such as video processing, object detection and tracking, speech recognition, and text analysis.
-          // - The team implements, trains, and tests AI algorithms with 3D game engines and optimizes them for given hardware.
-          // - The team develops and improves AI-oriented tools and frameworks.
-          // - The team's everyday work involves Linux and other open source operating systems.
-          // - Automation of workflow through writing automated tests and Continuous Integration scripts is encouraged.
-          // - The requirements include a Bachelor or Master degree in computer science, electronics, or related fields.
-          // - Understanding computer architectures is required.
-          // - Expertise in C/C++ is a must.
-          // - Experience with bash, git, gcc, and make is required.
-          // - Knowledge of Linux and its internals is required.
-          // - Experience with Python and/or other scripting languages is required.
-          // - Knowledge of TensorFlow/Caffe is required.
-          // - Understanding of neural network architectures is required.
-          // - Knowledge of CUDA/OpenCL/OpenCV is required.
-          // - Knowledge of computer vision algorithms is required.
-          // - Knowledge of the latest trends in AI is required.
-          // - Interest in algorithmics is required.
-          // - Good command of English is required.
-          // - Ability and willingness to learn and work as part of a team is required.
-          // - Full-time employment only (no B2B, no agencies).
-          // - A valid work permit for Poland/European Union is required.`
+          // - The team implements, trains, and tests AI algorithms with 3D game engines and optimizes them for given hardware.`
 
           printC(summaryBulletPoints, "1", "summaryBulletPoints", "g");
 
@@ -1738,8 +1720,8 @@ module.exports = {
         // ----------- Calculate and Save Memory ------------
 
 
-        let nodeIDs
         // ---------------------- Map Nodes from Position text ---------------------
+        let nodeIDs
         promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
               dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
               Do not have any other words except for skills. 
@@ -1754,6 +1736,8 @@ module.exports = {
         let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
         // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
         printC(mapSkillText, "1", "mapSkillText", "g");
+
+        // sd9
   
         nodeIDs;
         try {
@@ -1774,6 +1758,10 @@ module.exports = {
           printC(nodeSave, "4", "nodeSave", "r");
         } catch (err) {
           console.log("didn't create nodes = ");
+        }
+
+        if (nodeIDs) {
+          positionData.nodes = nodeIDs;
         }
         // ---------------------- Map Nodes from Position text ---------------------
 
