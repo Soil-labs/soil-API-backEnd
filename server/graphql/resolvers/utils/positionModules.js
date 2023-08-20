@@ -227,6 +227,9 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
 
     // ------------------- Find the Score ----------------------
 
+
+
+
     // ------------------- Background Analysis -------------------
     let instructionsScore = "";
     if (backgroundScore > 70) {
@@ -239,11 +242,11 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
         "Be neutral find the reasons that will work and don't work and report them";
     } else {
       instructionsScore =
-        "Be really negative find all the reasons that it will not be a good fit";
+        "Be negative find all the reasons that it will not be a good fit";
     }
 
     promptBackground = `
-      You are an Interviewer, you need for an opinion and then create a summary if a candidate is a good fit for the position.
+      You are an Interviewer, create a summary if a candidate is a good fit for the position.
 
       - JOB POSITION (delimited by <>) < ${positionRequirements} >
 
@@ -272,6 +275,67 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
 
     // ------------------- Background Analysis -------------------
 
+
+
+    // ------------------- Background smallVersion + oneLiner Analysis -------------------
+    promptPreviousBackground = `
+      You are an Interviewer, create a summary if a candidate is a good fit for the position.
+
+      Original Text (delimited by <>) < ${backgroundAnalysis} >
+
+
+      - focus on talking directly to the point and only adding important information
+
+      - You need to create two versions of the summary 
+      - a Small Version only MAX 23 words 
+      - a One Liner version only MAX 7 words (focus on skill related information)
+
+      - SOS always follow exactly the format of the example
+      
+      Example: 
+
+      Small Version:
+      One Liner 
+      `;
+
+    // printC(promptBackground,"6","promptBackground","g")
+
+    smallVersionPlusOneLiner = await useGPTchatSimple(
+      promptPreviousBackground,
+      0.7,
+      "API 1"
+    );
+
+    // smallVersionPlusOneLiner = `
+    // Small Version:
+    // The candidate's extensive experience with JavaScript frameworks and version control systems makes them a good fit for the frontend developer position.
+
+    // One Liner:
+    // Experienced in JavaScript frameworks and version control.
+    // `
+
+    printC(smallVersionPlusOneLiner, "7", "smallVersionPlusOneLiner", "g");
+
+    // regex to split the text to smallVersion and oneLiner
+    let oneLiner = smallVersionPlusOneLiner.split("One Liner:")[1];
+    oneLiner = oneLiner.replace(/\n/g, "").trim();
+
+    
+    
+    let onlySmallVer = smallVersionPlusOneLiner.replace(oneLiner, "").replace("One Liner:", "");
+    let smallVersion = onlySmallVer.split("Small Version:")[1];
+    smallVersion = smallVersion.replace(/\n/g, "").trim();
+    
+
+
+    printC(oneLiner, "7", "oneLiner", "b");
+    printC(smallVersion, "7", "smallVersion", "b");
+
+    // sd9
+    // ------------------- Background smallVersion + oneLiner Analysis -------------------
+
+
+
     // ------------------- Skill Analysis -------------------
     instructionsScore = "";
     if (skillScore > 70) {
@@ -284,10 +348,10 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
         "Be neutral find the reasons that will work and don't work and report them";
     } else {
       instructionsScore =
-        "Be really negative find all the reasons that it will not be a good fit";
+        "Be negative find all the reasons that it will not be a good fit";
     }
     promptSkill = `
-      You are an Interviewer, you need for an opinion and then create a summary if a candidate is a good fit for the position specifically focusing on the skills of the candidate.
+      You are an Interviewer, create a summary if a candidate is a good fit for the position specifically focusing on the skills of the candidate.
 
       - JOB POSITION (delimited by <>) < ${positionRequirements} >
 
@@ -312,6 +376,8 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
     printC(skillAnalysis, "7", "skillAnalysis", "g");
     // ------------------- Skill Analysis -------------------
 
+
+
     // ------------------- JobRequirements Analysis -------------------
     instructionsScore = "";
     if (jobRequirementsScore > 70) {
@@ -324,10 +390,10 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
         "Be neutral find the reasons that will work and don't work and report them";
     } else {
       instructionsScore =
-        "Be really negative find all the reasons that it will not be a good fit";
+        "Be negative find all the reasons that it will not be a good fit";
     }
     promptJobRequirements = `
-      You are an Interviewer, you need for an opinion and then create a summary if a candidate is a good fit for the position specifically focusing on the Requirements of this positions and if they are fulfilled
+      You are an Interviewer, create a summary if a candidate is a good fit for the position specifically focusing on the Requirements of this positions and if they are fulfilled
 
       - JOB POSITION (delimited by <>) < ${positionRequirements} >
 
@@ -357,11 +423,15 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
     printC(jobRequirementsAnalysis, "7", "jobRequirementsAnalysis", "g");
     // ------------------- JobRequirements Analysis -------------------
 
+
+    
     // ------------ Add to candidate ------------
     positionData.candidates[j].analysisCandidateEdenAI = {
       ...positionData.candidates[j].analysisCandidateEdenAI,
       background: {
         content: backgroundAnalysis,
+        smallVersion: smallVersion,
+        oneLiner: oneLiner,
       },
       fitRequirements: {
         content: jobRequirementsAnalysis,
@@ -371,8 +441,7 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
       },
       flagAnalysisCreated: true,
     };
-
-    // // ------------ Add to candidate ------------
+    // ------------ Add to candidate ------------
 
     // sd0
   }

@@ -103,7 +103,8 @@ module.exports = `
     }
 
     type analysisCandidateEdenAIType {
-         flagAnalysisCreated: Boolean,
+
+        flagAnalysisCreated: Boolean,
         background: backgroundAnalysisType,
         fitRequirements: fitRequirementsAnalysisType,
         skills: skillsAnalysisType,
@@ -111,6 +112,8 @@ module.exports = `
 
     type backgroundAnalysisType {
         content: String,
+        smallVersion: String,
+        oneLiner: String,
     }
 
     type fitRequirementsAnalysisType {

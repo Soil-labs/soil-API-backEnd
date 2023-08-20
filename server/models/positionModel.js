@@ -133,6 +133,8 @@ const positionModel = mongoose.Schema({
       flagAnalysisCreated: Boolean,
       background: {
         content: String,
+        smallVersion: String,
+        oneLiner: String,
       },
       fitRequirements: {
         content: String,
