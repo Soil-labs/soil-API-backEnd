@@ -478,27 +478,39 @@ module.exports = {
 
     // try {
 
+    // console.log("questionsToAsk = " , questionsToAsk)
+    // s9
+
     questionsToAsk = await addMultipleQuestionsToEdenAIFunc(questionsToAsk);
 
     console.log("questionsToAsk = ", questionsToAsk);
     // asdf12
 
-    let questionsToAskN = await updateEmployees(
-      positionData.questionsToAsk,
-      questionsToAsk,
-      "questionID"
-    );
+    // let questionsToAskN = await updateEmployees(
+    //   positionData.questionsToAsk,
+    //   questionsToAsk,
+    //   "questionID"
+    // );
 
-    console.log("questionsToAskN = ", questionsToAskN);
+    // console.log("questionsToAskN = ", questionsToAskN);
 
-    // find one and updates
-    let positionDataN = await Position.findOneAndUpdate(
-      { _id: positionID },
-      { questionsToAsk: questionsToAskN },
-      { new: true }
-    );
+    // sd9
 
-    return positionDataN;
+    // positionData.questionsToAsk = questionsToAskN;
+    positionData.questionsToAsk = questionsToAsk;
+
+    await positionData.save();
+
+    // // find one and updates
+    // let positionDataN = await Position.findOneAndUpdate(
+    //   { _id: positionID },
+    //   { questionsToAsk: questionsToAskN },
+    //   { new: true }
+    // );
+    // return positionDataN;
+
+    
+    return positionData;
 
     //   } catch (err) {
     //     throw new ApolloError(
