@@ -928,18 +928,19 @@ module.exports = {
 
       positionsRequirements = positionData.positionsRequirements.content;
 
+      // Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
       let promptNewQuestions = `
         REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
   
-        - you can only ask 1 question at a time
+        - you can only ask 1 concise question at a time
         - You should stay really close to the context of the REQUIREMENTS Job Position, and try to cover most of the requirements!
         - Your goal is to ask the best questions in order to understand if the Candidate is a good fit for the Job Position
-        - Your task is to suggest MAXIMUM 9 questions for the Recruiter to ask the Candidate, you can combine bullet points and use them with any way that you want
-        - For every question add only one of this categories < Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills >
+        - Your task is to suggest MAXIMUM 9 questions for the Recruiter to ask the Candidate
+        - For every question add only ONE of this Categories (delimiters <>): < Technical Skills | Human Skills | Experiences | Industry Knowledge | Other >
 
         Example:
-         1. Question - Category
-         2. Question - Category
+         1. Concise Question - Category
+         2. Concise Question - Category
         
         Questions:
       `;
