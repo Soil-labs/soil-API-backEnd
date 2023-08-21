@@ -936,7 +936,7 @@ module.exports = {
         - You should stay really close to the context of the REQUIREMENTS Job Position, and try to cover most of the requirements!
         - Your goal is to ask the best questions in order to understand if the Candidate is a good fit for the Job Position
         - Your task is to suggest MAXIMUM 9 questions for the Recruiter to ask the Candidate
-        - For every question add only ONE of this Categories (delimiters <>): < Technical Skills | Human Skills | Experiences | Industry Knowledge | Other >
+        - For every question add only ONE of this Categories (delimiters <>): < Technical Skills | Human Skills | Experiences | Industry Knowledge | Culture Fit | Other >
 
         Example:
          1. Concise Question - Category
