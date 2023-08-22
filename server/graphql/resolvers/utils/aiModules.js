@@ -191,12 +191,12 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
   Your Task is to create a report for the most important categories and subCategories the Candidate should have and will be evaluated!
 
 
-  - Every Category can have from  1 to 4 bullet points
+  - Every Category can have from  1 to 4 MAX bullet points 
   - To include information in the output you must first find it in text of <Job Position> and <Conversation with the Company Representation> Do not make up fake information
   - You need make really small bullet points maximum 15 words about what the Candidate should have to pass on every Category
   - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc. 
   - Add parts of the Conversation to the report in a Category if it is relevant!
-  - Include 2-4 categories from Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
+  - Include 2-4 categories choosing from this ones (delimiters <>): < Technical Skills | Human Skills | Experiences | Industry Knowledge | Culture Fit | Other >
 
   For example: 
     <Category 1: title>
@@ -205,7 +205,7 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
     <Category 2: title>
       - b3: small content max 15 words
 
-  Answer like the example for every <Category> and always use on the categories <> like the example:`;
+  Answer like the example for every <Category> and always use on the categories <> like the example with 1 to MAX 4 bullet points:`;
   let report = await useGPTchatSimple(promptReport, 0);
 
   printC(report, "3", "report", "b");
