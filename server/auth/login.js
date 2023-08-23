@@ -37,7 +37,7 @@ const login = async ({ body }, res,req) => {
 
 
     // Find if user is in database
-    let dbUser = await Members.findOne({ _id: userid });
+    let dbUser = await Members.findOne({ _id: userid }).select('_id name');
     console.log("user", userid, email, name, picture);
 
     // if user is not in database, save user to database and save the node
@@ -61,7 +61,8 @@ const login = async ({ body }, res,req) => {
       dbUser = await new Members(fields);
       dbUser.save();
       //save a connection
-      await createNode_neo4j({
+      createNode_neo4j({
+        // await createNode_neo4j({
         node: "Member",
         id: dbUser._id,
         name: dbUser.discordName,
@@ -91,7 +92,7 @@ const login = async ({ body }, res,req) => {
     //await retrieveAndMergeServersUserIsIn(access_token, dbUser);
 
     //save the daily login detail🧷 
-    saveDailyLogin(dbUser._id, new Date())
+    // saveDailyLogin(dbUser._id, new Date())
 
     
     // Return user and token
