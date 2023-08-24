@@ -156,6 +156,7 @@ module.exports = `
         officeLocation: String,
         contractType: String,
         contractDuration: String,
+        yearlySalary: Number,
         socials: socialsType,
     }
 
@@ -177,6 +178,7 @@ module.exports = `
         officeLocation: String,
         contractType: String,
         contractDuration: String,
+        yearlySalary: Number,
         socials: socialsInput,
 
     }
