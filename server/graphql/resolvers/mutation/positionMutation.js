@@ -10,13 +10,15 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 const { wait } = require("../utils/aiExtraModules");
 
-
 const {
   addMultipleQuestionsToEdenAIFunc,
   updateQuestionSmall,
 } = require("../utils/questionsEdenAIModules");
 
-const { checkAndAddPositionToMember,candidateEdenAnalysisPositionFunc } = require("../utils/positionModules");
+const {
+  checkAndAddPositionToMember,
+  candidateEdenAnalysisPositionFunc,
+} = require("../utils/positionModules");
 
 const { printC } = require("../../../printModule");
 
@@ -38,15 +40,14 @@ const { arrayToObj } = require("../utils/endorsementModules");
 
 module.exports = {
   updatePosition: async (parent, args, context, info) => {
-    const { _id, name,icon,conduct,mainUserID } = args.fields;
+    const { _id, name, icon, conduct, mainUserID } = args.fields;
     let { companyID } = args.fields;
     console.log("Mutation > updatePosition > args.fields = ", args.fields);
 
     try {
       let positionData;
 
-
-      let companyData
+      let companyData;
 
       if (!_id && !companyID) {
         throw new ApolloError(
@@ -56,13 +57,12 @@ module.exports = {
         );
       }
 
-
       if (companyID) {
         companyData = await Company.findOne({ _id: companyID });
       }
 
-      console.log("change = 1" )
-      
+      console.log("change = 1");
+
       if (_id) {
         positionData = await Position.findOne({ _id });
 
@@ -72,13 +72,21 @@ module.exports = {
 
         // ----------------- conduct ----------------
         if (conduct) {
-          if (conduct.number){ positionData.conduct.number = conduct.number;}
+          if (conduct.number) {
+            positionData.conduct.number = conduct.number;
+          }
 
-          if (conduct.whatsappNumber){ positionData.conduct.whatsappNumber = conduct.whatsappNumber;}
+          if (conduct.whatsappNumber) {
+            positionData.conduct.whatsappNumber = conduct.whatsappNumber;
+          }
 
-          if (conduct.email){ positionData.conduct.email = conduct.email;}
+          if (conduct.email) {
+            positionData.conduct.email = conduct.email;
+          }
 
-          if (conduct.telegram){ positionData.conduct.telegram = conduct.telegram;}
+          if (conduct.telegram) {
+            positionData.conduct.telegram = conduct.telegram;
+          }
         }
         // ----------------- conduct ----------------
       } else {
@@ -99,13 +107,11 @@ module.exports = {
         });
       }
 
-
       if (!companyID) {
         companyID = positionData.companyID;
 
         companyData = await Company.findOne({ _id: companyID });
       }
-
 
       if (!companyData) {
         throw new ApolloError("Could not find Company", "updatePosition", {
@@ -113,11 +119,7 @@ module.exports = {
         });
       }
 
-
       await positionData.save();
-
-
-      
 
       console.log("positionData = ", positionData);
       // sdf0
@@ -149,16 +151,27 @@ module.exports = {
     }
   },
   updatePositionGeneralDetails: async (parent, args, context, info) => {
-    const {_id, startDate, visaRequired, officePolicy, 
-      officeLocation, contractType, contractDuration, socials } = args.fields;
-    console.log("Mutation > updatePositionGeneralDetails > args.fields = ", args.fields);
+    const {
+      _id,
+      startDate,
+      visaRequired,
+      officePolicy,
+      officeLocation,
+      contractType,
+      contractDuration,
+      socials,
+      yearlySalary,
+    } = args.fields;
+    console.log(
+      "Mutation > updatePositionGeneralDetails > args.fields = ",
+      args.fields
+    );
 
     try {
-
       if (!_id)
-      throw new ApolloError("Position ID is required", "updateUrl", {
-        component: "positionMutation > updateUrl",
-      });
+        throw new ApolloError("Position ID is required", "updateUrl", {
+          component: "positionMutation > updateUrl",
+        });
 
       positionData = await Position.findOne({ _id: _id });
 
@@ -167,30 +180,35 @@ module.exports = {
           component: "positionMutation > updateUrl",
         });
 
-
       if (startDate) positionData.generalDetails.startDate = startDate;
       if (visaRequired) positionData.generalDetails.visaRequired = visaRequired;
       if (officePolicy) positionData.generalDetails.officePolicy = officePolicy;
-      if (officeLocation) positionData.generalDetails.officeLocation = officeLocation;
+      if (officeLocation)
+        positionData.generalDetails.officeLocation = officeLocation;
       if (contractType) positionData.generalDetails.contractType = contractType;
-      if (contractDuration) positionData.generalDetails.contractDuration = contractDuration;
+      if (contractDuration)
+        positionData.generalDetails.contractDuration = contractDuration;
+      if (yearlySalary) positionData.generalDetails.yearlySalary = yearlySalary;
 
-
-
-      if (socials){
-        if (socials.portfolio) positionData.generalDetails.socials.portfolio = socials.portfolio;
-        if (socials.linkedin) positionData.generalDetails.socials.linkedin = socials.linkedin;
-        if (socials.twitter) positionData.generalDetails.socials.twitter = socials.twitter;
-        if (socials.telegram) positionData.generalDetails.socials.telegram = socials.telegram;
-        if (socials.github) positionData.generalDetails.socials.github = socials.github;
-        if (socials.lens) positionData.generalDetails.socials.lens = socials.lens;
-        if (socials.custom) positionData.generalDetails.socials.custom = socials.custom;
+      if (socials) {
+        if (socials.portfolio)
+          positionData.generalDetails.socials.portfolio = socials.portfolio;
+        if (socials.linkedin)
+          positionData.generalDetails.socials.linkedin = socials.linkedin;
+        if (socials.twitter)
+          positionData.generalDetails.socials.twitter = socials.twitter;
+        if (socials.telegram)
+          positionData.generalDetails.socials.telegram = socials.telegram;
+        if (socials.github)
+          positionData.generalDetails.socials.github = socials.github;
+        if (socials.lens)
+          positionData.generalDetails.socials.lens = socials.lens;
+        if (socials.custom)
+          positionData.generalDetails.socials.custom = socials.custom;
       }
 
-
-
       await positionData.save();
-      
+
       return positionData;
     } catch (err) {
       throw new ApolloError(
@@ -276,121 +294,117 @@ module.exports = {
     }
   },
   moveCandidateToPosition: async (parent, args, context, info) => {
-    const {userID,positionOldID,positionNewID } = args.fields;
+    const { userID, positionOldID, positionNewID } = args.fields;
     console.log(
       "Mutation > moveCandidateToPosition > args.fields = ",
       args.fields
     );
 
-    
     if (!positionOldID) throw new ApolloError("positionOldID is required");
     let positionOldData = await Position.findOne({ _id: positionOldID });
     if (!positionOldData) throw new ApolloError("positionOld not found");
-
-
 
     if (!positionNewID) throw new ApolloError("positionNewID is required");
     let positionNewData = await Position.findOne({ _id: positionNewID });
     if (!positionNewData) throw new ApolloError("positionNew not found");
 
-
     if (!userID) throw new ApolloError("userID is required");
-    let memberData = await Members.findOne({ _id: userID })
+    let memberData = await Members.findOne({ _id: userID });
     if (!memberData) throw new ApolloError("user not found");
-    
 
     try {
+      // ----------------- add candidate to New position -----------------
+      let index_candNewPos = positionNewData.candidates.findIndex(
+        (x) => x.userID.toString() == userID.toString()
+      );
 
-
-        // ----------------- add candidate to New position -----------------
-        let index_candNewPos = positionNewData.candidates.findIndex(
-          (x) => x.userID.toString() == userID.toString()
-        );
-  
-        if (index_candNewPos == -1) {
-          positionNewData.candidates.push({
-            userID: userID,
-            analysisCandidateEdenAI: {
-              flagAnalysisCreated: false,
-            }
-          });
-
-          index_candNewPos = positionNewData.candidates.length - 1;
-  
-          await positionNewData.save();
-        }
-        // ----------------- add candidate to New position -----------------
-        
-
-        // ----------------- Calculate Score Job Report Candidate --------------
-        const res = await reportPassFailCVPositionConversationFunc(userID, positionNewID)
-        positionNewData = res.positionData
-        // ----------------- Calculate Score Job Report Candidate --------------
-
-
-        wait(5000)
-
-
-        // ----------------- find the conversation and add the positionNewID -----------------
-        let conversationData = await Conversation.find({
-            $and: [{ userID: userID }, { positionID: positionOldID }],
+      if (index_candNewPos == -1) {
+        positionNewData.candidates.push({
+          userID: userID,
+          analysisCandidateEdenAI: {
+            flagAnalysisCreated: false,
+          },
         });
 
-        // take only the last conv
-        conversationData = conversationData[conversationData.length - 1];
+        index_candNewPos = positionNewData.candidates.length - 1;
 
-        // add the positionNewID to the conversation
-        extraPositionsIDArr = conversationData.extraPositionsID 
+        await positionNewData.save();
+      }
+      // ----------------- add candidate to New position -----------------
 
-        if (!extraPositionsIDArr) extraPositionsIDArr = []
-        
-        // if the positionNewID is not already in the array
-        if (!extraPositionsIDArr.includes(positionNewID))
-          extraPositionsIDArr.push(positionNewID)
+      // ----------------- Calculate Score Job Report Candidate --------------
+      const res = await reportPassFailCVPositionConversationFunc(
+        userID,
+        positionNewID
+      );
+      positionNewData = res.positionData;
+      // ----------------- Calculate Score Job Report Candidate --------------
 
-        conversationData.extraPositionsID = extraPositionsIDArr
+      wait(5000);
 
-        await conversationData.save()
-        // ----------------- find the conversation and add the positionNewID -----------------
+      // ----------------- find the conversation and add the positionNewID -----------------
+      let conversationData = await Conversation.find({
+        $and: [{ userID: userID }, { positionID: positionOldID }],
+      });
 
+      // take only the last conv
+      conversationData = conversationData[conversationData.length - 1];
 
-        // ------------- Candidate Eden Analysis for Position -------------
-        positionNewData = await candidateEdenAnalysisPositionFunc(positionNewData)
-        // ------------- Candidate Eden Analysis for Position -------------
+      // add the positionNewID to the conversation
+      extraPositionsIDArr = conversationData.extraPositionsID;
 
-        wait(5000)
+      if (!extraPositionsIDArr) extraPositionsIDArr = [];
 
-        // ------------- Move the summaryQuestions from old to new position -------------
-        // find the candidate on old position
-        let index_candOldPos = positionOldData.candidates.findIndex(
-          (x) => x.userID.toString() == userID.toString()
-        );
+      // if the positionNewID is not already in the array
+      if (!extraPositionsIDArr.includes(positionNewID))
+        extraPositionsIDArr.push(positionNewID);
 
-        let summaryQuestions = undefined
+      conversationData.extraPositionsID = extraPositionsIDArr;
 
-        if (index_candOldPos != -1) 
-          summaryQuestions = positionOldData.candidates[index_candOldPos]?.summaryQuestions
+      await conversationData.save();
+      // ----------------- find the conversation and add the positionNewID -----------------
 
-        if (summaryQuestions) {
-          positionNewData.candidates[index_candNewPos].summaryQuestions = summaryQuestions
-        }
-        // ------------- Move the summaryQuestions from old to new position -------------
+      // ------------- Candidate Eden Analysis for Position -------------
+      positionNewData = await candidateEdenAnalysisPositionFunc(
+        positionNewData
+      );
+      // ------------- Candidate Eden Analysis for Position -------------
 
+      wait(5000);
 
-        // ------------- Move the Candidate Notes Interview from old to new position -------------
+      // ------------- Move the summaryQuestions from old to new position -------------
+      // find the candidate on old position
+      let index_candOldPos = positionOldData.candidates.findIndex(
+        (x) => x.userID.toString() == userID.toString()
+      );
 
-        if (index_candOldPos != -1) 
-          notesInterview = positionOldData.candidates[index_candOldPos]?.notesInterview
+      let summaryQuestions = undefined;
 
-        if (notesInterview) {
-          positionNewData.candidates[index_candNewPos].notesInterview = notesInterview
-        }
-        // ------------- Move the Candidate Notes Interview from old to new position -------------
+      if (index_candOldPos != -1)
+        summaryQuestions =
+          positionOldData.candidates[index_candOldPos]?.summaryQuestions;
 
-        await positionNewData.save()
+      if (summaryQuestions) {
+        positionNewData.candidates[index_candNewPos].summaryQuestions =
+          summaryQuestions;
+      }
+      // ------------- Move the summaryQuestions from old to new position -------------
 
+      // ------------- Move the Candidate Notes Interview from old to new position -------------
 
-        return positionNewData;
+      if (index_candOldPos != -1)
+        notesInterview =
+          positionOldData.candidates[index_candOldPos]?.notesInterview;
+
+      if (notesInterview) {
+        positionNewData.candidates[index_candNewPos].notesInterview =
+          notesInterview;
+      }
+      // ------------- Move the Candidate Notes Interview from old to new position -------------
+
+      await positionNewData.save();
+
+      return positionNewData;
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -509,7 +523,6 @@ module.exports = {
     // );
     // return positionDataN;
 
-    
     return positionData;
 
     //   } catch (err) {
@@ -926,7 +939,9 @@ module.exports = {
 
     try {
       for (let i = 0; i < positionsData.length; i++) {
-        positionsData[i] = await candidateEdenAnalysisPositionFunc(positionsData[i])
+        positionsData[i] = await candidateEdenAnalysisPositionFunc(
+          positionsData[i]
+        );
       }
 
       return positionsData;
@@ -1078,10 +1093,8 @@ module.exports = {
             }
 
             printC(questionsToAskObj, "4", "questionsToAskObj", "b");
-
           }
         }
-
 
         printC(questionsToAskObj, "4", "questionsToAskObj", "b");
 
