@@ -8,7 +8,7 @@ const { request, gql} = require('graphql-request');
 const { REACT_APP_API_URL, REACT_APP_API_CRON_URL } = process.env;
 
 
-  const addToFilter = async (_id,phase,senderID,senderType,responderID,responderType,question,conversationID,answer) => {
+  const addToFilter = async (_id,phase,sentFlag,senderID,senderType,responderID,responderType,question,conversationID,answer) => {
     filter = {}
 
     if (_id) {
@@ -31,6 +31,8 @@ const { REACT_APP_API_URL, REACT_APP_API_CRON_URL } = process.env;
       }
     }
 
+
+
     if (responderID && responderType) {
       if (responderType == "USER") {
         filter={
@@ -49,6 +51,10 @@ const { REACT_APP_API_URL, REACT_APP_API_CRON_URL } = process.env;
 
     if (phase) {
       filter.phase = phase;
+    }
+
+    if (sentFlag) {
+      filter.sentFlag = sentFlag;
     }
 
     if (question) {

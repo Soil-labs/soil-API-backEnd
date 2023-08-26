@@ -18,6 +18,8 @@ module.exports = `
         createFakeUserCVnew(fields: createFakeUserCVnewInput ): Members
         uploadUserDataGPT(fields: uploadUserDataGPTInput ): Members
         updateMemberSignalInfo(fields: updateMemberSignalInfoInput ): Members
+        checkUsersForTGConnection(fields: checkUsersForTGConnectionInput ): Members
+        initiateConnectionTelegram(fields: initiateConnectionTelegramInput ): Members
         endorseAttribute(fields:endorseAttributeInput!): Members
 
         #  ---------- ENDORSEMENT MUTATIONS -------

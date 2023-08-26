@@ -1946,6 +1946,21 @@ module.exports = {
       return pubsub.asyncIterator(temp);
     },
   },
+  memberDataConnectedTG: {
+    subscribe: (parent, args, context, info) => {
+      const memberData = pubsub.asyncIterator("USER_TG_CONNECTED");
+
+      console.log("memberData = " , memberData)
+
+
+      // find memberData
+      // const memberData2 = Members.findOne({ _id: "036872233050204872" }).select('_id');
+
+
+      // return memberDataConnectedTGv
+      return memberData
+    },
+  },
   // addEndorsement: async (parent, args, context, info) => {
   //   const { endorserID, endorseeID, endorsementMessage, discussion,stars,endorseOrReview,endorseNodes,stake,income } = args.fields;
   //   console.log("Mutation > addEndorsement > args.fields = ", args.fields);
@@ -2292,6 +2307,76 @@ module.exports = {
         err.message,
         err.extensions?.code || "updateMemberSignalInfo",
         { component: "memberMutation > updateMemberSignalInfo" }
+      );
+    }
+  },
+  initiateConnectionTelegram: async (parent, args, context, info) => {
+    const { memberID } = args.fields;
+    console.log("Mutation > initiateConnectionTelegram > args.fields = ", args.fields);
+
+    if (!memberID) throw new Error("The memberID is required🔥");
+
+    let memberData = await Members.findOne({ _id: memberID }).select('_id conduct ');
+
+    if (!memberData) throw new Error("The memberID is not valid🔥 can't find member");
+
+    try {
+
+
+      if (!memberData?.conduct?.telegramConnectionCode) {
+        // create random 100 digit number from 000 to 999, always need to have exactly 3 digits
+        const random3Digit = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+
+        memberData.conduct.telegramConnectionCode = random3Digit
+
+        memberData = await memberData.save()
+      } 
+
+      return memberData;
+
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "initiateConnectionTelegram",
+        { component: "memberMutation > initiateConnectionTelegram" }
+      );
+    }
+  },
+  checkUsersForTGConnection: async (parent, args, context, info) => {
+    const { authNumberTGMessage,telegramID,telegramChatID } = args.fields;
+    console.log("Mutation > checkUsersForTGConnection > args.fields = ", args.fields);
+
+
+    let memberData = await Members.findOne({ "conduct.telegramConnectionCode": authNumberTGMessage }).select('_id discordName conduct ');
+
+    if (!memberData) throw new Error("Didn't find any users with this code, try again");
+
+    try {
+
+      memberData.conduct.telegram = telegramID
+      memberData.conduct.telegramChatID = telegramChatID
+      memberData.conduct.telegramConnectionCode = null
+
+
+      memberData = await memberData.save()
+
+      console.log("memberData = " , memberData)
+
+      pubsub.publish("USER_TG_CONNECTED", {
+        memberDataConnectedTG: memberData
+      });
+
+
+
+      return memberData;
+
+      
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "checkUsersForTGConnection",
+        { component: "memberMutation > checkUsersForTGConnection" }
       );
     }
   },

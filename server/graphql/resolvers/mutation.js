@@ -14,7 +14,7 @@ const {
   createFakeUser,
   createFakeUserCVnew,
   uploadUserDataGPT,
-  updateMemberSignalInfo,
+  updateMemberSignalInfo,checkUsersForTGConnection,initiateConnectionTelegram,memberDataConnectedTG,
 } = require("./mutation/memberMutation");
 const {
   updateProject,
@@ -180,7 +180,7 @@ module.exports = {
     createFakeUser,
     createFakeUserCVnew,
     uploadUserDataGPT,
-    updateMemberSignalInfo,
+    updateMemberSignalInfo,checkUsersForTGConnection,initiateConnectionTelegram,
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
@@ -333,5 +333,6 @@ module.exports = {
     queryResponseUpdated,
     memberUpdatedInRoom,
     userCVSavedToDB,
+    memberDataConnectedTG,
   },
 };

@@ -85,6 +85,8 @@ module.exports = `
         whatsappNumber: String,
         email: String,
         telegram: String,
+        telegramChatID: String,
+        telegramConnectionCode: String,
     }
 
     type positionsAppliedType {
@@ -546,6 +548,16 @@ module.exports = `
         whatsappNumber: String,
         email: String,
         telegram: String,
+    }
+
+    input initiateConnectionTelegramInput {
+        memberID: ID
+    }
+
+    input checkUsersForTGConnectionInput {
+        authNumberTGMessage: String
+        telegramID: String
+        telegramChatID: String
     }
 
 
