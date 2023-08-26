@@ -25,6 +25,8 @@ const memberSchema = mongoose.Schema({
     whatsappNumber: String,
     email: String,
     telegram: String,
+    telegramChatID: String,
+    telegramConnectionCode: String,
   },
 
   onbording: {

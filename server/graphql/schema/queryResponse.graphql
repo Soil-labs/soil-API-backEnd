@@ -6,6 +6,7 @@ module.exports = `
         responder: responderType,
         conversation: Conversation,
         phase: phaseQueryResponseEnum,
+        sentFlag: Boolean,
         question: questionQueryType,
         answer: answerType,
 
@@ -18,6 +19,7 @@ module.exports = `
         responderID: ID
         responderType: sendRespTypeEnum
         phase: phaseQueryResponseEnum
+        sentFlag: Boolean
     }
 
     input queryResponseUpdatedInput {
@@ -32,6 +34,7 @@ module.exports = `
     input updateQueryResponseInput {
         _id: ID
         phase: phaseQueryResponseEnum
+        sentFlag: Boolean
         senderID: ID
         senderType: sendRespTypeEnum
         responderID: ID

@@ -5,7 +5,7 @@ const { ApolloError } = require("apollo-server-express");
 
 module.exports = {
   findQueryResponses: async (parent, args, context, info) => {
-    const {  _id,senderID,senderType,responderID,responderType,phase } = args.fields;
+    const {  _id,senderID,senderType,responderID,responderType,phase,sentFlag } = args.fields;
     console.log("Query > findQueryResponses > args.fields = ", args.fields);
 
     
@@ -30,6 +30,12 @@ module.exports = {
 
       if (phase) {
         searchQuery_and.push({ phase: phase });
+      }
+
+      if (sentFlag == true) {
+        searchQuery_and.push({ sentFlag: sentFlag });
+      } else if (sentFlag == false) {
+        searchQuery_and.push({ sentFlag: { $ne: true } });
       }
       
 

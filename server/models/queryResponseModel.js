@@ -1,3 +1,4 @@
+const { boolean } = require("mathjs");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
@@ -16,6 +17,7 @@ const queryResponseModel = mongoose.Schema({
     type: String,
     enum: ["QUERY", "RESPONDED","VIEWED","ARCHIVED"],
   },
+  sentFlag: boolean,
   question: {
     content: String,
   },
