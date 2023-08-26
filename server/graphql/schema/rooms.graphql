@@ -16,6 +16,9 @@ module.exports = `
         _id: ID,
         serverID: String,
     }
+    input memberDataConnectedTGInput {
+        _id: ID,
+    }
 
     input createRoomInput {
         _id: String,
