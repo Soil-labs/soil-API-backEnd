@@ -53,7 +53,7 @@ const { REACT_APP_API_URL, REACT_APP_API_CRON_URL } = process.env;
       filter.phase = phase;
     }
 
-    if (sentFlag) {
+    if (sentFlag!=null) {
       filter.sentFlag = sentFlag;
     }
 
