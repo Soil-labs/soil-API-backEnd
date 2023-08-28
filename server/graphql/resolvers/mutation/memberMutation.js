@@ -1961,6 +1961,16 @@ module.exports = {
       return memberData
     },
   },
+  positionDataConnectedTG: {
+    subscribe: (parent, args, context, info) => {
+      const positionData = pubsub.asyncIterator("POSITION_TG_CONNECTED");
+
+      console.log("positionData = " , positionData)
+
+
+      return positionData
+    },
+  },
   // addEndorsement: async (parent, args, context, info) => {
   //   const { endorserID, endorseeID, endorsementMessage, discussion,stars,endorseOrReview,endorseNodes,stake,income } = args.fields;
   //   console.log("Mutation > addEndorsement > args.fields = ", args.fields);
@@ -2311,28 +2321,72 @@ module.exports = {
     }
   },
   initiateConnectionTelegram: async (parent, args, context, info) => {
-    const { memberID } = args.fields;
+    const { memberID,positionID } = args.fields;
     console.log("Mutation > initiateConnectionTelegram > args.fields = ", args.fields);
 
-    if (!memberID) throw new Error("The memberID is required🔥");
+    if (!memberID && !positionID) throw new Error("The memberID or positionID is required🔥");
 
-    let memberData = await Members.findOne({ _id: memberID }).select('_id conduct ');
+    if (memberID && positionID) throw new Error("You can't have both memberID and positionID🔥");
 
-    if (!memberData) throw new Error("The memberID is not valid🔥 can't find member");
+    let memberData, positionData
+    
 
     try {
 
+      let random3Digit
 
-      if (!memberData?.conduct?.telegramConnectionCode) {
-        // create random 100 digit number from 000 to 999, always need to have exactly 3 digits
-        const random3Digit = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      if (memberID) {
+        memberData = await Members.findOne({ _id: memberID }).select('_id discordName conduct ');
+  
+        if (!memberData) throw new Error("The memberID is not valid🔥 can't find member");
 
-        memberData.conduct.telegramConnectionCode = random3Digit
 
-        memberData = await memberData.save()
-      } 
+        if (!memberData?.conduct?.telegramConnectionCode) {
+          // create random 100 digit number from 000 to 999, always need to have exactly 3 digits
+          random3Digit = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  
+          memberData.conduct.telegramConnectionCode = random3Digit
+  
+          memberData = await memberData.save()
+        }  else {
+          random3Digit = memberData.conduct.telegramConnectionCode
+        }
 
-      return memberData;
+        return {
+          done: true,
+          _id: memberData._id,
+          name: memberData.discordName,
+          telegram: memberData.conduct.telegram,
+          telegramChatID: memberData.conduct.telegramChatID,
+          authTelegramCode: random3Digit,
+        };
+  
+      } else if (positionID) {
+        positionData = await Position.findOne({ _id: positionID }).select('_id name conduct');
+  
+        if (!positionData) throw new Error("The positionID is not valid🔥 can't find position");
+
+        if (!positionData?.conduct?.telegramConnectionCode) {
+          // create random 100 digit number from 000 to 999, always need to have exactly 3 digits
+          random3Digit = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  
+          positionData.conduct.telegramConnectionCode = random3Digit
+  
+          positionData = await positionData.save()
+        } else {
+          random3Digit = positionData.conduct.telegramConnectionCode
+        }
+
+        return {
+          done: true,
+          _id: positionData._id,
+          name: positionData.name,
+          telegram: positionData.conduct.telegram,
+          telegramChatID: positionData.conduct.telegramChatID,
+          authTelegramCode: random3Digit,
+        };
+      }
+
 
 
     } catch (err) {
@@ -2350,22 +2404,85 @@ module.exports = {
 
     let memberData = await Members.findOne({ "conduct.telegramConnectionCode": authNumberTGMessage }).select('_id discordName conduct ');
 
-    if (!memberData) throw new Error("Didn't find any users with this code, try again");
+    let positionData = await Position.findOne({ "conduct.telegramConnectionCode": authNumberTGMessage }).select('_id name conduct ');
+
+
+    if (!memberData && !positionData) throw new Error("Didn't find any Member or Positions with this code, try again");
 
     try {
 
-      memberData.conduct.telegram = telegramID
-      memberData.conduct.telegramChatID = telegramChatID
-      memberData.conduct.telegramConnectionCode = null
+      // ----------- Delete all the other telegram connections ------------
+      positionsDataT = await Position.find({ "conduct.telegramChatID": telegramChatID });
+
+      for (let i = 0; i < positionsDataT.length; i++) {
+        const positionDataT = positionsDataT[i];
+        positionDataT.conduct.telegram = null
+        positionDataT.conduct.telegramChatID = null
+
+        positionDataT = await positionDataT.save()
+      }
+
+      membersDataT = await Members.find({ "conduct.telegramChatID": telegramChatID });
+
+      for (let i = 0; i < membersDataT.length; i++) {
+        const memberDataT = membersDataT[i];
+        memberDataT.conduct.telegram = null
+        memberDataT.conduct.telegramChatID = null
+
+        memberDataT = await memberDataT.save()
+      }
+      // ----------- Delete all the other telegram connections ------------
+
+      if (memberData) {
+
+      
+        memberData.conduct.telegram = telegramID
+        memberData.conduct.telegramChatID = telegramChatID
+        memberData.conduct.telegramConnectionCode = null
 
 
-      memberData = await memberData.save()
+        memberData = await memberData.save()
 
-      console.log("memberData = " , memberData)
+        console.log("memberData = " , memberData)
 
-      pubsub.publish("USER_TG_CONNECTED", {
-        memberDataConnectedTG: memberData
-      });
+
+        
+
+        pubsub.publish("USER_TG_CONNECTED", {
+          memberDataConnectedTG: memberData
+        });
+
+        return {
+          done: true,
+          _id: memberData._id,
+          name: memberData.discordName,
+          telegram: telegramID,
+          telegramChatID: telegramChatID,
+          authTelegramCode: null
+        }
+      } else if (positionData) {
+        positionData.conduct.telegram = telegramID
+        positionData.conduct.telegramChatID = telegramChatID
+        positionData.conduct.telegramConnectionCode = null
+
+
+        positionData = await positionData.save()
+
+        console.log("positionData = " , positionData)
+
+        pubsub.publish("POSITION_TG_CONNECTED", {
+          positionDataConnectedTG: positionData
+        });
+
+        return {
+          done: true,
+          _id: positionData._id,
+          name: positionData.name,
+          telegram: telegramID,
+          telegramChatID: telegramChatID,
+          authTelegramCode: null
+        }
+      }
 
 
 
