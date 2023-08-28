@@ -5,10 +5,10 @@ const { ApolloError } = require("apollo-server-express");
 
 module.exports = {
   findPosition: async (parent, args, context, info) => {
-    const { _id } = args.fields;
+    const { _id,telegramChatID } = args.fields;
     console.log("Query > findPosition > args.fields = ", args.fields);
 
-    if (!_id) throw new ApolloError("ID is required");
+    if (!_id && !telegramChatID) throw new ApolloError("ID or telegramChatID is required");
 
     try {
       // const collection = Position.collection;
@@ -22,10 +22,12 @@ module.exports = {
       //   }
       // });
 
-      // find conversaiotn
-      console.log("change = ");
-      let positionData = await Position.findOne({ _id: _id });
-      console.log("change = 1", positionData);
+      let positionData 
+      if (_id) { 
+        positionData = await Position.findOne({ _id: _id });
+      } else if (telegramChatID) {
+        positionData = await Position.findOne({ "conduct.telegramChatID": telegramChatID });
+      }
 
       if (!positionData) throw new ApolloError("Position not found");
 

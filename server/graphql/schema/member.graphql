@@ -553,6 +553,16 @@ module.exports = `
 
     input initiateConnectionTelegramInput {
         memberID: ID
+        positionID: ID
+    }
+
+    type updateTGOutput {
+        done: Boolean
+        _id: ID
+        name: String
+        telegram: String,
+        telegramChatID: String,
+        authTelegramCode: String
     }
 
     input checkUsersForTGConnectionInput {
