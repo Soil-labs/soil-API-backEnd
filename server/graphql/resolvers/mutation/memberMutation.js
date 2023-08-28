@@ -2415,7 +2415,7 @@ module.exports = {
       positionsDataT = await Position.find({ "conduct.telegramChatID": telegramChatID });
 
       for (let i = 0; i < positionsDataT.length; i++) {
-        const positionDataT = positionsDataT[i];
+        let positionDataT = positionsDataT[i];
         positionDataT.conduct.telegram = null
         positionDataT.conduct.telegramChatID = null
 
@@ -2425,7 +2425,7 @@ module.exports = {
       membersDataT = await Members.find({ "conduct.telegramChatID": telegramChatID });
 
       for (let i = 0; i < membersDataT.length; i++) {
-        const memberDataT = membersDataT[i];
+        let memberDataT = membersDataT[i];
         memberDataT.conduct.telegram = null
         memberDataT.conduct.telegramChatID = null
 
