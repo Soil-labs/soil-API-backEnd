@@ -41,13 +41,13 @@ module.exports = {
     //combineResolvers(
     //IsAuthenticated,
     async (parent, args, context, info) => {
-      const { _id, serverID, discordName } = args.fields;
+      const { _id, serverID, discordName,telegramChatID } = args.fields;
       console.log("Query > findMember > args.fields = ", args.fields);
 
       let searchTerm = {};
 
-      if (!_id && !discordName) {
-        throw new ApolloError("No _id or discord name provided");
+      if (!_id && !discordName && !telegramChatID) {
+        throw new ApolloError("No _id or discord name or telegramChatID provided");
       }
 
       let queryServerID = [];
@@ -69,6 +69,8 @@ module.exports = {
           searchTerm = { discordName: { $regex: regEx } };
         } else if (_id) {
           searchTerm = { _id: _id };
+        } else if (telegramChatID) {
+          searchTerm = { "conduct.telegramChatID": telegramChatID };
         }
 
         memberData = await Members.findOne(searchTerm);

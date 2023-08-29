@@ -36,7 +36,7 @@ module.exports = {
           if (filter.question) queryResponseData.question = filter.question;
           if (filter.answer) queryResponseData.answer = filter.answer;
           if (filter.conversationID) queryResponseData.conversationID = filter.conversationID;
-          if (filter.sentFlag) queryResponseData.sentFlag = filter.sentFlag;
+          if (filter.sentFlag != null) queryResponseData.sentFlag = filter.sentFlag;
 
         }
 

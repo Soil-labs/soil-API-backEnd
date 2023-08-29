@@ -247,6 +247,7 @@ module.exports = `
 
     input findPositionInput {
         _id: ID,
+        telegramChatID: String,
     }
 
     input findPositionsInput {
