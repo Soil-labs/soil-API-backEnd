@@ -129,6 +129,7 @@ module.exports = `
           # ---------- AI QUERY -------------
           findMessage(fields: findMessageInputPaginated): PaginatedMessages
           edenGPTreply(fields: edenGPTreplyInput): edenGPTreplyOutput
+          identifyCategoryAndReply(fields: identifyCategoryAndReplyInput): identifyCategoryAndReplyOutput
           messageMapKG(fields: messageMapKGInput): messageMapKGOutput
           messageMapKG_V2(fields: messageMapKG_V2Input): messageMapKG_V2Output
           messageMapKG_V3(fields: messageMapKG_V3Input): messageMapKG_V3Output

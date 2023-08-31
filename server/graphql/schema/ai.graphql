@@ -261,6 +261,20 @@ module.exports = `
     input edenGPTreplyInput {
         message: String
     }
+    input identifyCategoryAndReplyInput {
+        message: String
+        replyFlag: Boolean
+    }
+    type identifyCategoryAndReplyOutput {
+        category: categoryMessageCategoryEnum
+        reply: String
+    }
+    enum categoryMessageCategoryEnum {
+        GENERAL_CONVERSATION
+        ASK_ABOUT_POSITION_ALREADY_APPLIED
+        ASK_FIND_NEW_POSITION
+        GIVE_MORE_INFO_ABOUT_BACKGROUND
+    }
     input edenGPTsearchProfilesInput {
         message: String
         profileIDs: [ID]
@@ -285,6 +299,7 @@ module.exports = `
     type edenGPTreplyOutput {
         reply: String
     }
+    
 
     input messageMapKGInput {
         message: String

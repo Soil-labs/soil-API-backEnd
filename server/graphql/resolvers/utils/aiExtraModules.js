@@ -292,6 +292,114 @@ async function useGPTchatSimple(
   return resContent;
 }
 
+const categoryMessageCategoryEnum = {
+  1: "GENERAL_CONVERSATION",
+  2: "ASK_ABOUT_POSITION_ALREADY_APPLIED",
+  3: "ASK_FIND_NEW_POSITION",
+  4: "GIVE_MORE_INFO_ABOUT_BACKGROUND",
+};
+
+const categoryMessageCategoryEnumReverse = {
+  "GENERAL_CONVERSATION":{
+    number: 1,
+    promptReply: "Reply to the message with a general conversation",
+  } ,
+  "ASK_ABOUT_POSITION_ALREADY_APPLIED":{
+    number: 2,
+    promptReply: "Reply to the message using the MEMORIES about the position",
+  } ,
+  "ASK_FIND_NEW_POSITION":{
+    number: 3,
+    promptReply: "Reply to the message by giving information about potential positions that can be a good fit using the MEMORIES",
+  } ,
+  "GIVE_MORE_INFO_ABOUT_BACKGROUND":{
+    number: 4,
+    promptReply: "Thank him for the information and ask if there is anything else he wants to share",
+  } ,
+};
+
+
+async function identifyCategoryFunc(message) {
+
+  let promptIDentifyCategory = `You have as input a message delimiters <>: <${message}>
+  
+  
+  - Your task is to identify the category of the message
+  - You can choose from the following categories:
+  1. General Conversation
+  2. Asking a question about a position already applied
+  3. Asking to find a new position
+  4. Giving more information about his background, knowledge, skills, experience, etc.
+  
+  - it can only be one of the 4 categories
+  
+  
+  What is the Category of the message, please only reply with a number from 1 to 4 that corresponds to the category
+  
+  Category only a number from 1 to 4:`;
+
+
+  let resContent = await useGPTchatSimple(promptIDentifyCategory, 0,"API 2");
+
+
+  console.log("resContent = " , resContent)
+
+  const match = resContent.match(/\d+/);
+  const number = match ? parseInt(match[0]) : null;
+  console.log(number); 
+
+  if (number != null) {
+    return categoryMessageCategoryEnum[number]
+  }
+ 
+
+  return null;
+}
+
+async function replyToMessageBasedOnCategoryFunc(message, categoryEnum) {
+
+  replyEnumInfo = categoryMessageCategoryEnumReverse[categoryEnum];
+
+  replyPrompt = replyEnumInfo.promptReply
+
+  console.log("categoryEnum = " , categoryEnum)
+  console.log("replyEnumInfo = " , replyEnumInfo)
+  console.log("replyPrompt = " , replyPrompt)
+
+  const memories = `
+  - User is applying for a position in Google
+  - User is a FrontEnd developer
+  - User has 5 years of experience in FrontEnd development`
+
+
+  let memoriesPrompt = ""
+  if (replyEnumInfo.number == 2 || replyEnumInfo.number == 3) {
+    memoriesPrompt = memories
+  }
+
+  // only use the memories if replyEnumInfo is 2 or 3 with an if statment inside promptReplyTotal
+
+  let promptReplyTotal = `
+  ${replyPrompt}
+
+  ${memoriesPrompt}
+
+  - make a casual 1-4 sentence answer
+  This is the message that you should Reply <>: <${message}>`
+
+
+
+  console.log("promptReplyTotal = " , promptReplyTotal)
+
+  let resContent = await useGPTchatSimple(promptReplyTotal, 0,"API 1");
+
+  console.log("resContent = " , resContent)
+
+  return resContent;
+
+}
+
+
 
 async function useGPT4Simple(prompt, temperature = 0.7,chooseAPI = "API 1") {
   discussion = [
@@ -510,4 +618,6 @@ module.exports = {
   findRoleDescriptionAndBenefits,
   useGPT4chat,
   findBestEmbedings,
+  identifyCategoryFunc,
+  replyToMessageBasedOnCategoryFunc,
 };
