@@ -38,7 +38,7 @@ const {
 
 const { useGPTchatSimple} = require("../utils/aiModules");
 
-const { useGPT4chat} = require("../utils/aiExtraModules");
+const { useGPT4chat,identifyCategoryFunc,replyToMessageBasedOnCategoryFunc} = require("../utils/aiExtraModules");
 
 
 const {
@@ -3625,6 +3625,39 @@ module.exports = {
         err.extensions?.code || "edenGPTreply",
         {
           component: "aiQuery > edenGPTreply",
+        }
+      );
+    }
+  },
+  identifyCategoryAndReply: async (parent, args, context, info) => {
+    const { message,replyFlag } = args.fields;
+    console.log("Query > identifyCategoryAndReply > args.fields = ", args.fields);
+
+
+
+    try {
+
+      const categoryEnum = await identifyCategoryFunc(message)
+
+      let reply = ""
+      if (replyFlag == true) {
+
+        reply = await replyToMessageBasedOnCategoryFunc(message,categoryEnum)
+
+      }
+
+    
+
+      return {
+        category: categoryEnum,
+        reply: reply
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "identifyCategoryAndReply",
+        {
+          component: "aiQuery > identifyCategoryAndReply",
         }
       );
     }
