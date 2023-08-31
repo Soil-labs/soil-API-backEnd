@@ -106,7 +106,7 @@ const {
 const { findChat } = require("./query/chatQuery");
 const {
   findMessage,
-  edenGPTreply,
+  edenGPTreply,identifyCategoryAndReply,
   messageMapKG,
   messageMapKG_V2,
   messageMapKG_V3,
@@ -267,7 +267,7 @@ module.exports = {
 
     //----------- AI QUERY ------------------
     findMessage,
-    edenGPTreply,
+    edenGPTreply,identifyCategoryAndReply,
     messageMapKG,
     messageMapKG_V2,
     messageMapKG_V3,
