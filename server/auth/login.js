@@ -4,15 +4,13 @@ const fetchDiscordUser = require("./utils/fetchDiscordUser");
 const {
   retrieveAndMergeServersUserIsIn,
 } = require("../utils/updateUserServersInDB");
-const {
-  createNode_neo4j,
-} = require("../neo4j/func_neo4j");
+const { createNode_neo4j } = require("../neo4j/func_neo4j");
 const { saveDailyLogin } = require("../utils/saveLoginData");
 
-const { OAuth2Client } = require('google-auth-library');
+const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-const login = async ({ body }, res,req) => {
+const login = async ({ body }, res, req) => {
   try {
     //const { code, redirect_uri } = body;
 
@@ -25,24 +23,22 @@ const login = async ({ body }, res,req) => {
 
     // Verify the token from Google and extract user information
     const ticket = await client.verifyIdToken({
-          idToken: accessToken,
-          audience: process.env.GOOGLE_CLIENT_ID,
+      idToken: accessToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
-    const userid = payload['sub'];
-    const email = payload['email'];
-    const name = payload['name'];
-    const picture = payload['picture'];
-
+    const userid = payload["sub"];
+    const email = payload["email"];
+    const name = payload["name"];
+    const picture = payload["picture"];
 
     // Find if user is in database
-    let dbUser = await Members.findOne({ _id: userid }).select('_id name');
+    let dbUser = await Members.findOne({ _id: userid }).select("_id name");
     console.log("user", userid, email, name, picture);
 
     // if user is not in database, save user to database and save the node
     if (!dbUser) {
-
       // let fields = {
       //   _id: user.id,
       //   discordName: user.username,
@@ -55,6 +51,7 @@ const login = async ({ body }, res,req) => {
         _id: userid,
         discordName: name,
         discordAvatar: picture,
+        conduct: { email: email },
         //discriminator: user.discriminator,
         registeredAt: new Date(),
       };
@@ -91,10 +88,9 @@ const login = async ({ body }, res,req) => {
 
     //await retrieveAndMergeServersUserIsIn(access_token, dbUser);
 
-    //save the daily login detail🧷 
+    //save the daily login detail🧷
     // saveDailyLogin(dbUser._id, new Date())
 
-    
     // Return user and token
     res.json({ discord_user: dbUser, eden_user: dbUser, token });
   } catch (error) {
