@@ -15,6 +15,7 @@ const contextResolver = require("./auth/contextResolvers");
 const authRoutes = require("./auth");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
+const twilio = require('twilio');
 
 
 
@@ -148,6 +149,18 @@ async function main() {
       console.log("ended running the task every 2 days");
     }
   });
+
+  //setup whats notification here for te🌠 
+
+  app.post('/incoming', (req, res) => {
+    const message = req.body;
+    console.log(`Received message from ${message.From}: ${message.Body}`);
+    res.status(200).send('OK');
+    // Handle the incoming message here
+  
+  });
+
+
 
   
 }

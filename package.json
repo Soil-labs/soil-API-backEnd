@@ -41,6 +41,7 @@
     "mongoose": "^5.7.9",
     "morgan": "^1.9.1",
     "neo4j-driver": "^4.4.6",
+    "ngrok": "^5.0.0-beta.2",
     "node-cron": "^3.0.2",
     "node-fetch": "^2.6.9",
     "numeric": "^1.2.6",
