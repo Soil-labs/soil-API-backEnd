@@ -130,6 +130,10 @@ const {
 } = require("./mutation/chatMutation");
 
 const {
+  addChatExternalApp,
+} = require("./mutation/chatExternalAppMutation");
+
+const {
   addMessage,
   secondInterviewLetter,
   rejectionLetter,
@@ -293,6 +297,10 @@ module.exports = {
     addNewChat,
     updateChatReply,
     updateChatResult,
+
+
+    // ------------- CHAT EXTERNAL APP MUTATION -----------------
+    addChatExternalApp,
 
     // --------------- AI MUTATION -----------------
     addMessage,

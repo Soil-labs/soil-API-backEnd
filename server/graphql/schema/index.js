@@ -25,6 +25,7 @@ const errorType = require("./errors.graphql");
 const roomType = require("./rooms.graphql");
 const subscription = require("./subscription.graphql");
 const chatType = require("./chat.graphql");
+const chatExternalAppType = require("./chatExternalApp.graphql");
 const aiType = require("./ai.graphql");
 const edenMetricsType = require("./edenMetrics.graphql");
 const whatsAppType = require("./whatsapp.graphql");
@@ -56,6 +57,7 @@ const typeDefs = gql`
   ${errorType}
   ${roomType}
   ${chatType}
+  ${chatExternalAppType}
   ${aiType}
   ${edenMetricsType}
   ${whatsAppType}

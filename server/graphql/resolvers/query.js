@@ -104,6 +104,9 @@ const {
 } = require("./query/skillSubCategoryQuery");
 
 const { findChat } = require("./query/chatQuery");
+
+const { findLastNumMessagesChatExternalApp } = require("./query/chatExternalAppQuery");
+
 const {
   findMessage,
   edenGPTreply,identifyCategoryAndReply,
@@ -268,6 +271,9 @@ module.exports = {
 
     // ------------ CHAT QUERY ---------------
     findChat,
+
+    // ------------ CHAT EXTERNAL APP QUERY ---------------
+    findLastNumMessagesChatExternalApp,
 
     //----------- AI QUERY ------------------
     findMessage,

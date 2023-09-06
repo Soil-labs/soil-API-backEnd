@@ -125,6 +125,9 @@ module.exports = `
           # ----------- CHAT QUERY ---------
           findChat(fields:findChatInput):Chats
 
+          # ------------ CHAT EXTERNAL APP QUERY ---------------
+          findLastNumMessagesChatExternalApp(fields:findLastNumMessagesChatExternalAppInput):[ChatExternalApp]
+
 
           # ---------- AI QUERY -------------
           findMessage(fields: findMessageInputPaginated): PaginatedMessages
