@@ -4,6 +4,8 @@ const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
 const { Company } = require("../../../models/companyModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
+const { ChatExternalApp } = require("../../../models/chatExternalAppModel");
+
 
 
 const { ApolloError } = require("apollo-server-express");
@@ -49,6 +51,7 @@ const {
 const {
   addMultipleQuestionsToEdenAIFunc,
 } = require("../utils/questionsEdenAIModules");
+const { filter } = require("mathjs");
 
 globalThis.fetch = fetch;
 
@@ -3630,22 +3633,53 @@ module.exports = {
     }
   },
   identifyCategoryAndReply: async (parent, args, context, info) => {
-    const { message,replyFlag } = args.fields;
+    const { chatID_TG,message,replyFlag } = args.fields;
     console.log("Query > identifyCategoryAndReply > args.fields = ", args.fields);
 
 
 
     try {
 
+      let discussionOld = []
+
+      if (chatID_TG) {
+
+        let filter = {
+          chatID_TG: chatID_TG,
+        };
+
+
+        let lastNumMessages = 3
+
+        let chatExternalAppData = await ChatExternalApp.find(filter).sort({ timeStamp: -1 }).limit(lastNumMessages)
+
+        
+        discussionOld = chatExternalAppData.map((message) => {
+          
+          return {
+            role: message.senderRole,
+            content: message.message,
+          }
+        })
+
+        // turn discussionOld reverse 
+        discussionOld = discussionOld.reverse()
+
+
+        // console.log("discussionOld = " , discussionOld)
+
+        // sfd0
+
+      }
+
+
+
       const categoryEnum = await identifyCategoryFunc(message)
 
       let reply = ""
       if (replyFlag == true) {
-
-        reply = await replyToMessageBasedOnCategoryFunc(message,categoryEnum)
-
+        reply = await replyToMessageBasedOnCategoryFunc(message,categoryEnum,discussionOld)
       }
-
     
 
       return {

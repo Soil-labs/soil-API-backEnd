@@ -156,6 +156,10 @@ module.exports = `
         updateChatReply(fields: updateChatReplyInput): Chats
         updateChatResult(fields: updateChatResultInput): Chats
 
+
+        addChatExternalApp(fields: addChatExternalAppInput): ChatExternalApp
+
+
         # ------------- AI MUTATIONS ------------
         addMessage(fields: addMessageInput): AI
         storeLongTermMemory(fields: storeLongTermMemoryInput): storeLongTermMemoryOutput
