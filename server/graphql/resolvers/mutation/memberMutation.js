@@ -530,6 +530,7 @@ module.exports = {
             serverID: membersData.serverID,
           });
         } else {
+
           if (onbording) {
             if (
               onbording.signup != undefined &&
@@ -2317,6 +2318,64 @@ module.exports = {
         err.message,
         err.extensions?.code || "updateMemberSignalInfo",
         { component: "memberMutation > updateMemberSignalInfo" }
+      );
+    }
+  },
+  reCreateMemberNeo: async (parent, args, context, info) => {
+    const { _id} = args.fields;
+    console.log("Mutation > reCreateMemberNeo > args.fields = ", args.fields);
+
+
+    
+
+    try {
+
+      // let memberData = await Members.findOne({ _id: _id }).select('_id discordName nodes serverID');
+
+      // if (!memberData) throw new Error("The _id is not valid🔥 can't find member");
+
+      let membersData = await Members.find({ }).select('_id discordName nodes serverID');
+
+
+      for (let i = 0; i < membersData.length; i++) {
+        const memberData = membersData[i];
+
+        console.log("memberData = " , memberData)
+
+        await createNode_neo4j({
+          node: "Member",
+          id: memberData._id,
+          name: memberData.discordName,
+          serverID: memberData.serverID,
+        });
+
+
+        // loop on all the nodes and create connection with the member
+        for (let i = 0; i < memberData.nodes.length; i++) {
+          const node = memberData.nodes[i];
+
+
+
+          await makeConnection_neo4j({
+            node: ["Member", "Skill"],
+            id: [memberData._id, node._id],
+            connection: "SKILL",
+          });
+
+          changeMatchByServer(node, memberData);
+
+        }
+      }
+      
+
+
+      return membersData;
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "reCreateMemberNeo",
+        { component: "memberMutation > reCreateMemberNeo" }
       );
     }
   },

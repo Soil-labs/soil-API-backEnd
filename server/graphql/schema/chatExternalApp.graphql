@@ -1,0 +1,44 @@
+module.exports = `
+
+    type ChatExternalApp {
+        _id: ID,
+        chatID_TG: String,
+        userID: String,
+        projectID: ID,
+        communicationAuthorType: communicationAuthorTypeEnum,
+        message: String,
+        senderRole: senderRoleEnum,
+        timeStamp: Date,
+    }
+
+    enum senderRoleEnum {
+        assistant
+        user
+    }
+
+    enum communicationAuthorTypeEnum {
+        POSITION
+        USER
+    }
+
+    input addChatExternalAppInput {
+        _id: ID
+        chatID_TG: ID,
+        userID: ID,
+        projectID: ID,
+        communicationAuthorType: communicationAuthorTypeEnum,
+        message: String,
+        senderRole: senderRoleEnum,
+    }
+
+
+    input findLastNumMessagesChatExternalAppInput {
+        chatID_TG: ID,
+        userID: ID,
+        projectID: ID,
+        communicationAuthorType: communicationAuthorTypeEnum,
+        lastNumMessages: Int,
+    }   
+
+
+`

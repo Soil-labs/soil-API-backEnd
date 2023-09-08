@@ -63,6 +63,46 @@ const CandidateNotesEdenAIAPICallF = async (memberID, positionID) => {
   return res.candidateNotesEdenAI;
 };
 
+async function useGPTchat(
+  userNewMessage,
+  discussionOld,
+  systemPrompt,
+  userQuestion = "",
+  temperature = 0.7,
+  chooseAPI = "API 1"
+) {
+  let discussion = [...discussionOld];
+
+  discussion.unshift({
+    role: "system",
+    content: systemPrompt,
+  });
+
+  discussion.push({
+    role: "user",
+    content: userNewMessage + "\n" + userQuestion,
+  });
+
+  console.log("discussion = ", discussion);
+
+  let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
+  response = await axios.post(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      messages: discussion,
+      model: "gpt-3.5-turbo",
+      temperature: temperature,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+    }
+  );
+
+  return response.data.choices[0].message.content;
+}
 
 async function useGPT4chat(
   userNewMessage,
@@ -243,6 +283,8 @@ async function upsertEmbedingPineCone(data) {
   return upsertResponse;
 }
 
+
+
 async function useGPTchatSimple(
   prompt,
   temperature = 0.7,
@@ -356,7 +398,9 @@ async function identifyCategoryFunc(message) {
   return null;
 }
 
-async function replyToMessageBasedOnCategoryFunc(message, categoryEnum) {
+async function replyToMessageBasedOnCategoryFunc(message, categoryEnum,discussionOld=[]) {
+
+  console.log("discussionOld 232= " , discussionOld)
 
   replyEnumInfo = categoryMessageCategoryEnumReverse[categoryEnum];
 
@@ -391,9 +435,14 @@ async function replyToMessageBasedOnCategoryFunc(message, categoryEnum) {
 
   console.log("promptReplyTotal = " , promptReplyTotal)
 
-  let resContent = await useGPTchatSimple(promptReplyTotal, 0,"API 1");
+  // let resContent = await useGPTchatSimple(promptReplyTotal, 0,"API 1");
+  let resContent = await useGPTchat(
+    promptReplyTotal,
+    discussionOld,
+    "",
+  );
 
-  console.log("resContent = " , resContent)
+  console.log("resContent 2--2= " , resContent)
 
   return resContent;
 

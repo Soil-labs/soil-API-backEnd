@@ -14,7 +14,7 @@ const {
   createFakeUser,
   createFakeUserCVnew,
   uploadUserDataGPT,
-  updateMemberSignalInfo,checkUsersForTGConnection,initiateConnectionTelegram,memberDataConnectedTG,positionDataConnectedTG,
+  updateMemberSignalInfo,reCreateMemberNeo,checkUsersForTGConnection,initiateConnectionTelegram,memberDataConnectedTG,positionDataConnectedTG,
 } = require("./mutation/memberMutation");
 const {
   updateProject,
@@ -130,6 +130,10 @@ const {
 } = require("./mutation/chatMutation");
 
 const {
+  addChatExternalApp,
+} = require("./mutation/chatExternalAppMutation");
+
+const {
   addMessage,
   secondInterviewLetter,
   rejectionLetter,
@@ -180,7 +184,7 @@ module.exports = {
     createFakeUser,
     createFakeUserCVnew,
     uploadUserDataGPT,
-    updateMemberSignalInfo,checkUsersForTGConnection,initiateConnectionTelegram,
+    updateMemberSignalInfo,reCreateMemberNeo,checkUsersForTGConnection,initiateConnectionTelegram,
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
@@ -293,6 +297,10 @@ module.exports = {
     addNewChat,
     updateChatReply,
     updateChatResult,
+
+
+    // ------------- CHAT EXTERNAL APP MUTATION -----------------
+    addChatExternalApp,
 
     // --------------- AI MUTATION -----------------
     addMessage,
