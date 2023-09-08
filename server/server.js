@@ -13,12 +13,10 @@ const { cronFunctionToUpdateAvatar } = require("./utils/getDiscordAvatar");
 const { cronJobToUpdateServerIcon } = require("./utils/getDiscordGuildAvatar");
 const contextResolver = require("./auth/contextResolvers");
 const authRoutes = require("./auth");
+const { stripeRoutes, stripeWebhookRoutes } = require("./stripe");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
-const twilio = require('twilio');
-
-
-
+const twilio = require("twilio");
 
 require("dotenv").config();
 
@@ -48,7 +46,6 @@ async function main() {
     context: { text: "I am Context" },
   });
 
-
   const serverCleanup = useServer(
     { schema, execute, subscribe },
     subscriptionServer
@@ -77,7 +74,6 @@ async function main() {
   });
   await server.start();
 
-
   server.applyMiddleware({
     app,
     cors: {
@@ -103,9 +99,11 @@ async function main() {
       }
     )
     .then(() => {
-      console.log("Connected to db")
+      console.log("Connected to db");
     })
     .catch((err) => console.log(err.message));
+
+  app.use("/stripe-webhooks", stripeWebhookRoutes());
 
   // Data parsing
   app.use(express.json());
@@ -113,8 +111,12 @@ async function main() {
 
   app.use(cors());
   app.use("/auth", authRoutes());
+  app.use("/stripe", stripeRoutes());
 
-  if (process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase() === "production") {
+  if (
+    process.env.NODE_ENV &&
+    process.env.NODE_ENV.toLowerCase() === "production"
+  ) {
     app.use((req, res, next) => {
       if (req.header("x-forwarded-proto") !== "https")
         res.redirect(`https://${req.header("host")}${req.url}`);
@@ -134,7 +136,10 @@ async function main() {
 
   //cron job running every five hours
   cron.schedule("0 */5 * * *", async function () {
-    if (process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase() === "production") {
+    if (
+      process.env.NODE_ENV &&
+      process.env.NODE_ENV.toLowerCase() === "production"
+    ) {
       console.log("start running the cron");
       await cronFunctionToUpdateAvatar();
       console.log("running a task every five hours");
@@ -143,26 +148,24 @@ async function main() {
 
   //running every 2 days at 1am
   cron.schedule("0 1 * * */2", async function () {
-    if (process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase() === "production") {
+    if (
+      process.env.NODE_ENV &&
+      process.env.NODE_ENV.toLowerCase() === "production"
+    ) {
       console.log("start running the update icon cron");
       await cronJobToUpdateServerIcon();
       console.log("ended running the task every 2 days");
     }
   });
 
-  //setup whats notification here for te🌠 
+  //setup whats notification here for te🌠
 
-  app.post('/incoming', (req, res) => {
+  app.post("/incoming", (req, res) => {
     const message = req.body;
     console.log(`Received message from ${message.From}: ${message.Body}`);
-    res.status(200).send('OK');
+    res.status(200).send("OK");
     // Handle the incoming message here
-  
   });
-
-
-
-  
 }
 
 main();

@@ -29,6 +29,14 @@ const memberSchema = mongoose.Schema({
     telegramConnectionCode: String,
   },
 
+  stripe: {
+    session: {
+      ID: String,
+    },
+    customerID: String,
+    product: { ID: String },
+  },
+
   onbording: {
     signup: {
       type: Boolean,
@@ -40,25 +48,27 @@ const memberSchema = mongoose.Schema({
     },
   },
 
-  positionsApplied: [{
-    positionID: mongoose.Schema.ObjectId,
-  }],
+  positionsApplied: [
+    {
+      positionID: mongoose.Schema.ObjectId,
+    },
+  ],
 
-  
   cvInfo: {
     cvContent: String,
     cvNotes: String,
-    cvMemory: [{
-      memoryContent: String,
-      pineConeID: String,
-    }],
+    cvMemory: [
+      {
+        memoryContent: String,
+        pineConeID: String,
+      },
+    ],
     cvPreparationDone: Boolean,
     cvPreparationBio: Boolean,
     cvPreparationNodes: Boolean,
     cvPreparationPreviousProjects: Boolean,
     cvPreparationMemory: Boolean,
   },
-  
 
   content: {
     interest: String,
@@ -75,8 +85,6 @@ const memberSchema = mongoose.Schema({
 
   totalIncome: Number,
   completedOpportunities: Number,
-  
-
 
   serverID: [String],
 
@@ -212,7 +220,6 @@ const memberSchema = mongoose.Schema({
     reputation: Number,
   },
 
-
   endorsementsReceive: [mongoose.Schema.ObjectId],
   endorseSummary: {
     averageStars: Number,
@@ -221,10 +228,12 @@ const memberSchema = mongoose.Schema({
     numberEndorsement: Number,
     endorsers: [String],
     summary: String,
-    mainNodes:[{
-      nodeID: mongoose.Schema.ObjectId,
-      confidence: Number
-    }],
+    mainNodes: [
+      {
+        nodeID: mongoose.Schema.ObjectId,
+        confidence: Number,
+      },
+    ],
   },
 
   reviewsSend: [mongoose.Schema.ObjectId],
@@ -237,10 +246,12 @@ const memberSchema = mongoose.Schema({
     numberReview: Number,
     reviewers: [String],
     summary: String,
-    mainNodes:[{
-      nodeID: mongoose.Schema.ObjectId,
-      confidence: Number
-    }],
+    mainNodes: [
+      {
+        nodeID: mongoose.Schema.ObjectId,
+        confidence: Number,
+      },
+    ],
   },
 
   trustIndicators: {
@@ -250,8 +261,8 @@ const memberSchema = mongoose.Schema({
     },
     totalOpportunities: {
       amount: Number, // 10 Completed Opportunities
-      note: String, // Eden Native 
-    }
+      note: String, // Eden Native
+    },
   },
 
   preferences: {
