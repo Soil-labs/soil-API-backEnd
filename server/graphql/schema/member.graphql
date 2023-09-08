@@ -804,4 +804,8 @@ module.exports = `
         totalIncome: Float
         completedOpportunities: Int
     }
+
+    input reCreateMemberNeoInput {
+        _id: ID
+    }
 `
