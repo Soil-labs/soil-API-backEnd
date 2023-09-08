@@ -2368,7 +2368,7 @@ const nodes_aiModule = async (
 
   // memberObj = await findMemberAndFilter(memberObj)
 
-  console.log("memberObj = ", memberObj);
+  // console.log("memberObj = ", memberObj);
   // sdf0
 
   // console.log("memberObj = " , memberObj)
@@ -2864,18 +2864,18 @@ const nodesFindMembers = async (
 ) => {
   memberIDs = [];
 
-  // console.log(" = --->> tora -1" )
+  console.log(" = --->> tora -1",memberObj )
+// d0
 
   for (let i = 0; i < nodeData.length; i++) {
     // loop on the nodes
     let match_v2 = nodeData[i].match_v2;
     let node = nodeData[i];
 
-    console.log(" = --->> tora tt0", node._id, match_v2.length);
+    // console.log(" = --->> tora tt0", node._id, match_v2.length);
     // console.log(" = --->> tora tt0", match_v2)
     const tstID = match_v2.map((item) => item.nodeResID);
-
-    console.log("tstID = ", tstID);
+    // console.log("tstID = ", tstID);
 
     memberObj = await nodeScoreMembersMap(
       match_v2,
@@ -2884,10 +2884,11 @@ const nodesFindMembers = async (
       membersIDallowObj
     );
   }
+  // console.log(" = --->> tora 3", memberObj,membersIDallowObj);
+  
   // sd9
 
-  console.log(" = --->> tora 3", memberObj);
-  // sdf
+  
 
   return memberObj;
 };
@@ -2910,9 +2911,13 @@ const nodeScoreMembersMap = async (
   newMax_nodeMember = 1;
   // ---------- Find nodes and Max Min -----------
   for (let j = 0; j < match_v2.length; j++) {
+    console.log("match_v2[j] = " , match_v2[j])
     if (!(match_v2[j].type == "Member")) continue;
 
     let memberID = match_v2[j].nodeResID;
+
+    console.log("memberID = ", j,memberID,membersIDallowObj);
+
 
     if (
       membersIDallowObj[memberID] == undefined &&
@@ -2920,7 +2925,8 @@ const nodeScoreMembersMap = async (
     )
       continue;
 
-    console.log("memberID = ", memberID);
+    console.log("memberID = ", j,memberID,membersIDallowObj);
+
 
     let scoreUser = match_v2[j].wh_sum;
 
