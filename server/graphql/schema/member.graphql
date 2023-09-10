@@ -405,6 +405,7 @@ module.exports = `
         serverID: [String]
         discordName: ID
         telegramChatID: ID
+        whatsAppNumber: String
     }
 
     input findMembersInput {
