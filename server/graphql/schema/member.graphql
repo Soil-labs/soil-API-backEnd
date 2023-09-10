@@ -561,8 +561,16 @@ module.exports = `
         _id: ID
         name: String
         telegram: String,
-        telegramChatID: String,
+        telegramChatID: String
         authTelegramCode: String
+    }
+
+    type updateWhatsAPPOutput {
+         done: Boolean
+          _id: ID
+          name: String
+          whatsappNumber: String
+          authWhatsappCode: String
     }
 
     input checkUsersForTGConnectionInput {
@@ -570,6 +578,12 @@ module.exports = `
         telegramID: String
         telegramChatID: String
     }
+
+    input checkUsersForWhatsAPPConnectionInput {
+        authNumberWhatsAppMessage: String
+        whatsappNumber: String
+    }
+
 
 
     input updateMemberInput {

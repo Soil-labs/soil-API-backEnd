@@ -21,6 +21,9 @@ module.exports = `
         reCreateMemberNeo(fields: reCreateMemberNeoInput ): [Members]
         checkUsersForTGConnection(fields: checkUsersForTGConnectionInput ): updateTGOutput
         initiateConnectionTelegram(fields: initiateConnectionTelegramInput ): updateTGOutput
+        checkUsersForWhatsAPPConnection(fields: checkUsersForWhatsAPPConnectionInput ): updateWhatsAPPOutput
+        
+
         endorseAttribute(fields:endorseAttributeInput!): Members
 
         #  ---------- ENDORSEMENT MUTATIONS -------

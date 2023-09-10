@@ -5,7 +5,9 @@ module.exports = `
         queryResponseUpdated(fields: findRoomsInput): QueryResponse
         memberUpdatedInRoom(fields: findRoomsInput): Members
         memberDataConnectedTG(fields: memberDataConnectedTGInput): Members
+        memberDataConnectedWhatsAPP(fields: memberDataConnectedWhatsAPPInput): Members
         positionDataConnectedTG(fields: positionDataConnectedTGInput): Position
+        positionDataConnectedWhatsAPP(fields: positionDataConnectedWhatsAPPInput ): Position
         userCVSavedToDB: AddCVToUserOutput
     }
 `

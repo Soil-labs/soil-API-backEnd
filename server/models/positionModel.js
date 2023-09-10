@@ -10,6 +10,8 @@ const positionModel = mongoose.Schema({
   conduct: {
     number: String,
     whatsappNumber: String,
+    whatsappNumber: String,
+    whatsappConnectionCode: String,
     email: String,
     telegram: String,
     telegramChatID: String,

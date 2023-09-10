@@ -2556,6 +2556,84 @@ module.exports = {
       );
     }
   },
+
+  checkUsersForWhatsAPPConnection: async (parent, args, context, info) => {
+    const { authNumberWhatsAppMessage, whatsappNumber } = args.fields;
+    console.log("Mutation > checkUsersForWhatsAPPConnection > args.fields = ", args.fields);
+
+
+    let memberData = await Members.findOne({ "conduct.whatsappConnectionCode": authNumberWhatsAppMessage }).select('_id discordName conduct ');
+
+    let positionData = await Position.findOne({ "conduct.whatsappConnectionCode": authNumberWhatsAppMessage }).select('_id name conduct ');
+
+
+    if (!memberData && !positionData) throw new Error("Didn't find any Member or Positions with this code, try again");
+
+    try {
+
+      // ----------- Delete all the other whatsapp connections ------------
+      let positionsDataT = await Position.find({ "conduct.whatsappNumber": whatsappNumber });
+
+      for (let i = 0; i < positionsDataT.length; i++) {
+        let positionDataT = positionsDataT[i];
+        positionDataT.conduct.whatsappNumber = null
+        positionDataT = await positionDataT.save();
+      }
+
+      let membersDataT = await Members.find({ "conduct.whatsappNumber": whatsappNumber });
+
+      for (let i = 0; i < membersDataT.length; i++) {
+        let memberDataT = membersDataT[i];
+        memberDataT.conduct.whatsappNumber = null
+        memberDataT = await memberDataT.save()
+      }
+      // ----------- Delete all the other whatsapp connections ------------
+
+      if (memberData) {
+        memberData.conduct.whatsappNumber = whatsappNumber
+        memberData.conduct.whatsappConnectionCode = null
+        memberData = await memberData.save()
+        console.log("memberData = " , memberData)
+
+        pubsub.publish("USER_WHATSAPP_CONNECTED", {
+          memberDataConnectedWhatsAPP: memberData
+        });
+
+        return {
+          done: true,
+          _id: memberData._id,
+          name: memberData.discordName,
+          whatsappNumber: whatsappNumber,
+          authWhatsappCode: null
+        }
+      } else if (positionData) {
+        positionData.conduct.whatsappNumber = whatsappNumber
+        positionData.conduct.whatsappConnectionCode = null
+        positionData = await positionData.save()
+
+        console.log("positionData = " , positionData)
+
+        pubsub.publish("POSITION_WHATSAPP_CONNECTED", {
+          positionDataConnectedWhatsAPP: positionData
+        });
+
+        return {
+          done: true,
+          _id: positionData._id,
+          name: positionData.name,
+          whatsappNumber: whatsappNumber,
+          authWhatsappCode: null
+        }
+      }
+      return memberData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "checkUsersForWhatsAppConnection",
+        { component: "memberMutation > checkUsersForWhatsAppConnection" }
+      );
+    }
+  },
   createFakeUser: async (parent, args, context, info) => {
     const { memberID,expertise,interests } = args.fields;
     console.log("Mutation > createFakeUser > args.fields = ", args.fields);

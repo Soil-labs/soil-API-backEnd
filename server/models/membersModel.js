@@ -23,6 +23,7 @@ const memberSchema = mongoose.Schema({
   conduct: {
     number: String,
     whatsappNumber: String,
+    whatsappConnectionCode: String,
     email: String,
     telegram: String,
     telegramChatID: String,
