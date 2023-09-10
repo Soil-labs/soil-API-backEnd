@@ -8,19 +8,19 @@ const { Position } = require("../../../models/positionModel");
 
 const axios = require("axios");
 
-const {printC} = require("../../../printModule")
+const { printC } = require("../../../printModule")
 
 const { updateNodesToMember } = require("../utils/nodeModules");
 
-const {checkAndAddPositionToMember  } = require("../utils/positionModules");
+const { checkAndAddPositionToMember } = require("../utils/positionModules");
 
 
 const {
-  saveCVtoUserFunc,interviewEdenAIFunc,useGPTchatSimple,
+  saveCVtoUserFunc, interviewEdenAIFunc, useGPTchatSimple,
 } = require("../utils/aiModules");
 
 
-const {arrayToKeyObject,getRandomIDs,fetchRandomAvatar,randomPicture,useGPTchat,generateRandomID,addNewFakeUser,addNodesToFakeMember} = require("../utils/helperFunc");
+const { arrayToKeyObject, getRandomIDs, fetchRandomAvatar, randomPicture, useGPTchat, generateRandomID, addNewFakeUser, addNodesToFakeMember } = require("../utils/helperFunc");
 
 const { PineconeClient } = require("@pinecone-database/pinecone");
 const { ApolloError } = require("apollo-server-express");
@@ -98,14 +98,14 @@ async function createEmbeddingsGPT(words_n) {
 
 
 // async function useGPTchatSimple(prompt,temperature=0.7) {
-  
+
 //   discussion = [{
 //     "role": "user",
 //     "content": prompt
 //   }]
 
 
-  
+
 //   let OPENAI_API_KEY = chooseAPIkey();
 //   response = await axios.post(
 //     "https://api.openai.com/v1/chat/completions",
@@ -135,7 +135,7 @@ async function generate12DigitID(inputString) {
   const hashArray = Array.from(new Uint8Array(digest));
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   const id = hashHex.slice(0, 12);
-  
+
   return id;
 }
 
@@ -306,9 +306,9 @@ module.exports = {
       }
     }
   ),
-  updateMember: 
-  // combineResolvers(
-  //   IsAuthenticated,
+  updateMember:
+    // combineResolvers(
+    //   IsAuthenticated,
     async (parent, args, { user }, info) => {
       const {
         discordName,
@@ -333,9 +333,9 @@ module.exports = {
       } = args.fields;
 
       let { skills } = args.fields;
-      
+
       user = await Members.findOne({ _id: _id });
-      console.log("user = " , user)
+      console.log("user = ", user)
 
       console.log("Mutation > updateMember > args.fields = ", args.fields);
 
@@ -361,19 +361,19 @@ module.exports = {
       if (content) fields = { ...fields, content };
       if (memberRole) fields = { ...fields, memberRole };
 
-      
+
       if (location) fields = { ...fields, location };
 
       // ----------------- conduct ----------------
       fields = { ...fields, conduct: { ...user.conduct } };
       if (conduct) {
-        if (conduct.number){ fields = { ...fields,conduct: {...fields.conduct,number: conduct.number,}};}
+        if (conduct.number) { fields = { ...fields, conduct: { ...fields.conduct, number: conduct.number, } }; }
 
-        if (conduct.whatsappNumber){ fields = { ...fields,conduct: {...fields.conduct,whatsappNumber: conduct.whatsappNumber,}};}
+        if (conduct.whatsappNumber) { fields = { ...fields, conduct: { ...fields.conduct, whatsappNumber: conduct.whatsappNumber, } }; }
 
-        if (conduct.email){ fields = { ...fields,conduct: {...fields.conduct,email: conduct.email,}};}
+        if (conduct.email) { fields = { ...fields, conduct: { ...fields.conduct, email: conduct.email, } }; }
 
-        if (conduct.telegram){ fields = { ...fields,conduct: {...fields.conduct,telegram: conduct.telegram,}};}
+        if (conduct.telegram) { fields = { ...fields, conduct: { ...fields.conduct, telegram: conduct.telegram, } }; }
       }
       // ----------------- conduct ----------------
 
@@ -381,13 +381,13 @@ module.exports = {
       let membersDataOriginal = membersData;
 
       if (budget != undefined) {
-        fields = { 
-          ...fields, 
-          budget: membersData.budget 
+        fields = {
+          ...fields,
+          budget: membersData.budget
         };
 
         if (budget.totalBudget) {
-          fields = { 
+          fields = {
             ...fields,
             budget: {
               ...fields.budget,
@@ -397,7 +397,7 @@ module.exports = {
         }
 
         if (budget.perHour) {
-          fields = { 
+          fields = {
             ...fields,
             budget: {
               ...fields.budget,
@@ -406,7 +406,7 @@ module.exports = {
           };
         }
         if (budget.perMonth) {
-          fields = { 
+          fields = {
             ...fields,
             budget: {
               ...fields.budget,
@@ -416,7 +416,7 @@ module.exports = {
         }
 
         if (budget.token) {
-          fields = { 
+          fields = {
             ...fields,
             budget: {
               ...fields.budget,
@@ -437,21 +437,21 @@ module.exports = {
         }
 
         if (experienceLevel.total) {
-          if (experienceLevel.total!= 3 && experienceLevel.total!= 6 && experienceLevel.total!=9){
+          if (experienceLevel.total != 3 && experienceLevel.total != 6 && experienceLevel.total != 9) {
             throw new ApolloError("Experience Level must be 3, 6 or 9");
           } else {
-            fields = { 
+            fields = {
               ...fields,
               experienceLevel: {
                 ...fields.experienceLevel,
                 total: experienceLevel.total,
               }
-            
+
             };
           }
-        } 
+        }
 
-        if (experienceLevel.years){
+        if (experienceLevel.years) {
           fields = {
             ...fields,
             experienceLevel: {
@@ -460,12 +460,12 @@ module.exports = {
             }
           }
         }
-       
-        
+
+
       }
-        
-        
-        // fields = { ...fields, experienceLevel };
+
+
+      // fields = { ...fields, experienceLevel };
 
       // console.log("memberRole = " , memberRole)
       // console.log("skills = " , skills)
@@ -723,10 +723,10 @@ module.exports = {
     },
   // ),
 
-  addNodesToMember: 
-  // combineResolvers(
-  //   IsAuthenticated,
-  //   IsOnlyOperator,
+  addNodesToMember:
+    // combineResolvers(
+    //   IsAuthenticated,
+    //   IsOnlyOperator,
     async (parent, args, context, info) => {
       let { memberID, nodesID, nodesID_level } = args.fields;
 
@@ -855,10 +855,10 @@ module.exports = {
         );
       }
     },
-  deleteNodesFromMember: 
-  // combineResolvers(
-  //   IsAuthenticated,
-  //   IsOnlyOperator,
+  deleteNodesFromMember:
+    // combineResolvers(
+    //   IsAuthenticated,
+    //   IsOnlyOperator,
     async (parent, args, context, info) => {
       const { memberID, nodesID } = args.fields;
 
@@ -1026,8 +1026,8 @@ module.exports = {
 
           let nodesID = value.map((item) => item._id)
 
-          console.log("nodesID = " , nodesID)
-          console.log("nodeType = " , nodeType)
+          console.log("nodesID = ", nodesID)
+          console.log("nodeType = ", nodeType)
 
           let fields = {}
 
@@ -1039,7 +1039,7 @@ module.exports = {
           // sdf19
 
           userData = await updateNodesToMember(fields)
-  
+
           // sdf99
 
         }
@@ -1049,9 +1049,9 @@ module.exports = {
 
         // find the user and return 
         let memberData = await Members.findOne({ _id: userData._id })
-        
+
         return memberData
-        
+
       } catch (err) {
         throw new ApolloError(
           err.message,
@@ -1103,12 +1103,12 @@ module.exports = {
           if (node.node != nodeType) {
             throw new ApolloError(
               "All nodes should be equal to nodeType, problem on nodeID = " +
-                node._id +
-                " with name = " +
-                node.name +
-                " and node = " +
-                node.node +
-                ""
+              node._id +
+              " with name = " +
+              node.name +
+              " and node = " +
+              node.node +
+              ""
             );
           }
         });
@@ -1152,9 +1152,9 @@ module.exports = {
           if (nodes_member_obj[node._id] && nodesID_level_obj[node._id]) {
             if (
               nodes_member_obj[node._id].level ==
-                nodesID_level_obj[node._id].level &&
+              nodesID_level_obj[node._id].level &&
               nodes_member_obj[node._id].orderIndex ==
-                nodesID_level_obj[node._id].orderIndex
+              nodesID_level_obj[node._id].orderIndex
             ) {
               if (node.node == nodeType) {
                 nodeData_member_type.push(node);
@@ -1383,82 +1383,82 @@ module.exports = {
   //   }
   // ),
   deleteMember: async (parent, args, { user }, info) => {
-      const { memberID } = args.fields;
+    const { memberID } = args.fields;
 
 
-      console.log("Mutation > deleteMember > args.fields = ", args.fields);
+    console.log("Mutation > deleteMember > args.fields = ", args.fields);
 
-      if (!memberID) throw new ApolloError("memberID is required");
+    if (!memberID) throw new ApolloError("memberID is required");
 
-      try {
-        let memberData = await Members.findOne({ _id: memberID });
+    try {
+      let memberData = await Members.findOne({ _id: memberID });
 
-        if (!memberData) throw new ApolloError("memberID not found");
-
-
-        // ------------ Find Positions that is subscribed to ----------
-        let positionsData = await Position.find({
-          "candidates.userID": memberID,
-        }).select('_id candidates')
+      if (!memberData) throw new ApolloError("memberID not found");
 
 
-        for (let i = 0; i < positionsData.length; i++) {
-          let positionNow = positionsData[i];
-
-          // find index of the candidate
-          let index_ = positionNow.candidates.findIndex(
-            (x) => x.userID.toString() == memberID.toString()
-          );
+      // ------------ Find Positions that is subscribed to ----------
+      let positionsData = await Position.find({
+        "candidates.userID": memberID,
+      }).select('_id candidates')
 
 
-          // remove the candidate
-          positionNow.candidates.splice(index_, 1);
+      for (let i = 0; i < positionsData.length; i++) {
+        let positionNow = positionsData[i];
 
-          await positionNow.save();
-
-        }
-        // ------------ Find Positions that is subscribed to ----------
-
-        // get all nodes from memberData.nodes
-        let nodesData = await Node.find({
-          _id: memberData.nodes.map(function (item) {
-            return item._id.toString();
-          }),
-        });
-
-        // console.log("nodesData = " , nodesData)
-
-        // console.log("change = " , change)
-
-        // console.log("change = " , change)
-
-        // add only the new ones as relationship on Neo4j
-        for (let i = 0; i < nodesData.length; i++) {
-          let nodeNow = nodesData[i];
-          deleteConnectionANYBetweenNodes_neo4j({
-            nodeID_1: memberData._id,
-            nodeID_2: nodeNow._id,
-          });
-
-          changeMatchByServer(nodeNow, memberData);
-        }
-
-        deleteNode_neo4j({
-          nodeID: memberData._id,
-        });
-
-        // delete memberData from mongoDB database
-        memberData2 = await Members.findOneAndDelete({ _id: memberID });
-
-        return memberData2;
-      } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
-          { component: "tmemberQuery > findMember" }
+        // find index of the candidate
+        let index_ = positionNow.candidates.findIndex(
+          (x) => x.userID.toString() == memberID.toString()
         );
+
+
+        // remove the candidate
+        positionNow.candidates.splice(index_, 1);
+
+        await positionNow.save();
+
       }
-    },
+      // ------------ Find Positions that is subscribed to ----------
+
+      // get all nodes from memberData.nodes
+      let nodesData = await Node.find({
+        _id: memberData.nodes.map(function (item) {
+          return item._id.toString();
+        }),
+      });
+
+      // console.log("nodesData = " , nodesData)
+
+      // console.log("change = " , change)
+
+      // console.log("change = " , change)
+
+      // add only the new ones as relationship on Neo4j
+      for (let i = 0; i < nodesData.length; i++) {
+        let nodeNow = nodesData[i];
+        deleteConnectionANYBetweenNodes_neo4j({
+          nodeID_1: memberData._id,
+          nodeID_2: nodeNow._id,
+        });
+
+        changeMatchByServer(nodeNow, memberData);
+      }
+
+      deleteNode_neo4j({
+        nodeID: memberData._id,
+      });
+
+      // delete memberData from mongoDB database
+      memberData2 = await Members.findOneAndDelete({ _id: memberID });
+
+      return memberData2;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
 
   addPreferencesToMember: combineResolvers(
     IsAuthenticated,
@@ -1951,7 +1951,7 @@ module.exports = {
     subscribe: (parent, args, context, info) => {
       const memberData = pubsub.asyncIterator("USER_TG_CONNECTED");
 
-      console.log("memberData = " , memberData)
+      console.log("memberData = ", memberData)
 
 
       // find memberData
@@ -1966,7 +1966,7 @@ module.exports = {
     subscribe: (parent, args, context, info) => {
       const positionData = pubsub.asyncIterator("POSITION_TG_CONNECTED");
 
-      console.log("positionData = " , positionData)
+      console.log("positionData = ", positionData)
 
 
       return positionData
@@ -2053,7 +2053,7 @@ module.exports = {
 
   //       nodesSave = []
   //       for (let i = 0; i < nodeData.length; i++) {
-          
+
   //         console.log("nodeData[i]._id = " , nodeData[i]._id)
   //         endorseNodesObj[nodeData[i]._id] = {
   //           ...endorseNodesObj[nodeData[i]._id],
@@ -2203,13 +2203,13 @@ module.exports = {
 
 
     if (!memberID) throw new Error("The memberID is required🔥");
-    
+
     let membersData = await Members.findOne({ _id: memberID });
 
 
     try {
 
-      console.log("membersData = " , membersData)
+      console.log("membersData = ", membersData)
 
 
       // ------------ Upload Bio ------------
@@ -2231,7 +2231,7 @@ module.exports = {
       // membersData to IDs
       let nodesID = membersData.nodes.map((item) => item._id)
       let nodesData = await Node.find({ _id: nodesID }).select("_id name")
-      
+
       for (let i = 0; i < nodesData.length; i++) {
         const node = nodesData[i];
         // upsertDoc = await upsertEmbedingPineCone({
@@ -2259,7 +2259,7 @@ module.exports = {
         //   category: "user_data"
         // })
         resTK = await addMemoryPineconeFunc({
-          memory:"Project Title: " + project.title + "\n" + "Project Description: " + project.description,
+          memory: "Project Title: " + project.title + "\n" + "Project Description: " + project.description,
           userID: memberID,
           label: "previusProject",
           category: "user_data"
@@ -2291,7 +2291,7 @@ module.exports = {
       if (!memberData) throw new Error("The memberID is not valid🔥 can't find member");
 
 
-      printC(memberData,"1","memberData","b")
+      printC(memberData, "1", "memberData", "b")
 
 
 
@@ -2306,8 +2306,8 @@ module.exports = {
 
       // save the member
       memberData = await memberData.save()
-      
-      printC(memberData,"2","memberData","b")
+
+      printC(memberData, "2", "memberData", "b")
 
 
 
@@ -2322,11 +2322,11 @@ module.exports = {
     }
   },
   reCreateMemberNeo: async (parent, args, context, info) => {
-    const { _id} = args.fields;
+    const { _id } = args.fields;
     console.log("Mutation > reCreateMemberNeo > args.fields = ", args.fields);
 
 
-    
+
 
     try {
 
@@ -2334,13 +2334,13 @@ module.exports = {
 
       // if (!memberData) throw new Error("The _id is not valid🔥 can't find member");
 
-      let membersData = await Members.find({ }).select('_id discordName nodes serverID');
+      let membersData = await Members.find({}).select('_id discordName nodes serverID');
 
 
       for (let i = 0; i < membersData.length; i++) {
         const memberData = membersData[i];
 
-        console.log("memberData = " , memberData)
+        console.log("memberData = ", memberData)
 
         await createNode_neo4j({
           node: "Member",
@@ -2366,7 +2366,7 @@ module.exports = {
 
         }
       }
-      
+
 
 
       return membersData;
@@ -2380,7 +2380,7 @@ module.exports = {
     }
   },
   initiateConnectionTelegram: async (parent, args, context, info) => {
-    const { memberID,positionID } = args.fields;
+    const { memberID, positionID } = args.fields;
     console.log("Mutation > initiateConnectionTelegram > args.fields = ", args.fields);
 
     if (!memberID && !positionID) throw new Error("The memberID or positionID is required🔥");
@@ -2388,7 +2388,7 @@ module.exports = {
     if (memberID && positionID) throw new Error("You can't have both memberID and positionID🔥");
 
     let memberData, positionData
-    
+
 
     try {
 
@@ -2396,18 +2396,18 @@ module.exports = {
 
       if (memberID) {
         memberData = await Members.findOne({ _id: memberID }).select('_id discordName conduct ');
-  
+
         if (!memberData) throw new Error("The memberID is not valid🔥 can't find member");
 
 
         if (!memberData?.conduct?.telegramConnectionCode) {
           // create random 100 digit number from 000 to 999, always need to have exactly 3 digits
           random3Digit = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  
+
           memberData.conduct.telegramConnectionCode = random3Digit
-  
+
           memberData = await memberData.save()
-        }  else {
+        } else {
           random3Digit = memberData.conduct.telegramConnectionCode
         }
 
@@ -2419,18 +2419,18 @@ module.exports = {
           telegramChatID: memberData.conduct.telegramChatID,
           authTelegramCode: random3Digit,
         };
-  
+
       } else if (positionID) {
         positionData = await Position.findOne({ _id: positionID }).select('_id name conduct');
-  
+
         if (!positionData) throw new Error("The positionID is not valid🔥 can't find position");
 
         if (!positionData?.conduct?.telegramConnectionCode) {
           // create random 100 digit number from 000 to 999, always need to have exactly 3 digits
           random3Digit = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  
+
           positionData.conduct.telegramConnectionCode = random3Digit
-  
+
           positionData = await positionData.save()
         } else {
           random3Digit = positionData.conduct.telegramConnectionCode
@@ -2456,8 +2456,79 @@ module.exports = {
       );
     }
   },
+  initiateConnectionWhatsAPP: async (parent, args, context, info) => {
+    const { memberID, positionID } = args.fields;
+    console.log("Mutation > initiateConnectionWhatsApp > args.fields = ", args.fields);
+
+    if (!memberID && !positionID) throw new Error("The memberID or positionID is required🔥");
+
+    if (memberID && positionID) throw new Error("You can't have both memberID and positionID🔥");
+
+    let memberData, positionData
+
+
+    try {
+      let random3Digit
+
+      if (memberID) {
+        memberData = await Members.findOne({ _id: memberID }).select('_id discordName conduct ');
+
+        if (!memberData) throw new Error("The memberID is not valid🔥 can't find member");
+
+
+        if (!memberData?.conduct?.whatsappConnectionCode) {
+          // create random 100 digit number from 000 to 999, always need to have exactly 3 digits
+          random3Digit = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+
+          memberData.conduct.whatsappConnectionCode = random3Digit
+
+          memberData = await memberData.save()
+        } else {
+          random3Digit = memberData.conduct.whatsappConnectionCode
+        }
+
+        return {
+          done: true,
+          _id: memberData._id,
+          name: memberData.discordName,
+          whatsappNumber: memberData.conduct.whatsappNumber,
+          authWhatsappCode: random3Digit,
+        };
+
+      } else if (positionID) {
+        positionData = await Position.findOne({ _id: positionID }).select('_id name conduct');
+
+        if (!positionData) throw new Error("The positionID is not valid🔥 can't find position");
+
+        if (!positionData?.conduct?.whatsappConnectionCode) {
+          // create random 100 digit number from 000 to 999, always need to have exactly 3 digits
+          random3Digit = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+
+          positionData.conduct.whatsappConnectionCode = random3Digit
+
+          positionData = await positionData.save()
+        } else {
+          random3Digit = positionData.conduct.whatsappConnectionCode
+        }
+
+        return {
+          done: true,
+          _id: positionData._id,
+          name: positionData.name,
+          whatsappNumber: positionData.conduct.whatsappNumber,
+          authWhatsappCode: random3Digit,
+        };
+      }
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "initiateConnectionWhatsAPP",
+        { component: "memberMutation > initiateConnectionWhatsAPP" }
+      );
+    }
+  },
   checkUsersForTGConnection: async (parent, args, context, info) => {
-    const { authNumberTGMessage,telegramID,telegramChatID } = args.fields;
+    const { authNumberTGMessage, telegramID, telegramChatID } = args.fields;
     console.log("Mutation > checkUsersForTGConnection > args.fields = ", args.fields);
 
 
@@ -2494,7 +2565,7 @@ module.exports = {
 
       if (memberData) {
 
-      
+
         memberData.conduct.telegram = telegramID
         memberData.conduct.telegramChatID = telegramChatID
         memberData.conduct.telegramConnectionCode = null
@@ -2502,10 +2573,10 @@ module.exports = {
 
         memberData = await memberData.save()
 
-        console.log("memberData = " , memberData)
+        console.log("memberData = ", memberData)
 
 
-        
+
 
         pubsub.publish("USER_TG_CONNECTED", {
           memberDataConnectedTG: memberData
@@ -2527,7 +2598,7 @@ module.exports = {
 
         positionData = await positionData.save()
 
-        console.log("positionData = " , positionData)
+        console.log("positionData = ", positionData)
 
         pubsub.publish("POSITION_TG_CONNECTED", {
           positionDataConnectedTG: positionData
@@ -2547,7 +2618,7 @@ module.exports = {
 
       return memberData;
 
-      
+
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -2593,7 +2664,7 @@ module.exports = {
         memberData.conduct.whatsappNumber = whatsappNumber
         memberData.conduct.whatsappConnectionCode = null
         memberData = await memberData.save()
-        console.log("memberData = " , memberData)
+        console.log("memberData = ", memberData)
 
         pubsub.publish("USER_WHATSAPP_CONNECTED", {
           memberDataConnectedWhatsAPP: memberData
@@ -2611,7 +2682,7 @@ module.exports = {
         positionData.conduct.whatsappConnectionCode = null
         positionData = await positionData.save()
 
-        console.log("positionData = " , positionData)
+        console.log("positionData = ", positionData)
 
         pubsub.publish("POSITION_WHATSAPP_CONNECTED", {
           positionDataConnectedWhatsAPP: positionData
@@ -2635,18 +2706,18 @@ module.exports = {
     }
   },
   createFakeUser: async (parent, args, context, info) => {
-    const { memberID,expertise,interests } = args.fields;
+    const { memberID, expertise, interests } = args.fields;
     console.log("Mutation > createFakeUser > args.fields = ", args.fields);
     try {
 
-      
+
       let userData = {}
 
       // --------- make random ID --------
-      if (memberID){
+      if (memberID) {
         userData = await Members.findOne({ _id: memberID });
 
-        if (userData){
+        if (userData) {
           userData.alreadyExist = true
         } else {
           userData.alreadyExist = true
@@ -2655,10 +2726,10 @@ module.exports = {
         userData.alreadyExist = false
       }
 
-      printC(userData,"1","userData","b")
+      printC(userData, "1", "userData", "b")
 
 
-      if (!userData?._id){
+      if (!userData?._id) {
         const randomID = await generateRandomID(18)
         // console.log("randomID = " , randomID) // TODO: remove
         userData._id = randomID
@@ -2666,26 +2737,26 @@ module.exports = {
         randomID = userData._id
       }
 
-      console.log("DONE - ID = " )
+      console.log("DONE - ID = ")
       // --------- make random ID --------
 
       let nodeArr = []
       let nodeObj = {}
-      if (!userData?._id){
+      if (!userData?._id) {
         // ----------- array of IDs and object of nodes -----------
-        res = await arrayToKeyObject(expertise,"expertise")
-        res2 = await arrayToKeyObject(interests,"interest")
+        res = await arrayToKeyObject(expertise, "expertise")
+        res2 = await arrayToKeyObject(interests, "interest")
 
         nodeArr = [...res.nodeArr, ...res2.nodeArr]
-        nodeObj = {...res.nodeObj, ...res2.nodeObj}
+        nodeObj = { ...res.nodeObj, ...res2.nodeObj }
 
         const expertiseInterest = [...nodeArr]
         // ----------- array of IDs and object of nodes -----------
 
         // --------- Find Nodes ------------
         let nodesData = await Node.find({ _id: nodeArr }).select("-match_v2_update -match_v2  -aboveNodes -state");
-        console.log("nodesData = " , nodesData) // TODO: remove
-        console.log("nodesData = " , nodesData.length) // TODO: remove
+        console.log("nodesData = ", nodesData) // TODO: remove
+        console.log("nodesData = ", nodesData.length) // TODO: remove
         // asdf5
         // --------- Find Nodes ------------
 
@@ -2693,31 +2764,31 @@ module.exports = {
         nodeArr = []
         for (const node of nodesData) {
           let extraNodes = []
-          if (node?.subNodes?.length > 0 ){
+          if (node?.subNodes?.length > 0) {
             extraNodes = [...extraNodes, ...node.subNodes]
-          } 
-          if (node?.relatedNodes?.length > 0 ){
+          }
+          if (node?.relatedNodes?.length > 0) {
             extraNodes = [...extraNodes, ...node.relatedNodes]
           }
 
 
           numberNodes = nodeObj[node._id].numberNodes
 
-          console.log("numberNodes = " , numberNodes)
-          console.log("extraNodes = " , extraNodes)
+          console.log("numberNodes = ", numberNodes)
+          console.log("extraNodes = ", extraNodes)
 
           let relatedNodesData = await Node.find({ _id: extraNodes }).select("_id name node");
 
           acceptedExtraNodes = []
           for (const relatedNode of relatedNodesData) {
-            if (relatedNode.node == "Skill"){
+            if (relatedNode.node == "Skill") {
               acceptedExtraNodes = [...acceptedExtraNodes, relatedNode._id]
             }
           }
-          console.log("acceptedExtraNodes = " , acceptedExtraNodes)
+          console.log("acceptedExtraNodes = ", acceptedExtraNodes)
 
           // asdf9
-          
+
 
           // get numberNodes random nodes from extraNodes
           const randomExtraNodes = await getRandomIDs(acceptedExtraNodes, numberNodes)
@@ -2725,32 +2796,32 @@ module.exports = {
           nodeArr = [...nodeArr, ...randomExtraNodes]
 
           nodeObj[node._id] = {
-            ...nodeObj[node._id], 
+            ...nodeObj[node._id],
             ...node._doc,
             nodesAddUser: randomExtraNodes
           }
         }
-        console.log("expertiseInterest = " , expertiseInterest)
-        
+        console.log("expertiseInterest = ", expertiseInterest)
+
         // --------- Find ExtraNodes ---------
 
         // --------- Find Nodes ------------
         nodesData = await Node.find({ _id: nodeArr }).select("-match_v2_update -match_v2 -subNodes -relatedNodes -aboveNodes -state");
-        
+
         categoryDataNow = {}
         groupDataNode = {}
         for (const node of nodesData) {
 
-          if (node.categoryNodes.length > 0){
+          if (node.categoryNodes.length > 0) {
             categoryData = await Node.findOne({ _id: node.categoryNodes[0] }).select("_id name node");
           }
 
-          if (node.groupNodes.length > 0){
-            groupData = await  Node.findOne({ _id: node.groupNodes[0] }).select("_id name node");
+          if (node.groupNodes.length > 0) {
+            groupData = await Node.findOne({ _id: node.groupNodes[0] }).select("_id name node");
           }
 
           nodeObj[node._id] = {
-            ...nodeObj[node._id], 
+            ...nodeObj[node._id],
             ...node._doc,
             category: categoryData.name,
             group: groupData.name
@@ -2759,7 +2830,7 @@ module.exports = {
         // --------- Find Nodes ------------
 
 
-        console.log("DONE - Nodes = " )
+        console.log("DONE - Nodes = ")
         // ------------ Upload Nodes ------------
         for (let i = 0; i < nodesData.length; i++) {
           const node = nodesData[i];
@@ -2791,25 +2862,25 @@ module.exports = {
         }
       }
 
-      
+
 
       // --------- Get Avatar for user --------
-      if (!userData?.discordAvatar){
+      if (!userData?.discordAvatar) {
         const avatarUser = await randomPicture()
         userData.discordAvatar = avatarUser
       }
       // --------- Get Avatar for user --------
 
-      console.log("DONE - Avatar = " )
+      console.log("DONE - Avatar = ")
 
 
-      
+
 
 
 
       // --------- Server IDs -----------
-      if (!userData?.serverID){
-        serverID =  [
+      if (!userData?.serverID) {
+        serverID = [
           "883478451850473483",
           "996558082098339953",
           "988301790795685930",
@@ -2823,11 +2894,11 @@ module.exports = {
       // -------- Expertise and Interst Prompt ------
       let expertiseInterestPrompt = "This is my skills and interests: \n"
 
-      if (!userData?.nodes){
+      if (!userData?.nodes) {
         for (const node of expertiseInterest) {
           const nodeCategoryInfo = nodeObj[node]
           for (const nodeInfo of nodeCategoryInfo.nodesAddUser) {
-              expertiseInterestPrompt += " - Skill: " + nodeObj[nodeInfo].name + " - Category: " + nodeObj[nodeInfo].category + " - Group: " + nodeObj[nodeInfo].group  + "\n"
+            expertiseInterestPrompt += " - Skill: " + nodeObj[nodeInfo].name + " - Category: " + nodeObj[nodeInfo].category + " - Group: " + nodeObj[nodeInfo].group + "\n"
 
           }
 
@@ -2835,29 +2906,29 @@ module.exports = {
       } else {
         for (const key in nodeObj) {
           const nodeCategoryInfo = nodeObj[key]
-          expertiseInterestPrompt += " - Skill: " + nodeCategoryInfo.name 
+          expertiseInterestPrompt += " - Skill: " + nodeCategoryInfo.name
 
         }
       }
       // console.log("expertiseInterestPrompt = " , expertiseInterestPrompt) // TODO: remove
-      printC(expertiseInterestPrompt,"3","expertiseInterestPrompt","p")
+      printC(expertiseInterestPrompt, "3", "expertiseInterestPrompt", "p")
       // asdf9
       // -------- Expertise and Interst Prompt ------
 
 
-      printC("HEY","5","HEY","r")
+      printC("HEY", "5", "HEY", "r")
 
 
-      if (!userData?.bio){
-      // --------- find bio user ------
+      if (!userData?.bio) {
+        // --------- find bio user ------
         let promptT = expertiseInterestPrompt + "\n" + "Give me a bio for my profile, only 1 paragraph \n"
 
         const bio = await useGPTchat(promptT)
         // console.log("bio = " , bio) // TODO: remove
         userData.bio = bio
-        console.log("DONE - bio = " )
+        console.log("DONE - bio = ")
         // --------- find bio user ------
-        
+
         // ------------ Upload Bio ------------
         // upsertDoc = await upsertEmbedingPineCone({
         //   text: bio,
@@ -2874,14 +2945,14 @@ module.exports = {
         // ------------ Upload Bio ------------
       }
 
-      printC("HEY","6","HEY","r")
+      printC("HEY", "6", "HEY", "r")
 
 
 
 
 
       // --------- find name user ------
-      if (!userData?.discordName){
+      if (!userData?.discordName) {
         // Generate a random number between 0 and 25
         const randomNumber1 = Math.floor(Math.random() * 26);
         const randomNumber2 = Math.floor(Math.random() * 26);
@@ -2890,29 +2961,29 @@ module.exports = {
         const randomLetter1 = String.fromCharCode(97 + randomNumber1); // generates a lowercase letter
         const randomLetter2 = String.fromCharCode(65 + randomNumber2); // generates an uppercase letter
 
-        const name = await useGPTchat("Give me only one First name of a Programmer, only 1 word, it should include the following two letters: " +randomLetter1+ " "+ randomLetter2 + "\n")
+        const name = await useGPTchat("Give me only one First name of a Programmer, only 1 word, it should include the following two letters: " + randomLetter1 + " " + randomLetter2 + "\n")
         // console.log("name = " , name) // TODO: remove
         userData.discordName = name.trim().replace("\n", "").replace("\n", "").replace("\"", "")
-        console.log("DONE - name = " )
+        console.log("DONE - name = ")
       }
       // --------- find name user ------
 
-      
+
 
       // --------- Create Job discriptions -------
-      if (!userData?.previousProjects?.length > 0){
+      if (!userData?.previousProjects?.length > 0) {
         jobs = []
 
-        for (let i=0;i<3;i++){
+        for (let i = 0; i < 3; i++) {
           // for (let i=0;i<Math.floor(Math.random() * 2) + 2;i++){
           let promptT = expertiseInterestPrompt + "\n" + "Give me 1 title, real position name and description (only 1 paragraph with 2 sentences) of a job that he did in his past, be creative with the title of the position. Example: \n Title: programming at Soil Corp \n Description: main programmer that was working on...  \n Result:"
 
           const jobData = await useGPTchat(promptT)
-          
+
           // jobData = ` Mobile Deployment Manager at Skyscape Medpresso:
           // Managed the deployment of mobile medical apps on Amazon Appstore, Microsoft Store, and Google Play Store. Led a team responsible for testing and ensuring compatibility with Espresso and Robot Framework. Also utilized expertise in Ionic and mobile app frameworks to improve the overall user experience.`
-          console.log("jobData = " , jobData) // TODO: remove
-          
+          console.log("jobData = ", jobData) // TODO: remove
+
           const lines = jobData.split("\n");
           let title, description;
 
@@ -2926,10 +2997,10 @@ module.exports = {
             }
           }
 
-          console.log("Res ------= " )
+          console.log("Res ------= ")
           console.log(title); // "Website Designer"
           console.log(description);
-          console.log("Res ------= " )
+          console.log("Res ------= ")
           jobs.push({
             title,
             description
@@ -2950,7 +3021,7 @@ module.exports = {
           })
           // ------------ Upload previousProjects ------------
 
-          console.log("DONE - Job = ",i )
+          console.log("DONE - Job = ", i)
 
         }
         // asfd8
@@ -2958,53 +3029,53 @@ module.exports = {
         userData.previousProjects = jobs
       }
       // --------- Create Job discriptions -------
-      
+
 
 
       // --------- create hourse per week, timezone, location, totalIncome, completedOpportunities -------
 
-      if (!userData?.hoursPerWeek){
+      if (!userData?.hoursPerWeek) {
         // random hours per week from 10 to 40
         userData.hoursPerWeek = Math.floor(Math.random() * 30) + 10
       }
 
-      if (!userData?.timeZone){
+      if (!userData?.timeZone) {
         // random timezone GMT + X
         userData.timeZone = "GMT " + Math.floor(Math.random() * 12) + 1
       }
 
-      if (!userData?.location){
+      if (!userData?.location) {
         // create array of 20 random location and choose one randomly from this array
         const locations = ["New York", "Los Angeles", "Chicago", "Houston", "Philadelphia", "Phoenix", "San Antonio", "San Diego", "Dallas", "San Jose", "Austin", "Jacksonville", "San Francisco", "Indianapolis", "Columbus", "Fort Worth", "Charlotte", "Detroit", "El Paso", "Memphis"]
         userData.location = locations[Math.floor(Math.random() * locations.length)]
       }
 
-      if (!userData?.totalIncome){
+      if (!userData?.totalIncome) {
         // random totalIncome from 1000 to 100000 and round it on the 3 digit 1423 -> 1420
         userData.totalIncome = Math.floor(Math.random() * 100000) + 1000
         userData.totalIncome = Math.floor(userData.totalIncome / 10) * 10
       }
 
-      if (!userData?.completedOpportunities){
+      if (!userData?.completedOpportunities) {
         // random completedOpportunities from 0 to 30
         userData.completedOpportunities = Math.floor(Math.random() * 30)
       }
 
-      if (!userData?.budget?.perHour){
+      if (!userData?.budget?.perHour) {
         userData.budget.perHour = Math.floor(Math.random() * 90) + 10
       }
       // --------- create hourse per week, timezone, location, totalIncome, completedOpportunities -------
 
 
       // --------- Create Experience Level -------
-      if (!userData?.experienceLevel?.total){
+      if (!userData?.experienceLevel?.total) {
         // random experience level it can be 3,6 or 9
-        const experienceLevel = [3,6,9,9]
+        const experienceLevel = [3, 6, 9, 9]
         userData.experienceLevel.total = experienceLevel[Math.floor(Math.random() * experienceLevel.length)]
       }
 
 
-      if (!userData?.experienceLevel?.years){
+      if (!userData?.experienceLevel?.years) {
         // random yars which is a multiplier of the total years, but it is a random multiplier from 1 to 3
         const multiplier = Math.floor(Math.random() * 3) + 1
 
@@ -3016,10 +3087,10 @@ module.exports = {
 
 
       // --------- Create Role and add to User -------
-      if (!userData?.memberRole){
+      if (!userData?.memberRole) {
 
         let promptK = ""
-        if (userData?.bio){
+        if (userData?.bio) {
           promptK = "Bio user: " + userData.bio + "\n" + "Give me a role based on the Bio of the user, \n Role using 1 word: \n"
         } else {
           promptK = "Bio user: " + bio + "\n" + "Give me a role based on the Bio of the user, \n Role using 1 word: \n"
@@ -3027,9 +3098,9 @@ module.exports = {
 
         let roleN = await useGPTchat(promptK)
 
-        roleN = roleN.trim().replace("\n", "").replace("\n", "").replace("\"", "").replace(".","")
-        
-        printC(roleN,"1", "roleN","g")
+        roleN = roleN.trim().replace("\n", "").replace("\n", "").replace("\"", "").replace(".", "")
+
+        printC(roleN, "1", "roleN", "g")
 
         let roleTemplateData = await new RoleTemplate({
           title: roleN,
@@ -3041,9 +3112,9 @@ module.exports = {
       // --------- Create Role and add to User -------
 
 
-      printC(userData,"1", "userData","b")
+      printC(userData, "1", "userData", "b")
       // sf0
-      
+
 
 
       //  --------- Create User ---------
@@ -3051,7 +3122,7 @@ module.exports = {
       //  --------- Create User ---------
 
       // --------- add Nodes to Member --------
-      if (!userData?._id){
+      if (!userData?._id) {
         nodeArr = [...nodeArr, ...expertiseInterest]
         const fields = {
           memberID: userData._id,
@@ -3061,7 +3132,7 @@ module.exports = {
       }
       // --------- add Nodes to Member --------
 
-      console.log("DONE - Add User Backend = " )
+      console.log("DONE - Add User Backend = ")
 
 
       // console.log("change = afdasfdas22efe22f2" )
@@ -3076,7 +3147,7 @@ module.exports = {
     }
   },
   createFakeUserCVnew: async (parent, args, context, info) => {
-    const { memberID,positionID } = args.fields;
+    const { memberID, positionID } = args.fields;
     let { cvContent } = args.fields;
     console.log("Mutation > createFakeUserCVnew > args.fields = ", args.fields);
 
@@ -3089,7 +3160,7 @@ module.exports = {
       // find the positionData 
       positionData = await Position.findOne({ _id: positionID }).select("_id title positionsRequirements")
 
-      if (positionData?.positionsRequirements != undefined && positionData?.positionsRequirements?.originalContent != undefined){
+      if (positionData?.positionsRequirements != undefined && positionData?.positionsRequirements?.originalContent != undefined) {
         cvContent = positionData.positionsRequirements.originalContent
       }
 
@@ -3097,14 +3168,14 @@ module.exports = {
 
     try {
 
-      
+
       let userData = {}
 
       // --------- make random ID --------
-      if (memberID){
+      if (memberID) {
         userData = await Members.findOne({ _id: memberID });
 
-        if (userData){
+        if (userData) {
           userData.alreadyExist = true
         } else {
           userData.alreadyExist = true
@@ -3113,10 +3184,10 @@ module.exports = {
         userData.alreadyExist = false
       }
 
-      printC(userData,"1","userData","b")
+      printC(userData, "1", "userData", "b")
 
 
-      if (!userData?._id){
+      if (!userData?._id) {
         const randomID = await generateRandomID(18)
         // console.log("randomID = " , randomID) // TODO: remove
         userData._id = randomID
@@ -3124,22 +3195,22 @@ module.exports = {
         randomID = userData._id
       }
 
-      console.log("DONE - ID = " )
+      console.log("DONE - ID = ")
       // --------- make random ID --------
 
 
       // --------- Get Avatar for user --------
-      if (!userData?.discordAvatar){
+      if (!userData?.discordAvatar) {
         const avatarUser = await randomPicture()
         userData.discordAvatar = avatarUser
       }
       // --------- Get Avatar for user --------
 
-      console.log("DONE - Avatar = " )
+      console.log("DONE - Avatar = ")
 
 
       // --------- find name user ------
-      if (!userData?.discordName){
+      if (!userData?.discordName) {
         // Generate a random number between 0 and 25
         const randomNumber1 = Math.floor(Math.random() * 26);
         const randomNumber2 = Math.floor(Math.random() * 26);
@@ -3148,66 +3219,66 @@ module.exports = {
         const randomLetter1 = String.fromCharCode(97 + randomNumber1); // generates a lowercase letter
         const randomLetter2 = String.fromCharCode(65 + randomNumber2); // generates an uppercase letter
 
-        const name = await useGPTchat("Give me only one First name of a Programmer, only 1 word, it should include the following two letters: " +randomLetter1+ " "+ randomLetter2 + "\n")
+        const name = await useGPTchat("Give me only one First name of a Programmer, only 1 word, it should include the following two letters: " + randomLetter1 + " " + randomLetter2 + "\n")
         // console.log("name = " , name) // TODO: remove
         userData.discordName = name.trim().replace("\n", "").replace("\n", "").replace("\"", "")
-        console.log("DONE - name = " )
+        console.log("DONE - name = ")
       }
       // --------- find name user ------
 
-      
+
 
       // --------- create hourse per week, timezone, location, totalIncome, completedOpportunities -------
 
-      if (!userData?.hoursPerWeek){
+      if (!userData?.hoursPerWeek) {
         // random hours per week from 10 to 40
         userData.hoursPerWeek = Math.floor(Math.random() * 30) + 10
       }
 
-      if (!userData?.timeZone){
+      if (!userData?.timeZone) {
         // random timezone GMT + X
         userData.timeZone = "GMT " + Math.floor(Math.random() * 12) + 1
       }
 
-      if (!userData?.location){
+      if (!userData?.location) {
         // create array of 20 random location and choose one randomly from this array
         const locations = ["New York", "Los Angeles", "Chicago", "Houston", "Philadelphia", "Phoenix", "San Antonio", "San Diego", "Dallas", "San Jose", "Austin", "Jacksonville", "San Francisco", "Indianapolis", "Columbus", "Fort Worth", "Charlotte", "Detroit", "El Paso", "Memphis"]
         userData.location = locations[Math.floor(Math.random() * locations.length)]
       }
 
-      if (!userData?.totalIncome){
+      if (!userData?.totalIncome) {
         // random totalIncome from 1000 to 100000 and round it on the 3 digit 1423 -> 1420
         userData.totalIncome = Math.floor(Math.random() * 100) + 20
         // userData.totalIncome = Math.floor(userData.totalIncome / 10) * 10
       }
 
-      if (!userData?.completedOpportunities){
+      if (!userData?.completedOpportunities) {
         // random completedOpportunities from 0 to 30
         userData.completedOpportunities = Math.floor(Math.random() * 30)
       }
 
-      if (userData?.budget == undefined){
+      if (userData?.budget == undefined) {
         userData.budget = {}
       }
 
-      if (!userData?.budget?.perHour){
+      if (!userData?.budget?.perHour) {
         userData.budget.perHour = Math.floor(Math.random() * 90) + 10
       }
       // --------- create hourse per week, timezone, location, totalIncome, completedOpportunities -------
 
-      if (userData?.experienceLevel == undefined){
+      if (userData?.experienceLevel == undefined) {
         userData.experienceLevel = {}
       }
 
       // --------- Create Experience Level -------
-      if (!userData?.experienceLevel?.total){
+      if (!userData?.experienceLevel?.total) {
         // random experience level it can be 3,6 or 9
-        const experienceLevel = [3,6,9,9]
+        const experienceLevel = [3, 6, 9, 9]
         userData.experienceLevel.total = experienceLevel[Math.floor(Math.random() * experienceLevel.length)]
       }
 
 
-      if (!userData?.experienceLevel?.years){
+      if (!userData?.experienceLevel?.years) {
         // random yars which is a multiplier of the total years, but it is a random multiplier from 1 to 3
         const multiplier = Math.floor(Math.random() * 3) + 1
 
@@ -3229,14 +3300,14 @@ module.exports = {
         
       CV of candidate:`
 
-      cvBigVersion = await useGPTchatSimple(promptTS,1)
+      cvBigVersion = await useGPTchatSimple(promptTS, 1)
       // cvBigVersion = cvContent
       // printC(cvBigVersion,"1", "cvBigVersion","p")
 
       // --------- Create a big CV out of small test -------
 
 
-      printC(userData,"2", "userData","b")
+      printC(userData, "2", "userData", "b")
 
 
       //  --------- Create User ---------
@@ -3245,7 +3316,7 @@ module.exports = {
 
 
       // --------- save CV and create questions for the user ---------
-      let resSaveCV = await saveCVtoUserFunc(cvBigVersion,userData._id,positionID)
+      let resSaveCV = await saveCVtoUserFunc(cvBigVersion, userData._id, positionID)
 
       positionData = resSaveCV.positionData
 
@@ -3286,7 +3357,7 @@ module.exports = {
       //   }
       // ]
 
-      printC(interviewQuestions,"7", "interviewQuestions","g")
+      printC(interviewQuestions, "7", "interviewQuestions", "g")
 
 
       rand = Math.floor(Math.random() * 50034) + 1
@@ -3294,7 +3365,7 @@ module.exports = {
 
       let conversation = [{
         "role": "user",
-        "content": "wpl4"+rand.toString(),
+        "content": "wpl4" + rand.toString(),
       }]
 
       // change format interviewQuestions
@@ -3312,11 +3383,11 @@ module.exports = {
 
       let resultInterview
 
-      printC(conversation,"9", "conversation","y")
+      printC(conversation, "9", "conversation", "y")
 
 
-      while (unansweredQuestionsArr.length >0) {
-        resultInterview = await interviewEdenAIFunc(userData._id,positionID,positionTrainEdenAI,conversation,timesAsked,unansweredQuestionsArr,useMemory)
+      while (unansweredQuestionsArr.length > 0) {
+        resultInterview = await interviewEdenAIFunc(userData._id, positionID, positionTrainEdenAI, conversation, timesAsked, unansweredQuestionsArr, useMemory)
 
         // printC(resultInterview,"8", "resultInterview","r")
 
@@ -3324,7 +3395,7 @@ module.exports = {
           "role": "assistant",
           "content": resultInterview.reply,
         })
-        printC(conversation,"10", "conversation","y")
+        printC(conversation, "10", "conversation", "y")
 
 
 
@@ -3342,7 +3413,7 @@ module.exports = {
         const randomAPI = Math.random() < 0.5 ? "API 1" : "API 2";
 
 
-        userReply = await useGPTchatSimple(promptTS,1,randomAPI)
+        userReply = await useGPTchatSimple(promptTS, 1, randomAPI)
 
         // printC(userReply,"9", "userReply","y")
 
@@ -3353,9 +3424,9 @@ module.exports = {
 
         unansweredQuestionsArr = resultInterview.unansweredQuestionsArr
 
-        timesAsked =resultInterview.timesAsked
+        timesAsked = resultInterview.timesAsked
 
-        printC(conversation,"11", "conversation","y")
+        printC(conversation, "11", "conversation", "y")
 
       }
 
@@ -3376,22 +3447,22 @@ module.exports = {
       ];
 
 
-      let candidatesN = await updateEmployees(positionData.candidates, candidates,"userID");
+      let candidatesN = await updateEmployees(positionData.candidates, candidates, "userID");
 
-      console.log("candidatesN = " , candidatesN)
+      console.log("candidatesN = ", candidatesN)
       // sdf00
 
-      usersData = await Members.find({ _id: userData?._id } );
+      usersData = await Members.find({ _id: userData?._id });
 
 
-      await checkAndAddPositionToMember(usersData,positionID)
-      
+      await checkAndAddPositionToMember(usersData, positionID)
+
 
 
       // find one and updates
       let positionDataN = await Position.findOneAndUpdate(
         { _id: positionID },
-        { 
+        {
           candidates: positionData.candidates,
           candidatesReadyToDisplay: false,
           candidatesFlagAnalysisCreated: false,
@@ -3498,16 +3569,16 @@ const calculate_skill_level = async (nodeNow) => {
 
 
 
-async function updateEmployees(arr1, arr2,compareKey = "userID") {
+async function updateEmployees(arr1, arr2, compareKey = "userID") {
 
   // arr1New = [...arr1]
   arr2.forEach(employee2 => {
     const index = arr1.findIndex(employee1 => {
 
-      
+
       if (employee1[compareKey] && employee2[compareKey]) return (employee1[compareKey].toString() == employee2[compareKey].toString())
       else return -1
-      
+
     });
     if (index != -1) {
       // arr1[index] = {
@@ -3516,10 +3587,10 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
       //   readyToDisplay: false,
       // }
       arr1[index].readyToDisplay = false
-      if (employee2.conversationID){
+      if (employee2.conversationID) {
         arr1[index].conversationID = employee2.conversationID
       }
-      if (employee2.bestAnswer){
+      if (employee2.bestAnswer) {
         arr1[index].bestAnswer = employee2.bestAnswer
       }
     } else {
@@ -3528,10 +3599,10 @@ async function updateEmployees(arr1, arr2,compareKey = "userID") {
         readyToDisplay: false,
       });
 
-      if (employee2.conversationID){
+      if (employee2.conversationID) {
         arr1[arr1.length - 1].conversationID = employee2.conversationID
       }
-      if (employee2.bestAnswer){
+      if (employee2.bestAnswer) {
         arr1[arr1.length - 1].bestAnswer = employee2.bestAnswer
       }
 

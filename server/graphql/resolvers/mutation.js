@@ -17,7 +17,8 @@ const {
   updateMemberSignalInfo, reCreateMemberNeo, checkUsersForTGConnection, initiateConnectionTelegram, 
   memberDataConnectedTG, 
   positionDataConnectedTG,
-  checkUsersForWhatsAPPConnection
+  checkUsersForWhatsAPPConnection,
+  initiateConnectionWhatsAPP
 } = require("./mutation/memberMutation");
 const {
   updateProject,
@@ -190,6 +191,7 @@ module.exports = {
     updateMemberSignalInfo, reCreateMemberNeo, 
     checkUsersForTGConnection, 
     initiateConnectionTelegram,
+    initiateConnectionWhatsAPP,
     checkUsersForWhatsAPPConnection,
 
     // ------------- PROJECT MUTATION -----------------

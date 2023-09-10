@@ -556,6 +556,11 @@ module.exports = `
         positionID: ID
     }
 
+    input initiateConnectionWhatsAPPInput {
+        memberID: ID
+        positionID: ID
+    }
+
     type updateTGOutput {
         done: Boolean
         _id: ID

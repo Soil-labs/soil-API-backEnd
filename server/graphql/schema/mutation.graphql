@@ -21,6 +21,7 @@ module.exports = `
         reCreateMemberNeo(fields: reCreateMemberNeoInput ): [Members]
         checkUsersForTGConnection(fields: checkUsersForTGConnectionInput ): updateTGOutput
         initiateConnectionTelegram(fields: initiateConnectionTelegramInput ): updateTGOutput
+        initiateConnectionWhatsAPP(fields: initiateConnectionWhatsAPPInput ): updateWhatsAPPOutput
         checkUsersForWhatsAPPConnection(fields: checkUsersForWhatsAPPConnectionInput ): updateWhatsAPPOutput
         
 
