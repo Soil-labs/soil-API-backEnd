@@ -47,7 +47,7 @@ const subscriptionWebhook = async (req, res) => {
     event = stripe.webhooks.constructEvent(
       payload,
       sig,
-      "whsec_9cec43f6df8d0912979045449bed7abb211eb8d4ce8f35215b3a81be2c997519"
+      process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
     console.error(err);
