@@ -8,13 +8,11 @@ const fulfillOrder = async (session) => {
     expand: ["line_items"],
   });
 
-  await Members.findOneAndUpdate(
+  console.log("Fulfilling order", session);
+
+  const res = await Members.findOneAndUpdate(
     {
-      stripe: {
-        session: {
-          ID: session.id,
-        },
-      },
+      "stripe.session.ID": session.id,
     },
     {
       stripe: {
@@ -23,8 +21,18 @@ const fulfillOrder = async (session) => {
           ID: _session.line_items.data[0].price.product,
         },
       },
-    }
+    },
+    { new: true }
   );
+
+  console.log("Fulfilled", res, {
+    stripe: {
+      customerID: session.customer,
+      product: {
+        ID: _session.line_items.data[0].price.product,
+      },
+    },
+  });
 };
 
 const createOrder = (session) => {

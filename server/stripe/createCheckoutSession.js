@@ -25,16 +25,28 @@ const createCheckoutSession = async ({ body }, res, req) => {
       automatic_tax: { enabled: true },
     });
 
-    console.log(session);
-    await Members.findOneAndUpdate(
-      { _id: body.userid },
-      {
-        stripe: {
+    // console.log(session);
+    const _member = await Members.findOne({ _id: body.userid });
+
+    const _stripeObj = _member.stripe
+      ? {
+          ..._member.stripe,
           session: {
             ID: session.id,
           },
           // product: { ID: "" },
-        },
+        }
+      : {
+          session: {
+            ID: session.id,
+          },
+          // product: { ID: "" },
+        };
+
+    await Members.findOneAndUpdate(
+      { _id: body.userid },
+      {
+        stripe: _stripeObj,
       }
     );
 
