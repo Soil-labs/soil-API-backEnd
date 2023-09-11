@@ -54,8 +54,6 @@ const subscriptionWebhook = async (req, res) => {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  console.log("IIIIIIIIII payload IIIIIIIIII", payload);
-
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object;
