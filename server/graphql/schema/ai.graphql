@@ -262,6 +262,7 @@ module.exports = `
         message: String
     }
     input identifyCategoryAndReplyInput {
+        chatID_TG: ID
         message: String
         replyFlag: Boolean
     }

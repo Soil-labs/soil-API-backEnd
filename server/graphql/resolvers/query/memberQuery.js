@@ -74,7 +74,7 @@ module.exports = {
         }
 
         memberData = await Members.findOne(searchTerm);
-        console.log("memberData = ", memberData);
+        // console.log("memberData = ", memberData);
 
         return memberData;
       } catch (err) {
@@ -1492,7 +1492,8 @@ module.exports = {
 
       memberObj = await nodes_aiModule(nodesID,weightModulesObj,memberObj,filter,membersIDallowObj)
 
-      console.log("memberObj = " , memberObj)
+      // console.log("memberObj = " , memberObj)
+      // sdf9
       memberObj = await totalScore_aiModule(memberObj,weightModulesObj,numberNodes)
       console.log("memberObj = " , memberObj)
 

@@ -18,6 +18,7 @@ module.exports = `
         createFakeUserCVnew(fields: createFakeUserCVnewInput ): Members
         uploadUserDataGPT(fields: uploadUserDataGPTInput ): Members
         updateMemberSignalInfo(fields: updateMemberSignalInfoInput ): Members
+        reCreateMemberNeo(fields: reCreateMemberNeoInput ): [Members]
         checkUsersForTGConnection(fields: checkUsersForTGConnectionInput ): updateTGOutput
         initiateConnectionTelegram(fields: initiateConnectionTelegramInput ): updateTGOutput
         endorseAttribute(fields:endorseAttributeInput!): Members
@@ -155,6 +156,10 @@ module.exports = `
         addNewChat(fields: addNewChatInput): Chats
         updateChatReply(fields: updateChatReplyInput): Chats
         updateChatResult(fields: updateChatResultInput): Chats
+
+
+        addChatExternalApp(fields: addChatExternalAppInput): ChatExternalApp
+
 
         # ------------- AI MUTATIONS ------------
         addMessage(fields: addMessageInput): AI
