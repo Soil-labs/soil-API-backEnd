@@ -1112,9 +1112,15 @@ module.exports = {
       if (index_ == -1) {
         positionData.candidates.push({
           userID: userID,
+          dateApply: new Date(),
         });
 
         await positionData.save();
+      } else {
+        positionData.candidates[index_].dateApply = new Date();
+        await positionData.save();
+
+        console.log("positionData.candidates[index_] = " , positionData.candidates[index_])
       }
       // ----------------- add candidate to position -----------------
 
