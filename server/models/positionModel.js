@@ -86,6 +86,7 @@ const positionModel = mongoose.Schema({
     acceptedOrRejected: Boolean,
     readyToDisplay: Boolean,
     conversationID: mongoose.Schema.ObjectId,
+    dateApply: Date,
     summaryQuestions: [{
       questionID: mongoose.Schema.ObjectId,
       originalQuestionContent: String,

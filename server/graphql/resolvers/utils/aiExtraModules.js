@@ -33,34 +33,38 @@ async function wait(ms) {
 }
 
 const CandidateNotesEdenAIAPICallF = async (memberID, positionID) => {
-  const query = gql`
-    query candidateNotesEdenAI($fields: candidateNotesEdenAIInput) {
-      candidateNotesEdenAI(fields: $fields) {
-        categoryName
-        score
-        reason
+  try {
+    const query = gql`
+      query candidateNotesEdenAI($fields: candidateNotesEdenAIInput) {
+        candidateNotesEdenAI(fields: $fields) {
+          categoryName
+          score
+          reason
+        }
       }
-    }
-  `;
+    `;
 
-  const variables = {
-    fields: {
-      memberID: memberID,
-      positionID: positionID,
-    },
-  };
+    const variables = {
+      fields: {
+        memberID: memberID,
+        positionID: positionID,
+      },
+    };
 
-  printC(variables, "1", "variables", "r");
+    printC(variables, "1", "variables", "r");
 
-  res = await request(
-    // "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
-    // "https://soil-api-backend-kgfromaicron.up.railway.app/graphql",
-    REACT_APP_API_CRON_URL,
-    query,
-    variables
-  );
+    res = await request(
+      // "https://soil-api-backend-kgfromai2.up.railway.app/graphql",
+      // "https://soil-api-backend-kgfromaicron.up.railway.app/graphql",
+      REACT_APP_API_CRON_URL,
+      query,
+      variables
+    );
 
-  return res.candidateNotesEdenAI;
+    return res.candidateNotesEdenAI;
+  } catch (err){
+    console.log("err = " , err)
+  }
 };
 
 async function useGPTchat(

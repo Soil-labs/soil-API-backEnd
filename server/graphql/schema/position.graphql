@@ -93,6 +93,7 @@ module.exports = `
         acceptedOrRejected: Boolean,
         readyToDisplay: Boolean,
         conversationID: ID,
+        dateApply: String,
         conversation: [conversationType],
         summaryQuestions: [SummaryQuestionType]
         interviewQuestionsForCandidate: [interviewQuestionsForCandidateType]
