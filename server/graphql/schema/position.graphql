@@ -19,6 +19,7 @@ module.exports = `
         talentList: [talentListType]
         candidates: [CandidateType]
         generalDetails: generalDetailsType
+        status: PositionStatus
     }
 
     type positionsRequirementsType { 
@@ -227,7 +228,7 @@ module.exports = `
         updatePosition: ID
         mainUserID: ID
         icon: String,
-
+        status: PositionStatus
     }
     
     input updateUrlInput {
@@ -336,6 +337,10 @@ module.exports = `
         nodeID: ID
     }
 
-    
+    enum PositionStatus {
+        ACTIVE,
+        ARCHIVED,
+        DELETED
+    }
 
 `

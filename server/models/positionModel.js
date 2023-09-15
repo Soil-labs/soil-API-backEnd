@@ -205,6 +205,11 @@ const positionModel = mongoose.Schema({
       custom: [String],
     },
   },
+  status: {
+    type: String,
+    enum: ["ACTIVE", "ARCHIVED", "DELETED"],
+    default: "ACTIVE",
+  },
 });
 
 const Position = mongoose.model("Position", positionModel);
