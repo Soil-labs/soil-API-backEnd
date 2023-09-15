@@ -40,7 +40,7 @@ const { arrayToObj } = require("../utils/endorsementModules");
 
 module.exports = {
   updatePosition: async (parent, args, context, info) => {
-    const { _id, name, icon, conduct, mainUserID } = args.fields;
+    const { _id, name, icon, conduct, mainUserID, status } = args.fields;
     let { companyID } = args.fields;
     console.log("Mutation > updatePosition > args.fields = ", args.fields);
 
@@ -69,6 +69,7 @@ module.exports = {
         if (name) positionData.name = name;
         if (companyID) positionData.companyID = companyID;
         if (icon) positionData.icon = icon;
+        if (status) positionData.status = status;
 
         // ----------------- conduct ----------------
         if (conduct) {
