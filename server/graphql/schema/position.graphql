@@ -298,6 +298,10 @@ module.exports = `
         questionID: ID
     }
 
+    input findKeyAttributeAndPotentialPositionInput {
+        positionID: ID
+    }
+
     input candidatesInput {
         userID: ID,
         conversationID: ID,

@@ -582,6 +582,30 @@ module.exports = {
       );
     }
   },
+  findKeyAttributeAndPotentialPosition: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
+    console.log(
+      "Mutation > findKeyAttributeAndPotentialPosition > args.fields = ",
+      args.fields
+    );
+
+    if (!positionID)throw new ApolloError("Position ID is required");
+
+
+    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements ');
+
+    
+
+    try {
+     
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findKeyAttributeAndPotentialPosition",
+        { component: "positionMutation > findKeyAttributeAndPotentialPosition" }
+      );
+    }
+  },
   addCandidatesPosition: async (parent, args, context, info) => {
     const { positionID, candidates } = args.fields;
     console.log(
