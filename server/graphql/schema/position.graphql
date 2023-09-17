@@ -30,7 +30,12 @@ module.exports = `
         positionPreparationMemory: Boolean
         tradeOffs: [tradeOffsType]
         priorities: [prioritiesType]
-        
+        keyAttributes: [attributeType]
+        futurePotential: [attributeType]   
+    }
+
+    type {
+        attribute: String
     }
 
     type tradeOffsType {
@@ -101,6 +106,14 @@ module.exports = `
         averageScoreNotesInterview: Float
         compareCandidatePosition: compareCandidatePositionType
         analysisCandidateEdenAI: analysisCandidateEdenAIType
+        keyAttributes: [attributeCandidateType]
+        futurePotential: [attributeCandidateType]
+    }
+
+    type attributeCandidateType {
+        attribute: String,
+        score: Int,
+        reason: String,
     }
 
     type analysisCandidateEdenAIType {
