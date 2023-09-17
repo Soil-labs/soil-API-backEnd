@@ -34,7 +34,7 @@ module.exports = `
         futurePotential: [attributeType]   
     }
 
-    type {
+    type attributeType {
         attribute: String
     }
 
