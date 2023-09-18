@@ -18,6 +18,7 @@ const {
 const {
   checkAndAddPositionToMember,
   candidateEdenAnalysisPositionFunc,
+  findKeyAttributeAndPotentialPositionFunc,
 } = require("../utils/positionModules");
 
 const { printC } = require("../../../printModule");
@@ -591,9 +592,9 @@ module.exports = {
 
     if (!positionID)throw new ApolloError("Position ID is required");
 
+    await findKeyAttributeAndPotentialPositionFunc(positionID)
 
-    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements ');
-
+  
     
 
     try {

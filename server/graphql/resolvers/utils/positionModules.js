@@ -1,6 +1,8 @@
 
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { Members } = require("../../../models/membersModel");
+const { Position } = require("../../../models/positionModel");
+const { Conversation } = require("../../../models/conversationModel");
 
 const { printC } = require("../../../printModule");
 
@@ -474,10 +476,82 @@ async function checkAndAddPositionToMember(usersData, positionID) {
   };
 }
 
+async function findKeyAttributeAndPotentialPositionFunc(positionID) {
+
+  positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements ');
+
+  // printC(positionData,"2","positionData","b")
+
+
+  const jobDescription = positionData.positionsRequirements.originalContent
+
+  let convData = await Conversation.findOne({
+    $and: [{ positionID: positionID }, { positionTrainEdenAI: "true" }],
+  }).select("_id conversation");
+
+
+
+  let promptConv = "";
+  for (let i = 0; i < convData.conversation.length; i++) {
+    let convDataNow = convData.conversation[i];
+    if (convDataNow.role == "assistant")
+      promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+    else
+      promptConv = promptConv + "User" + ": " + convDataNow.content + " \n\n";
+  }
+
+
+
+
+  keyPrioritiesAndPotentialPrompt = `
+    Job Description <${jobDescription}>
+    Conversation <${promptConv}>
+
+    You are a Recruiter, find the key priority of the position and the attributes that show Future Potential candidates for this position. based on the Job Description and the Conversation with the Hiring Manager
+    - Use Exactly the Example as the Format
+    - Find 1 Key Priority for the position
+    - Find 3 attributes that show Future Potential candidates for this position
+    - Don't give and example for the keyPriority and futurePotential, only the attributes, with 1-3 words MAXIMUM each attribute
+
+    Example: 
+    keyPriority: X1
+    futurePotential: X2, X3, X4
+
+    Result: 
+  `
+
+  // keyPrioritiesAndPotential = await useGPTchatSimple(keyPrioritiesAndPotentialPrompt, 0.7, "API 1")
+
+  keyPrioritiesAndPotential = ` keyPriority: Willingness to Learn and Take Initiative
+  futurePotential: Curiosity, Adaptability, Self-Starter
+  `
+
+  printC(keyPrioritiesAndPotential,"4","keyPrioritiesAndPotential","g")
+
+
+
+  // regex to split the text to keyPriority and futurePotential
+  let futurePotential = keyPrioritiesAndPotential.match(/futurePotential:\s(.+)/)[1].split(", ");
+
+  
+  let keyPriority = keyPrioritiesAndPotential.match(/keyPriority:\s(.+)/)[1];
+
+
+  printC(keyPriority,"4","keyPriority","b")
+  
+  printC(futurePotential,"4","futurePotential","b")
+
+  
+
+
+
+}
+
 
 module.exports = {
     addQuestionToEdenAIFunc,
     addMultipleQuestionsToEdenAIFunc,
     checkAndAddPositionToMember,
     candidateEdenAnalysisPositionFunc,
+    findKeyAttributeAndPotentialPositionFunc,
 };
