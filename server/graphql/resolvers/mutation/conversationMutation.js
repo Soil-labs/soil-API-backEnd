@@ -252,9 +252,9 @@ module.exports = {
           if (convDataNow.positionTrainEdenAI == true) { // this is an alignment conversation
             await updateNotesRequirmentsConversation(convDataNow); 
 
-            await findKeyAttributeAndPotentialPositionFunc(positionID,convDataNow)
+            await findKeyAttributeAndPotentialPositionFunc(convDataNow.positionID,convDataNow)
           } else {
-            await findKeyAttributeAndPotentialCandidateWrapper(positionID,userID,convDataNow)
+            await findKeyAttributeAndPotentialCandidateWrapper(convDataNow.positionID,convDataNow.userID,convDataNow)
           }
 
           // ss0
