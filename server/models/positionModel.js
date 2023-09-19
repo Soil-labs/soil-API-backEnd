@@ -54,6 +54,12 @@ const positionModel = mongoose.Schema({
         reason: String,
       },
     ],
+    keyAttributes: [{
+      attribute: String,
+    }],
+    futurePotential: [{
+      attribute: String,
+    }],
   },
   nodes: [
     {
@@ -185,6 +191,16 @@ const positionModel = mongoose.Schema({
           content: String,
         },
       },
+      keyAttributes: [{
+        attribute: String,
+        score: Number,
+        reason: String,
+      }],
+      futurePotential: [{
+        attribute: String,
+        score: Number,
+        reason: String,
+      }],
     },
   ],
   generalDetails: {

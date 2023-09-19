@@ -88,6 +88,8 @@ module.exports = `
         interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Position
         moveCandidateToPosition(fields:moveCandidateToPositionInput): Position
         deleteQuestionsToAskPosition(fields:deleteQuestionsToAskPositionInput): Position
+        findKeyAttributeAndPotentialPosition(fields:findKeyAttributeAndPotentialPositionInput): Position
+        findKeyAttributeAndPotentialCandidate(fields:findKeyAttributeAndPotentialCandidateInput): Position
         addCandidatesPosition(fields:addCandidatesPositionInput): Position
         deletePositionCandidate(fields:deletePositionCandidateInput): Position
         addConvRecruiterToPosition(fields:addConvRecruiterToPositionInput): Position

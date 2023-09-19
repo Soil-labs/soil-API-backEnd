@@ -15,6 +15,11 @@ const {
 } = require("../utils/conversationModules");
 
 const {
+  findKeyAttributeAndPotentialPositionFunc,
+  findKeyAttributeAndPotentialCandidateWrapper,
+} = require("../utils/positionModules");
+
+const {
   useGPTchat,
   useGPTchatSimple,
   // upsertEmbedingPineCone,
@@ -246,6 +251,10 @@ module.exports = {
 
           if (convDataNow.positionTrainEdenAI == true) { // this is an alignment conversation
             await updateNotesRequirmentsConversation(convDataNow); 
+
+            await findKeyAttributeAndPotentialPositionFunc(convDataNow.positionID,convDataNow)
+          } else {
+            await findKeyAttributeAndPotentialCandidateWrapper(convDataNow.positionID,convDataNow.userID,convDataNow)
           }
 
           // ss0

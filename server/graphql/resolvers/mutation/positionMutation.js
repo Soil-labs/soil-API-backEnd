@@ -18,6 +18,8 @@ const {
 const {
   checkAndAddPositionToMember,
   candidateEdenAnalysisPositionFunc,
+  findKeyAttributeAndPotentialPositionFunc,
+  findKeyAttributeAndPotentialCandidateFunc,
 } = require("../utils/positionModules");
 
 const { printC } = require("../../../printModule");
@@ -580,6 +582,94 @@ module.exports = {
         err.message,
         err.extensions?.code || "deleteQuestionsToAskPosition",
         { component: "positionMutation > deleteQuestionsToAskPosition" }
+      );
+    }
+  },
+  findKeyAttributeAndPotentialPosition: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
+    console.log(
+      "Mutation > findKeyAttributeAndPotentialPosition > args.fields = ",
+      args.fields
+    );
+
+    if (!positionID)throw new ApolloError("Position ID is required");
+    
+
+    try {
+
+    positionData = await findKeyAttributeAndPotentialPositionFunc(positionID)
+
+    return positionData
+     
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findKeyAttributeAndPotentialPosition",
+        { component: "positionMutation > findKeyAttributeAndPotentialPosition" }
+      );
+    }
+  },
+  findKeyAttributeAndPotentialCandidate: async (parent, args, context, info) => {
+    const { positionID,membersID } = args.fields;
+    console.log(
+      "Mutation > findKeyAttributeAndPotentialCandidate > args.fields = ",
+      args.fields
+    );
+
+    if (!positionID)throw new ApolloError("Position ID is required");
+
+    
+    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements candidates');
+
+
+    // -------------- Decide and collect Candidates to process --------------
+    membersToProcess = []
+    idxMemberToPosition = []
+
+    if (membersID){
+      membersData = await Members.find({ _id: { $in: membersID } }).select('_id discordName cvInfo ');
+
+      // find the IDX on the positionData candidates
+      for (let i = 0; i < membersData.length; i++) {
+        let memberData = membersData[i];
+        idxPosition = positionData.candidates.findIndex(candidate => candidate.userID.toString() == memberData._id.toString());
+        if (idxPosition != -1){
+          membersToProcess.push(memberData)
+          idxMemberToPosition.push(idxPosition)
+        }
+      }
+
+    } else {
+      // find data for all candidates 
+      membersToProcess = await Members.find({ _id: { $in: positionData.candidates.map(candidate => candidate.userID) } }).select('_id discordName cvInfo ');
+
+      // find the IDX on the positionData candidates
+      for (let i = 0; i < membersToProcess.length; i++) {
+        let memberData = membersToProcess[i];
+        idxPosition = positionData.candidates.findIndex(candidate => candidate.userID.toString() == memberData._id.toString());
+        idxMemberToPosition.push(idxPosition)
+      }
+    }
+
+    printC(membersToProcess, "1", "membersToProcess", "g");
+
+    printC(idxMemberToPosition, "1", "idxMemberToPosition", "g");
+    // -------------- Decide and collect Candidates to process --------------
+
+
+
+    try {
+
+      positionData = await findKeyAttributeAndPotentialCandidateFunc(positionData,membersToProcess,idxMemberToPosition)
+
+      return positionData
+
+     
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findKeyAttributeAndPotentialCandidate",
+        { component: "positionMutation > findKeyAttributeAndPotentialCandidate" }
       );
     }
   },
