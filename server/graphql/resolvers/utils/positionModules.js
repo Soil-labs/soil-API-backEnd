@@ -516,10 +516,10 @@ async function findKeyAttributeAndPotentialPositionFunc(positionID, convData = n
     - Use Exactly the Example as the Format
     - Find 1 Key Attribute for the position
     - Find 3 attributes that show Future Potential candidates for this position
-    - Don't give and example for the keyAttributes and futurePotential, only the attributes, with 1-3 words MAXIMUM each attribute
+    - Don't give examples for the keyAttribute and futurePotential, only the attributes, with 1-3 words MAXIMUM each attribute
 
     Example: 
-    keyAttributes: X1
+    keyAttribute: X1
     futurePotential: 
     1. X2
     2. X3
@@ -542,8 +542,9 @@ async function findKeyAttributeAndPotentialPositionFunc(positionID, convData = n
 
 
   // -------------------- Regex --------------------
-  let keyAttributes = keyPrioritiesAndPotential.match(/keyAttributes:\s(.+)/)[1];
+  let keyAttributes = keyPrioritiesAndPotential.match(/keyAttribute:\s(.+)/)[1];
 
+  console.log("22")
   
   // let futurePotential = keyPrioritiesAndPotential.match(/futurePotential:\s(.+)/)[1].split(", ");
   let futurePotential = keyPrioritiesAndPotential.trim().split(/\d+\. /).slice(1);
