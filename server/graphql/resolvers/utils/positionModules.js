@@ -1,6 +1,8 @@
 
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { Members } = require("../../../models/membersModel");
+const { Position } = require("../../../models/positionModel");
+const { Conversation } = require("../../../models/conversationModel");
 
 const { printC } = require("../../../printModule");
 
@@ -474,10 +476,292 @@ async function checkAndAddPositionToMember(usersData, positionID) {
   };
 }
 
+async function findKeyAttributeAndPotentialPositionFunc(positionID, convData = null) {
+
+  positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements ');
+
+  // printC(positionData,"2","positionData","b")
+
+
+  const jobDescription = positionData.positionsRequirements.originalContent
+
+  if (convData == null){
+
+    convData = await Conversation.findOne({
+      $and: [{ positionID: positionID }, { positionTrainEdenAI: "true" }],
+    }).select("_id conversation");
+
+  }
+
+
+
+    let promptConv = "";
+    for (let i = 0; i < convData.conversation.length; i++) {
+      let convDataNow = convData.conversation[i];
+      if (convDataNow.role == "assistant")
+        promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+      else
+        promptConv = promptConv + "User" + ": " + convDataNow.content + " \n\n";
+    }
+
+
+
+
+
+  keyPrioritiesAndPotentialPrompt = `
+    Job Description (delimited <>): <${jobDescription}>
+    Conversation (delimited <>): <${promptConv}>
+
+    You are a Recruiter, find the key attribute of the position and the attributes that show Future Potential candidates for this position. based on the Job Description and the Conversation with the Hiring Manager
+    - Use Exactly the Example as the Format
+    - Find 1 Key Attribute for the position
+    - Find 3 attributes that show Future Potential candidates for this position
+    - Don't give and example for the keyAttributes and futurePotential, only the attributes, with 1-3 words MAXIMUM each attribute
+
+    Example: 
+    keyAttributes: X1
+    futurePotential: 
+    1. X2
+    2. X3
+    3. X4
+
+    Result: 
+  `
+
+  keyPrioritiesAndPotential = await useGPTchatSimple(keyPrioritiesAndPotentialPrompt, 0.7, "API 1")
+
+  // keyPrioritiesAndPotential = `keyAttributes: Willingness to Learn
+  // futurePotential:
+  // 1. Curiosity
+  // 2. Action-oriented
+  // 3. Adaptability
+  // `
+
+  printC(keyPrioritiesAndPotential,"4","keyPrioritiesAndPotential","g")
+
+
+
+  // -------------------- Regex --------------------
+  let keyAttributes = keyPrioritiesAndPotential.match(/keyAttributes:\s(.+)/)[1];
+
+  
+  // let futurePotential = keyPrioritiesAndPotential.match(/futurePotential:\s(.+)/)[1].split(", ");
+  let futurePotential = keyPrioritiesAndPotential.trim().split(/\d+\. /).slice(1);
+
+  futurePotentialMong = []
+  futurePotential.map((item, index) => {
+    futurePotential[index] = item.replace(/\n/g, "").trim();
+
+    futurePotentialMong.push({
+      attribute: futurePotential[index],
+    })
+
+  });
+
+  printC(keyAttributes,"4","keyAttributes","b")
+  
+  printC(futurePotential,"4","futurePotential","b")
+  // -------------------- Regex --------------------
+
+
+  // ------------ Sav Mongo ------------
+  positionData.positionsRequirements.keyAttributes = [{
+    attribute: keyAttributes,
+  }]  
+
+  positionData.positionsRequirements.futurePotential = futurePotentialMong
+
+  await positionData.save();
+  // ------------ Sav Mongo ------------  
+
+  
+
+  return positionData
+
+}
+
+async function findKeyAttributeAndPotentialCandidateWrapper(positionID,userID,convData) {
+
+  positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements candidates');
+
+
+  // -------------- Decide and collect Candidates to process --------------
+  membersToProcess = []
+  idxMemberToPosition = []
+
+  membersData = await Members.find({ _id: { $in: userID } }).select('_id discordName cvInfo ');
+
+  // find the IDX on the positionData candidates
+  for (let i = 0; i < membersData.length; i++) {
+    let memberData = membersData[i];
+    idxPosition = positionData.candidates.findIndex(candidate => candidate.userID.toString() == memberData._id.toString());
+    if (idxPosition != -1){
+      membersToProcess.push(memberData)
+      idxMemberToPosition.push(idxPosition)
+    }
+  }
+  printC(membersToProcess, "1", "membersToProcess", "g");
+
+  printC(idxMemberToPosition, "1", "idxMemberToPosition", "g");
+  // -------------- Decide and collect Candidates to process --------------
+
+
+  await findKeyAttributeAndPotentialCandidateFunc(positionData,membersToProcess,idxMemberToPosition,convData)
+
+}
+
+
+async function findKeyAttributeAndPotentialCandidateFunc(positionData,membersToProcess,idxMemberToPosition,convData = null) {
+
+
+    // ------------- Add the conversation of this candidates ---------------
+    convPromptArr = []
+
+    for (let j = 0; j < membersToProcess.length; j++) {
+
+      memberNow = membersToProcess[j];
+
+      if (convData == null){
+        convData = await Conversation.findOne({
+          $and: [{ userID: memberNow._id }, { positionID: positionData._id}],
+        }).select("_id conversation");
+      }
+
+      let promptConv = "";
+      if (convData && convData.conversation && convData.conversation.length != 0){
+        for (let i = 0; i < convData.conversation.length; i++) {
+          let convDataNow = convData.conversation[i];
+          if (convDataNow.role == "assistant")
+            promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+          else
+            promptConv = promptConv + "User" + ": " + convDataNow.content + " \n\n";
+        }
+      }
+
+      printC(promptConv,"4","promptConv","b")
+
+      convPromptArr.push(promptConv)
+
+    }
+    // ------------- Add the conversation of this candidates ---------------
+
+
+    // ------------- position key Priorities and future potential prompt ---------------
+    const keyAttributes = positionData.positionsRequirements.keyAttributes
+
+    keyAttributesPrompt = ''
+
+    for ( let i=0;i<keyAttributes.length;i++){
+      keyAttributesPrompt = keyAttributesPrompt + keyAttributes[i].attribute + ', '
+    }
+    // delete the last comma
+    keyAttributesPrompt = keyAttributesPrompt.slice(0, -2);
+    keyAttributesPrompt = keyAttributesPrompt + "\n\n"
+
+
+    const futurePotential = positionData.positionsRequirements.futurePotential
+
+    futurePotentialPrompt = ''
+
+    for ( let i=0;i<futurePotential.length;i++){
+      futurePotentialPrompt = futurePotentialPrompt + futurePotential[i].attribute + ', '
+    }
+    // delete the last comma
+    futurePotentialPrompt = futurePotentialPrompt.slice(0, -2);
+    futurePotentialPrompt = futurePotentialPrompt + "\n\n"
+
+    printC(keyAttributesPrompt,"4","keyAttributesPrompt","y")
+    printC(futurePotentialPrompt,"4","futurePotentialPrompt","y")
+    // ------------- position key Priorities and future potential prompt ---------------
+
+
+    // ------------ Find paragraph analyses key Attribute and future potential -------------------
+    for (let j = 0; j < membersToProcess.length; j++) {
+    
+      memberNow = membersToProcess[j];
+
+      cvCandidate = memberNow.cvInfo.cvContent
+
+      convoMember = convPromptArr[j]
+
+      keyAttributesAndFuturePotentialPrompt = `
+        CV Candidate (delimited <>): <${cvCandidate.slice(0,1900)}>
+        Conversation (delimited <>): <${convoMember.slice(0,1900)}>
+
+
+        Job searching for Key Attributes (delimited <>): <${keyAttributesPrompt} , ${futurePotentialPrompt}>
+
+        - For all this key Attributes find Score and Reason
+        - Score from 1-10
+        - Reason 1 paragraph, 2-4 sentences 
+        - Use exactly the format of the example
+
+        Example:
+
+        [{
+          "attribute": X1
+          "score": S1
+          "season": R1
+        }, {
+          ...
+        }
+
+
+        Result: 
+        `
+
+        keyAttributesAndFuturePotential = await useGPTchatSimple(keyAttributesAndFuturePotentialPrompt, 0, "API 1")
+
+
+        printC(keyAttributesAndFuturePotential,"4","keyAttributesAndFuturePotential","g")
+
+
+
+        // ------------- Regex split keyAttributesAndFuturePotential ---------------
+
+        keyAttributesAndFuturePotential = keyAttributesAndFuturePotential.replace(/\n/g, "").trim();
+        keyAttributesAndFuturePotential = keyAttributesAndFuturePotential.replace(/'/g, "");
+
+        keyAttributesAndFuturePotential = keyAttributesAndFuturePotential.replace(/'/g, '"');
+
+        keyAttributesAndFuturePotential = JSON.parse(keyAttributesAndFuturePotential)
+
+        printC(keyAttributesAndFuturePotential,"4","keyAttributesAndFuturePotential","b")
+
+        // ------------- Regex split keyAttributesAndFuturePotential ---------------
+
+
+        // -------------- Save Mongo --------------
+        const posMember = idxMemberToPosition[j]
+
+        // only the first position of the array keyAttributesAndFuturePotential
+        positionData.candidates[posMember].keyAttributes = keyAttributesAndFuturePotential[0]
+
+        // all the rest of the keyAttributesAndFuturePotential
+        positionData.candidates[posMember].futurePotential = keyAttributesAndFuturePotential.slice(1)
+        // -------------- Save Mongo --------------
+        
+        
+        
+      }
+    
+    
+    await positionData.save();
+    
+
+    return positionData
+
+
+
+}
+
 
 module.exports = {
     addQuestionToEdenAIFunc,
     addMultipleQuestionsToEdenAIFunc,
     checkAndAddPositionToMember,
     candidateEdenAnalysisPositionFunc,
+    findKeyAttributeAndPotentialPositionFunc,
+    findKeyAttributeAndPotentialCandidateFunc,
+    findKeyAttributeAndPotentialCandidateWrapper,
 };
