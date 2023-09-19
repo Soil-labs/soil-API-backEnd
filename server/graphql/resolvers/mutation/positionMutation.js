@@ -638,8 +638,6 @@ module.exports = {
         }
       }
 
-
-
     } else {
       // find data for all candidates 
       membersToProcess = await Members.find({ _id: { $in: positionData.candidates.map(candidate => candidate.userID) } }).select('_id discordName cvInfo ');

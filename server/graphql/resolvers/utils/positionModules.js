@@ -476,7 +476,7 @@ async function checkAndAddPositionToMember(usersData, positionID) {
   };
 }
 
-async function findKeyAttributeAndPotentialPositionFunc(positionID) {
+async function findKeyAttributeAndPotentialPositionFunc(positionID, convData = null) {
 
   positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements ');
 
@@ -485,20 +485,25 @@ async function findKeyAttributeAndPotentialPositionFunc(positionID) {
 
   const jobDescription = positionData.positionsRequirements.originalContent
 
-  let convData = await Conversation.findOne({
-    $and: [{ positionID: positionID }, { positionTrainEdenAI: "true" }],
-  }).select("_id conversation");
+  if (convData == null){
 
+    convData = await Conversation.findOne({
+      $and: [{ positionID: positionID }, { positionTrainEdenAI: "true" }],
+    }).select("_id conversation");
 
-
-  let promptConv = "";
-  for (let i = 0; i < convData.conversation.length; i++) {
-    let convDataNow = convData.conversation[i];
-    if (convDataNow.role == "assistant")
-      promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
-    else
-      promptConv = promptConv + "User" + ": " + convDataNow.content + " \n\n";
   }
+
+
+
+    let promptConv = "";
+    for (let i = 0; i < convData.conversation.length; i++) {
+      let convDataNow = convData.conversation[i];
+      if (convDataNow.role == "assistant")
+        promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+      else
+        promptConv = promptConv + "User" + ": " + convDataNow.content + " \n\n";
+    }
+
 
 
 
@@ -523,14 +528,14 @@ async function findKeyAttributeAndPotentialPositionFunc(positionID) {
     Result: 
   `
 
-  // keyPrioritiesAndPotential = await useGPTchatSimple(keyPrioritiesAndPotentialPrompt, 0.7, "API 1")
+  keyPrioritiesAndPotential = await useGPTchatSimple(keyPrioritiesAndPotentialPrompt, 0.7, "API 1")
 
-  keyPrioritiesAndPotential = `keyAttributes: Willingness to Learn
-  futurePotential:
-  1. Curiosity
-  2. Action-oriented
-  3. Adaptability
-  `
+  // keyPrioritiesAndPotential = `keyAttributes: Willingness to Learn
+  // futurePotential:
+  // 1. Curiosity
+  // 2. Action-oriented
+  // 3. Adaptability
+  // `
 
   printC(keyPrioritiesAndPotential,"4","keyPrioritiesAndPotential","g")
 
@@ -575,7 +580,38 @@ async function findKeyAttributeAndPotentialPositionFunc(positionID) {
 
 }
 
-async function findKeyAttributeAndPotentialCandidateFunc(positionData,membersToProcess,idxMemberToPosition) {
+async function findKeyAttributeAndPotentialCandidateWrapper(positionID,userID,convData) {
+
+  positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements candidates');
+
+
+  // -------------- Decide and collect Candidates to process --------------
+  membersToProcess = []
+  idxMemberToPosition = []
+
+  membersData = await Members.find({ _id: { $in: userID } }).select('_id discordName cvInfo ');
+
+  // find the IDX on the positionData candidates
+  for (let i = 0; i < membersData.length; i++) {
+    let memberData = membersData[i];
+    idxPosition = positionData.candidates.findIndex(candidate => candidate.userID.toString() == memberData._id.toString());
+    if (idxPosition != -1){
+      membersToProcess.push(memberData)
+      idxMemberToPosition.push(idxPosition)
+    }
+  }
+  printC(membersToProcess, "1", "membersToProcess", "g");
+
+  printC(idxMemberToPosition, "1", "idxMemberToPosition", "g");
+  // -------------- Decide and collect Candidates to process --------------
+
+
+  await findKeyAttributeAndPotentialCandidateFunc(positionData,membersToProcess,idxMemberToPosition,convData)
+
+}
+
+
+async function findKeyAttributeAndPotentialCandidateFunc(positionData,membersToProcess,idxMemberToPosition,convData = null) {
 
 
     // ------------- Add the conversation of this candidates ---------------
@@ -585,9 +621,11 @@ async function findKeyAttributeAndPotentialCandidateFunc(positionData,membersToP
 
       memberNow = membersToProcess[j];
 
-      let convData = await Conversation.findOne({
-        $and: [{ userID: memberNow._id }, { positionID: positionData._id}],
-      }).select("_id conversation");
+      if (convData == null){
+        convData = await Conversation.findOne({
+          $and: [{ userID: memberNow._id }, { positionID: positionData._id}],
+        }).select("_id conversation");
+      }
 
       let promptConv = "";
       if (convData && convData.conversation && convData.conversation.length != 0){
@@ -725,4 +763,5 @@ module.exports = {
     candidateEdenAnalysisPositionFunc,
     findKeyAttributeAndPotentialPositionFunc,
     findKeyAttributeAndPotentialCandidateFunc,
+    findKeyAttributeAndPotentialCandidateWrapper,
 };
