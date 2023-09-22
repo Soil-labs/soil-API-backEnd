@@ -13,6 +13,8 @@ module.exports = `
 
         conduct: conductType
 
+        companies: [ID]
+
         onbording: onboardingType
 
         positionsApplied: [positionsAppliedType]
@@ -597,6 +599,7 @@ module.exports = `
 
         conduct: conductInput
         
+        companies: [ID]
 
         onbording: onboardingInput
 

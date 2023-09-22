@@ -29,6 +29,8 @@ const memberSchema = mongoose.Schema({
     telegramConnectionCode: String,
   },
 
+  companies: [mongoose.Schema.ObjectId],
+
   stripe: {
     session: {
       ID: String,
