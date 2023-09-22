@@ -9,7 +9,7 @@ module.exports = `
         sentFlag: Boolean,
         question: questionQueryType,
         answer: answerType,
-
+        category: categoryQueryResponseEnum,
     }
 
     input findQueryResponsesInput {
@@ -42,6 +42,7 @@ module.exports = `
         question: String
         answer: String
         conversationID: ID
+        category: categoryQueryResponseEnum
     }
 
     input respondToQueryInput {
@@ -81,6 +82,13 @@ module.exports = `
         RESPONDED
         VIEWED
         ARCHIVED
+    }
+
+    enum categoryQueryResponseEnum {
+        REJECT_CANDIDATE
+        ACCEPT_CANDIDATE
+        ASK_CANDIDATE
+        PITCH_POSITION_CANDIDATE
     }
 
 

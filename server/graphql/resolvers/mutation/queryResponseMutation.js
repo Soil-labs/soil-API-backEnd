@@ -12,12 +12,12 @@ const pubsub = new PubSub();
 
 module.exports = {
   updateQueryResponse: async (parent, args, context, info) => {
-    const { _id,phase,sentFlag,senderID,senderType,responderID,responderType,question,conversationID,answer } = args.fields;
+    const { _id,phase,sentFlag,senderID,senderType,responderID,responderType,question,conversationID,answer,category } = args.fields;
     console.log("Mutation > updateQueryResponse > args.fields = ", args.fields);
 
     try {
 
-     const filter = await addToFilter(_id,phase,sentFlag,senderID,senderType,responderID,responderType,question,conversationID,answer)
+     const filter = await addToFilter(_id,phase,sentFlag,senderID,senderType,responderID,responderType,question,conversationID,answer,category)
 
 
      // ------------------ Save to MongoDB ------------------
@@ -37,6 +37,7 @@ module.exports = {
           if (filter.answer) queryResponseData.answer = filter.answer;
           if (filter.conversationID) queryResponseData.conversationID = filter.conversationID;
           if (filter.sentFlag != null) queryResponseData.sentFlag = filter.sentFlag;
+          if (filter.category) queryResponseData.category = filter.category;
 
         }
 

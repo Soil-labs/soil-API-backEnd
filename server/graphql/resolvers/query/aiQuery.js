@@ -3741,12 +3741,11 @@ module.exports = {
         // turn discussionOld reverse 
         discussionOld = discussionOld.reverse()
 
-
-        // console.log("discussionOld = " , discussionOld)
-
-        // sfd0
-
       }
+
+      console.log("discussionOld = " , discussionOld)
+
+      // sd9
 
 
 
