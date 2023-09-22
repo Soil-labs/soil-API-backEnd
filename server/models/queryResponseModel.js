@@ -24,6 +24,10 @@ const queryResponseModel = mongoose.Schema({
   answer: {
     content: String,
   },
+  category: {
+    type: String,
+    enum: ["REJECT_CANDIDATE", "ACCEPT_CANDIDATE","ASK_CANDIDATE","PITCH_POSITION_CANDIDATE"],
+  },
 });
 
 const QueryResponse = mongoose.model("QueryResponse", queryResponseModel);
