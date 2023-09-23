@@ -1,5 +1,6 @@
 const { ApolloError } = require("apollo-server-express");
 const { Company } = require("../../../models/companyModel");
+const { QueryResponse } = require("../../../models/queryResponseModel");
 
 const { Position } = require("../../../models/positionModel");
 const { Members } = require("../../../models/membersModel");
@@ -581,6 +582,99 @@ module.exports = {
         err.message,
         err.extensions?.code || "deleteQuestionsToAskPosition",
         { component: "positionMutation > deleteQuestionsToAskPosition" }
+      );
+    }
+  },
+  pitchPositionToCandidate: async (parent, args, context, info) => {
+    const { positionID,userID } = args.fields;
+    console.log(
+      "Mutation > pitchPositionToCandidate > args.fields = ",
+      args.fields
+    );
+
+    if (!positionID) throw new ApolloError("Position ID is required");
+    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements');
+    if (!positionData) throw new ApolloError("Position not found");
+
+
+
+    if (!userID) throw new ApolloError("User ID is required");
+    userData = await Members.findOne({ _id: userID }).select('_id discordName cvInfo ');
+    if (!userData) throw new ApolloError("User not found");
+
+    try {
+
+      cvNotes = userData.cvInfo.cvNotes;
+
+      notesRequirConv = positionData.positionsRequirements.notesRequirConv;
+
+      printC(cvNotes, "1", "cvNotes", "g");
+
+      printC(notesRequirConv, "1", "notesRequirConv", "b");
+
+
+
+      messagePitchPositionCandidatePrompt = `
+      You are a personal career coach,
+
+      Candidate Notes (delimited <>): <${cvNotes}>
+      Position Requirements Notes (delimited <>): <${notesRequirConv}>
+
+      - Your task is to Pitch the position that you found for your client. Be friendly and fun.
+      - Its not your position so you need to talk about it as someone else position that you found for your client.
+      - It should be relevant to the candidate and the position.
+      - It should be only 1-3 sentences.
+      - At the end ask your client if they are interested to personally recommend you to this position 
+
+      Result: 
+    `
+
+    messagePitchPositionCandidate = await useGPTchatSimple(messagePitchPositionCandidatePrompt, 0.7, "API 1")
+
+    // messagePitchPositionCandidate = `Hey Reza! I came across a fantastic opportunity that I think would be a perfect fit for you
+    // I found a backend developer position at a company pioneering the transformation of buildings through spatial data
+    // With your extensive experience in web development using JavaScript frameworks, proficiency in TypeScript, and strong understanding of clients' requirements, I believe you would excel in building the backend for user-facing features and maintaining infrastructure
+    // Are you interested in pursuing this opportunity? Can I personally recommend you for this position?`
+
+    printC(messagePitchPositionCandidate,"4","messagePitchPositionCandidate","y")
+
+
+    filter = {
+      phase: "QUERY",
+      sender: {
+        positionID: positionID
+      },
+      senderType: "POSITION",
+      responder: {
+        userID: userID
+      },
+      responderType: "USER",
+      question: {
+        content: messagePitchPositionCandidate
+      },
+      category: "PITCH_POSITION_CANDIDATE",
+    }
+
+    queryResponseData = await new QueryResponse(
+      filter
+    );
+
+    console.log("queryResponseData = ", queryResponseData);
+
+    await queryResponseData.save();
+
+
+    return {
+      message: messagePitchPositionCandidate,
+      queryResponse: queryResponseData
+    }
+
+     
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "pitchPositionToCandidate",
+        { component: "positionMutation > pitchPositionToCandidate" }
       );
     }
   },
