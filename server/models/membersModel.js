@@ -31,14 +31,6 @@ const memberSchema = mongoose.Schema({
 
   companies: [mongoose.Schema.ObjectId],
 
-  stripe: {
-    session: {
-      ID: String,
-    },
-    customerID: String,
-    product: { ID: String },
-  },
-
   onbording: {
     signup: {
       type: Boolean,

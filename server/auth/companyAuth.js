@@ -20,8 +20,6 @@ const companyAuth = async ({ body }, res) => {
     // Find if company is in database
     let dbCompany = await Company.findOne({ slug: companySlug });
 
-    console.log("AAAA", companySlug, userID, dbCompany.employees);
-
     // if company is not in database
     if (!dbCompany) {
       throw new Error("Company does not exist");
@@ -31,10 +29,23 @@ const companyAuth = async ({ body }, res) => {
       throw new Error("Unauthorized user");
     }
 
-    res.json("User authorized");
+    res.json({
+      authorized: "User authorized",
+      company: {
+        _id: dbCompany._id,
+        slug: dbCompany.slug,
+        stripe: dbCompany.stripe,
+      },
+    });
   } catch (error) {
     console.log("the error is ", error);
-    res.status(500).send({ error: error.message });
+    if (error.message === "Unauthorized user") {
+      res.status(401).send({ error: error.message });
+    } else if (error.message === "Company does not exist") {
+      res.status(404).send({ error: error.message });
+    } else {
+      res.status(500).send({ error: error.message });
+    }
   }
 };
 

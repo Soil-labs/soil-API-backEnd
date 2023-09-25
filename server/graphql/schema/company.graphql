@@ -14,6 +14,21 @@ module.exports = `
         type: typeCompany
         candidatesNum: Int
         skillsNum: Int
+        stripe: StripeType
+    }
+
+    type StripeType {
+        session: StripeSessionType,
+        customerID: String,
+        product: StripeProductType,
+    }
+
+    type StripeSessionType {
+        ID: String
+    }
+
+    type StripeProductType {
+        ID: String
     }
 
     type communitySubscribersType {

@@ -80,22 +80,6 @@ module.exports = `
         reviewSummary: reviewSummaryType     
 
         preferences: preferencesType
-
-        stripe: StripeType
-    }
-
-    type StripeType {
-        session: StripeSessionType,
-        customerID: String,
-        product: StripeProductType,
-    }
-
-    type StripeSessionType {
-        ID: String
-    }
-
-    type StripeProductType {
-        ID: String
     }
 
     type conductType {

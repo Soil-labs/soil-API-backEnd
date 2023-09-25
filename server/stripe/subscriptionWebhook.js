@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const {} = require("../utils/updateUserServersInDB");
-const { Members } = require("../models/membersModel");
+const { Company } = require("../models/companyModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const fulfillOrder = async (session) => {
@@ -10,7 +10,7 @@ const fulfillOrder = async (session) => {
 
   console.log("Fulfilling order", session);
 
-  const res = await Members.findOneAndUpdate(
+  const res = await Company.findOneAndUpdate(
     {
       "stripe.session.ID": session.id,
     },
