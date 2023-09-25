@@ -2321,6 +2321,61 @@ module.exports = {
       );
     }
   },
+  updateStateEdenChat: async (parent, args, context, info) => {
+    const { userID,chatID_TG,positionIDs,categoryChat  } = args.fields;
+    console.log("Mutation > updateStateEdenChat > args.fields = ", args.fields);
+
+    if (userID && chatID_TG) throw new Error("You can't have both userID and chatID_TG 🔥");
+
+    let filter = {}
+
+      if (chatID_TG){
+        filter = {
+          "conduct.telegramChatID": chatID_TG
+        }
+      } else if (userID) {
+        filter = {
+          _id: userID
+        }
+      } else {
+        throw new Error("The userID or chatID_TG is required 🔥");
+      }
+
+    try {
+
+      let memberData = await Members.findOne(filter).select('_id discordName conduct stateEdenChat');
+
+      if (!memberData) throw new Error("The userID or chatID_TG is not valid🔥 can't find member");
+
+
+      if (positionIDs) {
+        memberData.stateEdenChat = {
+          ...memberData.stateEdenChat,
+          positionIDs: positionIDs,
+        }
+      }
+
+      if (categoryChat) {
+        memberData.stateEdenChat = {
+          ...memberData.stateEdenChat,
+          categoryChat: categoryChat,
+        }
+      }
+
+      // save the member
+      memberData = await memberData.save()
+
+
+      return memberData;
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updateStateEdenChat",
+        { component: "memberMutation > updateStateEdenChat" }
+      );
+    }
+  },
   reCreateMemberNeo: async (parent, args, context, info) => {
     const { _id} = args.fields;
     console.log("Mutation > reCreateMemberNeo > args.fields = ", args.fields);

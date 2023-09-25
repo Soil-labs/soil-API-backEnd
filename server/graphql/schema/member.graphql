@@ -80,6 +80,8 @@ module.exports = `
         preferences: preferencesType
 
         stripe: StripeType
+
+        stateEdenChat: stateEdenChat
     }
 
     type StripeType {
@@ -819,6 +821,18 @@ module.exports = `
 
         totalIncome: Float
         completedOpportunities: Int
+    }
+
+    input updateStateEdenChatInput {
+        userID: ID,
+        chatID_TG: ID,
+        positionIDs: [ID],
+        categoryChat: categoryQueryResponseEnum,
+    }
+
+    type stateEdenChat {
+        positionIDs: [ID],
+        categoryChat: categoryQueryResponseEnum,
     }
 
     input reCreateMemberNeoInput {
