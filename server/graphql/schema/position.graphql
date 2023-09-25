@@ -299,6 +299,15 @@ module.exports = `
         questionID: ID
     }
 
+    input pitchPositionToCandidateInput {
+        positionID: ID
+        userID: ID
+    }
+    type pitchPositionToCandidateOutput {
+        message: String
+        queryResponse: QueryResponse
+    }
+
     input findKeyAttributeAndPotentialPositionInput {
         positionID: ID
     }

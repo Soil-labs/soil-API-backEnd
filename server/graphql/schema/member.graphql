@@ -808,6 +808,18 @@ module.exports = `
         completedOpportunities: Int
     }
 
+    input updateStateEdenChatInput {
+        userID: ID,
+        chatID_TG: ID,
+        positionIDs: [ID],
+        categoryChat: categoryQueryResponseEnum,
+    }
+
+    type stateEdenChat {
+        positionIDs: [ID],
+        categoryChat: categoryQueryResponseEnum,
+    }
+
     input reCreateMemberNeoInput {
         _id: ID
     }

@@ -14,7 +14,8 @@ const {
   createFakeUser,
   createFakeUserCVnew,
   uploadUserDataGPT,
-  updateMemberSignalInfo,reCreateMemberNeo,checkUsersForTGConnection,initiateConnectionTelegram,memberDataConnectedTG,positionDataConnectedTG,
+  updateMemberSignalInfo,
+  updateStateEdenChat,reCreateMemberNeo,checkUsersForTGConnection,initiateConnectionTelegram,memberDataConnectedTG,positionDataConnectedTG,
 } = require("./mutation/memberMutation");
 const {
   updateProject,
@@ -59,6 +60,7 @@ const {
   addQuestionsToAskPosition,
   interviewQuestionCreationUser,moveCandidateToPosition,
   deleteQuestionsToAskPosition,
+  pitchPositionToCandidate,
   findKeyAttributeAndPotentialPosition,
   findKeyAttributeAndPotentialCandidate,
   addCandidatesPosition,
@@ -186,7 +188,8 @@ module.exports = {
     createFakeUser,
     createFakeUserCVnew,
     uploadUserDataGPT,
-    updateMemberSignalInfo,reCreateMemberNeo,checkUsersForTGConnection,initiateConnectionTelegram,
+    updateMemberSignalInfo,
+    updateStateEdenChat,reCreateMemberNeo,checkUsersForTGConnection,initiateConnectionTelegram,
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
@@ -229,6 +232,7 @@ module.exports = {
     addQuestionsToAskPosition,
     interviewQuestionCreationUser,moveCandidateToPosition,
     deleteQuestionsToAskPosition,
+    pitchPositionToCandidate,
     findKeyAttributeAndPotentialPosition,
     findKeyAttributeAndPotentialCandidate,
     addCandidatesPosition,

@@ -30,6 +30,21 @@ const memberSchema = mongoose.Schema({
   },
 
   companies: [mongoose.Schema.ObjectId],
+  stateEdenChat: {
+    positionIDs: [mongoose.Schema.ObjectId],
+    categoryChat: {
+      type: String,
+      enum: ["REJECT_CANDIDATE", "ACCEPT_CANDIDATE","ASK_CANDIDATE","PITCH_POSITION_CANDIDATE"],
+    },
+  },
+
+  stripe: {
+    session: {
+      ID: String,
+    },
+    customerID: String,
+    product: { ID: String },
+  },
 
   onbording: {
     signup: {
