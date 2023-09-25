@@ -3718,6 +3718,12 @@ module.exports = {
 
       let discussionOld = []
 
+      let memoriesPrompt = ""
+
+      let currentState = ""
+      let prompt_conversation = ""
+
+
       if (chatID_TG) {
 
         let filter = {
@@ -3725,12 +3731,16 @@ module.exports = {
         };
 
 
+        // ------------------------ Old Messages ------------------
         let lastNumMessages = 3
 
         let chatExternalAppData = await ChatExternalApp.find(filter).sort({ timeStamp: -1 }).limit(lastNumMessages)
 
         
+
         discussionOld = chatExternalAppData.map((message) => {
+
+          prompt_conversation += message.senderRole + ": " + message.message + "\n\n"
           
           return {
             role: message.senderRole,
@@ -3740,20 +3750,55 @@ module.exports = {
 
         // turn discussionOld reverse 
         discussionOld = discussionOld.reverse()
+        // ------------------------ Old Messages ------------------
+
+
+
+        // ------------------------ Memory ------------------
+        let memberData = await Members.findOne({ "conduct.telegramChatID": chatID_TG }).select("_id discordName stateEdenChat")
+
+        
+        if (memberData.stateEdenChat && memberData.stateEdenChat.positionIDs && memberData.stateEdenChat.positionIDs.length > 0) {
+          positionID = memberData.stateEdenChat.positionIDs[0]
+
+          currentState = memberData.stateEdenChat.categoryChat
+
+
+          let  filter = {}
+
+          filter.database = REACT_APP_MONGO_DATABASE;
+
+          filter.label =  {"$in": ["requirements_position_memory","conv_for_position_memory"]}
+          filter._id = positionID;
+
+          longTermMemoriesPosition = await findBestEmbedings(prompt_conversation, filter, (topK = 5));
+
+          console.log("longTermMemoriesPosition = " , longTermMemoriesPosition)
+          // sd13
+
+          longTermMemoriesPosition.forEach((memory) => {
+            memoriesPrompt += memory.metadata.text + "\n"
+          })
+
+        }
+        // ------------------------ Memory ------------------
+
+
+
 
       }
 
-      console.log("discussionOld = " , discussionOld)
-
-      // sd9
 
 
 
-      const categoryEnum = await identifyCategoryFunc(message)
+      // const categoryEnum = await identifyCategoryFunc(message)
+      const categoryEnum = await identifyCategoryFunc(prompt_conversation,currentState)
+
+
 
       let reply = ""
       if (replyFlag == true) {
-        reply = await replyToMessageBasedOnCategoryFunc(message,categoryEnum,discussionOld)
+        reply = await replyToMessageBasedOnCategoryFunc(message,categoryEnum,discussionOld,memoriesPrompt)
       }
     
 

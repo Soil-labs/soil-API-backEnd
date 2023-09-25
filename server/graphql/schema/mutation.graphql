@@ -18,6 +18,7 @@ module.exports = `
         createFakeUserCVnew(fields: createFakeUserCVnewInput ): Members
         uploadUserDataGPT(fields: uploadUserDataGPTInput ): Members
         updateMemberSignalInfo(fields: updateMemberSignalInfoInput ): Members
+        updateStateEdenChat(fields: updateStateEdenChatInput ): Members
         reCreateMemberNeo(fields: reCreateMemberNeoInput ): [Members]
         checkUsersForTGConnection(fields: checkUsersForTGConnectionInput ): updateTGOutput
         initiateConnectionTelegram(fields: initiateConnectionTelegramInput ): updateTGOutput
@@ -88,6 +89,7 @@ module.exports = `
         interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Position
         moveCandidateToPosition(fields:moveCandidateToPositionInput): Position
         deleteQuestionsToAskPosition(fields:deleteQuestionsToAskPositionInput): Position
+        pitchPositionToCandidate(fields:pitchPositionToCandidateInput): pitchPositionToCandidateOutput
         findKeyAttributeAndPotentialPosition(fields:findKeyAttributeAndPotentialPositionInput): Position
         findKeyAttributeAndPotentialCandidate(fields:findKeyAttributeAndPotentialCandidateInput): Position
         addCandidatesPosition(fields:addCandidatesPositionInput): Position

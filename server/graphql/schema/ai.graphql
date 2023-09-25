@@ -275,6 +275,10 @@ module.exports = `
         ASK_ABOUT_POSITION_ALREADY_APPLIED
         ASK_FIND_NEW_POSITION
         GIVE_MORE_INFO_ABOUT_BACKGROUND
+        REJECT_CANDIDATE
+        ACCEPT_CANDIDATE
+        ASK_CANDIDATE
+        PITCH_POSITION_CANDIDATE
     }
     input edenGPTsearchProfilesInput {
         message: String
