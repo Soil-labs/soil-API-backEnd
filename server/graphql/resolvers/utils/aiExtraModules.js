@@ -346,44 +346,91 @@ const categoryMessageCategoryEnum = {
   2: "ASK_ABOUT_POSITION_ALREADY_APPLIED",
   3: "ASK_FIND_NEW_POSITION",
   4: "GIVE_MORE_INFO_ABOUT_BACKGROUND",
+  5: "REJECT_CANDIDATE",
+  6: "ACCEPT_CANDIDATE",
+  7: "ASK_CANDIDATE",
+  8: "PITCH_POSITION_CANDIDATE",
 };
 
 const categoryMessageCategoryEnumReverse = {
   "GENERAL_CONVERSATION":{
     number: 1,
     promptReply: "Reply to the message with a general conversation",
+    promptInput: "General Conversation",
   } ,
   "ASK_ABOUT_POSITION_ALREADY_APPLIED":{
     number: 2,
     promptReply: "Reply to the message using the MEMORIES about the position",
+    promptInput: "Asking about a position already applied",
   } ,
   "ASK_FIND_NEW_POSITION":{
     number: 3,
     promptReply: "Reply to the message by giving information about potential positions that can be a good fit using the MEMORIES",
+    promptInput: "Asking to find a new position",
   } ,
   "GIVE_MORE_INFO_ABOUT_BACKGROUND":{
     number: 4,
     promptReply: "Thank him for the information and ask if there is anything else he wants to share",
+    promptInput: "Giving more information about his background, knowledge, skills, experience, etc.",
   } ,
+  "REJECT_CANDIDATE":{
+    number: 5,
+    promptReply: "Discuss about Rejection of candidate",
+    promptInput: "Rejecting the candidate",
+  },
+  "ACCEPT_CANDIDATE":{
+    number: 6,
+    promptReply: "Discuss about Accepting the candidate",
+    promptInput: "Accepting the candidate",
+  },
+  "ASK_CANDIDATE":{
+    number: 7,
+    promptReply: "Discuss about question that was asked to candidate",
+    promptInput: "Asking the candidate a question",
+  },
+  "PITCH_POSITION_CANDIDATE":{
+    number: 8,
+    promptReply: "Discuss about the position that was pitched to the candidate",
+    promptInput: "Pitching a position to the candidate",
+  },
+
 };
 
 
-async function identifyCategoryFunc(message) {
+async function identifyCategoryFunc(message,currentState) {
+
+
+  let currentStatePrompt = ""
+  if (currentState != ""){
+    currentStatePrompt = `Current State/Category: ${currentState}`
+  }
+
+  // ----------------- Create Prompt for all categories based on categoryMessageCategoryEnumReverse --------
+  let chooseFollowingCategoryPrompt = ""
+  let maxNum = 0
+  for (const [key, value] of Object.entries(categoryMessageCategoryEnumReverse)) {
+    chooseFollowingCategoryPrompt += `${value.number}. ${value.promptInput}\n`
+    maxNum = value.number
+  }
+
+  console.log("chooseFollowingCategoryPrompt = " , chooseFollowingCategoryPrompt)
+  // ----------------- Create Prompt for all categories based on categoryMessageCategoryEnumReverse --------
+
+
+
 
   let promptIDentifyCategory = `You have as input a message delimiters <>: <${message}>
   
+  ${currentStatePrompt}
   
   - Your task is to identify the category of the message
   - You can choose from the following categories:
-  1. General Conversation
-  2. Asking a question about a position already applied
-  3. Asking to find a new position
-  4. Giving more information about his background, knowledge, skills, experience, etc.
+  ${chooseFollowingCategoryPrompt}
   
   - it can only be one of the 4 categories
   
   
-  What is the Category of the message, please only reply with a number from 1 to 4 that corresponds to the category
+  What is the Category of the message, please only reply with a number from 1 to ${maxNum} that corresponds to the category
   
   Category only a number from 1 to 4:`;
 
@@ -397,6 +444,10 @@ async function identifyCategoryFunc(message) {
   const number = match ? parseInt(match[0]) : null;
   console.log(number); 
 
+  console.log("categoryMessageCategoryEnum[number] = " , categoryMessageCategoryEnum[number])
+
+  // sd22
+
   if (number != null) {
     return categoryMessageCategoryEnum[number]
   }
@@ -405,7 +456,7 @@ async function identifyCategoryFunc(message) {
   return null;
 }
 
-async function replyToMessageBasedOnCategoryFunc(message, categoryEnum,discussionOld=[]) {
+async function replyToMessageBasedOnCategoryFunc(message, categoryEnum,discussionOld=[],memories = "") {
 
   console.log("discussionOld 232= " , discussionOld)
 
@@ -417,16 +468,16 @@ async function replyToMessageBasedOnCategoryFunc(message, categoryEnum,discussio
   console.log("replyEnumInfo = " , replyEnumInfo)
   console.log("replyPrompt = " , replyPrompt)
 
-  const memories = `
-  - User is applying for a position in Google
-  - User is a FrontEnd developer
-  - User has 5 years of experience in FrontEnd development`
+    // const memories = `
+    // - User is applying for a position in Google
+    // - User is a FrontEnd developer
+    // - User has 5 years of experience in FrontEnd development`
 
 
   let memoriesPrompt = ""
-  if (replyEnumInfo.number == 2 || replyEnumInfo.number == 3) {
-    memoriesPrompt = memories
-  }
+  // if (replyEnumInfo.number == 2 || replyEnumInfo.number == 3) {
+    memoriesPrompt = `Memories (delimited <>) :${memories}`
+  // }
 
   // only use the memories if replyEnumInfo is 2 or 3 with an if statment inside promptReplyTotal
 
@@ -441,6 +492,8 @@ async function replyToMessageBasedOnCategoryFunc(message, categoryEnum,discussio
 
 
   console.log("promptReplyTotal = " , promptReplyTotal)
+
+  // sd0
 
   // let resContent = await useGPTchatSimple(promptReplyTotal, 0,"API 1");
   let resContent = await useGPTchat(

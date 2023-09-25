@@ -29,6 +29,14 @@ const memberSchema = mongoose.Schema({
     telegramConnectionCode: String,
   },
 
+  stateEdenChat: {
+    positionIDs: [mongoose.Schema.ObjectId],
+    categoryChat: {
+      type: String,
+      enum: ["REJECT_CANDIDATE", "ACCEPT_CANDIDATE","ASK_CANDIDATE","PITCH_POSITION_CANDIDATE"],
+    },
+  },
+
   stripe: {
     session: {
       ID: String,
