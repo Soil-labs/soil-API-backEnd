@@ -23,6 +23,7 @@ const { request, gql } = require("graphql-request");
 const { printC } = require("../../../printModule");
 const {
   useGPTchatSimple,
+  useGPTchat,
   MessageMapKG_V2APICallF,
   MessageMapKG_V4APICallF,
   findConversationPrompt,
@@ -169,10 +170,20 @@ module.exports = {
     if (!positionID) throw new ApolloError("positionID is required");
     if (!userID) throw new ApolloError("userID is required");
 
+    memberData = await Members.findOne({ _id: userID }).select(
+      "_id discordName cvInfo"
+    );
+
+    if (!memberData) throw new ApolloError("member not found");
+
+    positionData = await Position.findOne({
+      _id: positionID,
+    });
+
+    if (!positionData) throw new ApolloError("position not found");
+
     try {
-      memberData = await Members.findOne({ _id: userID }).select(
-        "_id discordName cvInfo"
-      );
+      
 
       console.log("member data", memberData);
 
@@ -187,48 +198,72 @@ module.exports = {
         console.log("else", cvInfo);
       }
 
-      positionData = await Position.find({
-        _id: positionID,
-      });
+      
 
-      positionRequirements = await positionData[0].positionsRequirements
-        .content;
+      let positionRequirements = await positionData.positionsRequirements.content;
 
-      promptInterviewLetter = `
+      // promptInterviewLetter = `
 
-      Act as an HR Expert. I want you to write a letter to a candidate inviting them to a second interview.
+      // Act as an HR Expert. I want you to write a letter to a candidate inviting them to a second interview.
 
-      For context there will two things: information from the CV and Job requirements.
+      // For context there will two things: information from the CV and Job requirements.
 
-      Information from CV (delimiters <>): <${cvInfo}>
+      // Information from CV (delimiters <>): <${cvInfo}>
 
-      Job Requirements (delimiters <>): <${positionRequirements}>
+      // Job Requirements (delimiters <>): <${positionRequirements}>
 
-      Now here is the letter that you will customize based on the information above(delimiters ''' '''):
+      // Now here is the letter that you will customize based on the information above(delimiters ''' '''):
 
-      '''
-      Dear ${memberData.discordName},
+      // '''
+      // Dear ${memberData.discordName},
 
-      We at Eden Protocol Inc. were deeply impressed by your application and interview. <change this part>Your proficiency in team leadership,
-      fueled by your profound drive and enthusiasm for the complexity of the problem space in which we operate<change this part>, resonated
-      deeply with our team ethos. We strongly believe that your distinctive experience and passion align perfectly with our mission.
-      Hence, it is exciting to extend an invitation to you for an in-person interview to expand on your vision and further witness your prowess firsthand.
-      We are keen on furthering this conversation and exploring potential avenues for mutual growth with you.
+      // We at Eden Protocol Inc. were deeply impressed by your application and interview. <change this part>Your proficiency in team leadership,
+      // fueled by your profound drive and enthusiasm for the complexity of the problem space in which we operate<change this part>, resonated
+      // deeply with our team ethos. We strongly believe that your distinctive experience and passion align perfectly with our mission.
+      // Hence, it is exciting to extend an invitation to you for an in-person interview to expand on your vision and further witness your prowess firsthand.
+      // We are keen on furthering this conversation and exploring potential avenues for mutual growth with you.
 
-      Feel free to pick a time that works for you here:
-      https://calendly.com/tomhusson/30
+      // Feel free to pick a time that works for you here:
+      // https://calendly.com/tomhusson/30
 
-      Yours sincerely,
-      Miltiadis Saratzidis
+      // Yours sincerely,
+      // Miltiadis Saratzidis
 
-      '''
+      // '''
 
-      Your job is to only change the variable part in the letter that is inside the <change this part>Your proficiency in team leadership,
-      fueled by your profound drive and enthusiasm for the complexity of the problem space in which we operate <change this part>. The goal is to make the variable part custom to the
-      candidate. You will use the Information from CV and Job Requirements to write that variable part. Keep the rest of the letter unchanged. Keep it very short & punchy
-      `;
+      // Your job is to only change the variable part in the letter that is inside the <change this part>Your proficiency in team leadership,
+      // fueled by your profound drive and enthusiasm for the complexity of the problem space in which we operate <change this part>. The goal is to make the variable part custom to the
+      // candidate. You will use the Information from CV and Job Requirements to write that variable part. Keep the rest of the letter unchanged. Keep it very short & punchy
+      // `;
 
-      letter = await useGPTchatSimple(promptInterviewLetter, 0.7);
+      // letter = await useGPTchatSimple(promptInterviewLetter, 0.7);
+
+
+      letterSystemPrompt = `Report Candidate CV and Interview (delimiters <>): <${cvInfo.substring(0, 2500)}>
+      
+      Requirements of Job Position (delimiters <>): <${positionRequirements}>
+
+      Name of Candidate (delimiters <>): <${memberData.discordName}>
+
+      COMPANY NAME (delimiters <>): <${positionData.name}>
+      
+      You're a world-class senior recruiter named Eden
+      You are recruiting for ${positionData.name} and you have all the information about the role given in POSITION REQUIREMENTS
+      You communicate very effectively, to the point yet with care & compassion
+      You have previously aligned with your hiring manger on the important TRADEOFFS, the most important SKILLS and their top PRIORITIES when it comes to what they’re looking for in a candidate
+      You just finished the first interview with the candidate named 'CANDIDATE NAME' and now you're creating a report for the hiring manager.`
+
+      letterUserPrompt = `You've been asked by the hiring manager to invite the candidate for a second interview with a hiring manager
+      - Based on the CV, interview & requirements explain why we're very excited to continue the conversation
+      - Be very specific in why we liked the candidate's application
+      - Make it short & fun, as a phone message NOT email.
+      - Use \n\n whenever needed to be clear message.
+      - MAX 2 paragraphs 100 words
+      
+      Message Inviting the candidate for second interview with hiring manager:`
+
+
+      letter = await useGPTchat(letterUserPrompt, [],letterSystemPrompt)
 
       console.log(letter);
 
