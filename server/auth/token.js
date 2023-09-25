@@ -81,10 +81,6 @@ const token = async ({ body }, res) => {
         _id: dbUser._id,
         discordName: name,
         accessLevel: userAccess,
-        productID:
-          dbUser.stripe && dbUser.stripe.product && dbUser.stripe.product.ID
-            ? dbUser.stripe.product.ID
-            : null,
       },
       process.env.JWT_SECRET || "",
       {

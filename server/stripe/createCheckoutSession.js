@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const {} = require("../utils/updateUserServersInDB");
-const { Members } = require("../models/membersModel");
+const { Company } = require("../models/companyModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const createCheckoutSession = async ({ body }, res, req) => {
@@ -9,7 +9,7 @@ const createCheckoutSession = async ({ body }, res, req) => {
     if (!body.price_id) throw Error("price_id is required");
     if (!body.success_url) throw Error("success_url is required");
     if (!body.cancel_url) throw Error("cancel_url is required");
-    if (!body.userid) throw Error("userid is required");
+    if (!body.companySlug) throw Error("companySlug is required");
 
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -26,11 +26,11 @@ const createCheckoutSession = async ({ body }, res, req) => {
     });
 
     // console.log(session);
-    const _member = await Members.findOne({ _id: body.userid });
+    const _company = await Company.findOne({ slug: body.companySlug });
 
-    const _stripeObj = _member.stripe
+    const _stripeObj = _company.stripe
       ? {
-          ..._member.stripe,
+          ..._company.stripe,
           session: {
             ID: session.id,
           },
@@ -43,8 +43,8 @@ const createCheckoutSession = async ({ body }, res, req) => {
           // product: { ID: "" },
         };
 
-    await Members.findOneAndUpdate(
-      { _id: body.userid },
+    await Company.findOneAndUpdate(
+      { slug: body.companySlug },
       {
         stripe: _stripeObj,
       }
