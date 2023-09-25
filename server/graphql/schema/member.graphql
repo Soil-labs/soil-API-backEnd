@@ -13,6 +13,8 @@ module.exports = `
 
         conduct: conductType
 
+        companies: [ID]
+
         onbording: onboardingType
 
         positionsApplied: [positionsAppliedType]
@@ -78,24 +80,6 @@ module.exports = `
         reviewSummary: reviewSummaryType     
 
         preferences: preferencesType
-
-        stripe: StripeType
-
-        stateEdenChat: stateEdenChat
-    }
-
-    type StripeType {
-        session: StripeSessionType,
-        customerID: String,
-        product: StripeProductType,
-    }
-
-    type StripeSessionType {
-        ID: String
-    }
-
-    type StripeProductType {
-        ID: String
     }
 
     type conductType {
@@ -599,6 +583,7 @@ module.exports = `
 
         conduct: conductInput
         
+        companies: [ID]
 
         onbording: onboardingInput
 

@@ -22,13 +22,21 @@ const companyModel = mongoose.Schema({
     {
       positionID: mongoose.Schema.ObjectId,
       companyID: mongoose.Schema.ObjectId,
-    }
+    },
   ],
   type: {
     type: String,
     enum: ["COMPANY", "COMMUNITY"],
   },
   skillsNum: Number,
+
+  stripe: {
+    session: {
+      ID: String,
+    },
+    customerID: String,
+    product: { ID: String },
+  },
 });
 
 const Company = mongoose.model("Company", companyModel);

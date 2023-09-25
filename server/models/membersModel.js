@@ -29,6 +29,7 @@ const memberSchema = mongoose.Schema({
     telegramConnectionCode: String,
   },
 
+  companies: [mongoose.Schema.ObjectId],
   stateEdenChat: {
     positionIDs: [mongoose.Schema.ObjectId],
     categoryChat: {
