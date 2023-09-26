@@ -89,6 +89,10 @@ const {
   deleteMemories,
 } = require("./mutation/memoryPineconeMutation");
 
+const {
+  addCardMemory,
+} = require("./mutation/cardMemoryMutation");
+
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
 const { updateServer } = require("./mutation/serverMutation");
 const {
@@ -256,6 +260,9 @@ module.exports = {
     // ------------- MEMORY PINECONE MUTATION -----------------
     addMemory,
     deleteMemories,
+
+    // ------------- CARD MEMORY MUTATION -----------------
+    addCardMemory,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,

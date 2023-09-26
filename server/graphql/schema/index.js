@@ -13,6 +13,7 @@ const conversationType = require("./conversation.graphql");
 const positionType = require("./position.graphql");
 const companyType = require("./company.graphql");
 const memoryPineconeType = require("./memoryPinecone.graphql");
+const cardMemoryType = require("./cardMemory.graphql");
 const questionsEdenAI = require("./questionsEdenAI.graphql");
 const queryResponse = require("./queryResponse.graphql");
 const SkillCategoryType = require("./skillCategory.graphql");
@@ -43,6 +44,7 @@ const typeDefs = gql`
   ${positionType}
   ${companyType}
   ${memoryPineconeType}
+  ${cardMemoryType}
   ${memberType}
   ${endorsementType}
   ${reviewType}

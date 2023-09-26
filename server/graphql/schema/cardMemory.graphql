@@ -1,0 +1,102 @@
+module.exports = `
+ 
+    type CardMemory {
+        _id: ID
+        content: String
+        priority: Int
+        tradeOffBoost: Int
+        type: typeCardMemoryEnum
+        authorCard: authorCardMemory
+        score: scoreCardMemory
+        connectedCards: [connectedCards]
+    }
+
+    type connectedCards {
+        card: CardMemory
+        score: Int
+        reason: String
+    }
+
+    type scoreCardMemory {
+        overall: Int
+        reason: String
+        agent: [agentScoreCard]
+    }
+
+    type agentScoreCard {
+        category: categoryAgentScoreCardEnum
+        score: Int
+        reason: String
+    }
+    
+
+    type authorCardMemory {
+        companyID: ID
+        positionID: ID
+        userID: ID
+        category: categoryCardMemoryEnum
+    }
+
+    input addCardMemoryInput {
+        _id: ID
+        content: String
+        priority: Int
+        tradeOffBoost: Int
+        type: typeCardMemoryEnum
+        connectedCards: [connectedCardsInput]
+        authorCard: authorCardMemoryInput
+        score: scoreCardMemoryInput
+    }
+
+    input authorCardMemoryInput {
+        companyID: ID
+        positionID: ID
+        userID: ID
+        category: categoryCardMemoryEnum
+    }
+
+    input scoreCardMemoryInput {
+        overall: Int
+        reason: String
+        agent: [agentScoreCardInput]
+    }
+
+    input agentScoreCardInput {
+        category: categoryAgentScoreCardEnum
+        score: Int
+        reason: String
+    }
+
+    input connectedCardsInput {
+        cardID: ID
+        score: Int
+        reason: String
+    }
+
+    enum typeCardMemoryEnum {
+        SCORE_CARD
+        SKILL
+        FUTURE_POTENTIAL
+        KEY_ATTRIBUTE
+        INTERESTS
+        VALUE
+    }
+
+    enum categoryCardMemoryEnum {
+        COMPANY
+        POSITION
+        CANDIDATE
+    }
+
+    enum categoryAgentScoreCardEnum {
+        CREDIBILITY
+        PRECISION
+        CONSISTENCY
+        ALIGNMENT
+
+    }
+
+    
+
+
+`
