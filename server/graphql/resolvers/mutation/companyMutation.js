@@ -1,5 +1,5 @@
 const { ApolloError } = require("apollo-server-express");
-const { combineResolvers } = require("graphql-resolvers");
+// const { combineResolvers } = require("graphql-resolvers");
 
 const { Company } = require("../../../models/companyModel");
 const { Members } = require("../../../models/membersModel");
@@ -151,6 +151,57 @@ module.exports = {
       });
     }
   },
+  subscribeToCommunity: async (parent, args, context, info) => {
+    const { companyID, communityID } = args.fields;
+    console.log(
+      "Mutation > subscribeToCommunity > args.fields = ",
+      args.fields
+    );
+
+    if (!communityID)
+      throw new ApolloError("communityID is required", "subscribeToCommunity", {
+        component: "companyMutation > subscribeToCommunity",
+      });
+
+    if (!companyID)
+      throw new ApolloError("Company ID is required", "subscribeToCommunity", {
+        component: "companyMutation > subscribeToCommunity",
+      });
+
+    companyData = await Company.findOne({ _id: companyID });
+
+    if (!companyData) {
+      throw new ApolloError("Company not found", "subscribeToCommunity", {
+        component: "companyMutation > subscribeToCommunity",
+      });
+    }
+
+    try {
+      const companyCommunities = companyData.communitiesSubscribed || [];
+      if (
+        !companyCommunities.some(
+          (_communityID) => _communityID.toString() === communityID.toString()
+        )
+      ) {
+        companyCommunities.push(communityID);
+      }
+
+      let companyDataN = await Company.findOneAndUpdate(
+        { _id: companyID },
+        { communitiesSubscribed: companyCommunities },
+        { new: true }
+      );
+
+      return companyDataN;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "subscribeToCommunity",
+        { component: "companyMutation > subscribeToCommunity" }
+      );
+    }
+  },
+
   addEmployeesCompany:
     // combineResolvers(
     async (parent, args, context, info) => {

@@ -15,6 +15,7 @@ module.exports = `
         candidatesNum: Int
         skillsNum: Int
         stripe: StripeType
+        communitiesSubscribed: [Company]
     }
 
     type StripeType {
@@ -75,9 +76,18 @@ module.exports = `
         slug: String,
     }
     
+    input findPositionsOfCommunityInput {
+        communityID: String,
+    }
+    
     input addEmployeesCompanyInput {
         companyID: ID
         employees: [EmployeeTypeInput]
+    }  
+    
+    input subscribeToCommunityInput {
+        companyID: ID
+        communityID: ID
     }  
 
     enum typeCompany {

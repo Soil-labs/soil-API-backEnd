@@ -41,6 +41,7 @@ const companyModel = mongoose.Schema({
     customerID: String,
     product: { ID: String },
   },
+  communitiesSubscribed: [mongoose.Schema.ObjectId],
 });
 
 const Company = mongoose.model("Company", companyModel);

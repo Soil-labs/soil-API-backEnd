@@ -73,6 +73,7 @@ module.exports = `
             findCompany(fields:findCompanyInput): Company
             findCompanies(fields:findCompaniesInput): [Company]
             findCompanyFromSlug(fields:findCompanyFromSlugInput): Company
+            findPositionsOfCommunity(fields:findPositionsOfCommunityInput): [Position]
 
 
            #  ---------- QUERY RESPONSE QUERY -------

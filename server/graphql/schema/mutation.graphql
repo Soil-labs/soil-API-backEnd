@@ -107,6 +107,7 @@ module.exports = `
         updateCompany(fields:updateCompanyInput): Company
         updateUrlCompany(fields:updateUrlInput): Company
         addEmployeesCompany(fields:addEmployeesCompanyInput): Company
+        subscribeToCommunity(fields:subscribeToCommunityInput): Company
 
 
          # ------------- QUERY RESPONSE MUTATION -----------------
