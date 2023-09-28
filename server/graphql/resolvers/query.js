@@ -69,6 +69,11 @@ const {
 } = require("./query/memoryPineconeQuery");
 
 
+const {
+  findCardMemories,
+} = require("./query/cardMemoryQuery");
+
+
 const { findQuestionEdenAI } = require("./query/questionsEdenAIQuery");
 
 const {
@@ -238,6 +243,11 @@ module.exports = {
 
     // ------------- MEMORY PINECONE QUERY -----------------
     findMemories,
+
+
+    // ------------- CARD MEMORY -----------------
+    findCardMemories,
+
 
     // ------------- QUESTIONS EDEN AI QUERY -----------------
     findQuestionEdenAI,

@@ -121,6 +121,12 @@ module.exports = `
         deleteMemories(fields:deleteMemoriesInput): [MemoryPinecone]
 
 
+        # ------------- CARD MEMORY MUTATION -----------------
+        addCardMemory(fields:addCardMemoryInput): CardMemory
+        deleteCardMemory(fields:deleteCardMemoryInput): [CardMemory]
+        createCardsForPosition(fields:createCardsForPositionInput): [CardMemory]
+
+
 
         #  ---------- ROLE MUTATIONS -------
         updateRoleTemplate(fields:createRoleInput): RoleTemplate

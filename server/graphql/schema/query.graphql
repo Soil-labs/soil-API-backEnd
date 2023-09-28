@@ -80,12 +80,15 @@ module.exports = `
 
 
            #  ---------- MEMORY PINECONE QUERY -------
-
             findMemories(fields:findMemoriesInput): [MemoryPinecone]
 
 
+            #  ---------- CARD MEMORY QUERY -------
+            findCardMemories(fields:findCardMemoriesInput): [CardMemory]
+
+
            #  ---------- QUESTIONS EDENAI QUERY -------
-            findQuestionEdenAI(fields:findQuestionEdenAIInput): QuestionsEdenAI
+            findQuestionEdenAI(fields:findQuestionEdenAIInput): CardMemory
 
 
           #  ---------- QUERY TEMPLATE QUERY -------

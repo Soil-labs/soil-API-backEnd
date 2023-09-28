@@ -56,6 +56,7 @@ const {
 } = require("./objectResolvers/positionResolver");
 const { Company } = require("./objectResolvers/companyResolver");
 const { MemoryPinecone } = require("./objectResolvers/memoryPineconeResolver");
+const { connectedCards } = require("./objectResolvers/cardMemoryResolver");
 const { SkillCategory } = require("./objectResolvers/skillCategoryResolver");
 const {
   SkillSubCategory,
@@ -117,6 +118,7 @@ module.exports = {
   RoleTemplate,
   Company,
   MemoryPinecone,
+  connectedCards,
   Position,
   CandidateType,
   talentListType,
