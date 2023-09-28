@@ -29,12 +29,25 @@ const memberSchema = mongoose.Schema({
     telegramConnectionCode: String,
   },
 
-  companies: [mongoose.Schema.ObjectId],
+  companies: [
+    new mongoose.Schema(
+      {
+        companyID: mongoose.Schema.ObjectId,
+        typeT: { type: String, enum: ["ADMIN", "EMPLOYEE"] },
+      },
+      { _id: false }
+    ),
+  ],
   stateEdenChat: {
     positionIDs: [mongoose.Schema.ObjectId],
     categoryChat: {
       type: String,
-      enum: ["REJECT_CANDIDATE", "ACCEPT_CANDIDATE","ASK_CANDIDATE","PITCH_POSITION_CANDIDATE"],
+      enum: [
+        "REJECT_CANDIDATE",
+        "ACCEPT_CANDIDATE",
+        "ASK_CANDIDATE",
+        "PITCH_POSITION_CANDIDATE",
+      ],
     },
   },
 

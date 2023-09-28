@@ -7,10 +7,14 @@ const companyModel = mongoose.Schema({
   slug: String,
   description: String,
   employees: [
-    {
-      typeT: String,
-      userID: String,
-    },
+    new mongoose.Schema(
+      {
+        typeT: { type: String, enum: ["ADMIN", "EMPLOYEE"] },
+        status: { type: String, enum: ["ACTIVE", "PENDING", "REJECTED"] },
+        userID: String,
+      },
+      { _id: false }
+    ),
   ],
   positions: [
     {
