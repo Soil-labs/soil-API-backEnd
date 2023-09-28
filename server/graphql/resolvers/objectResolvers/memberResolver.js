@@ -56,7 +56,6 @@ module.exports = {
           const _companyData = await Company.findOne({
             _id: _company.companyID,
           });
-          console.log("====>", _company.companyID, _companyData);
           companiesData.push({
             typeT: _company.typeT,
             company: _companyData,
