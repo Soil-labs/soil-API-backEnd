@@ -93,7 +93,7 @@ module.exports = `
 
     type companyType {
         company: Company
-        typeT: employeeType
+        typeT: employeeRole
     }
 
     type positionsAppliedType {
@@ -516,10 +516,6 @@ module.exports = `
         maxHourPerWeek: Int
     }
 
-    
-
-
-
     input matchSkillsToProjectsInput {
         skillsID: [ID]
         serverID: [String]
@@ -829,7 +825,7 @@ module.exports = `
         _id: ID
     }
     
-    enum employeeType {
+    enum employeeRole {
         ADMIN
         EMPLOYEE
     }
