@@ -92,7 +92,7 @@ module.exports = `
     }
 
     type companyType {
-        companyID: ID
+        company: Company
         typeT: employeeType
     }
 

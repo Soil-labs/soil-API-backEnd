@@ -151,70 +151,76 @@ module.exports = {
       });
     }
   },
-  addEmployeesCompany: combineResolvers(async (parent, args, context, info) => {
-    const { companyID, employees } = args.fields;
-    console.log("Mutation > addEmployeesCompany > args.fields = ", args.fields);
+  addEmployeesCompany:
+    // combineResolvers(
+    async (parent, args, context, info) => {
+      const { companyID, employees } = args.fields;
+      console.log(
+        "Mutation > addEmployeesCompany > args.fields = ",
+        args.fields
+      );
 
-    if (!employees)
-      throw new ApolloError("Employees is required", "addEmployeesCompany", {
-        component: "companyMutation > addEmployeesCompany",
-      });
+      if (!employees)
+        throw new ApolloError("Employees is required", "addEmployeesCompany", {
+          component: "companyMutation > addEmployeesCompany",
+        });
 
-    if (!companyID)
-      throw new ApolloError("Company ID is required", "addEmployeesCompany", {
-        component: "companyMutation > addEmployeesCompany",
-      });
+      if (!companyID)
+        throw new ApolloError("Company ID is required", "addEmployeesCompany", {
+          component: "companyMutation > addEmployeesCompany",
+        });
 
-    companyData = await Company.findOne({ _id: companyID });
+      companyData = await Company.findOne({ _id: companyID });
 
-    if (!companyData)
-      throw new ApolloError("Company not found", "addEmployeesCompany", {
-        component: "companyMutation > addEmployeesCompany",
-      });
+      if (!companyData)
+        throw new ApolloError("Company not found", "addEmployeesCompany", {
+          component: "companyMutation > addEmployeesCompany",
+        });
 
-    try {
-      const _employeesToUpdate = [];
-      for (const _employee of employees) {
-        try {
-          const _member = await Members.findOne({ _id: _employee.userID });
-          if (!_member) return;
-          let memberCompanies = await updateArr(
-            _member.companies,
-            [{ companyID: companyID, typeT: _employee.typeT }],
-            "userID"
-          );
-          await Members.findOneAndUpdate(
-            { _id: _employee.userID },
-            { companies: memberCompanies }
-          );
-          _employeesToUpdate.push(_employee);
-        } catch {
-          return;
+      try {
+        const _employeesToUpdate = [];
+        for (const _employee of employees) {
+          try {
+            const _member = await Members.findOne({ _id: _employee.userID });
+            if (!_member) return;
+            let memberCompanies = await updateArr(
+              _member.companies,
+              [{ companyID: companyID, typeT: _employee.typeT }],
+              "userID"
+            );
+            await Members.findOneAndUpdate(
+              { _id: _employee.userID },
+              { companies: memberCompanies }
+            );
+            _employeesToUpdate.push(_employee);
+          } catch {
+            return;
+          }
         }
+
+        let compEmployees = await updateArr(
+          companyData.employees,
+          _employeesToUpdate,
+          "userID"
+        );
+
+        // find one and updates
+        let companyDataN = await Company.findOneAndUpdate(
+          { _id: companyID },
+          { employees: compEmployees },
+          { new: true }
+        );
+
+        return companyDataN;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "addEmployeesCompany",
+          { component: "companyMutation > addEmployeesCompany" }
+        );
       }
-
-      let compEmployees = await updateArr(
-        companyData.employees,
-        _employeesToUpdate,
-        "userID"
-      );
-
-      // find one and updates
-      let companyDataN = await Company.findOneAndUpdate(
-        { _id: companyID },
-        { employees: compEmployees },
-        { new: true }
-      );
-
-      return companyDataN;
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "addEmployeesCompany",
-        { component: "companyMutation > addEmployeesCompany" }
-      );
-    }
-  }),
+    },
+  // ),
 };
 
 async function updateArr(arr1, arr2, compareKey) {
