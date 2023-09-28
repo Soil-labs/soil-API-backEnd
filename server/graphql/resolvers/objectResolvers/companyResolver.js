@@ -37,6 +37,25 @@ module.exports = {
         );
       }
     },
+    communitiesSubscribed: async (parent, args, context, info) => {
+      // console.log("parent = ", parent);
+      try {
+        const communitiesSubscribed = Company.find({
+          _id: parent.communitiesSubscribed,
+        });
+        if (communitiesSubscribed) {
+          return communitiesSubscribed;
+        }
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "companyResolver > employees",
+          }
+        );
+      }
+    },
     positions: async (parent, args, context, info) => {
       // console.log("parent = ", parent);
       try {

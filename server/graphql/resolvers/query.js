@@ -56,23 +56,14 @@ const {
   findCompany,
   findCompanies,
   findCompanyFromSlug,
+  findPositionsOfCommunity,
 } = require("./query/companyQuery");
 
+const { findQueryResponses } = require("./query/queryResponseQuery");
 
-const {
-  findQueryResponses,
-} = require("./query/queryResponseQuery");
+const { findMemories } = require("./query/memoryPineconeQuery");
 
-
-const {
-  findMemories,
-} = require("./query/memoryPineconeQuery");
-
-
-const {
-  findCardMemories,
-} = require("./query/cardMemoryQuery");
-
+const { findCardMemories } = require("./query/cardMemoryQuery");
 
 const { findQuestionEdenAI } = require("./query/questionsEdenAIQuery");
 
@@ -110,18 +101,22 @@ const {
 
 const { findChat } = require("./query/chatQuery");
 
-const { findLastNumMessagesChatExternalApp } = require("./query/chatExternalAppQuery");
+const {
+  findLastNumMessagesChatExternalApp,
+} = require("./query/chatExternalAppQuery");
 
 const {
   findMessage,
-  edenGPTreply,identifyCategoryAndReply,
+  edenGPTreply,
+  identifyCategoryAndReply,
   messageMapKG,
   messageMapKG_V2,
   messageMapKG_V3,
   messageMapKG_V4,
   messageMapKG_V5,
   findPrioritiesTrainEdenAI,
-  edenGPTreplyMemory,askEdenUserPosition,
+  edenGPTreplyMemory,
+  askEdenUserPosition,
   edenGPTreplyChatAPI,
   edenGPTreplyChatAPI_V2,
   edenGPTreplyChatAPI_V3,
@@ -132,7 +127,8 @@ const {
   evaluateAnswerEdenAI,
   edenGPTCreateProfileExperienceChatAPI,
   edenAITalSearchExpirience,
-  interviewEdenAI,interviewEdenGPT4only,
+  interviewEdenAI,
+  interviewEdenGPT4only,
   createProfileExperienceWithChatCVMemory,
   edenGPTReviewChatAPI,
 } = require("./query/aiQuery");
@@ -163,7 +159,7 @@ const { findEndorsementLink } = require("./query/endorsementQuery");
 
 const { sendWhatsAppMessage } = require("./query/whatsAppQuery");
 
-const { sendEmailViaSendGrid } = require("./query/emailQuery")
+const { sendEmailViaSendGrid } = require("./query/emailQuery");
 
 const { errors } = require("./query/errorQuery");
 
@@ -235,19 +231,16 @@ module.exports = {
     findCompany,
     findCompanies,
     findCompanyFromSlug,
-
+    findPositionsOfCommunity,
 
     // ------------- QUERY RESPONSE QUERY -----------------
     findQueryResponses,
 
-
     // ------------- MEMORY PINECONE QUERY -----------------
     findMemories,
 
-
     // ------------- CARD MEMORY -----------------
     findCardMemories,
-
 
     // ------------- QUESTIONS EDEN AI QUERY -----------------
     findQuestionEdenAI,
@@ -287,14 +280,16 @@ module.exports = {
 
     //----------- AI QUERY ------------------
     findMessage,
-    edenGPTreply,identifyCategoryAndReply,
+    edenGPTreply,
+    identifyCategoryAndReply,
     messageMapKG,
     messageMapKG_V2,
     messageMapKG_V3,
     messageMapKG_V4,
     messageMapKG_V5,
     findPrioritiesTrainEdenAI,
-    edenGPTreplyMemory,askEdenUserPosition,
+    edenGPTreplyMemory,
+    askEdenUserPosition,
     edenGPTreplyChatAPI,
     edenGPTreplyChatAPI_V2,
     edenGPTreplyChatAPI_V3,
@@ -306,7 +301,8 @@ module.exports = {
     edenGPTCreateProfileExperienceChatAPI,
     edenAITalSearchExpirience,
     createProfileExperienceWithChatCVMemory,
-    interviewEdenAI,interviewEdenGPT4only,
+    interviewEdenAI,
+    interviewEdenGPT4only,
     edenGPTReviewChatAPI,
 
     //----------- GRAPH VISUAL QUERY ------------------

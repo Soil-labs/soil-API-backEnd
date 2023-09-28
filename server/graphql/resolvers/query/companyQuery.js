@@ -95,4 +95,31 @@ module.exports = {
       );
     }
   },
+  findPositionsOfCommunity: async (parent, args, context, info) => {
+    const { communityID } = args.fields;
+    console.log(
+      "Query > findPositionsOfCommunity > args.fields = ",
+      args.fields
+    );
+
+    if (!communityID) throw new ApolloError("communityID is required");
+
+    try {
+      let companyData = await Company.find({
+        communitiesSubscribed: { $elemMatch: { $eq: communityID } },
+      });
+
+      if (!companyData) throw new ApolloError("Company not found");
+
+      console.log("companyData = ", companyData);
+
+      return companyData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findPositionsOfCommunity",
+        { component: "companyQuery > findPositionsOfCommunity" }
+      );
+    }
+  },
 };

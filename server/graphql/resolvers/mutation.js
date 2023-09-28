@@ -15,7 +15,12 @@ const {
   createFakeUserCVnew,
   uploadUserDataGPT,
   updateMemberSignalInfo,
-  updateStateEdenChat,reCreateMemberNeo,checkUsersForTGConnection,initiateConnectionTelegram,memberDataConnectedTG,positionDataConnectedTG,
+  updateStateEdenChat,
+  reCreateMemberNeo,
+  checkUsersForTGConnection,
+  initiateConnectionTelegram,
+  memberDataConnectedTG,
+  positionDataConnectedTG,
 } = require("./mutation/memberMutation");
 const {
   updateProject,
@@ -55,10 +60,12 @@ const {
 const { addQuestionToEdenAI } = require("./mutation/questionsEdenAIMutation");
 
 const {
-  updatePosition,updatePositionGeneralDetails,
+  updatePosition,
+  updatePositionGeneralDetails,
   updateUrl,
   addQuestionsToAskPosition,
-  interviewQuestionCreationUser,moveCandidateToPosition,
+  interviewQuestionCreationUser,
+  moveCandidateToPosition,
   deleteQuestionsToAskPosition,
   pitchPositionToCandidate,
   findKeyAttributeAndPotentialPosition,
@@ -78,10 +85,14 @@ const {
   updateCompany,
   updateUrlCompany,
   addEmployeesCompany,
+  subscribeToCommunity,
 } = require("./mutation/companyMutation");
 
 const {
-  updateQueryResponse,respondToQuery,deleteQueryResponse,queryResponseUpdated,
+  updateQueryResponse,
+  respondToQuery,
+  deleteQueryResponse,
+  queryResponseUpdated,
 } = require("./mutation/queryResponseMutation");
 
 const {
@@ -139,9 +150,7 @@ const {
   updateChatResult,
 } = require("./mutation/chatMutation");
 
-const {
-  addChatExternalApp,
-} = require("./mutation/chatExternalAppMutation");
+const { addChatExternalApp } = require("./mutation/chatExternalAppMutation");
 
 const {
   addMessage,
@@ -161,7 +170,8 @@ const {
   useAI_OnMessage,
   messageToGPT,
   autoUpdateMemoryFromCV,
-  autoUpdateMemoryFromPositionRequirments,updatePrioritiesTradeOffs,
+  autoUpdateMemoryFromPositionRequirments,
+  updatePrioritiesTradeOffs,
   inputToGPT,
   CVtoSummary,
   CVtoJobs,
@@ -195,7 +205,10 @@ module.exports = {
     createFakeUserCVnew,
     uploadUserDataGPT,
     updateMemberSignalInfo,
-    updateStateEdenChat,reCreateMemberNeo,checkUsersForTGConnection,initiateConnectionTelegram,
+    updateStateEdenChat,
+    reCreateMemberNeo,
+    checkUsersForTGConnection,
+    initiateConnectionTelegram,
 
     // ------------- PROJECT MUTATION -----------------
     updateProject,
@@ -233,10 +246,12 @@ module.exports = {
     addQuestionToEdenAI,
 
     // ------------- POSITION MUTATION -----------------
-    updatePosition,updatePositionGeneralDetails,
+    updatePosition,
+    updatePositionGeneralDetails,
     updateUrl,
     addQuestionsToAskPosition,
-    interviewQuestionCreationUser,moveCandidateToPosition,
+    interviewQuestionCreationUser,
+    moveCandidateToPosition,
     deleteQuestionsToAskPosition,
     pitchPositionToCandidate,
     findKeyAttributeAndPotentialPosition,
@@ -255,9 +270,12 @@ module.exports = {
     updateCompany,
     updateUrlCompany,
     addEmployeesCompany,
+    subscribeToCommunity,
 
     // ------------- QUERY RESPONSE MUTATION -----------------
-    updateQueryResponse,respondToQuery,deleteQueryResponse,
+    updateQueryResponse,
+    respondToQuery,
+    deleteQueryResponse,
 
     // ------------- MEMORY PINECONE MUTATION -----------------
     addMemory,
@@ -317,7 +335,6 @@ module.exports = {
     updateChatReply,
     updateChatResult,
 
-
     // ------------- CHAT EXTERNAL APP MUTATION -----------------
     addChatExternalApp,
 
@@ -339,7 +356,8 @@ module.exports = {
     useAI_OnMessage,
     messageToGPT,
     autoUpdateMemoryFromCV,
-    autoUpdateMemoryFromPositionRequirments,updatePrioritiesTradeOffs,
+    autoUpdateMemoryFromPositionRequirments,
+    updatePrioritiesTradeOffs,
     inputToGPT,
     CVtoSummary,
     CVtoJobs,
@@ -360,6 +378,7 @@ module.exports = {
     queryResponseUpdated,
     memberUpdatedInRoom,
     userCVSavedToDB,
-    memberDataConnectedTG,positionDataConnectedTG,
+    memberDataConnectedTG,
+    positionDataConnectedTG,
   },
 };
