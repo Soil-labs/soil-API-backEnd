@@ -1,7 +1,6 @@
 const { AI } = require("../../../models/aiModel");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
-const { Conversation } = require("../../../models/conversationModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 

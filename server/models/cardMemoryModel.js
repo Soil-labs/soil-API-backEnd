@@ -7,7 +7,7 @@ const cardMemoryModel = mongoose.Schema({
   tradeOffBoost: Number,
   type: {
     type: String,
-    enum: ["SCORE_CARD","SKILL","FUTURE_POTENTIAL","KEY_ATTRIBUTE","INTERESTS","VALUE"], // ScoreCard = Checks and Balances
+    enum: ["TECHNICAL_SKILLS","SOFT_SKILLS","EXPERIENCE","INDUSTRY_KNOWLEDGE","INTERESTS","CORE_VALUES","GOALS","OTHER"], // ScoreCard = Checks and Balances
   },
   authorCard: {
     companyID: String,
@@ -17,8 +17,6 @@ const cardMemoryModel = mongoose.Schema({
       type: String,
       enum: ["COMPANY","POSITION","CANDIDATE"],
     },
-
-
   },
   score: {
     overall: Number,
@@ -37,6 +35,8 @@ const cardMemoryModel = mongoose.Schema({
     score: Number,
     reason: String,
   }],
+  keyPriority: Boolean,
+  futurePotential: Boolean,
 
 
 });

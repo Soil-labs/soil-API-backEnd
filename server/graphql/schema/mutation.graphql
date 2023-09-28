@@ -123,6 +123,8 @@ module.exports = `
 
         # ------------- CARD MEMORY MUTATION -----------------
         addCardMemory(fields:addCardMemoryInput): CardMemory
+        deleteCardMemory(fields:deleteCardMemoryInput): [CardMemory]
+        createCardsForPosition(fields:createCardsForPositionInput): [CardMemory]
 
 
 

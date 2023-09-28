@@ -9,6 +9,8 @@ module.exports = `
         authorCard: authorCardMemory
         score: scoreCardMemory
         connectedCards: [connectedCards]
+        keyPriority: Boolean
+        futurePotential: Boolean
     }
 
     type connectedCards {
@@ -73,13 +75,33 @@ module.exports = `
         reason: String
     }
 
+    input deleteCardMemoryInput {
+        _id: [ID]
+        companyID: ID
+        userID: ID
+        positionID: ID
+    }
+
+    input createCardsForPositionInput {
+        positionID: ID
+    }
+
+    input findCardMemoriesInput {
+        _id: [ID]
+        companyID: ID
+        userID: ID
+        positionID: ID
+    }
+
     enum typeCardMemoryEnum {
-        SCORE_CARD
-        SKILL
-        FUTURE_POTENTIAL
-        KEY_ATTRIBUTE
+        TECHNICAL_SKILLS
+        SOFT_SKILLS
+        EXPERIENCE
+        INDUSTRY_KNOWLEDGE
         INTERESTS
-        VALUE
+        CORE_VALUES
+        GOALS
+        OTHER
     }
 
     enum categoryCardMemoryEnum {

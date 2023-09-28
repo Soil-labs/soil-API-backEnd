@@ -91,6 +91,8 @@ const {
 
 const {
   addCardMemory,
+  deleteCardMemory,
+  createCardsForPosition,
 } = require("./mutation/cardMemoryMutation");
 
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
@@ -263,6 +265,8 @@ module.exports = {
 
     // ------------- CARD MEMORY MUTATION -----------------
     addCardMemory,
+    deleteCardMemory,
+    createCardsForPosition,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,
