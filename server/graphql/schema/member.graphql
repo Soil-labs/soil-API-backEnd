@@ -13,7 +13,7 @@ module.exports = `
 
         conduct: conductType
 
-        companies: [ID]
+        companies: [companyType]
 
         onbording: onboardingType
 
@@ -89,6 +89,11 @@ module.exports = `
         telegram: String,
         telegramChatID: String,
         telegramConnectionCode: String,
+    }
+
+    type companyType {
+        companyID: ID
+        typeT: employeeType
     }
 
     type positionsAppliedType {
@@ -822,5 +827,10 @@ module.exports = `
 
     input reCreateMemberNeoInput {
         _id: ID
+    }
+    
+    enum employeeType {
+        ADMIN
+        EMPLOYEE
     }
 `

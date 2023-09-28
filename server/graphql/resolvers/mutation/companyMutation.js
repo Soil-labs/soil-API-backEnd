@@ -1,10 +1,20 @@
 const { ApolloError } = require("apollo-server-express");
+const { combineResolvers } = require("graphql-resolvers");
 
 const { Company } = require("../../../models/companyModel");
+const { Members } = require("../../../models/membersModel");
 
 module.exports = {
   updateCompany: async (parent, args, context, info) => {
-    const { _id, name, slug, description, type, addCompanySubscribersID,addPositionSubscribersID } = args.fields;
+    const {
+      _id,
+      name,
+      slug,
+      description,
+      type,
+      addCompanySubscribersID,
+      addPositionSubscribersID,
+    } = args.fields;
     console.log("Mutation > updateCompany > args.fields = ", args.fields);
 
     try {
@@ -12,28 +22,29 @@ module.exports = {
       if (_id) {
         companyData = await Company.findOne({ _id });
 
-
         //  ----------- communitySubscribers -----------
         communitySubscribers = companyData.communitySubscribers;
 
         if (addCompanySubscribersID) {
           // check if the addCompanySubscribersID exist inside communitySubscribers.companyID if they don't add them
           addCompanySubscribersID.forEach((companyID) => {
-              const index = communitySubscribers.findIndex((subscriber) => {
-                return subscriber?.companyID?.toString() == companyID?.toString();
+            const index = communitySubscribers.findIndex((subscriber) => {
+              return subscriber?.companyID?.toString() == companyID?.toString();
+            });
+            if (index == -1) {
+              communitySubscribers.push({
+                companyID: companyID,
               });
-              if (index == -1) {
-                communitySubscribers.push({
-                  companyID: companyID,
-                });
-              }
+            }
           });
         }
 
         if (addPositionSubscribersID) {
           addPositionSubscribersID.forEach((positionID) => {
             const index = communitySubscribers.findIndex((subscriber) => {
-              return subscriber?.positionID?.toString() == positionID?.toString();
+              return (
+                subscriber?.positionID?.toString() == positionID?.toString()
+              );
             });
             if (index == -1) {
               communitySubscribers.push({
@@ -48,10 +59,11 @@ module.exports = {
         if (name) companyData.name = name;
         if (slug) companyData.slug = slug;
         if (type) companyData.type = type;
-        if (addCompanySubscribersID) companyData.communitySubscribers = communitySubscribers;
-        if (addPositionSubscribersID) companyData.communitySubscribers = communitySubscribers;
+        if (addCompanySubscribersID)
+          companyData.communitySubscribers = communitySubscribers;
+        if (addPositionSubscribersID)
+          companyData.communitySubscribers = communitySubscribers;
         if (description) companyData.description = description;
-        
       } else {
         const companyWithSameSlug = await Company.findOne({ slug: slug });
         if (companyWithSameSlug) {
@@ -66,7 +78,6 @@ module.exports = {
         communitySubscribers = [];
 
         if (addCompanySubscribersID) {
-
           addCompanySubscribersID.forEach((companyID) => {
             communitySubscribers.push({
               companyID: companyID,
@@ -83,7 +94,6 @@ module.exports = {
         }
         //  ----------- communitySubscribers -----------
 
-
         companyData = await new Company({
           name,
           slug,
@@ -91,11 +101,10 @@ module.exports = {
           description,
           communitySubscribers,
         });
-
       }
       await companyData.save();
 
-      return companyData
+      return companyData;
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -142,7 +151,7 @@ module.exports = {
       });
     }
   },
-  addEmployeesCompany: async (parent, args, context, info) => {
+  addEmployeesCompany: combineResolvers(async (parent, args, context, info) => {
     const { companyID, employees } = args.fields;
     console.log("Mutation > addEmployeesCompany > args.fields = ", args.fields);
 
@@ -164,12 +173,31 @@ module.exports = {
       });
 
     try {
-      let compEmployees = await updateEmployees(
-        companyData.employees,
-        employees
-      );
+      const _employeesToUpdate = [];
+      for (const _employee of employees) {
+        try {
+          const _member = await Members.findOne({ _id: _employee.userID });
+          if (!_member) return;
+          let memberCompanies = await updateArr(
+            _member.companies,
+            [{ companyID: companyID, typeT: _employee.typeT }],
+            "userID"
+          );
+          await Members.findOneAndUpdate(
+            { _id: _employee.userID },
+            { companies: memberCompanies }
+          );
+          _employeesToUpdate.push(_employee);
+        } catch {
+          return;
+        }
+      }
 
-      console.log("compEmployees = ", compEmployees);
+      let compEmployees = await updateArr(
+        companyData.employees,
+        _employeesToUpdate,
+        "userID"
+      );
 
       // find one and updates
       let companyDataN = await Company.findOneAndUpdate(
@@ -186,38 +214,22 @@ module.exports = {
         { component: "companyMutation > addEmployeesCompany" }
       );
     }
-  },
+  }),
 };
 
-async function updateEmployees(arr1, arr2, compareKey = "userID") {
-  // arr1New = [...arr1]
-  arr2.forEach((employee2) => {
-    const index = arr1.findIndex((employee1) => {
-      if (employee1[compareKey] && employee2[compareKey])
-        return (
-          employee1[compareKey].toString() == employee2[compareKey].toString()
-        );
+async function updateArr(arr1, arr2, compareKey) {
+  arr2.forEach((item2) => {
+    const index = arr1.findIndex((item1) => {
+      if (item1[compareKey] && item2[compareKey])
+        return item1[compareKey].toString() == item2[compareKey].toString();
       else return -1;
     });
     if (index != -1) {
-      // arr1[index] = {
-      //   ...employee2,
-      //   ...arr1[index],
-      //   readyToDisplay: false,
-      // }
-      arr1[index].readyToDisplay = false;
-      if (employee2.conversationID) {
-        arr1[index].conversationID = employee2.conversationID;
-      }
+      arr1[index] = item2;
     } else {
       arr1.push({
-        ...employee2,
-        readyToDisplay: false,
+        ...item2,
       });
-
-      if (employee2.conversationID) {
-        arr1[arr1.length - 1].conversationID = employee2.conversationID;
-      }
     }
   });
 

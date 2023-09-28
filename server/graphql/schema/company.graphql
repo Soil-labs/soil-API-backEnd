@@ -37,7 +37,8 @@ module.exports = `
     }
 
     type EmployeeType {
-        typeT: String
+        typeT: employeeType
+        status: employeeStatus
         user: Members
     }
 
@@ -57,8 +58,9 @@ module.exports = `
     }
 
     input EmployeeTypeInput {
-        typeT: String
+        typeT: employeeType
         userID: String
+        status: employeeStatus
     }
 
     input findCompanyInput {
@@ -78,9 +80,19 @@ module.exports = `
         employees: [EmployeeTypeInput]
     }  
 
-     enum typeCompany {
+    enum typeCompany {
         COMPANY
         COMMUNITY
+    }
+
+    enum employeeType {
+        ADMIN
+        EMPLOYEE
+    }
+    enum employeeStatus {
+        ACTIVE
+        REJECTED
+        PENDING
     }
 
 `
