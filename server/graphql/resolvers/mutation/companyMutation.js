@@ -186,7 +186,7 @@ module.exports = {
             let memberCompanies = await updateArr(
               _member.companies,
               [{ companyID: companyID, typeT: _employee.typeT }],
-              "userID"
+              "companyID"
             );
             await Members.findOneAndUpdate(
               { _id: _employee.userID },
