@@ -37,7 +37,7 @@ module.exports = `
     }
 
     type EmployeeType {
-        typeT: employeeType
+        typeT: employeeRole
         status: employeeStatus
         user: Members
     }
@@ -58,7 +58,7 @@ module.exports = `
     }
 
     input EmployeeTypeInput {
-        typeT: employeeType
+        typeT: employeeRole
         userID: String
         status: employeeStatus
     }
@@ -85,7 +85,7 @@ module.exports = `
         COMMUNITY
     }
 
-    enum employeeType {
+    enum employeeRole {
         ADMIN
         EMPLOYEE
     }
