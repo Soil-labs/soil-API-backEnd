@@ -26,8 +26,14 @@ const {
 const { ApolloError } = require("apollo-server-express");
 const { IsAuthenticated } = require("../../../utils/authorization");
 
-const {nodes_aiModule,totalScore_aiModule,sortArrayRelevantNodes_aiModule,arrayToObject,useGPTchatSimple} = require("../utils/aiModules")
-const {saveScoreToPositionCandidate} = require("../utils/aiExtraModules")
+const {
+  nodes_aiModule,
+  totalScore_aiModule,
+  sortArrayRelevantNodes_aiModule,
+  arrayToObject,
+  useGPTchatSimple,
+} = require("../utils/aiModules");
+const { saveScoreToPositionCandidate } = require("../utils/aiExtraModules");
 
 function mapRange(input, inputMin, inputMax, outputMin, outputMax) {
   return (
@@ -38,16 +44,18 @@ function mapRange(input, inputMin, inputMax, outputMin, outputMax) {
 
 module.exports = {
   findMember:
-    //combineResolvers(
+    // combineResolvers(
     //IsAuthenticated,
     async (parent, args, context, info) => {
-      const { _id, serverID, discordName,telegramChatID } = args.fields;
+      const { _id, serverID, discordName, telegramChatID } = args.fields;
       console.log("Query > findMember > args.fields = ", args.fields);
 
       let searchTerm = {};
 
       if (!_id && !discordName && !telegramChatID) {
-        throw new ApolloError("No _id or discord name or telegramChatID provided");
+        throw new ApolloError(
+          "No _id or discord name or telegramChatID provided"
+        );
       }
 
       let queryServerID = [];
@@ -87,7 +95,7 @@ module.exports = {
         );
       }
     },
-  //),
+  // ),
 
   findMembers: async (parent, args, context, info) => {
     const { _id, serverID } = args.fields;
@@ -119,7 +127,7 @@ module.exports = {
         }
       }
 
-      console.log("membersData = " , membersData[0].nodes)
+      console.log("membersData = ", membersData[0].nodes);
 
       return membersData;
     } catch (err) {
@@ -937,7 +945,8 @@ module.exports = {
     }
   },
   matchPrepareNode_AI4: async (parent, args, context, info) => {
-    const { nodeID, serverID, find, weightSkills,distancePenalty } = args.fields;
+    const { nodeID, serverID, find, weightSkills, distancePenalty } =
+      args.fields;
     // console.log(
     //   "Query > matchPrepareNode_AI4 > args.fields = ",
     //   args.fields
@@ -949,110 +958,108 @@ module.exports = {
 
     let queryServerID = [];
     if (serverID) {
-    serverID.forEach((id) => {
+      serverID.forEach((id) => {
         queryServerID.push({ serverID: id });
       });
     }
 
     // try {
-      let nodeData = await Node.findOne({ _id: nodeID }).select(
-        "-subNodes -relatedNodes -aboveNodes"
-      );
+    let nodeData = await Node.findOne({ _id: nodeID }).select(
+      "-subNodes -relatedNodes -aboveNodes"
+    );
 
-      // console.log("nodeData = " , nodeData)
+    // console.log("nodeData = " , nodeData)
 
-      if (!nodeData) throw new ApolloError("Node Don't exist");
+    if (!nodeData) throw new ApolloError("Node Don't exist");
 
-      let match_v2 = nodeData.match_v2;
-      // console.log("match_v2 = " , match_v2)
+    let match_v2 = nodeData.match_v2;
+    // console.log("match_v2 = " , match_v2)
 
-      matchRelativePosition_gl = {};
-      typeNeo = find;
-      if (typeNeo == "ProjectRole") typeNeo = "Role";
+    matchRelativePosition_gl = {};
+    typeNeo = find;
+    if (typeNeo == "ProjectRole") typeNeo = "Role";
 
-      result_matchRelat = await matchPrepareAnything_AI4_neo4j({
-        nodeID: nodeData._id,
-        find: typeNeo,
-        weightSkills: weightSkills,
-        distancePenalty: distancePenalty,
-      });
+    result_matchRelat = await matchPrepareAnything_AI4_neo4j({
+      nodeID: nodeData._id,
+      find: typeNeo,
+      weightSkills: weightSkills,
+      distancePenalty: distancePenalty,
+    });
 
-      // console.log("-----------SERVERID --------- ", server._id);
-      // console.log("result_matchRelat = ", result_matchRelat);
+    // console.log("-----------SERVERID --------- ", server._id);
+    // console.log("result_matchRelat = ", result_matchRelat);
 
-      // sadf;
+    // sadf;
 
-      // check if there is something new that we need to include
-      for (const [key, value] of Object.entries(result_matchRelat)) {
-        // console.log("key = " , key)
-        // console.log("value = " , value)
-        // asdf2
-        if (matchRelativePosition_gl[key] === undefined) {
-          matchRelativePosition_gl[key] = {
-            ...value,
-          };
-        }
+    // check if there is something new that we need to include
+    for (const [key, value] of Object.entries(result_matchRelat)) {
+      // console.log("key = " , key)
+      // console.log("value = " , value)
+      // asdf2
+      if (matchRelativePosition_gl[key] === undefined) {
+        matchRelativePosition_gl[key] = {
+          ...value,
+        };
       }
+    }
 
-      // prepare the array to save in the database
-      match_v2 = [];
-      for (const [key, value] of Object.entries(matchRelativePosition_gl)) {
-        // ---------------- prepare the conn_node_wh_obj to array ----------------
-        conn_node_wh_arr = [];
-        for (const [key_c, value_c] of Object.entries(value.conn_node_wh_obj)) {
-          conn_node_wh_arr.push({
-            nodeConnID: key_c,
-            wh_sum: value_c.wh_sum,
-            numPath: value_c.numPath,
-          });
-        }
-        // ---------------- prepare the conn_node_wh_obj to array ----------------
-
-        match_v2.push({
-          nodeResID: key,
-          wh_sum: value.WH,
-          numPath: value.N,
-          type: find,
-          conn_node_wh: conn_node_wh_arr,
+    // prepare the array to save in the database
+    match_v2 = [];
+    for (const [key, value] of Object.entries(matchRelativePosition_gl)) {
+      // ---------------- prepare the conn_node_wh_obj to array ----------------
+      conn_node_wh_arr = [];
+      for (const [key_c, value_c] of Object.entries(value.conn_node_wh_obj)) {
+        conn_node_wh_arr.push({
+          nodeConnID: key_c,
+          wh_sum: value_c.wh_sum,
+          numPath: value_c.numPath,
         });
       }
+      // ---------------- prepare the conn_node_wh_obj to array ----------------
 
-      //filter out the ones that have type = "Member"
-      let match_v2_old = nodeData.match_v2.filter((item) => item.type != find);
+      match_v2.push({
+        nodeResID: key,
+        wh_sum: value.WH,
+        numPath: value.N,
+        type: find,
+        conn_node_wh: conn_node_wh_arr,
+      });
+    }
 
-      // update with the new "Member"
-      match_v2 = [...match_v2_old, ...match_v2];
+    //filter out the ones that have type = "Member"
+    let match_v2_old = nodeData.match_v2.filter((item) => item.type != find);
 
-      match_v2_update = {};
-      // save what was updated
-      if (find == "Member") {
-        match_v2_update = {
-          member: false,
-          projectRole: nodeData.match_v2_update.projectRole,
-        };
-      } else if (find == "ProjectRole") {
-        match_v2_update = {
-          member: nodeData.match_v2_update.member,
-          projectRole: false,
-        };
-      }
+    // update with the new "Member"
+    match_v2 = [...match_v2_old, ...match_v2];
 
+    match_v2_update = {};
+    // save what was updated
+    if (find == "Member") {
+      match_v2_update = {
+        member: false,
+        projectRole: nodeData.match_v2_update.projectRole,
+      };
+    } else if (find == "ProjectRole") {
+      match_v2_update = {
+        member: nodeData.match_v2_update.member,
+        projectRole: false,
+      };
+    }
 
-      nodeDataNew = await Node.findOneAndUpdate(
-        {
-          _id: nodeID,
+    nodeDataNew = await Node.findOneAndUpdate(
+      {
+        _id: nodeID,
+      },
+      {
+        $set: {
+          match_v2_update: match_v2_update,
+          match_v2,
         },
-        {
-          $set: {
-            match_v2_update: match_v2_update,
-            match_v2,
-          },
-        },
-        { new: true }
-      );
+      },
+      { new: true }
+    );
 
-
-      return nodeDataNew;
+    return nodeDataNew;
     // } catch (err) {
     //   throw new ApolloError(
     //     err.message,
@@ -1437,28 +1444,34 @@ module.exports = {
     return val;
   },
   matchNodesToMembers_AI4: async (parent, args, context, info) => {
-    const { nodesID,positionID,membersIDallow, weightModules,budget,availability,experienceLevel } =
-      args.fields;
+    const {
+      nodesID,
+      positionID,
+      membersIDallow,
+      weightModules,
+      budget,
+      availability,
+      experienceLevel,
+    } = args.fields;
     let { page, limit } = args.fields;
-    console.log("Query > matchNodesToMembers_AI4 > args.fields = ", args.fields);
+    console.log(
+      "Query > matchNodesToMembers_AI4 > args.fields = ",
+      args.fields
+    );
     // df0
 
-
-    membersIDallowObj = {}
-    if (membersIDallow){
-      membersIDallow.forEach(m_id => {
-        membersIDallowObj[m_id] = true
-      })
+    membersIDallowObj = {};
+    if (membersIDallow) {
+      membersIDallow.forEach((m_id) => {
+        membersIDallowObj[m_id] = true;
+      });
     } else {
-      membersIDallowObj["all"] = true
+      membersIDallowObj["all"] = true;
     }
-
-    
 
     if (!nodesID) throw new ApolloError("nodesID is required");
 
     const numberNodes = nodesID.length;
-
 
     if (page != null && limit != null) {
     } else {
@@ -1467,47 +1480,50 @@ module.exports = {
     }
 
     try {
+      weightModulesObj = await arrayToObject(weightModules);
 
+      filter = {};
 
-      weightModulesObj = await arrayToObject(weightModules)
+      if (budget && budget?.minPerHour >= 0 && budget?.maxPerHour >= 0)
+        filter.budget = budget;
 
+      if (
+        availability &&
+        availability?.minHourPerWeek >= 0 &&
+        availability?.maxHourPerWeek >= 0
+      )
+        filter.availability = availability;
 
-
-      filter = {}
-
-      if (budget && budget?.minPerHour>=0 && budget?.maxPerHour>=0)
-         filter.budget = budget
-
-      if (availability && availability?.minHourPerWeek>=0 && availability?.maxHourPerWeek>=0) 
-          filter.availability = availability
-
-      if (experienceLevel && experienceLevel>0) filter.experienceLevel = experienceLevel
+      if (experienceLevel && experienceLevel > 0)
+        filter.experienceLevel = experienceLevel;
 
       // console.log("filter = " , filter)
       // sdf0
 
-      memberObj = {}
+      memberObj = {};
 
-
-
-      memberObj = await nodes_aiModule(nodesID,weightModulesObj,memberObj,filter,membersIDallowObj)
+      memberObj = await nodes_aiModule(
+        nodesID,
+        weightModulesObj,
+        memberObj,
+        filter,
+        membersIDallowObj
+      );
 
       // console.log("memberObj = " , memberObj)
       // sdf9
-      memberObj = await totalScore_aiModule(memberObj,weightModulesObj,numberNodes)
-      console.log("memberObj = " , memberObj)
+      memberObj = await totalScore_aiModule(
+        memberObj,
+        weightModulesObj,
+        numberNodes
+      );
+      console.log("memberObj = ", memberObj);
 
+      memberArray = await sortArrayRelevantNodes_aiModule(memberObj);
 
-      memberArray = await sortArrayRelevantNodes_aiModule(memberObj)
+      await saveScoreToPositionCandidate(memberArray, positionID);
 
-
-
-      await saveScoreToPositionCandidate(memberArray,positionID)
-
-
-
-
-    return memberArray
+      return memberArray;
       // return memberArr.slice(page * limit, (page + 1) * limit);
     } catch (err) {
       throw new ApolloError(
@@ -1545,8 +1561,6 @@ module.exports = {
         "_id node match_v2"
       );
 
-      
-
       if (!nodeData) throw new ApolloError("Node Don't exist");
 
       w1_numNodes = 0.2; // the weight of the number of paths
@@ -1575,8 +1589,6 @@ module.exports = {
 
       memberIDs = [];
 
-      
-
       original_min_m = 110; // will change on the loop
       original_max_m = -10; // will change on the loop
       for (let i = 0; i < nodeData.length; i++) {
@@ -1595,8 +1607,6 @@ module.exports = {
         ) {
           w_node = w2_typeProject;
         }
-
-        
 
         for (let j = 0; j < match_v2.length; j++) {
           // find all the connections for this particular node
@@ -1673,7 +1683,6 @@ module.exports = {
               //   wh_k_T.wh_sum = wh_k_arr[idx].wh_sum * w_node;
               //   wh_k_T.numPath = wh_k_arr[idx].numPath;
               // });
-
 
               if (wh_k_arr.length == 0) {
                 wh_k_arr = [
@@ -2811,7 +2820,10 @@ module.exports = {
   },
   memberPieChartNodeCategories: async (parent, args, context, info) => {
     const { memberID } = args.fields;
-    console.log("Query > memberPieChartNodeCategories > args.fields = ", args.fields);
+    console.log(
+      "Query > memberPieChartNodeCategories > args.fields = ",
+      args.fields
+    );
 
     if (!memberID) {
       throw new ApolloError(
@@ -2822,7 +2834,9 @@ module.exports = {
     }
 
     // find memberData by memberID
-    memberData = await Members.findOne({ _id: memberID }).select('_id discordName nodes');
+    memberData = await Members.findOne({ _id: memberID }).select(
+      "_id discordName nodes"
+    );
 
     if (!memberData) {
       throw new ApolloError(
@@ -2833,17 +2847,17 @@ module.exports = {
     }
 
     try {
-
       // console.log("memberData = " , memberData)
 
       nodeIDs = memberData.nodes.map((x) => x._id);
 
       // console.log("nodeIDs = " , nodeIDs)
 
-      nodeData = await Node.find({ _id: nodeIDs }).select('_id name categoryNodes groupNodes');
+      nodeData = await Node.find({ _id: nodeIDs }).select(
+        "_id name categoryNodes groupNodes"
+      );
 
       // console.log("nodeData = " , nodeData)
-
 
       let categoryObj = {};
       let categoryIDs = [];
@@ -2865,17 +2879,18 @@ module.exports = {
         if (!categoryObj[categoryNow]) {
           categoryObj[categoryNow] = {
             nodes: [nodeNow],
-            numNodes: 1
+            numNodes: 1,
           };
         } else {
           categoryObj[categoryNow].nodes.push(nodeNow);
-          categoryObj[categoryNow].numNodes = categoryObj[categoryNow].numNodes + 1;
+          categoryObj[categoryNow].numNodes =
+            categoryObj[categoryNow].numNodes + 1;
         }
 
         if (!groupObj[groupNow]) {
           groupObj[groupNow] = {
             nodes: [nodeNow],
-            numNodes: 1
+            numNodes: 1,
           };
         } else {
           groupObj[groupNow].nodes.push(nodeNow);
@@ -2883,21 +2898,21 @@ module.exports = {
         }
       }
 
-      console.log("allNodes = " , allNodes)
+      console.log("allNodes = ", allNodes);
       // s0
       // console.log("groupObj = " , groupObj)
 
+      categoryData = await Node.find({ _id: categoryIDs }).select("_id name");
 
-      categoryData = await Node.find({ _id: categoryIDs }).select('_id name');
-
-      groupData = await Node.find({ _id: groupIDs }).select('_id name');
-
+      groupData = await Node.find({ _id: groupIDs }).select("_id name");
 
       for (let i = 0; i < categoryData.length; i++) {
         let categoryNow = categoryData[i];
         categoryObj[categoryNow._id].name = categoryNow.name;
 
-        categoryObj[categoryNow._id].percentage = Math.round((categoryObj[categoryNow._id].numNodes / allNodes) * 100);
+        categoryObj[categoryNow._id].percentage = Math.round(
+          (categoryObj[categoryNow._id].numNodes / allNodes) * 100
+        );
       }
 
       // console.log("categoryObj = " , categoryObj)
@@ -2907,24 +2922,24 @@ module.exports = {
         let groupNow = groupData[i];
         groupObj[groupNow._id].name = groupNow.name;
 
-        groupObj[groupNow._id].percentage = Math.round((groupObj[groupNow._id].numNodes / allNodes) * 100);
+        groupObj[groupNow._id].percentage = Math.round(
+          (groupObj[groupNow._id].numNodes / allNodes) * 100
+        );
       }
 
-      console.log("categoryObj = " , categoryObj)
-      console.log("groupObj = " , groupObj)
+      console.log("categoryObj = ", categoryObj);
+      console.log("groupObj = ", groupObj);
       // s2
-
 
       // groupObj to array
       let groupObjArray = [];
       for (let key in groupObj) {
-
-        if (groupObj[key].percentage != undefined){
+        if (groupObj[key].percentage != undefined) {
           groupObjArray.push({
             categoryID: key,
             categoryName: groupObj[key].name,
             percentage: groupObj[key].percentage,
-            nodes: groupObj[key].nodes
+            nodes: groupObj[key].nodes,
           });
         }
       }
@@ -2947,17 +2962,16 @@ module.exports = {
       }
 
       for (let i = 0; i < groupObjArray.length; i++) {
-        groupObjArray[i].percentage = Math.round((groupObjArray[i].percentage / totalPercentage) * 100);
+        groupObjArray[i].percentage = Math.round(
+          (groupObjArray[i].percentage / totalPercentage) * 100
+        );
       }
 
       // console.log("groupObjArray = " , groupObjArray)
 
       // s4
-      
-
 
       return groupObjArray;
-
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -2968,34 +2982,38 @@ module.exports = {
   },
   memberRadioChartCharacterAttributes: async (parent, args, context, info) => {
     const { memberID } = args.fields;
-    console.log("Query > memberRadioChartCharacterAttributes > args.fields = ", args.fields);
+    console.log(
+      "Query > memberRadioChartCharacterAttributes > args.fields = ",
+      args.fields
+    );
 
     if (!memberID) {
-      throw new ApolloError(
-        "memberID is required",
-        { component: "memberQuery > memberRadioChartCharacterAttributes" }
-      );
+      throw new ApolloError("memberID is required", {
+        component: "memberQuery > memberRadioChartCharacterAttributes",
+      });
     }
 
     // find memberData by memberID
-    memberData = await Members.findOne({ _id: memberID }).select('_id discordName');
+    memberData = await Members.findOne({ _id: memberID }).select(
+      "_id discordName"
+    );
 
     if (!memberData) {
-      throw new ApolloError(
-        "member is not found",
-        { component: "memberQuery > memberRadioChartCharacterAttributes" }
-      );
+      throw new ApolloError("member is not found", {
+        component: "memberQuery > memberRadioChartCharacterAttributes",
+      });
     }
 
-    console.log("memberData = " , memberData)
+    console.log("memberData = ", memberData);
 
     try {
+      let convData = await Conversation.find({ userID: memberID }).select(
+        "_id userID conversation"
+      );
 
-      let convData = await Conversation.find({ userID: memberID }).select('_id userID conversation');
+      console.log("convData = ", convData);
 
-      console.log("convData = " , convData)
-
-      //only take last conversation 
+      //only take last conversation
       let convNow = convData[convData.length - 1];
 
       // translate convNow.conversation to string prompt inside object there is role and content
@@ -3003,13 +3021,14 @@ module.exports = {
       for (let i = 0; i < convNow.conversation.length; i++) {
         let convNowNow = convNow.conversation[i];
         if (convNowNow.role == "assistant")
-          promptConv = promptConv + "Recruiter: " + convNowNow.content + " \n\n";
+          promptConv =
+            promptConv + "Recruiter: " + convNowNow.content + " \n\n";
         else
-          promptConv = promptConv + "Candidate" + ": " + convNowNow.content + " \n\n";
+          promptConv =
+            promptConv + "Candidate" + ": " + convNowNow.content + " \n\n";
       }
 
-      console.log("promptConv = " , promptConv)
-
+      console.log("promptConv = ", promptConv);
 
       const attributes = [
         "Communication skills",
@@ -3018,7 +3037,7 @@ module.exports = {
         "Cultural fit",
         "Adaptability",
         "Leadership potential",
-        "Passion and enthusiasm"
+        "Passion and enthusiasm",
       ];
 
       // make attributes into a string prompt
@@ -3027,9 +3046,7 @@ module.exports = {
         promptAttribute = promptAttribute + "- " + attributes[i] + " \n\n";
       }
 
-      console.log("promptAttribute = " , promptAttribute)
-      
-      
+      console.log("promptAttribute = ", promptAttribute);
 
       // promptAttributeUser = `
       // You have as input a conversation between an Recruiter and a Candidate
@@ -3042,7 +3059,7 @@ module.exports = {
 
       // You need to give points from 0 to 10 in every Attribute based on the Conversation, and the reason that you give this points
 
-      // For example: 
+      // For example:
       //   Attribute 1: ${attributes[0]} - 5 Reason: ...
       //   Attribute 2: ${attributes[1]} - 3 Reason: ...
 
@@ -3064,54 +3081,48 @@ module.exports = {
         Attribute 2: ${attributes[1]} - 3 Reason: ...
 
       Answer, the reason for every attribute can only have 3-6 words:
-      `
+      `;
 
-      evaluateAttributes = await useGPTchatSimple(promptAttributeUser)
+      evaluateAttributes = await useGPTchatSimple(promptAttributeUser);
 
       // console.log("evaluateAttributes = " , evaluateAttributes)
       // df9
       // evaluateAttributes = ` Attribute 1: Communication skills - 7 Reason: The candidate was able to clearly express their experience and skills related to the job requirements. However, there were some moments where they needed clarification and repetition from the recruiter.
 
       // Attribute 2: Relevant experience - 9 Reason: The candidate has over 11 years of experience in Computer Vision, Machine Learning, and Robotics, as well as 5 years of experience in front-end engineering. They also have experience in leadership roles in both areas.
-      
+
       // Attribute 3: Problem-solving skills - 8 Reason: The candidate shared a challenging project they worked on and how they overcame it, demonstrating their problem-solving skills. However, they did not provide many specific examples of problem-solving skills related to the job requirements.
-      
+
       // Attribute 4: Cultural fit - 7 Reason: The candidate expressed interest in the position's goals and mission, but did not provide many details about their personal values or how they align with the position's culture.
-      
+
       // Attribute 5: Adaptability - 6 Reason: The candidate did not provide many examples of how they have adapted to new situations or challenges. However, they did express a growth mindset and willingness to improve.
-      
+
       // Attribute 6: Leadership potential - 8 Reason: The candidate has experience in leadership roles and expressed interest in becoming a team lead or CTO in the future.
-      
+
       // Attribute 7: Passion and enthusiasm - 7 Reason: The candidate expressed enthusiasm for the position's goals and mission, but did not show a lot of excitement or passion during the conversation.
       // `
 
-      evaluateAttributes += "Attribute 8"
+      evaluateAttributes += "Attribute 8";
 
+      console.log("evaluateAttributes = ", evaluateAttributes);
 
-      console.log("evaluateAttributes = " , evaluateAttributes)
-
-      const regex = /Attribute\s+(\d+):\s+([\w\s-]+)\s+-\s+(\d+)\s+Reason:\s+(.*?)(?=Attribute\s+\d+|\z)/gis;
+      const regex =
+        /Attribute\s+(\d+):\s+([\w\s-]+)\s+-\s+(\d+)\s+Reason:\s+(.*?)(?=Attribute\s+\d+|\z)/gis;
       const attributesT = [];
       let result;
       while ((result = regex.exec(evaluateAttributes)) != null) {
-
         const attribute = {
           attributeNumber: result[1],
           attributeName: result[2].trim(),
-          score: parseInt(result[3])*10,
+          score: parseInt(result[3]) * 10,
           reason: result[4].trim(),
         };
         attributesT.push(attribute);
       }
-      
 
-      console.log("attributesT = " , attributesT)
-
-
+      console.log("attributesT = ", attributesT);
 
       return attributesT;
-
-
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -3121,43 +3132,42 @@ module.exports = {
     }
   },
   candidateNotesEdenAI: async (parent, args, context, info) => {
-    const { memberID,positionID } = args.fields;
+    const { memberID, positionID } = args.fields;
     console.log("Query > candidateNotesEdenAI > args.fields = ", args.fields);
 
     if (!memberID) {
-      throw new ApolloError(
-        "memberID is required",
-        { component: "memberQuery > candidateNotesEdenAI" }
-      );
+      throw new ApolloError("memberID is required", {
+        component: "memberQuery > candidateNotesEdenAI",
+      });
     }
 
     if (!positionID) {
-      throw new ApolloError(
-        "positionID is required",
-        { component: "memberQuery > candidateNotesEdenAI" }
-      );
+      throw new ApolloError("positionID is required", {
+        component: "memberQuery > candidateNotesEdenAI",
+      });
     }
 
     // find memberData by memberID
-    memberData = await Members.findOne({ _id: memberID }).select('_id discordName');
-
+    memberData = await Members.findOne({ _id: memberID }).select(
+      "_id discordName"
+    );
 
     if (!memberData) {
-      throw new ApolloError(
-        "member is not found",
-        { component: "memberQuery > candidateNotesEdenAI" }
-      );
+      throw new ApolloError("member is not found", {
+        component: "memberQuery > candidateNotesEdenAI",
+      });
     }
 
-    console.log("memberData = " , memberData)
+    console.log("memberData = ", memberData);
 
     try {
+      let convData = await Conversation.find({ userID: memberID }).select(
+        "_id userID conversation"
+      );
 
-      let convData = await Conversation.find({ userID: memberID }).select('_id userID conversation');
+      console.log("convData = ", convData);
 
-      console.log("convData = " , convData)
-
-      //only take last conversation 
+      //only take last conversation
       let convNow = convData[convData.length - 1];
 
       // translate convNow.conversation to string prompt inside object there is role and content
@@ -3165,31 +3175,36 @@ module.exports = {
       for (let i = 0; i < convNow.conversation.length; i++) {
         let convNowNow = convNow.conversation[i];
         if (convNowNow.role == "assistant")
-          promptConv = promptConv + "Recruiter: " + convNowNow.content + " \n\n";
+          promptConv =
+            promptConv + "Recruiter: " + convNowNow.content + " \n\n";
         else
-          promptConv = promptConv + "Candidate" + ": " + convNowNow.content + " \n\n";
+          promptConv =
+            promptConv + "Candidate" + ": " + convNowNow.content + " \n\n";
       }
 
-      console.log("promptConv = " , promptConv)
+      console.log("promptConv = ", promptConv);
 
       // sdf0
-
 
       const noteCategories = [
         "Key information about candidate",
         "Personality Traits",
-        "General Interests"
+        "General Interests",
       ];
 
       // make noteCategories into a string prompt
       let promptNoteCategory = "";
       for (let i = 0; i < noteCategories.length; i++) {
-        promptNoteCategory = promptNoteCategory + "Category " + parseInt(i+1) +  ": " + noteCategories[i] + " \n\n";
+        promptNoteCategory =
+          promptNoteCategory +
+          "Category " +
+          parseInt(i + 1) +
+          ": " +
+          noteCategories[i] +
+          " \n\n";
       }
 
-      console.log("promptNoteCategory = " , promptNoteCategory)
-      
-      
+      console.log("promptNoteCategory = ", promptNoteCategory);
 
       promptNoteCategoryUser = `
       You have as input a conversation between an Recruiter and a Candidate
@@ -3208,16 +3223,16 @@ module.exports = {
           - content 10 words
 
       categories and content with 10 words for each content:
-      `
+      `;
 
-      printC(promptNoteCategoryUser, "0", "promptNoteCategoryUser", "b")
+      printC(promptNoteCategoryUser, "0", "promptNoteCategoryUser", "b");
 
-      evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser,0)
-      printC(evaluateNoteCategories, "1", "evaluateNoteCategories", "p")
+      evaluateNoteCategories = await useGPTchatSimple(
+        promptNoteCategoryUser,
+        0
+      );
+      printC(evaluateNoteCategories, "1", "evaluateNoteCategories", "p");
       // sdf9
-
-      
-
 
       // evaluateNoteCategories = ` <Category 1: Personal Details>
       // - 11+ years of experience in Computer Vision, Machine Learning, and Robotics
@@ -3225,20 +3240,17 @@ module.exports = {
       // - Has experience in team leadership in the field of machine learning
       // - Strengths include having a growth mindset and being quick to innovate
       // - Weaknesses include needing to work on coding skills, specifically cleaning up the database and creating a better environment for other coders to work with
-      
+
       // <Category 2: Work Culture>
       // - Has experience in team leadership in the field of machine learning
       // - Has a growth mindset and is quick to innovate
       // - Believes in giving back to the position and helping innovate and change lives
       // - Experience with a challenging project focused on complete innovation
-      
+
       // <Category 3: Interests>
       // - Skilled in React, GraphQL, Next.js, fine-tuning, PyTorch, TensorFlow, and paper reading
       // - Interested in becoming a team lead and eventually a successful CTO`
       // console.log("evaluateNoteCategories = " , evaluateNoteCategories)
-
-
-
 
       const regex = /<Category\s+\d+:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
       const categoriesT = [];
@@ -3247,41 +3259,35 @@ module.exports = {
         const category = {
           categoryName: result[1].trim(),
           score: -1,
-          reason: result[2].trim().split('\n').map(detail => detail.trim()),
+          reason: result[2]
+            .trim()
+            .split("\n")
+            .map((detail) => detail.trim()),
         };
         categoriesT.push(category);
       }
 
-
-
       // ------------ Save results to position.candidates Mongo ----------
 
-      positionData = await Position.findOne({ _id: positionID }).select('_id name candidates');
+      positionData = await Position.findOne({ _id: positionID }).select(
+        "_id name candidates"
+      );
 
+      const indexC = positionData.candidates.findIndex(
+        (candidate) => candidate.userID.toString() == memberID.toString()
+      );
 
-      const indexC = positionData.candidates.findIndex(candidate => candidate.userID.toString() == memberID.toString());
+      console.log("indexC = ", indexC);
 
-
-      console.log("indexC = " , indexC)
-      
       if (indexC != -1) {
-
         positionData.candidates[indexC].notesInterview = categoriesT;
         await positionData.save();
-
       }
       // ------------ Save results to position.candidates Mongo ----------
-      
 
-      
-
-      console.log("categoriesT = " , categoriesT)
-
-
+      console.log("categoriesT = ", categoriesT);
 
       return categoriesT;
-
-
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -3291,47 +3297,50 @@ module.exports = {
     }
   },
   candidateNotesComparePositionEdenAI: async (parent, args, context, info) => {
-    const { memberID,positionID } = args.fields;
-    console.log("Query > candidateNotesComparePositionEdenAI > args.fields = ", args.fields);
+    const { memberID, positionID } = args.fields;
+    console.log(
+      "Query > candidateNotesComparePositionEdenAI > args.fields = ",
+      args.fields
+    );
 
     if (!memberID) {
-      throw new ApolloError(
-        "memberID is required",
-        { component: "memberQuery > candidateNotesComparePositionEdenAI" }
-      );
+      throw new ApolloError("memberID is required", {
+        component: "memberQuery > candidateNotesComparePositionEdenAI",
+      });
     }
 
     if (!positionID) {
-      throw new ApolloError(
-        "positionID is required",
-        { component: "memberQuery > candidateNotesComparePositionEdenAI" }
-      );
+      throw new ApolloError("positionID is required", {
+        component: "memberQuery > candidateNotesComparePositionEdenAI",
+      });
     }
 
-    positionData = await Position.findOne({ _id: positionID }).select('_id name candidates');
-
+    positionData = await Position.findOne({ _id: positionID }).select(
+      "_id name candidates"
+    );
 
     // find memberData by memberID
-    memberData = await Members.findOne({ _id: memberID }).select('_id discordName');
-
+    memberData = await Members.findOne({ _id: memberID }).select(
+      "_id discordName"
+    );
 
     if (!memberData) {
-      throw new ApolloError(
-        "member is not found",
-        { component: "memberQuery > candidateNotesComparePositionEdenAI" }
-      );
+      throw new ApolloError("member is not found", {
+        component: "memberQuery > candidateNotesComparePositionEdenAI",
+      });
     }
 
-    console.log("memberData = " , memberData)
+    console.log("memberData = ", memberData);
 
     try {
+      let convData = await Conversation.find({ userID: memberID }).select(
+        "_id userID conversation"
+      );
 
-      let convData = await Conversation.find({ userID: memberID }).select('_id userID conversation');
+      console.log("convData = ", convData);
 
-      console.log("convData = " , convData)
-
-      //only take last conversation 
-      let convNow = convData[convData.length - 1]; 
+      //only take last conversation
+      let convNow = convData[convData.length - 1];
       // let convNow = convData[convData.length - 3];
 
       // translate convNow.conversation to string prompt inside object there is role and content
@@ -3339,15 +3348,16 @@ module.exports = {
       for (let i = 0; i < convNow.conversation.length; i++) {
         let convNowNow = convNow.conversation[i];
         if (convNowNow.role == "assistant")
-          promptConv = promptConv + "Recruiter: " + convNowNow.content + " \n\n";
+          promptConv =
+            promptConv + "Recruiter: " + convNowNow.content + " \n\n";
         else
-          promptConv = promptConv + "Candidate" + ": " + convNowNow.content + " \n\n";
+          promptConv =
+            promptConv + "Candidate" + ": " + convNowNow.content + " \n\n";
       }
 
-      console.log("promptConv = " , promptConv)
+      console.log("promptConv = ", promptConv);
 
       // sdf0
-
 
       // const noteCategories = [
       //   "Personal Details",
@@ -3356,48 +3366,47 @@ module.exports = {
       // ];
 
       const noteCategories = [
-        "What skills the candidate have that is interested to the position?", 
-        "What industries the candidate have that is interested to the position? ", 
-        "What special skills the candidate has that is a bonus to this position", 
-        "Does the candidate has potential leadership position", 
-        "What is the average salary that the candidate is insterested in?", 
+        "What skills the candidate have that is interested to the position?",
+        "What industries the candidate have that is interested to the position? ",
+        "What special skills the candidate has that is a bonus to this position",
+        "Does the candidate has potential leadership position",
+        "What is the average salary that the candidate is insterested in?",
         "What education the candidate has that is interested to the position?",
-      ]
-        
+      ];
 
       // make noteCategories into a string prompt
       let promptNoteCategory = "";
       for (let i = 0; i < noteCategories.length; i++) {
-        promptNoteCategory = promptNoteCategory + "- " + noteCategories[i] + " \n\n";
+        promptNoteCategory =
+          promptNoteCategory + "- " + noteCategories[i] + " \n\n";
       }
 
-      console.log("promptNoteCategory = " , promptNoteCategory)
-
+      console.log("promptNoteCategory = ", promptNoteCategory);
 
       // --------------- Get Position Comparison content -----------
-      let candidateIdx_ = positionData?.candidates?.findIndex((candidate) => candidate.userID.toString() == memberID.toString());
+      let candidateIdx_ = positionData?.candidates?.findIndex(
+        (candidate) => candidate.userID.toString() == memberID.toString()
+      );
 
-      console.log("candidateIdx_ = " , candidateIdx_)
+      console.log("candidateIdx_ = ", candidateIdx_);
 
-      let compareCandidatePositionT = ""
-      
-      if (candidateIdx_!=-1 && candidateIdx_!=undefined) {
-        compareCandidatePositionT = positionData.candidates[candidateIdx_].compareCandidatePosition.CVToPosition.content
+      let compareCandidatePositionT = "";
+
+      if (candidateIdx_ != -1 && candidateIdx_ != undefined) {
+        compareCandidatePositionT =
+          positionData.candidates[candidateIdx_].compareCandidatePosition
+            .CVToPosition.content;
       }
-      
-      console.log("compareCandidatePositionT = " , compareCandidatePositionT)
+
+      console.log("compareCandidatePositionT = ", compareCandidatePositionT);
       // df0
       // --------------- Get Position Comparison content -----------
-      
-      
 
       // promptNoteCategoryUser = `
       // You have as input a conversation between an Recruiter and a Candidate
       // Conversation (delimiters <>): <${promptConv}>
 
-
       // Report of Company for the Candidate for this Position (delimiters <>): <${promptConv}>
-
 
       // The Recruiter Task is to create some Notes for the Candidate for specific Categories
       // Categories (delimiters <>): <${promptNoteCategory}>
@@ -3405,7 +3414,7 @@ module.exports = {
       // - You need make really small bullet points of information about the Candidate for every Category
       // - Based on the conversation you can make from 0 to 4 bullet points for every Category
 
-      // For example: 
+      // For example:
       //   <Category 1: title>
       //     - content
       //     - content
@@ -3437,51 +3446,42 @@ module.exports = {
           - content
 
       Answer:
-      `
+      `;
 
-      printC(promptConv, "0", "promptConv", "g")
-      printC(compareCandidatePositionT, "0", "compareCandidatePositionT", "g")
+      printC(promptConv, "0", "promptConv", "g");
+      printC(compareCandidatePositionT, "0", "compareCandidatePositionT", "g");
 
-
-      evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser)
+      evaluateNoteCategories = await useGPTchatSimple(promptNoteCategoryUser);
       printC(evaluateNoteCategories, "1", "evaluateNoteCategories", "b");
-      
-      
 
+      //       evaluateNoteCategories = ` <Category 1: 6 - Responsibilities of the Candidate>
+      //       - Candidate does not have experience with front-end development, but has experience in solving user problems through user research sessions and implementing changes based on feedback
+      //       - Candidate's background in product management, product design, testing, and prototyping could contribute to understanding user needs and solving problems
+      //       - Candidate's experience in managing teams and establishing relationships with stakeholders could be applied to collaborating with users and understanding their needs
 
+      // <Category 2: 3 - Skills of the Candidate>
+      //       - Candidate does not have any knowledge of the specific front-end development technologies listed in the job role
+      //       - Candidate has experience in Scrum and Agile frameworks, leadership, communication, and continuous improvement, which could be valuable in a development role
 
+      // <Category 3: 8 - General info of Company>
+      //       - Candidate has worked in tech for 5 years, which aligns with the tech industry background required for the position
+      //       - Candidate's background in IT and international relations could be relevant to Soil's marketplace for companies and talent
 
-//       evaluateNoteCategories = ` <Category 1: 6 - Responsibilities of the Candidate>
-//       - Candidate does not have experience with front-end development, but has experience in solving user problems through user research sessions and implementing changes based on feedback
-//       - Candidate's background in product management, product design, testing, and prototyping could contribute to understanding user needs and solving problems
-//       - Candidate's experience in managing teams and establishing relationships with stakeholders could be applied to collaborating with users and understanding their needs
-      
-// <Category 2: 3 - Skills of the Candidate>
-//       - Candidate does not have any knowledge of the specific front-end development technologies listed in the job role
-//       - Candidate has experience in Scrum and Agile frameworks, leadership, communication, and continuous improvement, which could be valuable in a development role
-      
-// <Category 3: 8 - General info of Company>
-//       - Candidate has worked in tech for 5 years, which aligns with the tech industry background required for the position
-//       - Candidate's background in IT and international relations could be relevant to Soil's marketplace for companies and talent
-      
-// <Category 4: 7 - Values of Company>
-//       - Candidate's experience in volunteering and the Future Leaders Exchange Program aligns with Soil's values of innovation and user discovery
-//       - Candidate's experience in managing teams and collaborating with stakeholders could fit well with Soil's fun and collaborative culture.`
-//       console.log("evaluateNoteCategories = " , evaluateNoteCategories)
+      // <Category 4: 7 - Values of Company>
+      //       - Candidate's experience in volunteering and the Future Leaders Exchange Program aligns with Soil's values of innovation and user discovery
+      //       - Candidate's experience in managing teams and collaborating with stakeholders could fit well with Soil's fun and collaborative culture.`
+      //       console.log("evaluateNoteCategories = " , evaluateNoteCategories)
 
-
-
-      let scoreAll = 0
-      let nAll = 0
-
+      let scoreAll = 0;
+      let nAll = 0;
 
       const regex = /<Category\s+\d+:\s*([^>]+)>([\s\S]*?)(?=<|$)/gs;
       const categoriesT = [];
       let result;
       while ((result = regex.exec(evaluateNoteCategories)) !== null) {
-        let reason_score = result[1].trim()
+        let reason_score = result[1].trim();
 
-        printC(reason_score, "0", "reason_score", "y")
+        printC(reason_score, "0", "reason_score", "y");
         const match = reason_score.match(/(\d+)\s-\s(.*)/);
 
         const score = match[1];
@@ -3489,42 +3489,37 @@ module.exports = {
 
         const category = {
           categoryName: title,
-          score: parseInt(score)*10,
-          reason: result[2].trim().split('\n').map(detail => detail.trim()),
+          score: parseInt(score) * 10,
+          reason: result[2]
+            .trim()
+            .split("\n")
+            .map((detail) => detail.trim()),
         };
-        scoreAll += parseInt(score)*10
-        nAll +=1
+        scoreAll += parseInt(score) * 10;
+        nAll += 1;
 
         categoriesT.push(category);
       }
 
-      scoreAll = parseInt(scoreAll/nAll)
+      scoreAll = parseInt(scoreAll / nAll);
 
       // ------------ Save results to position.candidates Mongo ----------
-      const indexC = positionData.candidates.findIndex(candidate => candidate.userID.toString() == memberID.toString());
+      const indexC = positionData.candidates.findIndex(
+        (candidate) => candidate.userID.toString() == memberID.toString()
+      );
 
+      console.log("indexC = ", indexC);
 
-      console.log("indexC = " , indexC)
-      
       if (indexC != -1) {
-
         positionData.candidates[indexC].notesInterview = categoriesT;
         positionData.candidates[indexC].averageScoreNotesInterview = scoreAll;
         await positionData.save();
-
       }
       // ------------ Save results to position.candidates Mongo ----------
-      
 
-      
-
-      console.log("categoriesT = " , categoriesT)
-
-
+      console.log("categoriesT = ", categoriesT);
 
       return categoriesT;
-
-
     } catch (err) {
       throw new ApolloError(
         err.message,

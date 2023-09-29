@@ -308,6 +308,10 @@ module.exports = `
         queryResponse: QueryResponse
     }
 
+    input findPositionsOfCommunityInput {
+        communityID: String,
+    }
+
     input findKeyAttributeAndPotentialPositionInput {
         positionID: ID
     }

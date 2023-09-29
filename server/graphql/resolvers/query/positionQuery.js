@@ -1,14 +1,15 @@
-const { Conversation } = require("../../../models/conversationModel");
 const { Position } = require("../../../models/positionModel");
+const { Company } = require("../../../models/companyModel");
 
 const { ApolloError } = require("apollo-server-express");
-
+var ObjectId = require("mongoose").Types.ObjectId;
 module.exports = {
   findPosition: async (parent, args, context, info) => {
-    const { _id,telegramChatID } = args.fields;
+    const { _id, telegramChatID } = args.fields;
     console.log("Query > findPosition > args.fields = ", args.fields);
 
-    if (!_id && !telegramChatID) throw new ApolloError("ID or telegramChatID is required");
+    if (!_id && !telegramChatID)
+      throw new ApolloError("ID or telegramChatID is required");
 
     try {
       // const collection = Position.collection;
@@ -22,11 +23,13 @@ module.exports = {
       //   }
       // });
 
-      let positionData 
-      if (_id) { 
+      let positionData;
+      if (_id) {
         positionData = await Position.findOne({ _id: _id });
       } else if (telegramChatID) {
-        positionData = await Position.findOne({ "conduct.telegramChatID": telegramChatID });
+        positionData = await Position.findOne({
+          "conduct.telegramChatID": telegramChatID,
+        });
       }
 
       if (!positionData) throw new ApolloError("Position not found");
@@ -75,31 +78,70 @@ module.exports = {
   },
   findUserTalentListPosition: async (parent, args, context, info) => {
     const { _id } = args.fields;
-    console.log("Query > findUserTalentListPosition > args.fields = ", args.fields);
-
+    console.log(
+      "Query > findUserTalentListPosition > args.fields = ",
+      args.fields
+    );
 
     try {
-      let positionData = await Position.findOne({"talentList._id": _id}).select('_id name talentList');
+      let positionData = await Position.findOne({
+        "talentList._id": _id,
+      }).select("_id name talentList");
 
-     
       // find the talentList _id
-      talentListData = positionData.talentList.find(talentList => talentList._id.toString() == _id.toString());
+      talentListData = positionData.talentList.find(
+        (talentList) => talentList._id.toString() == _id.toString()
+      );
       // positionData.
 
       let talentListData_ = {
         ...talentListData._doc,
         positionID: positionData._id,
-      }
+      };
 
       // console.log("talentListData_ = " , talentListData_)
 
-
-      return talentListData_
+      return talentListData_;
     } catch (err) {
       throw new ApolloError(
         err.message,
         err.extensions?.code || "findUserTalentListPosition",
         { component: "positionQuery > findUserTalentListPosition" }
+      );
+    }
+  },
+  findPositionsOfCommunity: async (parent, args, context, info) => {
+    const { communityID } = args.fields;
+    console.log(
+      "Query > findPositionsOfCommunity > args.fields = ",
+      args.fields
+    );
+
+    if (!communityID) throw new ApolloError("communityID is required");
+
+    try {
+      let companyData = await Company.find({
+        communitiesSubscribed: { $elemMatch: { $eq: communityID } },
+      });
+
+      if (!companyData) throw new ApolloError("Company not found");
+
+      const positionsIDs = companyData
+        .map((_comp) => _comp.positions)
+        .flat(1)
+        .map((_pos) => _pos.positionID);
+
+      let positionsData = await Position.find({
+        _id: { $in: positionsIDs },
+        status: { $nin: ["DELETED", "ARCHIVED"] },
+      });
+
+      return positionsData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findPositionsOfCommunity",
+        { component: "positionQuery > findPositionsOfCommunity" }
       );
     }
   },

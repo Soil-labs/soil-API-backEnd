@@ -15,6 +15,7 @@ module.exports = `
         candidatesNum: Int
         skillsNum: Int
         stripe: StripeType
+        communitiesSubscribed: [Company]
     }
 
     type StripeType {
@@ -37,7 +38,8 @@ module.exports = `
     }
 
     type EmployeeType {
-        typeT: String
+        typeT: employeeRole
+        status: employeeStatus
         user: Members
     }
 
@@ -57,8 +59,9 @@ module.exports = `
     }
 
     input EmployeeTypeInput {
-        typeT: String
+        typeT: employeeRole
         userID: String
+        status: employeeStatus
     }
 
     input findCompanyInput {
@@ -77,10 +80,25 @@ module.exports = `
         companyID: ID
         employees: [EmployeeTypeInput]
     }  
+    
+    input subscribeToCommunityInput {
+        companyID: ID
+        communityID: ID
+    }  
 
-     enum typeCompany {
+    enum typeCompany {
         COMPANY
         COMMUNITY
+    }
+
+    enum employeeRole {
+        ADMIN
+        EMPLOYEE
+    }
+    enum employeeStatus {
+        ACTIVE
+        REJECTED
+        PENDING
     }
 
 `

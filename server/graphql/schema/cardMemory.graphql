@@ -1,0 +1,124 @@
+module.exports = `
+ 
+    type CardMemory {
+        _id: ID
+        content: String
+        priority: Int
+        tradeOffBoost: Int
+        type: typeCardMemoryEnum
+        authorCard: authorCardMemory
+        score: scoreCardMemory
+        connectedCards: [connectedCards]
+        keyPriority: Boolean
+        futurePotential: Boolean
+    }
+
+    type connectedCards {
+        card: CardMemory
+        score: Int
+        reason: String
+    }
+
+    type scoreCardMemory {
+        overall: Int
+        reason: String
+        agent: [agentScoreCard]
+    }
+
+    type agentScoreCard {
+        category: categoryAgentScoreCardEnum
+        score: Int
+        reason: String
+    }
+    
+
+    type authorCardMemory {
+        companyID: ID
+        positionID: ID
+        userID: ID
+        category: categoryCardMemoryEnum
+    }
+
+    input addCardMemoryInput {
+        _id: ID
+        content: String
+        priority: Int
+        tradeOffBoost: Int
+        type: typeCardMemoryEnum
+        connectedCards: [connectedCardsInput]
+        authorCard: authorCardMemoryInput
+        score: scoreCardMemoryInput
+    }
+
+    input authorCardMemoryInput {
+        companyID: ID
+        positionID: ID
+        userID: ID
+        category: categoryCardMemoryEnum
+    }
+
+    input scoreCardMemoryInput {
+        overall: Int
+        reason: String
+        agent: [agentScoreCardInput]
+    }
+
+    input agentScoreCardInput {
+        category: categoryAgentScoreCardEnum
+        score: Int
+        reason: String
+    }
+
+    input connectedCardsInput {
+        cardID: ID
+        score: Int
+        reason: String
+    }
+
+    input deleteCardMemoryInput {
+        _id: [ID]
+        companyID: ID
+        userID: ID
+        positionID: ID
+    }
+
+    input createCardsForPositionInput {
+        positionID: ID
+    }
+
+    input findCardMemoriesInput {
+        _id: [ID]
+        companyID: ID
+        userID: ID
+        positionID: ID
+    }
+
+    enum typeCardMemoryEnum {
+        TECHNICAL_SKILLS
+        SOFT_SKILLS
+        EXPERIENCE
+        INDUSTRY_KNOWLEDGE
+        INTERESTS
+        CORE_VALUES
+        GOALS
+        OTHER
+    }
+
+    enum categoryCardMemoryEnum {
+        COMPANY
+        POSITION
+        CANDIDATE
+    }
+
+    enum categoryAgentScoreCardEnum {
+        CREDIBILITY
+        PRECISION
+        CONSISTENCY
+        ALIGNMENT
+
+    }
+
+    
+
+
+`

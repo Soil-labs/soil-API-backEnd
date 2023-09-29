@@ -68,24 +68,27 @@ module.exports = `
             findPosition(fields:findPositionInput): Position
             findPositions(fields:findPositionsInput): [Position]
             findUserTalentListPosition(fields:findUserTalentListPositionInput): talentListType
+            findPositionsOfCommunity(fields:findPositionsOfCommunityInput): [Position]
 
            #  ---------- COMPANY QUERY -------
             findCompany(fields:findCompanyInput): Company
             findCompanies(fields:findCompaniesInput): [Company]
             findCompanyFromSlug(fields:findCompanyFromSlugInput): Company
 
-
            #  ---------- QUERY RESPONSE QUERY -------
             findQueryResponses(fields:findQueryResponsesInput): [QueryResponse]
 
 
            #  ---------- MEMORY PINECONE QUERY -------
-
             findMemories(fields:findMemoriesInput): [MemoryPinecone]
 
 
+            #  ---------- CARD MEMORY QUERY -------
+            findCardMemories(fields:findCardMemoriesInput): [CardMemory]
+
+
            #  ---------- QUESTIONS EDENAI QUERY -------
-            findQuestionEdenAI(fields:findQuestionEdenAIInput): QuestionsEdenAI
+            findQuestionEdenAI(fields:findQuestionEdenAIInput): CardMemory
 
 
           #  ---------- QUERY TEMPLATE QUERY -------

@@ -10,6 +10,7 @@ const { Epic } = require("../../../models/epicModel");
 const { Role } = require("../../../models/roleModel");
 const { ApolloError } = require("apollo-server-express");
 const { RoleTemplate } = require("../../../models/roleTemplateModal");
+const { Company } = require("../../../models/companyModel");
 
 module.exports = {
   skillType_member: {
@@ -35,7 +36,6 @@ module.exports = {
   endorseSummaryType: {
     endorsers: async (parent, args, context, info) => {
       try {
-
         // console.log("change =  I hate everything " ,parent.endorsers)
         const endorsersID = parent.endorsers;
 
@@ -48,11 +48,39 @@ module.exports = {
     },
   },
   Members: {
+    companies: async (parent, args, context, info) => {
+      // console.log("parent = ", parent);
+      try {
+        const companiesData = [];
+        for (const _company of parent.companies) {
+          const _companyData = await Company.findOne({
+            _id: _company.companyID,
+          });
+          companiesData.push({
+            typeT: _company.typeT,
+            company: _companyData,
+          });
+        }
+        if (companiesData) {
+          return companiesData;
+        }
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "companyResolver > companies",
+          }
+        );
+      }
+    },
     endorsementsReceive: async (parent, args, context, info) => {
       try {
         const endorsementsReceiveID = parent.endorsementsReceive;
 
-        const endorsementData = await Endorsement.find({_id: endorsementsReceiveID,});
+        const endorsementData = await Endorsement.find({
+          _id: endorsementsReceiveID,
+        });
 
         return endorsementData;
       } catch (err) {
@@ -70,7 +98,9 @@ module.exports = {
       try {
         const endorsementsSendID = parent.endorsementsSend;
 
-        const endorsementData = await Endorsement.find({_id: endorsementsSendID,});
+        const endorsementData = await Endorsement.find({
+          _id: endorsementsSendID,
+        });
 
         return endorsementData;
       } catch (err) {
@@ -104,7 +134,7 @@ module.exports = {
       try {
         const reviewsReceiveID = parent.reviewsReceive;
 
-        const endorsementData = await Review.find({_id: reviewsReceiveID,});
+        const endorsementData = await Review.find({ _id: reviewsReceiveID });
 
         return endorsementData;
       } catch (err) {
@@ -122,7 +152,7 @@ module.exports = {
       try {
         const reviewsSendID = parent.reviewsSend;
 
-        const endorsementData = await Review.find({_id: reviewsSendID,});
+        const endorsementData = await Review.find({ _id: reviewsSendID });
 
         return endorsementData;
       } catch (err) {
@@ -140,17 +170,12 @@ module.exports = {
       try {
         const budget = parent.budget;
 
-
         return budget;
       } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "budget",
-          {
-            component: "userResolver > budget",
-            user: context.req.user?._id,
-          }
-        );
+        throw new ApolloError(err.message, err.extensions?.code || "budget", {
+          component: "userResolver > budget",
+          user: context.req.user?._id,
+        });
       }
     },
     skills: async (parent, args, context, info) => {
@@ -489,17 +514,12 @@ module.exports = {
 
         return trust;
       } catch (err) {
-        throw new ApolloError(
-          err.message,
-          err.extensions?.code || "trust",
-          {
-            component: "userResolver > trust",
-            user: context.req.user?._id,
-          }
-        );
+        throw new ApolloError(err.message, err.extensions?.code || "trust", {
+          component: "userResolver > trust",
+          user: context.req.user?._id,
+        });
       }
     },
-
   },
   matchMembersToProjectRoleOutput: {
     member: async (parent, args, context, info) => {
@@ -606,12 +626,12 @@ module.exports = {
     },
     // mostRelevantMemberNodes: async (parent, args, context, info) => {
     //   console.log("parent 22322= ", parent.mostRelevantMemberNodes);
-  
+
     //   try {
     //     const mostRelevantMemberNodes = parent.mostRelevantMemberNodes;
-  
+
     //     // nodeData = await Node.findOne({ _id: nodeID });
-  
+
     //     return mostRelevantMemberNodes;
     //   } catch (err) {
     //     throw new ApolloError(
@@ -635,7 +655,7 @@ module.exports = {
         // nodeData = await Node.findOne({ _id: nodeID });
         nodeData = await Node.findOne({ _id: nodeID }).select("_id name node");
 
-        return nodeData._doc
+        return nodeData._doc;
       } catch (err) {
         throw new ApolloError(
           err.message,
@@ -651,7 +671,7 @@ module.exports = {
       // console.log("parent 22322 kk = ", parent);
 
       try {
-        return parent.totalPercentage
+        return parent.totalPercentage;
       } catch (err) {
         throw new ApolloError(
           err.message,

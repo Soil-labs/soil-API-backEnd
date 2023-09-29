@@ -13,7 +13,7 @@ module.exports = `
 
         conduct: conductType
 
-        companies: [ID]
+        companies: [companyType]
 
         onbording: onboardingType
 
@@ -89,6 +89,11 @@ module.exports = `
         telegram: String,
         telegramChatID: String,
         telegramConnectionCode: String,
+    }
+
+    type companyType {
+        company: Company
+        typeT: employeeRole
     }
 
     type positionsAppliedType {
@@ -511,10 +516,6 @@ module.exports = `
         maxHourPerWeek: Int
     }
 
-    
-
-
-
     input matchSkillsToProjectsInput {
         skillsID: [ID]
         serverID: [String]
@@ -822,5 +823,10 @@ module.exports = `
 
     input reCreateMemberNeoInput {
         _id: ID
+    }
+    
+    enum employeeRole {
+        ADMIN
+        EMPLOYEE
     }
 `

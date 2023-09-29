@@ -107,6 +107,7 @@ module.exports = `
         updateCompany(fields:updateCompanyInput): Company
         updateUrlCompany(fields:updateUrlInput): Company
         addEmployeesCompany(fields:addEmployeesCompanyInput): Company
+        subscribeToCommunity(fields:subscribeToCommunityInput): Company
 
 
          # ------------- QUERY RESPONSE MUTATION -----------------
@@ -119,6 +120,12 @@ module.exports = `
         # ------------- MEMORY PINECONE MUTATION -----------------
         addMemory(fields:addMemoryInput): MemoryPinecone
         deleteMemories(fields:deleteMemoriesInput): [MemoryPinecone]
+
+
+        # ------------- CARD MEMORY MUTATION -----------------
+        addCardMemory(fields:addCardMemoryInput): CardMemory
+        deleteCardMemory(fields:deleteCardMemoryInput): [CardMemory]
+        createCardsForPosition(fields:createCardsForPositionInput): [CardMemory]
 
 
 
