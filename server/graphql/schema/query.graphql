@@ -68,13 +68,12 @@ module.exports = `
             findPosition(fields:findPositionInput): Position
             findPositions(fields:findPositionsInput): [Position]
             findUserTalentListPosition(fields:findUserTalentListPositionInput): talentListType
+            findPositionsOfCommunity(fields:findPositionsOfCommunityInput): [Position]
 
            #  ---------- COMPANY QUERY -------
             findCompany(fields:findCompanyInput): Company
             findCompanies(fields:findCompaniesInput): [Company]
             findCompanyFromSlug(fields:findCompanyFromSlugInput): Company
-            findPositionsOfCommunity(fields:findPositionsOfCommunityInput): [Position]
-
 
            #  ---------- QUERY RESPONSE QUERY -------
             findQueryResponses(fields:findQueryResponsesInput): [QueryResponse]

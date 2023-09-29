@@ -50,13 +50,13 @@ const {
   findPosition,
   findPositions,
   findUserTalentListPosition,
+  findPositionsOfCommunity,
 } = require("./query/positionQuery");
 
 const {
   findCompany,
   findCompanies,
   findCompanyFromSlug,
-  findPositionsOfCommunity,
 } = require("./query/companyQuery");
 
 const { findQueryResponses } = require("./query/queryResponseQuery");
@@ -226,12 +226,12 @@ module.exports = {
     findPosition,
     findPositions,
     findUserTalentListPosition,
+    findPositionsOfCommunity,
 
     // ------------- COMPANY QUERY -----------------
     findCompany,
     findCompanies,
     findCompanyFromSlug,
-    findPositionsOfCommunity,
 
     // ------------- QUERY RESPONSE QUERY -----------------
     findQueryResponses,
