@@ -14,6 +14,7 @@ module.exports = {
       type,
       addCompanySubscribersID,
       addPositionSubscribersID,
+      communitiesSubscribedID,
     } = args.fields;
     console.log("Mutation > updateCompany > args.fields = ", args.fields);
 
@@ -53,7 +54,14 @@ module.exports = {
             }
           });
         }
-        //  ----------- communitySubscribers -----------
+        //  ----------- communitiesSubscribed -----------
+        const communitiesSubscribed = companyData.communitiesSubscribed || [];
+
+        if (communitiesSubscribedID) {
+          communitiesSubscribedID.forEach((communityID) => {
+            communitiesSubscribed.push(communityID);
+          });
+        }
 
         // update
         if (name) companyData.name = name;
@@ -63,6 +71,7 @@ module.exports = {
           companyData.communitySubscribers = communitySubscribers;
         if (addPositionSubscribersID)
           companyData.communitySubscribers = communitySubscribers;
+        if (description) companyData.description = description;
         if (description) companyData.description = description;
       } else {
         const companyWithSameSlug = await Company.findOne({ slug: slug });
@@ -92,7 +101,14 @@ module.exports = {
             });
           });
         }
-        //  ----------- communitySubscribers -----------
+        //  ----------- communitiesSubscribed -----------
+        const communitiesSubscribed = [];
+
+        if (communitiesSubscribedID) {
+          communitiesSubscribedID.forEach((communityID) => {
+            communitiesSubscribed.push(communityID);
+          });
+        }
 
         companyData = await new Company({
           name,
@@ -100,6 +116,7 @@ module.exports = {
           type,
           description,
           communitySubscribers,
+          communitiesSubscribed,
         });
       }
       await companyData.save();
