@@ -47,10 +47,11 @@ module.exports = `
         _id: ID
         name: String
         slug: String
+        description: String
         type: typeCompany
         addCompanySubscribersID: [ID]
         addPositionSubscribersID: [ID]
-        description: String
+        communitiesSubscribedID: [ID]
     }
     
     input updateUrlInput {
