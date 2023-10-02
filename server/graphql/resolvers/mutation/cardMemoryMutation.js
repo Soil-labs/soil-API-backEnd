@@ -5,6 +5,10 @@ const { printC } = require("../../../printModule");
 const { Position } = require("../../../models/positionModel");
 const { CardMemory } = require("../../../models/cardMemoryModel");
 const { Conversation } = require("../../../models/conversationModel");
+const { Members } = require("../../../models/membersModel");
+
+const {addCardMemoryFunc,createCardsScoresCandidate_3,connectCardsPositionToCandidateAndScore} = require("../utils/cardMemoryModules");
+
 
 const {
   useGPTchatSimple,
@@ -19,65 +23,18 @@ module.exports = {
 
     try {
 
-      let cardMemoryData = null;
-
-      if (_id) { // update
-
-        cardMemoryData = await CardMemory.findOne({ _id });
-
-        if (!cardMemoryData) throw new ApolloError("CardMemory not found", { component: "cardMemoryMutation > addCardMemory" });
-
-        if (content) cardMemoryData.content = content;
-        if (priority) cardMemoryData.priority = priority;
-        if (tradeOffBoost) cardMemoryData.tradeOffBoost = tradeOffBoost;
-        if (type) cardMemoryData.type = type;
-        if (connectedCards) cardMemoryData.connectedCards = connectedCards;
-        if (authorCard) cardMemoryData.authorCard = authorCard;
-        if (score) cardMemoryData.score = score;
+      filter = {}
+      if (_id) filter._id = _id
+      if (content) filter.content = content
+      if (priority) filter.priority = priority
+      if (tradeOffBoost) filter.tradeOffBoost = tradeOffBoost
+      if (type) filter.type = type
+      if (connectedCards) filter.connectedCards = connectedCards
+      if (authorCard) filter.authorCard = authorCard
+      if (score) filter.score = score
 
 
-       
-
-
-      } else { // create
-
-        cardMemoryData = new CardMemory({
-          content,
-          priority,
-          tradeOffBoost,
-          type,
-          connectedCards,
-          score
-        });
-
-        if (authorCard) cardMemoryData.authorCard = authorCard;
-
-        
-      }
-
-      await cardMemoryData.save();
-
-      printC(cardMemoryData, "1", "cardMemoryData", "b")
-
-
-
-
-      if (connectedCards) {
-        for (let i = 0; i < connectedCards.length; i++) {
-          const connectedCard = connectedCards[i];
-          const connectedCardMemory = await CardMemory.findOne({ _id: connectedCard.cardID });
-
-
-          connectedCardMemory.connectedCards.push({ 
-              cardID: cardMemoryData._id,   
-              score: connectedCard.score, 
-              reason: connectedCard.reason,
-            });
-
-          await connectedCardMemory.save();
-        }
-      }
-
+      let cardMemoryData = addCardMemoryFunc(filter)
 
       return cardMemoryData
 
@@ -146,7 +103,7 @@ module.exports = {
           for (let i = 0; i < connectedCardsData.length; i++) {
             const connectedCard = connectedCardsData[i];
 
-            if (connectedCard.authorCard.userID.toString() == userID.toString()){
+            if (connectedCard?.authorCard?.userID?.toString() == userID?.toString()){
               cardMemoriesData.push(connectedCard)
             }
           }
@@ -160,12 +117,64 @@ module.exports = {
               "authorCard.positionID": positionID  
             });
 
+            // only take the ID of the connectedCards 
+            let connectedCardsID = []
+            for (let i = 0; i < cardMemoriesData.length; i++) {
+              const cardMemory = cardMemoriesData[i];
+              for (let j = 0; j < cardMemory.connectedCards.length; j++) {
+                const connectedCard = cardMemory.connectedCards[j];
+
+                if (connectedCard.cardID) connectedCardsID.push(connectedCard.cardID)
+              }
+            }
+
+            connectedCardsData = await CardMemory.find({
+              _id: { $in: connectedCardsID }
+            });
+  
+            printC(connectedCardsData, "4", "connectedCardsData", "g")
+  
+            for (let i = 0; i < connectedCardsData.length; i++) {
+              const connectedCard = connectedCardsData[i];
+  
+              if (connectedCard?.authorCard?.positionID?.toString() == positionID?.toString()){
+                cardMemoriesData.push(connectedCard)
+              }
+            }
+
+
+
 
         } else if (userID){
             
             cardMemoriesData = await CardMemory.find({ 
               "authorCard.userID": userID  
             });
+
+             // only take the ID of the connectedCards 
+             let connectedCardsID = []
+             for (let i = 0; i < cardMemoriesData.length; i++) {
+               const cardMemory = cardMemoriesData[i];
+               for (let j = 0; j < cardMemory.connectedCards.length; j++) {
+                 const connectedCard = cardMemory.connectedCards[j];
+ 
+                 if (connectedCard.cardID) connectedCardsID.push(connectedCard.cardID)
+               }
+             }
+ 
+             connectedCardsData = await CardMemory.find({
+               _id: { $in: connectedCardsID }
+             });
+   
+             printC(connectedCardsData, "4", "connectedCardsData", "g")
+   
+             for (let i = 0; i < connectedCardsData.length; i++) {
+               const connectedCard = connectedCardsData[i];
+   
+               if (connectedCard?.authorCard?.userID?.toString() == userID?.toString()){
+                 cardMemoriesData.push(connectedCard)
+               }
+             }
 
         } else if (companyID){
               
@@ -188,6 +197,30 @@ module.exports = {
         const cardMemory = cardMemoriesData[i];
 
         deleteCardIDs.push(cardMemory._id)
+
+
+        // --------------- Delete from the connectedCards the cardID ---------------
+        for (let j = 0; j < cardMemory.connectedCards.length; j++) {
+          const connectedCard = cardMemory.connectedCards[j];
+
+          const connectedCardData = await CardMemory.findOne({ _id: connectedCard.cardID }).select('_id connectedCards');
+
+          if (connectedCardData) {
+
+            for (let k = 0; k < connectedCardData.connectedCards.length; k++) {
+              const connectedCardDataNow = connectedCardData.connectedCards[k];
+
+              if (connectedCardDataNow?.cardID?.toString() == cardMemory?._id?.toString()){
+
+                connectedCardData.connectedCards.splice(k, 1);
+
+                await connectedCardData.save();
+              }
+            }
+          }
+        }
+        // --------------- Delete from the connectedCards the cardID ---------------
+
       }
 
 
@@ -468,5 +501,158 @@ module.exports = {
       );
     }
   },
+  createCardsCandidateForPosition: async (parent, args, context, info) => {
+    const { userID, positionID} = args.fields;
+    console.log("Mutation > createCardsCandidateForPosition > args.fields = ", args.fields);
+
+
+    if (!positionID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
+    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements');
+    if (!positionData) throw new ApolloError("Position not found", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
+    
+
+    // -------------- Read every Card of the Position --------------
+    cardMemoriesData = await CardMemory.find({ "authorCard.positionID": positionID  });
+
+    if (cardMemoriesData.length == 0) throw new ApolloError("CardMemory for Position not found First Create Cards for the Position", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
+
+    printC(cardMemoriesData, "1", "cardMemoriesData", "b")
+    
+    // -------------- Read every Card of the Position --------------
+
+
+    if (!userID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
+    memberData = await Members.findOne({ _id: userID }).select('_id discordName cvInfo');
+
+    if (!memberData) throw new ApolloError("User not found", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
+
+    try {
+
+      // ---------- CV member ----------
+      const cvInfo = memberData.cvInfo.cvContent
+
+      // ---------- CV member ----------
+
+      //  --------- Find conversation of position ---------
+      convData = await Conversation.findOne({
+        $and: [{ positionID: positionID }, { userID: userID }],
+      }).select("_id conversation");
+
+
+
+      let promptConv = "";
+      for (let i = 0; i < convData.conversation.length; i++) {
+        let convDataNow = convData.conversation[i];
+        if (convDataNow.role == "assistant")
+          promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+        else
+          promptConv = promptConv + "User: " + convDataNow.content + " \n\n";
+      }
+
+      printC(promptConv, "2", "promptConv", "y")
+      //  --------- Find conversation of position ---------
+
+      
+
+      let cardMemoriesCandidateArray = await createCardsScoresCandidate_3(cvInfo,promptConv,userID)
+
+      printC(cardMemoriesCandidateArray, "3", "cardMemoriesCandidateArray", "g")
+
+    //  sd9
+
+      cardMemoryDataNowAll = await connectCardsPositionToCandidateAndScore(cardMemoriesCandidateArray,cardMemoriesData,userID)
+
+
+
+      return cardMemoryDataNowAll
+
+      
+    } catch (err) {
+      console.log("err = ",err)
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "createCardsCandidateForPosition",
+        { component: "cardMemoryMutation > createCardsCandidateForPosition" }
+      );
+    }
+  },
+
+  calculateScoreCardCandidateToPosition: async (parent, args, context, info) => {
+    const { userID, positionID} = args.fields;
+    console.log("Mutation > calculateScoreCardCandidateToPosition > args.fields = ", args.fields);
+
+
+    if (!positionID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
+    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements');
+    if (!positionData) throw new ApolloError("Position not found", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
+    
+
+    // -------------- Read every Card of the Position --------------
+    cardMemoriesDataPosition = await CardMemory.find({ "authorCard.positionID": positionID  });
+
+    if (cardMemoriesDataPosition.length == 0) throw new ApolloError("CardMemory for Position not found First Create Cards for the Position", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
+
+    printC(cardMemoriesDataPosition, "1", "cardMemoriesDataPosition", "b")
+    
+    // -------------- Read every Card of the Position --------------
+
+
+    if (!userID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
+    memberData = await Members.findOne({ _id: userID }).select('_id discordName cvInfo');
+
+    if (!memberData) throw new ApolloError("User not found", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
+
+    try {
+
+      // ------------- Find all the IDs of teh cardMemoriesDataPosition connected cards --------
+      connectedCardsID = []
+
+      for (let i = 0; i < cardMemoriesDataPosition.length; i++) {
+        const cardMemoryPos = cardMemoriesDataPosition[i];
+        for (let j = 0; j < cardMemoryPos.connectedCards.length; j++) {
+          const connectedCard = cardMemoryPos.connectedCards[j];
+          if (connectedCard.cardID) connectedCardsID.push(connectedCard.cardID)
+        }
+      }
+
+      const connectedCardDataN = await CardMemory.find({ _id: connectedCardsID });
+      
+      // Check if this connectedCardDataN are authorCard CANDIDATE
+      cardMemoriesDataCandidate = []
+      cardMemoriesDataCandidateObj = {}
+
+
+      for (let i = 0; i < connectedCardDataN.length; i++) {
+        const connectedCardDataNow = connectedCardDataN[i];
+        if (connectedCardDataNow.authorCard.category == "CANDIDATE") {
+          cardMemoriesDataCandidate.push(connectedCardDataNow)
+
+          cardMemoriesDataCandidateObj[connectedCardDataNow._id] = connectedCardDataNow
+
+        }
+      }
+
+      printC(cardMemoriesDataCandidate, "2", "cardMemoriesDataCandidate", "g")
+      as1
+
+      // ------------- Find all the IDs of teh cardMemoriesDataPosition connected cards --------
+
+      
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "calculateScoreCardCandidateToPosition",
+        { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" }
+      );
+    }
+  },
 
 };
+
+
+function wait(x) {
+  return new Promise(resolve => {
+    setTimeout(resolve, x*1000);
+  });
+}
+

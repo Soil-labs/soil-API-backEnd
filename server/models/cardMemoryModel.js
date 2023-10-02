@@ -7,7 +7,7 @@ const cardMemoryModel = mongoose.Schema({
   tradeOffBoost: Number,
   type: {
     type: String,
-    enum: ["TECHNICAL_SKILLS","SOFT_SKILLS","EXPERIENCE","INDUSTRY_KNOWLEDGE","INTERESTS","CORE_VALUES","GOALS","OTHER"], // ScoreCard = Checks and Balances
+    enum: ["TECHNICAL_SKILLS","SOFT_SKILLS","EXPERIENCE","INDUSTRY_KNOWLEDGE","INTERESTS","CORE_VALUES","GOALS","EDUCATION","OTHER"], // ScoreCard = Checks and Balances
   },
   authorCard: {
     companyID: String,
@@ -24,7 +24,7 @@ const cardMemoryModel = mongoose.Schema({
     agent: [{
       category: {
         type: String,
-        enum: ["CREDIBILITY","PRECISION","CONSISTENCY","ALIGNMENT"], 
+        enum: ["CREDIBILITY","CONSISTENCY","ALIGNMENT","EXPERT","GENERAL"], 
       },
       score: Number,
       reason: String,
@@ -34,6 +34,14 @@ const cardMemoryModel = mongoose.Schema({
     cardID: mongoose.Schema.ObjectId,
     score: Number,
     reason: String,
+    agent: [{
+      category: {
+        type: String,
+        enum: ["CREDIBILITY","CONSISTENCY","ALIGNMENT","EXPERT","GENERAL"], 
+      },
+      score: Number,
+      reason: String,
+    }]
   }],
   keyPriority: Boolean,
   futurePotential: Boolean,

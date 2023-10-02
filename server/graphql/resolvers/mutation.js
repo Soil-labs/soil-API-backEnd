@@ -93,6 +93,8 @@ const {
   addCardMemory,
   deleteCardMemory,
   createCardsForPosition,
+  createCardsCandidateForPosition,
+  calculateScoreCardCandidateToPosition,
 } = require("./mutation/cardMemoryMutation");
 
 const { updateRoleTemplate } = require("./mutation/roleTemplateMutation");
@@ -267,6 +269,8 @@ module.exports = {
     addCardMemory,
     deleteCardMemory,
     createCardsForPosition,
+    createCardsCandidateForPosition,
+    calculateScoreCardCandidateToPosition,
 
     // ------------- ROLE MUTATION -----------------
     updateRoleTemplate,
