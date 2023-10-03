@@ -25,7 +25,11 @@ const companyAuth = async ({ body }, res) => {
       throw new Error("Company does not exist");
     }
 
-    if (!dbCompany.employees.some((employee) => employee.userID === userID)) {
+    if (
+      !dbCompany.employees.some(
+        (employee) => employee.userID === userID && employee.status === "ACTIVE"
+      )
+    ) {
       throw new Error("Unauthorized user");
     }
 
