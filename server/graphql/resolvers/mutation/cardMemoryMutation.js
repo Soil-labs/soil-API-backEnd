@@ -582,6 +582,18 @@ module.exports = {
     console.log("Mutation > calculateScoreCardCandidateToPosition > args.fields = ", args.fields);
 
 
+    e = 0.9 // SOS 🆘 - Variable for Curvature of score
+    u = 0.1 // SOS 🆘 - Variable for Curvature of score
+    
+
+    let A_m = 0.9// SOS 🆘 - Variables to change the equation for m which is  weight/importance of each card 
+    let B_m = 0.2 
+    // m = A*e**(-B*n)
+    // m = 0.5 // SOS 🆘 - Variable to change the weight/importance of each card 
+
+
+
+
     if (!positionID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
     positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements');
     if (!positionData) throw new ApolloError("Position not found", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
@@ -632,11 +644,230 @@ module.exports = {
         }
       }
 
-      printC(cardMemoriesDataCandidate, "2", "cardMemoriesDataCandidate", "g")
-      as1
+      printC(cardMemoriesDataCandidate, "3", "cardMemoriesDataCandidate", "r")
+      // as1
 
       // ------------- Find all the IDs of teh cardMemoriesDataPosition connected cards --------
 
+
+      // --------------- Go to each candidate card and calculate the internal score ---------------
+      for (let i = 0; i < cardMemoriesDataCandidate.length; i++) {
+        const cardMemoryCandidate = cardMemoriesDataCandidate[i];
+        
+        if (!cardMemoryCandidate.score) continue
+
+        if (cardMemoryCandidate.score.overall) {
+          cardMemoriesDataCandidateObj[cardMemoryCandidate._id].score.overall = cardMemoryCandidate.score.overall
+          continue
+        }
+
+        let scoreInternal = 0
+        let scoreInternalCount = 0
+        
+        for (let j = 0; j < cardMemoryCandidate.score?.agent?.length; j++) {
+          const scoreAgent = cardMemoryCandidate.score.agent[j];
+
+          if (scoreAgent?.score){ // Change the Weights based on the category
+            if (scoreAgent.category == "CREDIBILITY"){
+              scoreInternal = scoreInternal + scoreAgent.score
+              scoreInternalCount = scoreInternalCount + 1
+
+            } else if (scoreAgent.category == "CONSISTENCY"){
+              scoreInternal = scoreInternal + scoreAgent.score
+              scoreInternalCount = scoreInternalCount + 1
+
+            } else if (scoreAgent.category == "EXPERT"){
+              scoreInternal = scoreInternal + scoreAgent.score
+              scoreInternalCount = scoreInternalCount + 1
+
+            } else {
+              scoreInternal = scoreInternal + scoreAgent.score
+              scoreInternalCount = scoreInternalCount + 1
+            }
+          } 
+            
+        }
+
+        if (scoreInternalCount > 0) scoreInternal = scoreInternal / scoreInternalCount
+
+        cardMemoryCandidate.score.overall = scoreInternal
+
+        cardMemoriesDataCandidateObj[cardMemoryCandidate._id].score.overall = scoreInternal
+
+        await cardMemoryCandidate.save()
+      }
+      // --------------- Go to each candidate card and calculate the internal score ---------------
+
+
+      
+      
+      // --------------- Go to each position card and calculate the external-internal score ---------------
+      for (let i = 0; i < cardMemoriesDataPosition.length; i++) {
+        const cardMemoryPosition = cardMemoriesDataPosition[i];
+
+        // printC(cardMemoryPosition.connectedCards, "3", "cardMemoryPosition.connectedCards", "p")
+
+        let scoreInternalExternal = 0
+        let scoreInternalExternalCount = 0
+
+        let n = cardMemoryPosition.connectedCards.length
+
+        let m = A_m*e**(-B_m*n)
+        
+        for (let j = 0; j < cardMemoryPosition.connectedCards.length; j++) {
+          const connectedCard = cardMemoryPosition.connectedCards[j];
+
+          let scoreExternal = 0
+          let scoreExternalCont = 0
+
+          for (let k=0; k < connectedCard.agent.length; k++) {
+            const agent = connectedCard.agent[k];
+            if (agent.score) {
+              scoreExternal = scoreExternal + agent.score
+              scoreExternalCont = scoreExternalCont + 1
+            }
+          }
+
+          if (scoreExternalCont > 0) scoreExternal = scoreExternal / scoreExternalCont
+
+          printC(connectedCard, "3", "connectedCard", "p")
+          printC(scoreExternal, "4", "scoreExternal", "b")
+
+          let scoreInternal = cardMemoriesDataCandidateObj[connectedCard.cardID].score.overall
+          printC(scoreInternal, "4", "scoreInternal", "b")
+
+          let scoreInternalExternalNow = (scoreInternal*0.1) * (scoreExternal*0.1) //  multiple with 0.1 to reduce score from 0 to 1
+
+          cardMemoryPosition.connectedCards[j].score = scoreInternalExternalNow.toFixed(2)
+
+          scoreInternalExternal += scoreInternalExternalNow*m // multiple with m to change the weight of the card
+          scoreInternalExternalCount = scoreInternalExternalCount + 1
+        }
+        // s9
+
+        if (scoreInternalExternalCount > 0) {
+          scoreInternalExternal = e*(scoreInternalExternal**2) + u 
+
+          if (scoreInternalExternal > 1) scoreInternalExternal = 1
+
+          cardMemoryPosition.score.overall = scoreInternalExternal.toFixed(2)
+
+          printC(cardMemoryPosition, "3", "cardMemoryPosition", "p")
+          printC(scoreInternalExternal, "4", "scoreInternalExternal", "b")
+
+          await cardMemoryPosition.save()
+        }
+
+
+        
+      }
+      // --------------- Go to each position card and calculate the external-internal score ---------------
+
+      // // --------------- Go to each position card and calculate the external-internal score ---------------
+      // for (let i = 0; i < cardMemoriesDataPosition.length; i++) {
+      //   const cardMemoryPosition = cardMemoriesDataPosition[i];
+
+      //   // printC(cardMemoryPosition.connectedCards, "3", "cardMemoryPosition.connectedCards", "p")
+
+      //   let scoreInternalExternal = 0
+      //   let scoreInternalExternalCount = 0
+        
+      //   for (let j = 0; j < cardMemoryPosition.connectedCards.length; j++) {
+      //     const connectedCard = cardMemoryPosition.connectedCards[j];
+
+      //     let scoreExternal = 0
+      //     let scoreExternalCont = 0
+
+      //     for (let k=0; k < connectedCard.agent.length; k++) {
+      //       const agent = connectedCard.agent[k];
+      //       if (agent.score) {
+      //         scoreExternal = scoreExternal + agent.score
+      //         scoreExternalCont = scoreExternalCont + 1
+      //       }
+      //     }
+
+      //     if (scoreExternalCont > 0) scoreExternal = scoreExternal / scoreExternalCont
+
+      //     printC(connectedCard, "3", "connectedCard", "p")
+      //     printC(scoreExternal, "4", "scoreExternal", "b")
+
+      //     let scoreInternal = cardMemoriesDataCandidateObj[connectedCard.cardID].score.overall
+      //     printC(scoreInternal, "4", "scoreInternal", "b")
+
+      //     let scoreInternalExternalNow = (scoreInternal + scoreExternal)/2
+
+      //     cardMemoryPosition.connectedCards[j].score = scoreInternalExternalNow
+      //     // cardMemoryPosition.connectedCards[j].score = 2
+
+      //     scoreInternalExternal = scoreInternalExternal + scoreInternalExternalNow
+      //     scoreInternalExternalCount = scoreInternalExternalCount + 1
+      //   }
+      //   // s9
+
+      //   if (scoreInternalExternalCount > 0) scoreInternalExternal = scoreInternalExternal / scoreInternalExternalCount
+
+      //   cardMemoryPosition.score.overall = scoreInternalExternal
+
+      //   printC(cardMemoryPosition, "3", "cardMemoryPosition", "p")
+      //   printC(scoreInternalExternal, "4", "scoreInternalExternal", "b")
+
+      //   await cardMemoryPosition.save()
+      // }
+      // // --------------- Go to each position card and calculate the external-internal score ---------------
+
+
+      // // --------------- Loop find the reasons for teh scores ---------------
+      // for (let i = 0; i < cardMemoriesDataPosition.length; i++) {
+
+      //   const cardMemoriesDataPositionN = cardMemoriesDataPosition[i];
+
+      //   const cardMemoriesScore = cardMemoriesDataPositionN.score.overall;
+
+        
+
+      //   // Fid the Data for the prompt
+      //   const cardMemoryPositionContent = cardMemoriesDataPositionN.content;
+
+      //   let cardMemoryCandidateContent = ""
+
+      //   for (let j=0;j<cardMemoriesDataPositionN?.connectedCards?.length;j++){
+      //     const connectedCard = cardMemoriesDataPositionN.connectedCards[j];
+
+      //     // printC(connectedCard, "3", "connectedCard", "p")
+          
+      //     const connectedCardDataTT = cardMemoriesDataCandidateObj[connectedCard.cardID]
+          
+      //     // printC(connectedCardDataTT, "3", "connectedCardDataTT", "g")
+      //     // s1
+
+      //     // cardMemoryCandidateContent += `- ${connectedCardDataTT.content} \n\n`
+      //     cardMemoryCandidateContent += `- ${connectedCardDataTT.content} / Score: ${connectedCard.score.toFixed(1)} \n\n`
+      //   }
+
+      //   printC(cardMemoryCandidateContent, "3", "cardMemoryCandidateContent", "p")
+      //   // d91
+
+      //   // Create the prompt
+      //   const promptReasonScore = `
+      //   Card that is evaluated (delimited <>): <${cardMemoryPositionContent}>
+        
+      //   Score of the Card (delimited <>): <${cardMemoriesScore.toFixed(1)}>
+        
+      //   Cards that are connected to the Card that is evaluated (delimited <>): <${cardMemoryCandidateContent}>
+        
+      //   `
+
+      //   // sent GPT
+
+      //   // regex results 
+
+
+      //   wait(2)
+
+      // }
+      // // --------------- Loop find the reasons for teh scores ---------------
+
+      return cardMemoriesDataCandidate
       
     } catch (err) {
       throw new ApolloError(

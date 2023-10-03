@@ -477,16 +477,16 @@ async function connectCardsPositionToCandidateAndScore(cardMemoriesCandidateArra
       Card Memories Candidate (delimited <>): <${cardMemoriesCandidate}>
 
 
-      - Your task is to find the Candidate Card Memories that are closely related to the Position Requirement and the score
-      - Only use highly relevant memories! Don't use any memory that are irrelevant
+      - Your task is to find the Candidate Card Memories that are extremely closely related to the Position Requirement and the score
+      - Only use extremely highly relevant memories! Don't use any memory that is not extremely relevant
       - Be careful choosing the right amount of memories you can find from 0 to 5 Candidate Memories
-      - Return the number ID of the Card Memories, and the score of the relatedness
-      - The score is a number from 1 Low to 10 High of the relatedness, Be really careful with the score be really accurate
+      - Return the number ID of the Card Memories, and the score of the relevancy 
+      - The score is a number from 1 Low to 10 High of the relevancy, Be really careful with the score its way better to have a really low score than being high from a mistake!
 
-      - Example 1: ID_18 / 10, ID_15 / 3
+      - Example 1: ID_18 / 3, ID_15 / 6
       - Example 2: ID_2 / 2
       - Example 3: 
-      - Example 4: ID_1 / 7, ID_8 / 5, ID_5 / 4, ID_15 / 3, ID_2 / 1
+      - Example 4: ID_1 / 3, ID_8 / 5, ID_5 / 8, ID_15 / 3, ID_2 / 1
 
 
       Result with CardIDs and Scores: 
@@ -497,7 +497,7 @@ async function connectCardsPositionToCandidateAndScore(cardMemoriesCandidateArra
       
 
       const apiVersion = Math.random() < 0.5 ? "API 1" : "API 2";
-      relatedCardMemoriesString = await useGPTchatSimple(promptFindRelatedCards, 0, apiVersion);
+      relatedCardMemoriesString = await useGPTchatSimple(promptFindRelatedCards, 0, apiVersion,"chatGPT4");
 
       // relatedCardMemoriesString = `ID_1 / 7, ID_8 / 5, ID_5 / 4, ID_15 / 3, ID_2 / 1`
       // relatedCardMemoriesString = `1. EXPERIENCE / Worked with a team of skillful developers to build, improve and maintain both the back-end and front-end systems at Bullhu.
