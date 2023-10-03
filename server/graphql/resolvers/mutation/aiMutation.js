@@ -1054,6 +1054,17 @@ module.exports = {
 
     let positionRequirementsC = positionData.positionsRequirements.content;
 
+    if (!positionRequirementsC) {
+      positionRequirementsC = positionData.positionsRequirements.notesRequirConv
+    }
+
+    if (!positionRequirementsC){
+      positionRequirementsC = positionData.positionsRequirements.originalContent
+    }
+
+    if (!positionRequirementsC){
+      throw new ApolloError("Position Requirements not found, the problem might be: 1. this position is not ready 2. This position is corrupted - Please talk to the creator of the position");
+    }
     // printC(positionRequirementsC,"3","positionRequirementsC","b")
     // sdf9s
 
