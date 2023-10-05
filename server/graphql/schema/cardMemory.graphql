@@ -15,19 +15,20 @@ module.exports = `
 
     type connectedCards {
         card: CardMemory
-        score: Int
+        score: Float
         reason: String
+        agent: [agentScoreCard]
     }
 
     type scoreCardMemory {
-        overall: Int
+        overall: Float
         reason: String
         agent: [agentScoreCard]
     }
 
     type agentScoreCard {
         category: categoryAgentScoreCardEnum
-        score: Int
+        score: Float
         reason: String
     }
     
@@ -58,21 +59,22 @@ module.exports = `
     }
 
     input scoreCardMemoryInput {
-        overall: Int
+        overall: Float
         reason: String
         agent: [agentScoreCardInput]
     }
 
     input agentScoreCardInput {
         category: categoryAgentScoreCardEnum
-        score: Int
+        score: Float
         reason: String
     }
 
     input connectedCardsInput {
         cardID: ID
-        score: Int
+        score: Float
         reason: String
+        agent: [agentScoreCardInput]
     }
 
     input deleteCardMemoryInput {
@@ -83,6 +85,16 @@ module.exports = `
     }
 
     input createCardsForPositionInput {
+        positionID: ID
+    }
+
+    input createCardsCandidateForPositionInput {
+        userID: ID
+        positionID: ID
+    }
+
+    input calculateScoreCardCandidateToPositionInput {
+        userID: ID
         positionID: ID
     }
 
@@ -101,6 +113,7 @@ module.exports = `
         INTERESTS
         CORE_VALUES
         GOALS
+        EDUCATION
         OTHER
     }
 
@@ -112,10 +125,10 @@ module.exports = `
 
     enum categoryAgentScoreCardEnum {
         CREDIBILITY
-        PRECISION
         CONSISTENCY
         ALIGNMENT
-
+        EXPERT
+        GENERAL
     }
 
     

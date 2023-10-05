@@ -456,7 +456,7 @@ async function identifyCategoryFunc(message,currentState) {
   return null;
 }
 
-async function replyToMessageBasedOnCategoryFunc(message, categoryEnum,discussionOld=[],memories = "") {
+async function replyToMessageBasedOnCategoryFunc(message, categoryEnum,discussionOld=[],memoriesPosition = "",memoriesCandidate = "") {
 
   console.log("discussionOld 232= " , discussionOld)
 
@@ -468,39 +468,77 @@ async function replyToMessageBasedOnCategoryFunc(message, categoryEnum,discussio
   console.log("replyEnumInfo = " , replyEnumInfo)
   console.log("replyPrompt = " , replyPrompt)
 
-    // const memories = `
+    // const memoriesPosition = `
     // - User is applying for a position in Google
     // - User is a FrontEnd developer
     // - User has 5 years of experience in FrontEnd development`
 
 
-  let memoriesPrompt = ""
+  let memoriesPositionPrompt = ""
   // if (replyEnumInfo.number == 2 || replyEnumInfo.number == 3) {
-    memoriesPrompt = `Memories (delimited <>) :${memories}`
+    memoriesPositionPrompt = `Memories Position Applied (delimited <>): <${memoriesPosition}>`
   // }
 
-  // only use the memories if replyEnumInfo is 2 or 3 with an if statment inside promptReplyTotal
-
-  let promptReplyTotal = `
-  ${replyPrompt}
-
-  ${memoriesPrompt}
-
-  - make a casual 1-4 sentence answer
-  This is the message that you should Reply <>: <${message}>`
+  let memoriesCandidatePrompt = `Memories Candidate Applied (delimited <>): <${memoriesCandidate}>`
 
 
+  printC(memoriesPositionPrompt, "1", "memoriesPositionPrompt", "r")
+  printC(memoriesCandidatePrompt, "1", "memoriesCandidatePrompt", "r")
 
-  console.log("promptReplyTotal = " , promptReplyTotal)
+  // ss1
+
+  // only use the memoriesPosition if replyEnumInfo is 2 or 3 with an if statment inside promptReplyTotal
+
+  // let promptReplyTotal = `
+  // ${replyPrompt}
+
+  // ${memoriesPrompt}
+
+  // - make a casual 1-4 sentence answer
+  // This is the message that you should Reply <>: <${message}>`
+
+
+
+  // console.log("promptReplyTotal = " , promptReplyTotal)
+
+
+  // CV <>
+
+  // TALENT INTERVIEWS <>
+  
+  // OPPORTUNITIES APPLIED <>
+  systemPrompt = `
+  
+  You're a world-class talent agent named Eden.
+  You are in 1 to 1 contact with your talent and you act as the bridge between talent & opportunities.
+  You have access to your talent's CV & TALENT INTERVIEWS as well as the OPPORTUNITIES APPLIED.
+  You always answer with care yet to the point.
+  You are in contact with your talent through Telegram.
+  Your main objective is to keep your talent feeling reassured, informed & valued.
+  You don't shy away from quirky joke from now and then.
+  
+  When a user asks how you can help them, say that you can help them staying informed on the status of their applications, help them find other opportunities that might be a great match for them.
+  Say that you can also help them doing mock or prep interviews as well as strategize/think about what their next best career step might be and what skills they might need to acquire for that.
+  Do not make up information and never mention that you're an AI model.
+  
+  If you can't find an answer to the question that your talent is answering - say that you will check for them and get back to them as soon as they have an answer.
+  If they keep pushing you, say that you're currently in beta and that a lot of your functionality is still being built out.
+  Always follow up by mentioning the other things you can help with.
+  
+  ${memoriesPositionPrompt}
+
+  ${memoriesCandidatePrompt}`
 
   // sd0
 
   // let resContent = await useGPTchatSimple(promptReplyTotal, 0,"API 1");
-  let resContent = await useGPTchat(
-    promptReplyTotal,
-    discussionOld,
-    "",
-  );
+  // let resContent = await useGPTchat(
+  //   promptReplyTotal,
+  //   discussionOld,
+  //   "",
+  // );
+
+  let resContent = await useGPT4chat( message,discussionOld,systemPrompt);
 
   console.log("resContent 2--2= " , resContent)
 
