@@ -15,6 +15,13 @@ const positionModel = mongoose.Schema({
     telegramChatID: String,
     telegramConnectionCode: String,
   },
+  stateEdenChat: {
+    positionIDs: [mongoose.Schema.ObjectId],
+    categoryChat: {
+      type: String,
+      enum: ["REJECT_CANDIDATE","ACCEPT_CANDIDATE","ASK_CANDIDATE","PITCH_POSITION_CANDIDATE"],
+    },
+  },
   employees: [
     {
       typeT: String,

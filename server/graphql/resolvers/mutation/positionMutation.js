@@ -665,6 +665,16 @@ module.exports = {
     await queryResponseData.save();
 
 
+    // --------- Change the state Eden Candidate-------------
+    userData.stateEdenChat = {
+      positionIDs: [positionID],
+      categoryChat: 'PITCH_POSITION_CANDIDATE'
+    }
+
+    await userData.save()
+    // --------- Change the state Eden Candidate-------------
+
+
     return {
       message: messagePitchPositionCandidate,
       queryResponse: queryResponseData

@@ -13,6 +13,8 @@ module.exports = `
 
         conduct: conductType
 
+        stateEdenChat: stateEdenChatType
+
         companies: [companyType]
 
         onbording: onboardingType
@@ -816,7 +818,7 @@ module.exports = `
         categoryChat: categoryQueryResponseEnum,
     }
 
-    type stateEdenChat {
+    type stateEdenChatType {
         positionIDs: [ID],
         categoryChat: categoryQueryResponseEnum,
     }

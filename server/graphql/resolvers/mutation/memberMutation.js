@@ -2329,17 +2329,17 @@ module.exports = {
 
     let filter = {}
 
-      if (chatID_TG){
-        filter = {
-          "conduct.telegramChatID": chatID_TG
-        }
-      } else if (userID) {
-        filter = {
-          _id: userID
-        }
-      } else {
-        throw new Error("The userID or chatID_TG is required 🔥");
+    if (chatID_TG){
+      filter = {
+        "conduct.telegramChatID": chatID_TG
       }
+    } else if (userID) {
+      filter = {
+        _id: userID
+      }
+    } else {
+      throw new Error("The userID or chatID_TG is required 🔥");
+    }
 
     try {
 
