@@ -589,15 +589,29 @@ module.exports = {
     let A_m = 0.9// SOS 🆘 - Variables to change the equation for m which is  weight/importance of each card 
     let B_m = 0.2 
     // m = A*e**(-B*n)
-    // m = 0.5 // SOS 🆘 - Variable to change the weight/importance of each card 
+    // m = 0.5 //Old -  Variable to change the weight/importance of each card 
 
 
 
 
     if (!positionID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
-    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements');
+    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements candidates');
     if (!positionData) throw new ApolloError("Position not found", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
     
+
+    // find were is the userID inside teh positionData.candidates.userID and keep this index
+    let indexCandidateOnPosition = -1
+
+    for (let i = 0; i < positionData.candidates.length; i++) {
+      const candidate = positionData.candidates[i];
+      if (candidate.userID.toString() == userID.toString()){
+        indexCandidateOnPosition = i
+        break
+      }
+    }
+
+    if (indexCandidateOnPosition == -1) throw new ApolloError("User not found on the Position", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
+
 
     // -------------- Read every Card of the Position --------------
     cardMemoriesDataPosition = await CardMemory.find({ "authorCard.positionID": positionID  });
@@ -763,109 +777,306 @@ module.exports = {
       }
       // --------------- Go to each position card and calculate the external-internal score ---------------
 
-      // // --------------- Go to each position card and calculate the external-internal score ---------------
-      // for (let i = 0; i < cardMemoriesDataPosition.length; i++) {
-      //   const cardMemoryPosition = cardMemoriesDataPosition[i];
 
-      //   // printC(cardMemoryPosition.connectedCards, "3", "cardMemoryPosition.connectedCards", "p")
+      // --------------- Loop find the reasons for teh scores ---------------
+      for (let i = 0; i < cardMemoriesDataPosition.length; i++) {
 
-      //   let scoreInternalExternal = 0
-      //   let scoreInternalExternalCount = 0
-        
-      //   for (let j = 0; j < cardMemoryPosition.connectedCards.length; j++) {
-      //     const connectedCard = cardMemoryPosition.connectedCards[j];
+        const cardMemoriesDataPositionN = cardMemoriesDataPosition[i];
 
-      //     let scoreExternal = 0
-      //     let scoreExternalCont = 0
+        const cardMemoriesScore = cardMemoriesDataPositionN.score.overall;
 
-      //     for (let k=0; k < connectedCard.agent.length; k++) {
-      //       const agent = connectedCard.agent[k];
-      //       if (agent.score) {
-      //         scoreExternal = scoreExternal + agent.score
-      //         scoreExternalCont = scoreExternalCont + 1
-      //       }
-      //     }
+        if (!cardMemoriesScore) continue
 
-      //     if (scoreExternalCont > 0) scoreExternal = scoreExternal / scoreExternalCont
-
-      //     printC(connectedCard, "3", "connectedCard", "p")
-      //     printC(scoreExternal, "4", "scoreExternal", "b")
-
-      //     let scoreInternal = cardMemoriesDataCandidateObj[connectedCard.cardID].score.overall
-      //     printC(scoreInternal, "4", "scoreInternal", "b")
-
-      //     let scoreInternalExternalNow = (scoreInternal + scoreExternal)/2
-
-      //     cardMemoryPosition.connectedCards[j].score = scoreInternalExternalNow
-      //     // cardMemoryPosition.connectedCards[j].score = 2
-
-      //     scoreInternalExternal = scoreInternalExternal + scoreInternalExternalNow
-      //     scoreInternalExternalCount = scoreInternalExternalCount + 1
-      //   }
-      //   // s9
-
-      //   if (scoreInternalExternalCount > 0) scoreInternalExternal = scoreInternalExternal / scoreInternalExternalCount
-
-      //   cardMemoryPosition.score.overall = scoreInternalExternal
-
-      //   printC(cardMemoryPosition, "3", "cardMemoryPosition", "p")
-      //   printC(scoreInternalExternal, "4", "scoreInternalExternal", "b")
-
-      //   await cardMemoryPosition.save()
-      // }
-      // // --------------- Go to each position card and calculate the external-internal score ---------------
-
-
-      // // --------------- Loop find the reasons for teh scores ---------------
-      // for (let i = 0; i < cardMemoriesDataPosition.length; i++) {
-
-      //   const cardMemoriesDataPositionN = cardMemoriesDataPosition[i];
-
-      //   const cardMemoriesScore = cardMemoriesDataPositionN.score.overall;
-
+        if (cardMemoriesDataPositionN.score.reason) continue
         
 
-      //   // Fid the Data for the prompt
-      //   const cardMemoryPositionContent = cardMemoriesDataPositionN.content;
+        // Fid the Data for the prompt
+        const cardMemoryPositionContent = cardMemoriesDataPositionN.content;
 
-      //   let cardMemoryCandidateContent = ""
+        let cardMemoryCandidateContent = ""
 
-      //   for (let j=0;j<cardMemoriesDataPositionN?.connectedCards?.length;j++){
-      //     const connectedCard = cardMemoriesDataPositionN.connectedCards[j];
+        for (let j=0;j<cardMemoriesDataPositionN?.connectedCards?.length;j++){
+          const connectedCard = cardMemoriesDataPositionN.connectedCards[j];
 
-      //     // printC(connectedCard, "3", "connectedCard", "p")
+          // printC(connectedCard, "3", "connectedCard", "p")
           
-      //     const connectedCardDataTT = cardMemoriesDataCandidateObj[connectedCard.cardID]
+          const connectedCardDataTT = cardMemoriesDataCandidateObj[connectedCard.cardID]
           
-      //     // printC(connectedCardDataTT, "3", "connectedCardDataTT", "g")
-      //     // s1
+          // printC(connectedCardDataTT, "3", "connectedCardDataTT", "g")
+          // s1
 
-      //     // cardMemoryCandidateContent += `- ${connectedCardDataTT.content} \n\n`
-      //     cardMemoryCandidateContent += `- ${connectedCardDataTT.content} / Score: ${connectedCard.score.toFixed(1)} \n\n`
-      //   }
+          // cardMemoryCandidateContent += `- ${connectedCardDataTT.content} \n\n`
+          // printC(connectedCard.score, "3", "connectedCard.score", "g")
+          // s09
+          cardMemoryCandidateContent += `- ${connectedCardDataTT.content} / Score: ${connectedCard.score.toFixed(1)} \n\n`
+        }
 
-      //   printC(cardMemoryCandidateContent, "3", "cardMemoryCandidateContent", "p")
-      //   // d91
+        // printC(cardMemoryPositionContent, "3", "cardMemoryPositionContent", "p")
+        // printC(cardMemoriesScore, "3", "cardMemoriesScore", "p")
+        // printC(cardMemoryCandidateContent, "3", "cardMemoryCandidateContent", "p")
+        // d91
 
-      //   // Create the prompt
-      //   const promptReasonScore = `
-      //   Card that is evaluated (delimited <>): <${cardMemoryPositionContent}>
+
+
+        // Create the prompt
+        const promptReasonScore = `
+        Card that is evaluated (delimited <>): <${cardMemoryPositionContent}>
         
-      //   Score of the Card (delimited <>): <${cardMemoriesScore.toFixed(1)}>
+        Score of the Card that is evaluated 0 LOW 1 HIGH (delimited <>): <${cardMemoriesScore.toFixed(1)}>
         
-      //   Cards that are connected to the Card that is evaluated (delimited <>): <${cardMemoryCandidateContent}>
+        Connected cards and their scores (delimited <>): <${cardMemoryCandidateContent}>
+
+        - Your task is to write why it got this Score
+        - Go straight to the point, don't mention the score, keep it really small 30 - 50 words
+
+        reason: 
+        `
+
+        printC(promptReasonScore, "5", "promptReasonScore", "p")
+        // s10
+
+        const apiVersion = Math.random() < 0.5 ? "API 1" : "API 2";
+        reasonScoreString = await useGPTchatSimple(promptReasonScore, 0,apiVersion);
+
+        printC(reasonScoreString, "5", "reasonScoreString", "b")
+
+
+        cardMemoriesDataPositionN.score.reason = reasonScoreString
+
+        await cardMemoriesDataPositionN.save()
+
+        // s0
+
+
+
+        wait(2)
+
+      }
+      // --------------- Loop find the reasons for teh scores ---------------
+
+
+      printC(cardMemoriesDataPosition, "3", "cardMemoriesDataPosition", "r")
+
+
+      // ------------------ Organize per category -------------------
+      let cardMemoriesDataPositionObj = {}
+      for (let i = 0; i < cardMemoriesDataPosition.length; i++) {
+        const cardMemoryPosition = cardMemoriesDataPosition[i];
+
+
+        if (!cardMemoriesDataPositionObj[cardMemoryPosition.type]){
+          cardMemoriesDataPositionObj[cardMemoryPosition.type] = {
+            totalPriority: 0,
+            cardMemoryPosition: [],
+            score: -1,
+            reason: "",
+            priority: 0,
+            idxScoreCategoryCandidates: -1,
+          }
+        }
+
+        if (cardMemoryPosition.priority){
+          cardMemoriesDataPositionObj[cardMemoryPosition.type].totalPriority += (6 - cardMemoryPosition.priority)
+        }
+
+        cardMemoriesDataPositionObj[cardMemoryPosition.type].cardMemoryPosition.push(cardMemoryPosition) 
         
-      //   `
+        // ---------------- if already score or reason exist add it to the object ------------
+        candidate = positionData.candidates[indexCandidateOnPosition]
 
-      //   // sent GPT
+        for (let j=0;j< candidate?.scoreCardCategoryMemories?.length;j++){
+          const scoreCardCategoryMemory = candidate.scoreCardCategoryMemories[j];
 
-      //   // regex results 
+          if (scoreCardCategoryMemory.category == cardMemoryPosition.type){
+            if (scoreCardCategoryMemory.score) cardMemoriesDataPositionObj[cardMemoryPosition.type].score = scoreCardCategoryMemory.score
+
+            if (scoreCardCategoryMemory.reason) cardMemoriesDataPositionObj[cardMemoryPosition.type].reason = scoreCardCategoryMemory.reason
+
+            if (scoreCardCategoryMemory.priority) cardMemoriesDataPositionObj[cardMemoryPosition.type].priority = scoreCardCategoryMemory.priority
+
+            cardMemoriesDataPositionObj[cardMemoryPosition.type].idxScoreCategoryCandidates = j
+            
+          }
+        }
+        // ---------------- if already score or reason exist add it to the object ------------
+      }
+
+      printC(cardMemoriesDataPositionObj, "3", "cardMemoriesDataPositionObj", "r")
+      // // printC(cardMemoriesDataPositionObj["SOFT_SKILLS"], "3", "cardMemoriesDataPositionObj", "r")
+// d9
+
+      // ------------------ Organize per category -------------------
+
+      // ------------------ calculate total score and reason in each category ------------
+      for (const category in cardMemoriesDataPositionObj) {
+        if (Object.hasOwnProperty.call(cardMemoriesDataPositionObj, category)) {
+          const cardMemoriesDataPositionObjNow = cardMemoriesDataPositionObj[category];
 
 
-      //   wait(2)
+          if (cardMemoriesDataPositionObjNow.score != -1) continue
 
-      // }
-      // // --------------- Loop find the reasons for teh scores ---------------
+          
+          let totalScore = 0
+          let totalScoreCount = 0
+          let totalScoreC = 0
+          let averagePriorityCategory = 0
+
+          for (let i = 0; i < cardMemoriesDataPositionObjNow.cardMemoryPosition.length; i++) {
+            const cardMemoryPosition = cardMemoriesDataPositionObjNow.cardMemoryPosition[i];
+
+            if (cardMemoryPosition.score?.overall){
+              totalScore += cardMemoryPosition.score.overall*(6 - cardMemoryPosition.priority)
+              // totalScoreCount += 1
+              totalScoreCount += 6 - cardMemoryPosition.priority
+              totalScoreC += 1
+            }
+            
+          }
+
+          if (totalScoreCount > 0) totalScore = totalScore / totalScoreCount
+          if (totalScoreC > 0) averagePriorityCategory = totalScoreCount / totalScoreC
+
+          cardMemoriesDataPositionObj[category].score = totalScore
+ 
+          if (cardMemoriesDataPositionObj[category].idxScoreCategoryCandidates != -1) {
+
+            const idx = cardMemoriesDataPositionObj[category].idxScoreCategoryCandidates
+
+            positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories[idx].score = totalScore
+            positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories[idx].priority = averagePriorityCategory.toFixed(2)
+
+          } else {
+            positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories.push({
+              category: category,
+              score: totalScore,
+              priority: averagePriorityCategory.toFixed(2),
+            })
+
+            cardMemoriesDataPositionObj[category].idxScoreCategoryCandidates = positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories.length - 1
+
+          }
+
+
+        }
+      }
+      printC(cardMemoriesDataPositionObj, "8", "cardMemoriesDataPositionObj", "B")
+      // printC(cardMemoriesDataPositionObj["INTERESTS"], "9", "cardMemoriesDataPositionObj", "B")
+      // printC(cardMemoriesDataPositionObj["INTERESTS"].cardMemoryPosition, "10", "cardMemoriesDataPositionObj", "B")
+      // ------------------ calculate total score and reason in each category ------------
+
+      // await positionData.save()
+      // s9
+
+      // ------------ find reason for score------------
+      for (const category in cardMemoriesDataPositionObj) {
+        if (Object.hasOwnProperty.call(cardMemoriesDataPositionObj, category)) {
+          const cardMemoriesDataPositionObjNow = cardMemoriesDataPositionObj[category];
+
+
+          if (cardMemoriesDataPositionObjNow.reason) continue
+
+          let scoreCategoryPrompt = "0"
+          if (cardMemoriesDataPositionObjNow.totalScore)
+            scoreCategoryPrompt = cardMemoriesDataPositionObjNow.totalScore.toString()
+
+          const categoryPrompt = category
+
+          let cardsPositionContentAndScorePrompt = ""
+
+          for (let i = 0; i < cardMemoriesDataPositionObjNow.cardMemoryPosition.length; i++) {
+            const cardMemoryPosition = cardMemoriesDataPositionObjNow.cardMemoryPosition[i];
+
+            if (cardMemoryPosition.score?.overall && cardMemoryPosition.content){
+
+              cardsPositionContentAndScorePrompt += `- ${cardMemoryPosition.content} / Score: ${cardMemoryPosition.score.overall.toFixed(1)} \n\n`
+            }
+
+          }
+          printC(cardsPositionContentAndScorePrompt, "3", "cardsPositionContentAndScorePrompt", "g")
+          
+
+
+           // Create the prompt
+          let promptReasonCategoryScore = `
+          Card Category that is evaluated (delimited <>): <${categoryPrompt}>
+          
+          Score of the Category that is evaluated 0 LOW 1 HIGH (delimited <>): <${scoreCategoryPrompt}>
+          
+          Connected cards and their scores (delimited <>): <${cardsPositionContentAndScorePrompt}>
+
+          - Your task is to write why it got this Score
+          - Go straight to the point, don't mention the score, keep it really small 30 - 50 words
+
+          reason: 
+          `
+
+          printC(promptReasonCategoryScore, "5", "promptReasonCategoryScore", "p")
+
+
+          const apiVersion = Math.random() < 0.5 ? "API 1" : "API 2";
+          let reasonCategoryScore = await useGPTchatSimple(promptReasonCategoryScore, 0,apiVersion);
+  
+          printC(reasonCategoryScore, "5", "reasonCategoryScore", "b")
+
+
+          if (cardMemoriesDataPositionObj[category].idxScoreCategoryCandidates != -1){
+
+            const idx = cardMemoriesDataPositionObj[category].idxScoreCategoryCandidates
+
+            positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories[idx].reason = reasonCategoryScore
+          } else {
+            positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories.push({
+              category: category,
+              reason: reasonCategoryScore,
+            })
+
+            cardMemoriesDataPositionObj[category].idxScoreCategoryCandidates = positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories.length - 1
+
+          }
+
+
+
+          wait (3);
+
+        }
+      }
+
+      // ------------ find reason for score------------
+
+
+      // -------------- Total Score of Candidate --------------
+      // printC(positionData.candidates[indexCandidateOnPosition].scoreCardTotal, "12", "positionData.candidates[indexCandidateOnPosition].scoreCardTotal", "g")
+      if (!positionData.candidates[indexCandidateOnPosition]?.scoreCardTotal?.score) {
+        let totalScoreCandidate = 0
+        let totalScoreCandidateCount = 0
+
+        for (const category in cardMemoriesDataPositionObj) {
+          if (Object.hasOwnProperty.call(cardMemoriesDataPositionObj, category)) {
+            const cardMemoriesDataPositionObjNow = cardMemoriesDataPositionObj[category];
+
+            printC(cardMemoriesDataPositionObjNow, "3", "cardMemoriesDataPositionObjNow", "r")
+
+            if (cardMemoriesDataPositionObjNow.score){
+              totalScoreCandidate += cardMemoriesDataPositionObjNow.score*cardMemoriesDataPositionObjNow.priority
+              totalScoreCandidateCount += cardMemoriesDataPositionObjNow.priority
+            }
+
+          }
+        }
+
+        if (totalScoreCandidateCount > 0) {
+          totalScoreCandidate = totalScoreCandidate / totalScoreCandidateCount
+          positionData.candidates[indexCandidateOnPosition].scoreCardTotal.score = totalScoreCandidate.toFixed(2)
+
+          printC(totalScoreCandidate, "12", "totalScoreCandidate", "g")
+        }
+      }
+
+      // -------------- Total Score of Candidate --------------
+
+
+      await positionData.save()
+
 
       return cardMemoriesDataCandidate
       

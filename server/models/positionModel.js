@@ -120,6 +120,20 @@ const positionModel = mongoose.Schema({
       readyToDisplay: Boolean,
       conversationID: mongoose.Schema.ObjectId,
       dateApply: Date,
+      scoreCardTotal: {
+        score: Number,
+      },
+      scoreCardCategoryMemories: [
+        {
+          category: {
+            type: String,
+            enum: ["TECHNICAL_SKILLS","SOFT_SKILLS","EXPERIENCE","INDUSTRY_KNOWLEDGE","INTERESTS","CORE_VALUES","GOALS","EDUCATION","OTHER"], // ScoreCard = Checks and Balances
+          },
+          score: Number,
+          reason: String,
+          priority: Number,
+        },
+      ],
       summaryQuestions: [
         {
           questionID: mongoose.Schema.ObjectId,

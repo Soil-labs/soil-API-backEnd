@@ -100,6 +100,8 @@ module.exports = `
         readyToDisplay: Boolean,
         conversationID: ID,
         dateApply: String,
+        scoreCardTotal: scoreCardTotalType,
+        scoreCardCategoryMemories: [scoreCardCategoryMemoryType],
         conversation: [conversationType],
         summaryQuestions: [SummaryQuestionType]
         interviewQuestionsForCandidate: [interviewQuestionsForCandidateType]
@@ -109,6 +111,17 @@ module.exports = `
         analysisCandidateEdenAI: analysisCandidateEdenAIType
         keyAttributes: [attributeCandidateType]
         futurePotential: [attributeCandidateType]
+    }
+
+    type scoreCardTotalType {
+        score: Float,
+    }
+
+    type scoreCardCategoryMemoryType {
+        category:typeCardMemoryEnum
+        score: Float,
+        reason: String,
+        priority: Float,
     }
 
     type attributeCandidateType {
