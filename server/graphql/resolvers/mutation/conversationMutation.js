@@ -157,9 +157,14 @@ module.exports = {
 
         }
 
+        printC(userID,"1","userID","y")
+        printC(positionID,"2","positionID","y")
+
         if (userID != undefined && positionID != undefined)
           CandidateNotesEdenAIAPICallF(userID, positionID);
         // --------------- Calculate candidateNotesEdenAI ---------------
+
+
 
         if (positionTrainEdenAI == true) { 
         } else {
@@ -185,17 +190,24 @@ module.exports = {
           // ------------------ Delete old summaries from pinecone ------------------
           resTK = await deleteMemoriesPineconeFunc(filter)
           // ------------------ Delete old summaries from pinecone ------------------
+
+          // as1
+          let discussionOld = convDataNow.conversation.map(({ role, content }) => ({
+            role,
+            content,
+          }))
+
+          console.log("discussionOld = ", discussionOld);
+          
+
  
           let paragraphSummary = await useGPTchat(
-            // "Please summarize the conversation using bullet points. Feel free to use as many bullet points as necessary, but be sure to prioritize precision and conciseness. Try to incorporate the keywords that were used during the conversation. reasult:",
-            // "Please summarize the conversation using bullet points. Focuse on creating consise bullet points. Try to incorporate the keywords that were used during the conversation. reasult:",
             "Create a summary of the important parts of the conversation \n\n Summary:",
-            convDataNow.conversation.map(({ role, content }) => ({
-              role,
-              content,
-            })), // clean up from any _id etc
+            discussionOld, 
             ""
           );
+          // as2
+
 
           const promptForBulletS =
             paragraphSummary +
@@ -211,6 +223,7 @@ module.exports = {
 
           // console.log("splitSummary = ", splitSummary);
           // ---------------- GPT find new Summary ------------
+
 
           let summaryArr = [];
 
