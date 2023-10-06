@@ -2440,7 +2440,7 @@ module.exports = {
     let memberData, positionData;
 
     try {
-      let random3Digit;
+      let random4Digit;
 
       if (memberID) {
         memberData = await Members.findOne({ _id: memberID }).select(
@@ -2450,18 +2450,22 @@ module.exports = {
         if (!memberData)
           throw new Error("The memberID is not valid🔥 can't find member");
 
-        if (!memberData?.conduct?.telegramConnectionCode) {
-          // create random 100 digit number from 000 to 999, always need to have exactly 3 digits
-          random3Digit = Math.floor(Math.random() * 1000)
-            .toString()
-            .padStart(3, "0");
+        // if (!memberData?.conduct?.telegramConnectionCode) {
+        // create random 100 digit number from 0000 to 9990, always need to have exactly 4 digits
+        random4Digit = Math.floor(Math.random() * 10000)
+          .toString()
+          .padStart(4, "0");
 
-          memberData.conduct.telegramConnectionCode = random3Digit;
+        // random3Digit = Math.floor(Math.random() * 1000)
+        //   .toString()
+        //   .padStart(3, "0");
 
-          memberData = await memberData.save();
-        } else {
-          random3Digit = memberData.conduct.telegramConnectionCode;
-        }
+        memberData.conduct.telegramConnectionCode = random4Digit;
+
+        memberData = await memberData.save();
+        // } else {
+        //   random4Digit = memberData.conduct.telegramConnectionCode;
+        // }
 
         return {
           done: true,
@@ -2469,7 +2473,7 @@ module.exports = {
           name: memberData.discordName,
           telegram: memberData.conduct.telegram,
           telegramChatID: memberData.conduct.telegramChatID,
-          authTelegramCode: random3Digit,
+          authTelegramCode: random4Digit,
         };
       } else if (positionID) {
         positionData = await Position.findOne({ _id: positionID }).select(
@@ -2480,16 +2484,20 @@ module.exports = {
           throw new Error("The positionID is not valid🔥 can't find position");
 
         if (!positionData?.conduct?.telegramConnectionCode) {
-          // create random 100 digit number from 000 to 999, always need to have exactly 3 digits
-          random3Digit = Math.floor(Math.random() * 1000)
+          random4Digit = Math.floor(Math.random() * 10000)
             .toString()
-            .padStart(3, "0");
+            .padStart(4, "0");
 
-          positionData.conduct.telegramConnectionCode = random3Digit;
+          // create random 100 digit number from 000 to 999, always need to have exactly 3 digits
+          // random4Digit = Math.floor(Math.random() * 1000)
+          //   .toString()
+          //   .padStart(3, "0");
+
+          positionData.conduct.telegramConnectionCode = random4Digit;
 
           positionData = await positionData.save();
         } else {
-          random3Digit = positionData.conduct.telegramConnectionCode;
+          random4Digit = positionData.conduct.telegramConnectionCode;
         }
 
         return {
@@ -2498,7 +2506,7 @@ module.exports = {
           name: positionData.name,
           telegram: positionData.conduct.telegram,
           telegramChatID: positionData.conduct.telegramChatID,
-          authTelegramCode: random3Digit,
+          authTelegramCode: random4Digit,
         };
       }
     } catch (err) {
@@ -2516,13 +2524,19 @@ module.exports = {
       args.fields
     );
 
-    let memberData = await Members.findOne({
+    let membersData = await Members.find({
       "conduct.telegramConnectionCode": authNumberTGMessage,
     }).select("_id discordName conduct ");
+    let memberData = membersData[membersData.length - 1];
 
-    let positionData = await Position.findOne({
+
+
+    let positionsData = await Position.find({
       "conduct.telegramConnectionCode": authNumberTGMessage,
     }).select("_id name conduct ");
+    let positionData = positionsData[positionsData.length - 1];
+
+    
 
     if (!memberData && !positionData)
       throw new Error(
