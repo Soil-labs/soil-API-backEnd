@@ -130,6 +130,7 @@ module.exports = `
 
           # ------------ CHAT EXTERNAL APP QUERY ---------------
           findLastNumMessagesChatExternalApp(fields:findLastNumMessagesChatExternalAppInput):[ChatExternalApp]
+          checkLimitMessagesExternalApp(fields:checkLimitMessagesExternalAppInput):checkLimitMessagesExternalAppOutput
 
 
           # ---------- AI QUERY -------------
