@@ -103,6 +103,7 @@ const { findChat } = require("./query/chatQuery");
 
 const {
   findLastNumMessagesChatExternalApp,
+  checkLimitMessagesExternalApp,
 } = require("./query/chatExternalAppQuery");
 
 const {
@@ -277,6 +278,7 @@ module.exports = {
 
     // ------------ CHAT EXTERNAL APP QUERY ---------------
     findLastNumMessagesChatExternalApp,
+    checkLimitMessagesExternalApp,
 
     //----------- AI QUERY ------------------
     findMessage,
