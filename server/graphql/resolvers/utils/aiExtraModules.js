@@ -220,8 +220,8 @@ async function useGPTFunc(
 
   printC(discussion, "10", "discussion", "g")
   
-  let modelT = "gpt-3.5-turbo-0613";
-  // let modelT = "gpt-4-0613";
+  // let modelT = "gpt-3.5-turbo-0613";
+  let modelT = "gpt-4-0613";
 
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
   let response = await axios.post(
