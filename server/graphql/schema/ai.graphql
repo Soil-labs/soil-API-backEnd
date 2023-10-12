@@ -380,6 +380,18 @@ module.exports = `
         # keywords: [String]
     }
 
+    input askEdenUserPositionGPTFuncInput {
+        userID: ID
+        positionID: ID
+        conversation: [messageChat]
+        whatToAsk: whatToAskEnum
+    }
+
+     type askEdenUserPositionGPTFuncOutput {
+        reply: String
+        # keywords: [String]
+    }
+
 
     input messageChat {
         role: String

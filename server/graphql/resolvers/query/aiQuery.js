@@ -40,7 +40,7 @@ const {
 
 const { useGPTchatSimple} = require("../utils/aiModules");
 
-const { useGPT4chat,identifyCategoryFunc,replyToMessageBasedOnCategoryFunc} = require("../utils/aiExtraModules");
+const { useGPT4chat,identifyCategoryFunc,replyToMessageBasedOnCategoryFunc,useGPTFunc,chooseFunctionForGPT} = require("../utils/aiExtraModules");
 
 
 const {
@@ -3944,6 +3944,79 @@ module.exports = {
         }
       );
     }
+  },
+  askEdenUserPositionGPTFunc: async (parent, args, context, info) => {
+    const {  userID,positionID,conversation,whatToAsk } = args.fields;
+    console.log("Query > askEdenUserPositionGPTFunc > args.fields = ", args.fields);
+
+
+    let discussionT = conversation.map((item) => ({
+      role: item.role,
+      content: item.content,
+    }));
+
+    // let userNewMessage = discussionT.pop().content;
+
+    printC(discussionT, "0", "discussionT", "p");
+    // d0
+
+    functionsUseGPT = ["giveExamplesCandidate","giveQualificationsCandidate","giveInformationRelatedToPosition","isCandidateAvailable"]
+
+    // functionResult = {
+    //   role: "function",
+    //   name: "findInfoCandidateApplicationToPosition",
+    //   content: "status: Pass to the second stage of the interview, nextInterview: In two weeks",
+    // }
+
+    const systemPrompt = `You are a recruiter, your job is to create a great conversation that help the user 
+    - be concise write small answers
+    - Only say the truth if you don't know something say that you don't have this info
+    - When you see Memories Only use a memory that is absolutely relevant to the Question!
+    - Only answer exact Question that you were asked!`
+
+    let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT)
+    // let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,functionResult)
+
+    resGPTFunc = {
+      ...resGPTFunc,
+      userID,
+      positionID,
+    }
+
+    printC(resGPTFunc, "0", "resGPTFunc", "p");
+
+    if (resGPTFunc.content == null && resGPTFunc?.function_call?.functionName) {
+      funcOutput = await chooseFunctionForGPT(resGPTFunc)
+
+      // printC(funcOutput, "0", "funcOutput", "p");
+
+      const funcOutputGPT = {
+        role: funcOutput.role,
+        name: funcOutput.name,
+        content: funcOutput.content,
+      }
+
+      let resGPTFunc_2 = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,funcOutputGPT,0)
+
+
+      printC(resGPTFunc_2, "5", "resGPTFunc_2", "p");
+
+      if (resGPTFunc_2.content){
+        return {
+          reply: resGPTFunc_2.content,
+        }
+      }
+
+    } else {
+      if (resGPTFunc.content){
+        return {
+          reply: resGPTFunc.content,
+        }
+      }
+    }
+
+
+
   },
   askEdenUserPosition: async (parent, args, context, info) => {
     const {  userID,positionID,conversation,whatToAsk } = args.fields;

@@ -132,6 +132,7 @@ const positionModel = mongoose.Schema({
       },
       scoreCardCategoryMemories: [
         {
+          _id: String,
           category: {
             type: String,
             enum: ["TECHNICAL_SKILLS","SOFT_SKILLS","EXPERIENCE","INDUSTRY_KNOWLEDGE","INTERESTS","CORE_VALUES","GOALS","EDUCATION","OTHER"], // ScoreCard = Checks and Balances
