@@ -24,6 +24,7 @@ const {
 const {
   addMultipleQuestionsToEdenAIFunc,
 } = require("../utils/questionsEdenAIModules");
+const { model } = require("mongoose");
 
 
 const { REACT_APP_API_URL, REACT_APP_API_CRON_URL } = process.env;
@@ -109,6 +110,347 @@ async function useGPTchat(
   );
 
   return response.data.choices[0].message.content;
+}
+
+const gptFunctions = {
+  giveExamplesCandidate: {
+      name: "giveExamplesCandidate",
+      description: "Collect Memories and Give Examples of a particular Candidate",
+      parameters: {
+          type: "object",
+          properties: {
+              topicOfInterest: {
+                  type: "string",
+                  description: "What topic the questioner is interested to know about the candidate",
+              },
+              extraInfo: {
+                type: "string",
+                description: "Extra information",
+              },
+          },
+          required: ["topicOfInterest"],
+      },
+  },
+  giveQualificationsCandidate: {
+    name: "giveQualificationsCandidate",
+    description: "Collect Memories and Give Qualifications of a particular Candidate",
+    parameters: {
+        type: "object",
+        properties: {
+            topicOfInterest: {
+                type: "string",
+                description: "What Qualifications the questioner is interested to know about the candidate",
+            },
+            extraInfo: {
+              type: "string",
+              description: "Extra information",
+            },
+        },
+        required: ["topicOfInterest"],
+    },
+},
+giveInformationRelatedToPosition: {
+  name: "giveInformationRelatedToPosition",
+  description: "Collect Memories and Give Information Related to the Position and Candidate, been used when there is questions around Position",
+  parameters: {
+      type: "object",
+      properties: {
+          question: {
+              type: "string",
+              description: "What is the question between the position and the candidate",
+          },
+      },
+      required: ["question"],
+    },
+  },
+  isCandidateAvailable: {
+    name: "isCandidateAvailable",
+    description: "search if candidate is still available for this position",
+    parameters: {
+        type: "object",
+        properties: {
+            detailsOfQuestion: {
+                type: "string",
+                description: "details of the question for availability of candidate",
+            },
+            extraInfo: {
+              type: "string",
+              description: "Extra information",
+            },
+        },
+        required: ["detailsOfQuestion"],
+    },
+  },
+  
+}
+
+async function useGPTFunc(
+  discussionOld,
+  systemPrompt,
+  functionsUse,
+  functionResult = {},
+  temperature = 0.7,
+  chooseAPI = "API 1"
+) {
+
+  // --------------- Add functions ----------------
+  functionUseGPT = []
+
+  for (let i = 0; i < functionsUse.length; i++) {
+    if (gptFunctions[functionsUse[i]] != undefined) {
+      functionUseGPT.push(gptFunctions[functionsUse[i]])
+    }
+  }
+  // --------------- Add functions ----------------
+
+  
+  let discussion = [...discussionOld];
+
+  discussion.unshift({
+    role: "system",
+    content: systemPrompt,
+  });
+
+
+  // ---------------- Add Result of function ----------------
+  if (functionResult.role != undefined) {
+    discussion.push(functionResult)
+  }
+  // ---------------- Add Result of function ----------------
+
+  printC(discussion, "10", "discussion", "g")
+  
+  // let modelT = "gpt-3.5-turbo-0613";
+  let modelT = "gpt-4-0613";
+
+  let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
+  let response = await axios.post(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      messages: discussion,
+      model: modelT,
+      temperature: temperature,
+      functions: functionUseGPT,
+      function_call: "auto", 
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+    }
+  );
+
+  printC(response.data.choices[0], "1", "response.data..choices[0]", "r")
+
+  // Check if it is a function or if it is a normal message
+  if (response.data.choices[0].message.content == null) { // Function
+    // console.log(response.data.choices[0].message.function_call.arguments)
+    printC(response.data.choices[0].message.function_call.arguments, "1", "response.data.choices[0].message.function_call.arguments", "r")
+
+
+    // --------------- parse arguments of function ----------------
+    let argFunc = response.data.choices[0].message.function_call.arguments
+
+    const regex = /"([^"]+)":\s*"([^"]*)"/g;
+    const matches = argFunc.matchAll(regex);
+    const result = {};
+
+    for (const match of matches) {
+      const [, key, value] = match;
+      result[key] = value;
+    }
+
+    console.log(result);
+    // --------------- parse arguments of function ----------------
+
+
+    return {
+      content: null,
+      function_call: {
+        functionName: response.data.choices[0].message.function_call.name,
+        ...result,
+      },
+    }
+  } else { // message
+    return {
+      content: response.data.choices[0].message.content
+    }
+  }
+
+  return {
+    content: null
+  }
+
+}
+
+async function chooseFunctionForGPT(resGPTFunc) {
+
+  printC(resGPTFunc, "1", "resGPTFunc", "g")
+
+  // run the function with name resGPTFunc.function_call.functionName
+
+  funcOutput = {}
+
+  if (resGPTFunc.function_call.functionName == "giveExamplesCandidate") {
+
+    funcOutput = await giveQualificationsCandidate(resGPTFunc)
+
+
+  } else if (resGPTFunc.function_call.functionName == "giveQualificationsCandidate") {
+
+    funcOutput = await giveQualificationsCandidate(resGPTFunc)
+
+
+  } else if (resGPTFunc.function_call.functionName == "giveInformationRelatedToPosition") {
+
+    funcOutput = await  giveInformationRelatedToPosition(resGPTFunc)
+
+  } else if (resGPTFunc.function_call.functionName == "isCandidateAvailable") {
+
+    funcOutput = await isCandidateAvailable(resGPTFunc)
+
+  } else {
+
+    console.log("this is a mistake there is not function")
+
+  }
+
+  funcOutput = {
+    ...funcOutput,
+    name: resGPTFunc.function_call.functionName
+  }
+
+
+  return funcOutput
+
+}
+
+async function isCandidateAvailable(funcInput) {
+
+
+  funcOutput = {
+    role: "function",
+    content: "- there is no information about availability ask the user if they want me to ask the candidate",
+  }
+
+  return funcOutput
+
+}
+
+
+async function giveInformationRelatedToPosition(funcInput) {
+
+  let {question} = funcInput.function_call
+  let {userID,positionID} = funcInput
+
+
+  let promptSearch = question + "\n\n"
+
+
+  // ----------------- User -----------------
+  let filter = {}
+  
+  filter.label = {"$in": ["CV_user_memory","conv_with_user_memory"]}
+  filter._id = userID;
+
+  printC(filter, "1", "filter", "b")
+
+
+  longTermMemories_user = await findBestEmbedings(promptSearch, filter, (topK = 5), "User");
+
+  printC(longTermMemories_user, "1", "longTermMemories_user", "b")
+  // ----------------- User -----------------
+
+  // ----------------- Position -----------------
+
+  filter.label =  {"$in": ["requirements_position_memory","conv_for_position_memory"]}
+  filter._id = positionID;
+
+  longTermMemories_Position = await findBestEmbedings(promptSearch, filter, (topK = 5), "User");
+
+
+
+  // ----------------- Position -----------------
+
+
+
+  funcOutput = {
+    role: "function",
+    content: "",
+    memoriesUser: longTermMemories_user,
+    memoriesPosition: longTermMemories_Position,
+  }
+
+  funcOutputContent = "Memories User (delimited <>): <"
+  for (let i = 0; i < longTermMemories_user.length; i++) {
+    funcOutputContent += "- " + longTermMemories_user[i].metadata.text + "\n"
+  }
+  funcOutputContent += ">\n\n"
+
+
+  funcOutputContent += "Memories Position (delimited <>): <"
+  for (let i = 0; i < longTermMemories_Position.length; i++) {
+    funcOutputContent += "- " + longTermMemories_Position[i].metadata.text + "\n"
+  }
+  funcOutputContent += "> \n\n"
+
+
+  funcOutputContent += "Only Use Memories that are related to the Question!!!! "
+
+  funcOutput.content = funcOutputContent
+
+  printC(funcOutput, "1", "funcOutput", "b")
+
+  // s9
+  return funcOutput
+
+
+}
+
+
+async function giveQualificationsCandidate(funcInput) {
+
+  let {topicOfInterest,extraInfo} = funcInput.function_call
+  let {userID} = funcInput
+
+
+  let promptSearch = topicOfInterest + "\n\n" + extraInfo
+
+  filter = {}
+  
+  filter.label = {"$in": ["CV_user_memory","conv_with_user_memory"]}
+  filter._id = userID;
+
+  printC(filter, "1", "filter", "b")
+
+
+  longTermMemories_userCV = await findBestEmbedings(promptSearch, filter, (topK = 5), "User");
+
+  printC(longTermMemories_userCV, "1", "longTermMemories_userCV", "b")
+
+  funcOutput = {
+    role: "function",
+    content: "",
+    memories: longTermMemories_userCV
+  }
+
+  funcOutputContent = "All Memories collected: \n"
+
+  for (let i = 0; i < longTermMemories_userCV.length; i++) {
+    funcOutputContent += "- " + longTermMemories_userCV[i].metadata.text + "\n"
+  }
+
+  funcOutputContent += "Only Use Memories that are related to the Question!!!! "
+
+  funcOutput.content = funcOutputContent
+
+  printC(funcOutput, "1", "funcOutput", "b")
+
+  // s9
+  return funcOutput
+
+
 }
 
 async function useGPT4chat(
@@ -767,4 +1109,7 @@ module.exports = {
   findBestEmbedings,
   identifyCategoryFunc,
   replyToMessageBasedOnCategoryFunc,
+  useGPTFunc,
+  chooseFunctionForGPT,
+  giveQualificationsCandidate,
 };
