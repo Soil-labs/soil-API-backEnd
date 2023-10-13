@@ -2365,7 +2365,7 @@ async function onlyGPTchat(prompt, temperature = 0.7, chooseAPI = "API 1") {
     "https://api.openai.com/v1/chat/completions",
     {
       messages: discussion,
-      model: "gpt-3.5-turbo",
+      model: "gpt-3.5-turbo-16k",
       temperature: temperature,
     },
     {

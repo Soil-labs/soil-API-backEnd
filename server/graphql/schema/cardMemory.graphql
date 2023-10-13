@@ -103,6 +103,11 @@ module.exports = `
         companyID: ID
         userID: ID
         positionID: ID
+        connectCardType: connectCardTypeEnum
+    }
+
+    enum connectCardTypeEnum {
+        filterUser
     }
 
     enum typeCardMemoryEnum {
