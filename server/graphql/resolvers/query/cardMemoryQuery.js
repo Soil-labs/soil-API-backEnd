@@ -8,7 +8,7 @@ const { CardMemory } = require("../../../models/cardMemoryModel");
 
 module.exports = {
   findCardMemories: async (parent, args, context, info) => {
-    const {_id,companyID,userID,positionID,} = args.fields;
+    const {_id,companyID,userID,positionID,connectCardType} = args.fields;
     console.log("Query > findCardMemories > args.fields = ", args.fields);
 
     if (!_id && !companyID && !userID && !positionID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > deleteCardMemory" });
@@ -40,6 +40,7 @@ module.exports = {
 
           printC(cardMemoriesDataPrep, "2", "cardMemoriesDataPrep", "b")
 
+          let connectedCardObj = {}
 
           // only take the ID of the connectedCards 
           let connectedCardsID = []
@@ -49,6 +50,7 @@ module.exports = {
               const connectedCard = cardMemory.connectedCards[j];
 
               if (connectedCard.cardID) connectedCardsID.push(connectedCard.cardID)
+              connectedCardObj[connectedCard.cardID] = false
             }
           }
 
@@ -64,11 +66,32 @@ module.exports = {
             const connectedCard = connectedCardsData[i];
 
             if (connectedCard.authorCard.userID.toString() == userID.toString()){
-              cardMemoriesData.push(connectedCard)
+              // cardMemoriesData.push(connectedCard)
+              connectedCardObj[connectedCard._id] = true
             }
           }
 
+          for (let i = 0; i < cardMemoriesDataPrep.length; i++) {
+            const cardMemory = cardMemoriesDataPrep[i];
+
+            connectedCardsNew = []
+            for (let j = 0; j < cardMemory.connectedCards.length; j++) {
+              const connectedCard = cardMemory.connectedCards[j];
+
+              if (connectedCardObj[connectedCard.cardID] == true) connectedCardsNew.push(connectedCard)
+
+            }
+
+            cardMemory.connectedCards = connectedCardsNew
+
+            cardMemoriesData.push(cardMemory)
+          }
           // sdf10
+
+
+          // cardMemoriesData = await CardMemory.find({ 
+          //   "authorCard.positionID": positionID  
+          // });
 
 
         } else if (positionID){
