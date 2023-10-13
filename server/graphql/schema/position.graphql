@@ -118,6 +118,7 @@ module.exports = `
     }
 
     type scoreCardCategoryMemoryType {
+        _id: ID
         category:typeCardMemoryEnum
         score: Float,
         reason: String,

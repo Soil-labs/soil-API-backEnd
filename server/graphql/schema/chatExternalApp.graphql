@@ -39,6 +39,23 @@ module.exports = `
         communicationAuthorType: communicationAuthorTypeEnum,
         lastNumMessages: Int,
     }   
+    input checkLimitMessagesExternalAppInput {
+        chatID_TG: ID,
+        userID: ID,
+        projectID: ID,
+        communicationAuthorType: communicationAuthorTypeEnum,
+        limitMinute: Int,
+        limitHour: Int,
+        limitDay: Int,
+    }  
+
+    type checkLimitMessagesExternalAppOutput {
+        limitExceeded: Boolean,
+        message: String,
+        limitExceededMinute: Boolean,
+        limitExceededHour: Boolean,
+        limitExceededDay: Boolean,
+    }   
 
 
 `

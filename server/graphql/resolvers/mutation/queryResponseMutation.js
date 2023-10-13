@@ -2,6 +2,8 @@ const { ApolloError } = require("apollo-server-express");
 
 const { QueryResponse } = require("../../../models/queryResponseModel");
 const { Conversation } = require("../../../models/conversationModel");
+const { Members } = require("../../../models/membersModel");
+
 
 
 const { addToFilter } = require("../utils/queryResponseModules");
@@ -47,9 +49,42 @@ module.exports = {
         );
       }
 
-      await queryResponseData.save();
      // ------------------ Save to MongoDB ------------------
 
+
+     // ------------------ Change the State of Eden for Candidate ------------------
+     // TODO need more work to work on both sides candidate and position
+     acceptedCategories ={
+      "REJECT_CANDIDATE": true, 
+      "ACCEPT_CANDIDATE": true, 
+      "ASK_CANDIDATE": true, 
+      "PITCH_POSITION_CANDIDATE": true,
+     }
+     if (filter.category && acceptedCategories[filter.category]){
+
+      if (responderType == "USER" && responderID){
+
+        memberData = await Members.findOne({ _id: responderID }).select('_id discordName stateEdenChat');
+
+        if (memberData) {
+          memberData.stateEdenChat.categoryChat = filter.category;
+
+          if (senderType== "POSITION" && senderID){
+            memberData.stateEdenChat.positionIDs = [senderID];
+          }
+
+          await memberData.save();
+        }
+
+      }
+
+     }
+     // ------------------ Change the State of Eden for Candidate ------------------
+
+    //  sd9
+
+
+     await queryResponseData.save();
 
 
      pubsub.publish("QUERY_RESPONSE_UPDATED", {

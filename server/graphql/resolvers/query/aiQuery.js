@@ -40,7 +40,7 @@ const {
 
 const { useGPTchatSimple} = require("../utils/aiModules");
 
-const { useGPT4chat,identifyCategoryFunc,replyToMessageBasedOnCategoryFunc} = require("../utils/aiExtraModules");
+const { useGPT4chat,identifyCategoryFunc,replyToMessageBasedOnCategoryFunc,useGPTFunc,chooseFunctionForGPT} = require("../utils/aiExtraModules");
 
 
 const {
@@ -3718,7 +3718,8 @@ module.exports = {
 
       let discussionOld = []
 
-      let memoriesPrompt = ""
+      let memoriesPositionPrompt = ""
+      let memoriesCandidatePrompt = ""
 
       let currentState = ""
       let prompt_conversation = ""
@@ -3732,7 +3733,7 @@ module.exports = {
 
 
         // ------------------------ Old Messages ------------------
-        let lastNumMessages = 3
+        let lastNumMessages = 7
 
         let chatExternalAppData = await ChatExternalApp.find(filter).sort({ timeStamp: -1 }).limit(lastNumMessages)
 
@@ -3754,9 +3755,12 @@ module.exports = {
 
 
 
-        // ------------------------ Memory ------------------
+        // ------------------------ Memory Position------------------
         let memberData = await Members.findOne({ "conduct.telegramChatID": chatID_TG }).select("_id discordName stateEdenChat")
 
+
+        // printC(memberData, "0", "memberData", "p");
+        // ss5
         
         if (memberData.stateEdenChat && memberData.stateEdenChat.positionIDs && memberData.stateEdenChat.positionIDs.length > 0) {
           positionID = memberData.stateEdenChat.positionIDs[0]
@@ -3764,24 +3768,46 @@ module.exports = {
           currentState = memberData.stateEdenChat.categoryChat
 
 
-          let  filter = {}
+          let  filterPosition = {}
 
-          filter.database = REACT_APP_MONGO_DATABASE;
+          filterPosition.database = REACT_APP_MONGO_DATABASE;
 
-          filter.label =  {"$in": ["requirements_position_memory","conv_for_position_memory"]}
-          filter._id = positionID;
+          filterPosition.label =  {"$in": ["requirements_position_memory","conv_for_position_memory"]}
+          filterPosition._id = positionID;
 
-          longTermMemoriesPosition = await findBestEmbedings(prompt_conversation, filter, (topK = 5));
+          longTermMemoriesPosition = await findBestEmbedings(prompt_conversation, filterPosition, (topK = 8));
 
           console.log("longTermMemoriesPosition = " , longTermMemoriesPosition)
           // sd13
 
           longTermMemoriesPosition.forEach((memory) => {
-            memoriesPrompt += memory.metadata.text + "\n"
+            memoriesPositionPrompt += memory.metadata.text + "\n"
           })
 
         }
-        // ------------------------ Memory ------------------
+        // ------------------------ Memory Position------------------
+
+
+        // ------------------------ Memory Candidate------------------
+        let userID = memberData._id
+
+        let  filterCandidate = {}
+
+          filterCandidate.database = REACT_APP_MONGO_DATABASE;
+
+          filterCandidate.label =  {"$in": ["CV_user_memory","conv_with_user_memory"]}
+          filterCandidate._id = userID;
+
+          longTermMemoriesCandidate = await findBestEmbedings(prompt_conversation, filterCandidate, (topK = 8));
+
+          console.log("longTermMemoriesCandidate = " , longTermMemoriesCandidate)
+          // sd13
+
+          longTermMemoriesCandidate.forEach((memory) => {
+            memoriesCandidatePrompt += memory.metadata.text + "\n"
+          })
+
+        // ------------------------ Memory Candidate------------------
 
 
 
@@ -3798,7 +3824,7 @@ module.exports = {
 
       let reply = ""
       if (replyFlag == true) {
-        reply = await replyToMessageBasedOnCategoryFunc(message,categoryEnum,discussionOld,memoriesPrompt)
+        reply = await replyToMessageBasedOnCategoryFunc(message,categoryEnum,discussionOld,memoriesPositionPrompt,memoriesCandidatePrompt)
       }
     
 
@@ -3918,6 +3944,79 @@ module.exports = {
         }
       );
     }
+  },
+  askEdenUserPositionGPTFunc: async (parent, args, context, info) => {
+    const {  userID,positionID,conversation,whatToAsk } = args.fields;
+    console.log("Query > askEdenUserPositionGPTFunc > args.fields = ", args.fields);
+
+
+    let discussionT = conversation.map((item) => ({
+      role: item.role,
+      content: item.content,
+    }));
+
+    // let userNewMessage = discussionT.pop().content;
+
+    printC(discussionT, "0", "discussionT", "p");
+    // d0
+
+    functionsUseGPT = ["giveExamplesCandidate","giveQualificationsCandidate","giveInformationRelatedToPosition","isCandidateAvailable"]
+
+    // functionResult = {
+    //   role: "function",
+    //   name: "findInfoCandidateApplicationToPosition",
+    //   content: "status: Pass to the second stage of the interview, nextInterview: In two weeks",
+    // }
+
+    const systemPrompt = `You are a recruiter, your job is to create a great conversation that help the user 
+    - be concise write small answers
+    - Only say the truth if you don't know something say that you don't have this info
+    - When you see Memories Only use a memory that is absolutely relevant to the Question!
+    - Only answer exact Question that you were asked!`
+
+    let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT)
+    // let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,functionResult)
+
+    resGPTFunc = {
+      ...resGPTFunc,
+      userID,
+      positionID,
+    }
+
+    printC(resGPTFunc, "0", "resGPTFunc", "p");
+
+    if (resGPTFunc.content == null && resGPTFunc?.function_call?.functionName) {
+      funcOutput = await chooseFunctionForGPT(resGPTFunc)
+
+      // printC(funcOutput, "0", "funcOutput", "p");
+
+      const funcOutputGPT = {
+        role: funcOutput.role,
+        name: funcOutput.name,
+        content: funcOutput.content,
+      }
+
+      let resGPTFunc_2 = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,funcOutputGPT,0)
+
+
+      printC(resGPTFunc_2, "5", "resGPTFunc_2", "p");
+
+      if (resGPTFunc_2.content){
+        return {
+          reply: resGPTFunc_2.content,
+        }
+      }
+
+    } else {
+      if (resGPTFunc.content){
+        return {
+          reply: resGPTFunc.content,
+        }
+      }
+    }
+
+
+
   },
   askEdenUserPosition: async (parent, args, context, info) => {
     const {  userID,positionID,conversation,whatToAsk } = args.fields;

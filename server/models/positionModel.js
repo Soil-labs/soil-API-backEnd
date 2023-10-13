@@ -15,6 +15,13 @@ const positionModel = mongoose.Schema({
     telegramChatID: String,
     telegramConnectionCode: String,
   },
+  stateEdenChat: {
+    positionIDs: [mongoose.Schema.ObjectId],
+    categoryChat: {
+      type: String,
+      enum: ["REJECT_CANDIDATE","ACCEPT_CANDIDATE","ASK_CANDIDATE","PITCH_POSITION_CANDIDATE"],
+    },
+  },
   employees: [
     {
       typeT: String,
@@ -125,6 +132,7 @@ const positionModel = mongoose.Schema({
       },
       scoreCardCategoryMemories: [
         {
+          _id: String,
           category: {
             type: String,
             enum: ["TECHNICAL_SKILLS","SOFT_SKILLS","EXPERIENCE","INDUSTRY_KNOWLEDGE","INTERESTS","CORE_VALUES","GOALS","EDUCATION","OTHER"], // ScoreCard = Checks and Balances

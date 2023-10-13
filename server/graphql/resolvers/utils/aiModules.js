@@ -2170,6 +2170,30 @@ async function useGPTchat(
 ) {
   let discussion = [...discussionOld];
 
+
+  // -------- Check that discussion is less than 4000 tokens, if it is not then cut messages from teh top -------------
+  let discussionTokens = 0;
+  for (let i = 0; i < discussion.length; i++) {
+    discussionTokens = discussionTokens + discussion[i].content.split(" ").length;
+  }
+
+  printC(discussionTokens, "1", "discussionTokens", "r")
+
+  if (discussionTokens > 3100) {
+    let discussionTokensNow = 0;
+    let discussionNow = [];
+    for (let i = discussion.length - 1; i >= 0; i--) {
+      discussionTokensNow =
+        discussionTokensNow + discussion[i].content.split(" ").length;
+      if (discussionTokensNow < 3100) {
+        discussionNow.unshift(discussion[i]);
+      }
+    }
+    discussion = discussionNow;
+  }
+  // -------- Check that discussion is less than 4000 tokens, if it is not then cut messages from teh top -------------
+
+
   discussion.unshift({
     role: "system",
     content: systemPrompt,
@@ -2180,9 +2204,15 @@ async function useGPTchat(
     content: userNewMessage + "\n" + userQuestion,
   });
 
-  console.log("discussion = ", discussion);
+  // console.log("discussion = ", discussion);
+
 
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
+
+
+  // console.log("OPENAI_API_KEY",OPENAI_API_KEY)
+
+  try {
   response = await axios.post(
     "https://api.openai.com/v1/chat/completions",
     {
@@ -2197,6 +2227,10 @@ async function useGPTchat(
       },
     }
   );
+  } catch (err) {
+    console.log("err = ", err.response.data.error);
+  }
+
 
   return response.data.choices[0].message.content;
 }

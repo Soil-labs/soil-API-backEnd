@@ -103,6 +103,7 @@ const { findChat } = require("./query/chatQuery");
 
 const {
   findLastNumMessagesChatExternalApp,
+  checkLimitMessagesExternalApp,
 } = require("./query/chatExternalAppQuery");
 
 const {
@@ -117,6 +118,7 @@ const {
   findPrioritiesTrainEdenAI,
   edenGPTreplyMemory,
   askEdenUserPosition,
+  askEdenUserPositionGPTFunc,
   edenGPTreplyChatAPI,
   edenGPTreplyChatAPI_V2,
   edenGPTreplyChatAPI_V3,
@@ -277,6 +279,7 @@ module.exports = {
 
     // ------------ CHAT EXTERNAL APP QUERY ---------------
     findLastNumMessagesChatExternalApp,
+    checkLimitMessagesExternalApp,
 
     //----------- AI QUERY ------------------
     findMessage,
@@ -290,6 +293,7 @@ module.exports = {
     findPrioritiesTrainEdenAI,
     edenGPTreplyMemory,
     askEdenUserPosition,
+    askEdenUserPositionGPTFunc,
     edenGPTreplyChatAPI,
     edenGPTreplyChatAPI_V2,
     edenGPTreplyChatAPI_V3,
