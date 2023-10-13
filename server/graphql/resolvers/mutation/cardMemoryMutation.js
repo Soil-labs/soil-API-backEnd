@@ -502,12 +502,13 @@ module.exports = {
     }
   },
   createCardsCandidateForPosition: async (parent, args, context, info) => {
-    const { userID, positionID} = args.fields;
+    const { positionID} = args.fields;
+    let { userID} = args.fields;
     console.log("Mutation > createCardsCandidateForPosition > args.fields = ", args.fields);
 
 
     if (!positionID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
-    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements');
+    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements candidates');
     if (!positionData) throw new ApolloError("Position not found", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
     
 
@@ -517,50 +518,85 @@ module.exports = {
     if (cardMemoriesData.length == 0) throw new ApolloError("CardMemory for Position not found First Create Cards for the Position", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
 
     printC(cardMemoriesData, "1", "cardMemoriesData", "b")
-    
     // -------------- Read every Card of the Position --------------
 
 
-    if (!userID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
-    memberData = await Members.findOne({ _id: userID }).select('_id discordName cvInfo');
 
-    if (!memberData) throw new ApolloError("User not found", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
 
+
+    
     try {
 
-      // ---------- CV member ----------
-      const cvInfo = memberData.cvInfo.cvContent
+      let membersData = []
+      let userIDs = []
+      
+      if (userID) {
+        memberData = await Members.findOne({ _id: userID }).select('_id discordName cvInfo');
+        
+        if (!memberData) throw new ApolloError("User not found", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
 
-      // ---------- CV member ----------
+        membersData.push(memberData)
+      } else {
 
-      //  --------- Find conversation of position ---------
-      convData = await Conversation.findOne({
-        $and: [{ positionID: positionID }, { userID: userID }],
-      }).select("_id conversation");
+        for (let i = 0; i < positionData.candidates.length; i++) {
+          const candidate = positionData.candidates[i];
+
+          if (candidate.scoreCardCategoryMemories.length != 0) continue
+
+          userIDs.push(candidate.userID)
 
 
+        }
 
-      let promptConv = "";
-      for (let i = 0; i < convData.conversation.length; i++) {
-        let convDataNow = convData.conversation[i];
-        if (convDataNow.role == "assistant")
-          promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
-        else
-          promptConv = promptConv + "User: " + convDataNow.content + " \n\n";
+        membersData = await Members.find({ _id: userIDs }).select('_id discordName cvInfo');
+
+
       }
 
-      printC(promptConv, "2", "promptConv", "y")
-      //  --------- Find conversation of position ---------
-
       
+      for (let i = 0; i < membersData.length; i++) {
+        const memberData = membersData[i];
+        userID = memberData._id
 
-      let cardMemoriesCandidateArray = await createCardsScoresCandidate_3(cvInfo,promptConv,userID)
 
-      printC(cardMemoriesCandidateArray, "3", "cardMemoriesCandidateArray", "g")
+        // ---------- CV member ----------
+        const cvInfo = memberData.cvInfo.cvContent
 
-    //  sd9
+        // ---------- CV member ----------
 
-      cardMemoryDataNowAll = await connectCardsPositionToCandidateAndScore(cardMemoriesCandidateArray,cardMemoriesData,userID)
+        //  --------- Find conversation of position ---------
+        convData = await Conversation.findOne({
+          $and: [{ positionID: positionID }, { userID: userID }],
+        }).select("_id conversation");
+
+        if (!convData) continue;
+
+
+
+        let promptConv = "";
+        for (let i = 0; i < convData.conversation.length; i++) {
+          let convDataNow = convData.conversation[i];
+          if (convDataNow.role == "assistant")
+            promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
+          else
+            promptConv = promptConv + "User: " + convDataNow.content + " \n\n";
+        }
+
+        printC(promptConv, "2", "promptConv", "y")
+        //  --------- Find conversation of position ---------
+
+        
+
+        let cardMemoriesCandidateArray = await createCardsScoresCandidate_3(cvInfo,promptConv,userID)
+
+        printC(cardMemoriesCandidateArray, "3", "cardMemoriesCandidateArray", "g")
+
+
+        cardMemoryDataNowAll = await connectCardsPositionToCandidateAndScore(cardMemoriesCandidateArray,cardMemoriesData,userID)
+
+
+        wait(5)
+      }
 
 
 
@@ -659,8 +695,6 @@ module.exports = {
       }
 
       printC(cardMemoriesDataCandidate, "3", "cardMemoriesDataCandidate", "r")
-      // as1
-
       // ------------- Find all the IDs of teh cardMemoriesDataPosition connected cards --------
 
 
@@ -888,6 +922,7 @@ module.exports = {
           const scoreCardCategoryMemory = candidate.scoreCardCategoryMemories[j];
 
           if (scoreCardCategoryMemory.category == cardMemoryPosition.type){
+            if (scoreCardCategoryMemory._id) cardMemoriesDataPositionObj[cardMemoryPosition.type]._id = scoreCardCategoryMemory._id
             if (scoreCardCategoryMemory.score) cardMemoriesDataPositionObj[cardMemoryPosition.type].score = scoreCardCategoryMemory.score
 
             if (scoreCardCategoryMemory.reason) cardMemoriesDataPositionObj[cardMemoryPosition.type].reason = scoreCardCategoryMemory.reason
@@ -1026,6 +1061,7 @@ module.exports = {
             positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories[idx].reason = reasonCategoryScore
           } else {
             positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories.push({
+              _id: cardMemoryPosition._id,
               category: category,
               reason: reasonCategoryScore,
             })

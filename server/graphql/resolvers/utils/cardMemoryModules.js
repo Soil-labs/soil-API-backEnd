@@ -172,6 +172,7 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
   let oldMemoriesIDprompt = ""
 
 
+
   if (cardMemoriesDataCandidate.length == 0) {
    // --------- Prompt for finding Cards-----------
    promptFindMemoriesCandidate = `
