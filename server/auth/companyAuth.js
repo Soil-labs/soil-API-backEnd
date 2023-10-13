@@ -39,6 +39,7 @@ const companyAuth = async ({ body }, res) => {
         _id: dbCompany._id,
         slug: dbCompany.slug,
         stripe: dbCompany.stripe,
+        type: dbCompany.type,
       },
     });
   } catch (error) {
