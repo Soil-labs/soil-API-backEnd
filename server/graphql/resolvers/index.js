@@ -53,6 +53,8 @@ const {
   convRecruiterType,
   NodeDataType,
   QuestionType,
+  scoreCardsPositionType,
+  scoreCardsCandidateType,
 } = require("./objectResolvers/positionResolver");
 const { Company } = require("./objectResolvers/companyResolver");
 const { MemoryPinecone } = require("./objectResolvers/memoryPineconeResolver");
@@ -126,6 +128,8 @@ module.exports = {
   convRecruiterType,
   NodeDataType,
   QuestionType,
+  scoreCardsPositionType,
+  scoreCardsCandidateType,
   SkillCategory,
   SkillSubCategory,
   QueryResponse,

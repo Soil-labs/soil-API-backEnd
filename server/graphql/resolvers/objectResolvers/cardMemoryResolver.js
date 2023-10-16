@@ -17,7 +17,7 @@ module.exports = {
 
         const {connectCardType,userID} = context.body.variables.fields
 
-        console.log("connectCardType = ", connectCardType);
+        // console.log("connectCardType = ", connectCardType);
 
 
         let cardsData = await CardMemory.findOne({ _id: card.cardID});
