@@ -4,6 +4,8 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { Node } = require("../../../models/nodeModal");
 const { Company } = require("../../../models/companyModel");
 const { Conversation } = require("../../../models/conversationModel");
+const { CardMemory } = require("../../../models/cardMemoryModel");
+
 
 const { ApolloError } = require("apollo-server-express");
 
@@ -262,6 +264,58 @@ module.exports = {
           err.extensions?.code || "DATABASE_SEARCH_ERROR",
           {
             component: "userResolver > skills",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+  },
+  scoreCardsPositionType: {
+    card: async (parent, args, context, info) => {
+       console.log("parent = " , parent)
+
+      try {
+
+        cardID = parent.cardID
+        
+
+        const cardData = await CardMemory.findOne({ _id: cardID });
+
+
+        return cardData
+        
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "userResolver > scoreCardsPosition",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+  },
+  scoreCardsCandidateType: {
+    card: async (parent, args, context, info) => {
+       console.log("parent = " , parent)
+
+      try {
+
+        cardID = parent.cardID
+        
+
+        const cardData = await CardMemory.findOne({ _id: cardID });
+
+
+        return cardData
+        
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "userResolver > scoreCardsPosition",
             user: context.req.user?._id,
           }
         );

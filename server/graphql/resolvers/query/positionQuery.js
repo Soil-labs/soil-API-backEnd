@@ -46,6 +46,33 @@ module.exports = {
       );
     }
   },
+  findPositionCandidate: async (parent, args, context, info) => {
+    const { positionID, userID } = args.fields;
+    console.log("Query > findPositionCandidate > args.fields = ", args.fields);
+
+    if (!positionID) throw new ApolloError("positionID is required");
+
+    if (!userID) throw new ApolloError("userID is required");
+
+    try {
+
+      let positionData = await Position.findOne({ _id: positionID });
+
+      if (!positionData) throw new ApolloError("Position not found");
+
+      let candidateData = positionData.candidates.find(
+        (candidate) => candidate.userID.toString() == userID.toString()
+      );
+
+      return candidateData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findPositionCandidate",
+        { component: "positionQuery > findPositionCandidate" }
+      );
+    }
+  },
   findPositions: async (parent, args, context, info) => {
     const { _id } = args.fields;
     console.log("Query > findPositions > args.fields = ", args.fields);

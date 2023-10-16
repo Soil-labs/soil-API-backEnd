@@ -66,6 +66,7 @@ module.exports = `
 
            #  ---------- POSITION QUERY -------
             findPosition(fields:findPositionInput): Position
+            findPositionCandidate(fields:findPositionCandidateInput): CandidateType
             findPositions(fields:findPositionsInput): [Position]
             findUserTalentListPosition(fields:findUserTalentListPositionInput): talentListType
             findPositionsOfCommunity(fields:findPositionsOfCommunityInput): [Position]

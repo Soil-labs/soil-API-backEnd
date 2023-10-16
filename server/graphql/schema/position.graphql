@@ -115,6 +115,7 @@ module.exports = `
 
     type scoreCardTotalType {
         score: Float,
+        scoreCardsCalculated: Boolean
     }
 
     type scoreCardCategoryMemoryType {
@@ -123,6 +124,17 @@ module.exports = `
         score: Float,
         reason: String,
         priority: Float,
+        scoreCardsPosition: [scoreCardsPositionType],
+    }
+
+    type scoreCardsPositionType {
+        card: CardMemory,
+        score: Float,
+        reason: String,
+        scoreCardsCandidate: [scoreCardsCandidateType],
+    }
+    type scoreCardsCandidateType {
+        card: CardMemory, # don't need to save the score and reason because it is already inside the card
     }
 
     type attributeCandidateType {
@@ -277,6 +289,11 @@ module.exports = `
     input findPositionInput {
         _id: ID,
         telegramChatID: String,
+    }
+
+    input findPositionCandidateInput {
+        positionID: ID,
+        userID: ID,
     }
 
     input findPositionsInput {
