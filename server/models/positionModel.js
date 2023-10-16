@@ -129,10 +129,10 @@ const positionModel = mongoose.Schema({
       dateApply: Date,
       scoreCardTotal: {
         score: Number,
+        scoreCardsCalculated: Boolean,
       },
       scoreCardCategoryMemories: [
         {
-          _id: String,
           category: {
             type: String,
             enum: ["TECHNICAL_SKILLS","SOFT_SKILLS","EXPERIENCE","INDUSTRY_KNOWLEDGE","INTERESTS","CORE_VALUES","GOALS","EDUCATION","OTHER"], // ScoreCard = Checks and Balances
@@ -140,6 +140,18 @@ const positionModel = mongoose.Schema({
           score: Number,
           reason: String,
           priority: Number,
+          scoreCardsPosition: [
+            {
+              cardID: String,
+              score: Number,
+              reason: String,
+              scoreCardsCandidate: [
+                {
+                  cardID: String, // don't need to save the score and reason because it is already inside the card
+                },
+              ],
+            },
+          ],
         },
       ],
       summaryQuestions: [
