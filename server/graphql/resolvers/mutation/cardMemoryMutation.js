@@ -651,7 +651,7 @@ module.exports = {
       for (let i = 0; i < positionData.candidates.length; i++) {
         const candidate = positionData.candidates[i];
 
-        if (candidate.scoreCardCategoryMemories.length != 0) continue // SOS 🆘 - If the candidate already has a full scoreCardCategoryMemories then continue
+        // if (candidate.scoreCardCategoryMemories.length != 0) continue // SOS 🆘 - If the candidate already has a full scoreCardCategoryMemories then continue
 
         userIDs.push(candidate.userID)
 
@@ -684,8 +684,8 @@ module.exports = {
 
 
         // -------------- Check if the candidate already has a full scoreCardCategoryMemories --------------
-        if ( positionData.candidates[indexCandidateOnPosition].scoreCardTotal.scoreCardsCalculated == true) 
-          continue; // SOS 🆘 - If the candidate already has a full scoreCardCategoryMemories then continue
+        // if ( positionData.candidates[indexCandidateOnPosition].scoreCardTotal.scoreCardsCalculated == true) 
+        //   continue; // SOS 🆘 - If the candidate already has a full scoreCardCategoryMemories then continue
         // -------------- Check if the candidate already has a full scoreCardCategoryMemories --------------
 
        
@@ -1079,8 +1079,15 @@ module.exports = {
                 // console.log("hi - ",cardMemoryPosition.score?.overall)
                 // console.log("hi yoj0",dataCardPositionObj[cardMemoryPosition._id])
 
-                if (cardMemoryPosition.score?.overall){
-                  totalScore += cardMemoryPosition.score.overall*(6 - cardMemoryPosition.priority)
+                // printC(cardMemoryPosition.score?.overall, "0", "cardMemoryPosition.score?.overall", "p")
+
+                // if (cardMemoryPosition.score?.overall){
+                //   totalScore += cardMemoryPosition.score.overall*(6 - cardMemoryPosition.priority)
+                //   totalScoreCount += 6 - cardMemoryPosition.priority
+                //   totalScoreC += 1
+                // }
+                if (dataCardPositionObj[cardMemoryPosition._id].score){
+                  totalScore += dataCardPositionObj[cardMemoryPosition._id].score*(6 - cardMemoryPosition.priority)
                   totalScoreCount += 6 - cardMemoryPosition.priority
                   totalScoreC += 1
                 }
@@ -1101,8 +1108,13 @@ module.exports = {
             //   d12
             // }
 
-            // printC(scoreCardsPosition, "3", "scoreCardsPosition", "g")
-            // console.log(cardMemoriesDataPositionObj[category].idxScoreCategoryCandidates)
+            // printC(category, "3", "category", "g")
+            // printC(totalScore, "4", "totalScore", "g")
+            // printC(totalScoreCount, "4", "totalScoreCount", "g")
+            // printC(averagePriorityCategory, "5", "averagePriorityCategory", "g")
+
+            // printC(scoreCardsPosition, "3", "scoreCardsPosition", "r")
+            // // console.log(cardMemoriesDataPositionObj[category].idxScoreCategoryCandidates)
             // s10
 
             if (totalScoreCount > 0) totalScore = totalScore / totalScoreCount
@@ -1231,30 +1243,30 @@ module.exports = {
 
         // -------------- Total Score of Candidate --------------
         // printC(positionData.candidates[indexCandidateOnPosition].scoreCardTotal, "12", "positionData.candidates[indexCandidateOnPosition].scoreCardTotal", "g")
-        if (!positionData.candidates[indexCandidateOnPosition]?.scoreCardTotal?.score) {
-          let totalScoreCandidate = 0
-          let totalScoreCandidateCount = 0
+        let totalScoreCandidate = 0
+        let totalScoreCandidateCount = 0
 
-          for (const category in cardMemoriesDataPositionObj) {
-            if (Object.hasOwnProperty.call(cardMemoriesDataPositionObj, category)) {
-              const cardMemoriesDataPositionObjNow = cardMemoriesDataPositionObj[category];
+        for (const category in cardMemoriesDataPositionObj) {
+          if (Object.hasOwnProperty.call(cardMemoriesDataPositionObj, category)) {
+            const cardMemoriesDataPositionObjNow = cardMemoriesDataPositionObj[category];
 
-              printC(cardMemoriesDataPositionObjNow, "3", "cardMemoriesDataPositionObjNow", "r")
+            printC(cardMemoriesDataPositionObjNow, "3", "cardMemoriesDataPositionObjNow", "r")
 
-              if (cardMemoriesDataPositionObjNow.score){
-                totalScoreCandidate += cardMemoriesDataPositionObjNow.score*cardMemoriesDataPositionObjNow.priority
-                totalScoreCandidateCount += cardMemoriesDataPositionObjNow.priority
-              }
-
+            if (cardMemoriesDataPositionObjNow.score){
+              totalScoreCandidate += cardMemoriesDataPositionObjNow.score*cardMemoriesDataPositionObjNow.priority
+              totalScoreCandidateCount += cardMemoriesDataPositionObjNow.priority
             }
-          }
 
-          if (totalScoreCandidateCount > 0) {
-            totalScoreCandidate = totalScoreCandidate / totalScoreCandidateCount
-            positionData.candidates[indexCandidateOnPosition].scoreCardTotal.score = totalScoreCandidate.toFixed(2)
-
-            printC(totalScoreCandidate, "12", "totalScoreCandidate", "g")
           }
+        }
+
+        if (totalScoreCandidateCount > 0) {
+          totalScoreCandidate = totalScoreCandidate / totalScoreCandidateCount
+          positionData.candidates[indexCandidateOnPosition].scoreCardTotal.score = totalScoreCandidate.toFixed(2)
+
+          printC(totalScoreCandidate, "12", "totalScoreCandidate", "g")
+        } else {
+          positionData.candidates[indexCandidateOnPosition].scoreCardTotal.score = 0
         }
         // -------------- Total Score of Candidate --------------
 
