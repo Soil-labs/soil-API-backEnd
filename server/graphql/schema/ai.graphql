@@ -385,6 +385,12 @@ module.exports = `
         positionID: ID
         conversation: [messageChat]
         whatToAsk: whatToAskEnum
+        memoriesType: memoriesTypeEnum
+    }
+
+    enum memoriesTypeEnum {
+        OLD
+        NEW
     }
 
      type askEdenUserPositionGPTFuncOutput {

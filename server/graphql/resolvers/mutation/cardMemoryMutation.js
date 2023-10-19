@@ -7,7 +7,12 @@ const { CardMemory } = require("../../../models/cardMemoryModel");
 const { Conversation } = require("../../../models/conversationModel");
 const { Members } = require("../../../models/membersModel");
 
+const {upsertEmbedingPineCone,deletePineCone} = require("../utils/aiExtraModules");
+
 const {addCardMemoryFunc,createCardsScoresCandidate_3,connectCardsPositionToCandidateAndScore} = require("../utils/cardMemoryModules");
+
+require("dotenv").config();
+
 
 
 const {
@@ -193,10 +198,15 @@ module.exports = {
       // sd9
 
       deleteCardIDs = []
+      deletePineconeIDs = []
       for (let i = 0; i < cardMemoriesData.length; i++) {
         const cardMemory = cardMemoriesData[i];
 
         deleteCardIDs.push(cardMemory._id)
+        deletePineconeIDs.push(cardMemory.pineconeDB.pineconeID)
+
+        // ------------ Delete from PineCone -------------
+        // ------------ Delete from PineCone -------------
 
 
         // --------------- Delete from the connectedCards the cardID ---------------
@@ -223,6 +233,7 @@ module.exports = {
 
       }
 
+      await deletePineCone(deletePineconeIDs)
 
       await CardMemory.deleteMany({ _id: deleteCardIDs});
 
@@ -258,8 +269,40 @@ module.exports = {
 
       cardMemoriesData = await CardMemory.find({ "authorCard.positionID": positionID  });
 
-      if (cardMemoriesData.length > 0) 
+      if (cardMemoriesData.length > 0){
+
+        // ----------------- Check if the memories are on pinecone and add it ------------------
+        const reactAppMongoDatabase = process.env.REACT_APP_MONGO_DATABASE
+        for (let i = 0; i < cardMemoriesData.length; i++) {
+          if (cardMemoriesData[i].pineconeDB.pineconeID) continue
+
+          let textPinecone = cardMemoriesData[i].content + "\n Category: " + cardMemoriesData[i].type
+
+          let filterUpsert = {
+            text: textPinecone,
+            database: reactAppMongoDatabase,
+            label: "scoreCardMemory",
+            category: cardMemoriesData[i].type,
+            positionID: positionID,
+            mongoID: cardMemoriesData[i]._id,
+          }
+
+          let resPineCone  = await upsertEmbedingPineCone(filterUpsert)
+
+          cardMemoriesData[i].pineconeDB = {
+            pineconeID: resPineCone.pineConeID,
+            text: textPinecone,
+            metadata: {
+              label: "scoreCardMemory",
+              database: reactAppMongoDatabase,
+              positionID: positionID,
+            }
+          }
+        }
+        // ----------------- Check if the memories are on pinecone and add it ------------------
+
         return cardMemoriesData
+      }
 
 
       // -------------- Job Requirements --------------
@@ -448,7 +491,6 @@ module.exports = {
 
 
       // --------- Add Card Memories ----------
-
       let cardMemories = []
 
       for (let i = 0; i < cardMemoriesArray.length; i++) {
@@ -464,6 +506,7 @@ module.exports = {
             positionID: positionID,
             category: "POSITION"
           },
+          pineconeDB: {},
         })
 
         if (cardMemory.keyPriority) {
@@ -484,10 +527,41 @@ module.exports = {
 
       printC(cardMemories, "6", "cardMemories", "g")
 
-
+       
       cardMemoriesData = await CardMemory.insertMany(cardMemories);
-
       // --------- Add Card Memories ----------
+
+
+      // ----------------- Add Memories on Pinecone ------------------
+      const reactAppMongoDatabase = process.env.REACT_APP_MONGO_DATABASE
+      for (let i = 0; i < cardMemoriesData.length; i++) {
+
+        let textPinecone = cardMemoriesData[i].content + "\n Category: " + cardMemoriesData[i].type
+
+        let filterUpsert = {
+          text: textPinecone,
+          database: reactAppMongoDatabase,
+          label: "scoreCardMemory",
+          category: cardMemoriesData[i].type,
+          positionID: positionID,
+          mongoID: cardMemoriesData[i]._id,
+        }
+
+        let resPineCone  = await upsertEmbedingPineCone(filterUpsert)
+
+        cardMemoriesData[i].pineconeDB = {
+          pineconeID: resPineCone.pineConeID,
+          text: textPinecone,
+          metadata: {
+            label: "scoreCardMemory",
+            database: reactAppMongoDatabase,
+            positionID: positionID,
+          }
+        }
+
+        await cardMemoriesData[i].save();
+      }
+      // ----------------- Add Memories on Pinecone ------------------
       
 
       return cardMemoriesData
@@ -520,16 +594,14 @@ module.exports = {
     printC(cardMemoriesData, "1", "cardMemoriesData", "b")
     // -------------- Read every Card of the Position --------------
 
-
-
-
-
     
     try {
 
       let membersData = []
       let userIDs = []
       
+
+      // ---------------------- Collect all the users ------------
       if (userID) {
         memberData = await Members.findOne({ _id: userID }).select('_id discordName cvInfo');
         
@@ -552,6 +624,10 @@ module.exports = {
 
 
       }
+      // ---------------------- Collect all the users ------------
+
+
+      
 
       
       for (let i = 0; i < membersData.length; i++) {
