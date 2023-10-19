@@ -386,32 +386,61 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
 
   if (cardMemoriesDataCandidate.length == 0) {
    // --------- Prompt for finding Cards-----------
-   promptFindMemoriesCandidate = `
-   CV Candidate (delimited <>): <${cvInfo}>
-   Candidate Conversation for Job (delimited <>): <${promptConv}>
+  //  promptFindMemoriesCandidate = `
+  //  CV Candidate (delimited <>): <${cvInfo}>
+  //  Candidate Conversation for Job (delimited <>): <${promptConv}>
 
 
    
-   - Your task is to create a Memory that will indicate the most important information about a candidate
-   - You need to extract for each Memory the Category, Content
-   - Category can ONLY be one of this!! : TECHNICAL_SKILLS, SOFT_SKILLS, EXPERIENCE, INDUSTRY_KNOWLEDGE, INTERESTS, CORE_VALUES, GOALS, EDUCATION, OTHER
-   - Content is a text that describes the Memory
-   - Be careful choosing the right amount of memories you have from 0 to 30 Memories to represent the most important parts of the Job
+  //  - Your task is to create a Memory that will indicate the most important information about a candidate
+  //  - You need to extract for each Memory the Category, Content
+  //  - Category can ONLY be one of this!! : TECHNICAL_SKILLS, SOFT_SKILLS, EXPERIENCE, INDUSTRY_KNOWLEDGE, INTERESTS, CORE_VALUES, GOALS, EDUCATION, OTHER
+  //  - Content is a text that describes the Memory
+  //  - Be careful choosing the right amount of memories you have from 0 to 30 Memories to represent the most important parts of the Job
 
-   - Example of Memory:
-   1. TECHNICAL_SKILLS / Working as Senior in Google using Python
-   2. SOFT_SKILLS / Leader for 3 years, position in a team in Netflix
-   3. EXPERIENCE / Worked in really big projects for 5 years with react
-   4. ...
+  //  - Example of Memory:
+  //  1. TECHNICAL_SKILLS / Working as Senior in Google using Python
+  //  2. SOFT_SKILLS / Leader for 3 years, position in a team in Netflix
+  //  3. EXPERIENCE / Worked in really big projects for 5 years with react
+  //  4. ...
 
-   Memories Result 0 to 30:
+  //  Memories Result 0 to 30:
+  //  `
+  promptFindMemoriesCandidate = `
+  CV Candidate (delimited <>): <${cvInfo}>
+  Interview (delimited <>): <${promptConv}>
+     
+    - Your task is to create a detailed candidate Memory that will capture the most important information about a candidate. Your objective is to find & package as many pieces as high-signal information. High-signal information is information that tells a lot about who the person is, in & outside of a work setting.  
+    - You need to extract for each Memory the Category, Content
+    - The Category can ONLY be one of these!! : TECHNICAL_SKILLS, BEHAVIOR, EXPERIENCE, DOMAIN_EXPERTISE, INTERESTS, CORE_VALUES, GOALS, EDUCATION, OTHER
+    - Content is text that describes the Memory. Extract facts only & be hyper specific. Do NOT use any vauge non-descriptive words like "good", "proficient",etc.
+    - BEHAVIOR category memories should include Situation, Task , Action & Outcome.
+    - TECHNICAL_SKILL memories should have specific credibility indicators such as years of experience, the specific projects they worked on, the companies they worked on, speicifc descriptions of their contributions regarding those skills, relevant courses they took, attestations from coworkers, ... 
+    - Be intentional with what memories you want to include about this person as you have maximum 40 Memories to represent this person's talents, personality & potential. 
+    - Don't repeat information, if you already have a memory, don't add another one related.
+    - DO NOT MAKE THINGS UP. 
+    - Don't use all 40 memories if you don't have to
+    
+    - Examples of Memories:
+    1. TECHNICAL_SKILLS / Worked as Senior Network Engineer at Google having worked on projects at the Google Maps team using Python, C++ & SQL. 
+    2. BEHAVIOR / Held a leadership position tasked with taking over the fledgeling Ipad devision at Apple after the previous leader was fired. They were given a tight deadline to come up with a prototype that would incorporate the new biometric scan and against all odds were able to deliver 1 week before. They sold 20% more of these ipads in the first year.   
+    3. EXPERIENCE / Helped get the platform back up at 3am on a saturday after a cyber-security attack in less than 4 hours.
+    4. DOMAIN_EXPERTISE / Got a PhD in Graph Convolutional Neural Nets with his thesis on Unifying graph convolutional neural networks and label propagation.
+    5. INTERESTS / Founded the blockchain club at Yale.
+    6. CORE_VALUES / Mentioned reading one self-development book a week indicating that self-development is one of her core - values
+    7. GOALS / Mentioned that his dream job is to become VP of engineering at a fortune 500 company.
+    8. EDUCATION / Got a Bsc in Computer Science from the KU Leuven university in Belgium.
+    9. OTHER / Recognised by his colleagues as a fun-to-be-around go-getter. 
+    10. ...
+
+    Memories Result From 10 to 40 MAX:
    `
 
    printC(promptFindMemoriesCandidate, "5", "promptFindMemoriesCandidate", "p")
   //  s21
 
-   cardMemoriesCandidate = await useGPTchatSimple(promptFindMemoriesCandidate, 0, "API 1");
-  //  cardMemoriesCandidate = await useGPTchatSimple(promptFindMemoriesCandidate, 0, "API 1","chatGPT4");
+  //  cardMemoriesCandidate = await useGPTchatSimple(promptFindMemoriesCandidate, 0, "API 1");
+   cardMemoriesCandidate = await useGPTchatSimple(promptFindMemoriesCandidate, 0, "API 1","chatGPT4");
 
 
   // cardMemoriesCandidate = `1. TECHNICAL_SKILLS / Experienced Full Stack Developer with a solid track record of 7 years in the software development industry.
