@@ -7,7 +7,7 @@ const cardMemoryModel = mongoose.Schema({
   tradeOffBoost: Number,
   type: {
     type: String,
-    enum: ["TECHNICAL_SKILLS","SOFT_SKILLS","EXPERIENCE","INDUSTRY_KNOWLEDGE","INTERESTS","CORE_VALUES","GOALS","EDUCATION","OTHER"], // ScoreCard = Checks and Balances
+    enum: ["TECHNICAL_SKILLS","SOFT_SKILLS","BEHAVIOR","EXPERIENCE","INDUSTRY_KNOWLEDGE","DOMAIN_EXPERTISE","INTERESTS","CORE_VALUES","GOALS","EDUCATION","OTHER"], // ScoreCard = Checks and Balances
   },
   authorCard: {
     companyID: String,
