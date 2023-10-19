@@ -361,28 +361,55 @@ module.exports = {
       promptFindCards = `
       Job Description (delimited <>): <${positionsRequirements}>
       Job Position Description (delimited <>): <${promptConv}>
+      Hiring manager conversations
 
-      Job Trade Offs (delimited <>): <${tradeOffsPrompt}>
+            Job Trade Offs (delimited <>): <${tradeOffsPrompt}>
 
-      Job Priorities (delimited <>): <${prioritiesPrompt}>
+            Job Priorities (delimited <>): <${prioritiesPrompt}>
+      
 
+      - Your task is to extract detailed score topics that seem to be important to the hiring manager who drafted the job description
+      - For each score topic extract the Category, the Priority, the Tradeoff Boost & the content
+      - the category can be: TECHNICAL_SKILLS, BEHAVIOR, EXPERIENCE, INDUSTRY_KNOWLEDGE, INTERESTS, CORE_VALUES, GOALS, EDUCATION, OTHER
+      - the Priority is a number from 1 High, to 5 Low
+      - the Tradeoff Boost is a number 1 Boost, to -1 Penalty, 0 Neutral based on the tradeoff
+      - the Content is a brief description of the score topic deliniated with a hyphen and then additionally relevant context as to why this is an important score topic. Do not invent any information here, use all the information you've been given by the hiring manager in the job description, position, hiring manager conversation, the tradeoffs & priorities.
+      - Do not use any non-descriptive words like good, proficient, apt - use specific adjectives. 
+      - Choose the of memories you have from 10 to 30 Memories to represent the most important parts of the Job
 
-      - Your task is to create a Memory that will indicate the best fit with a future candidate
-      - You need to extract for each Memory the Category, Priority,  Tradeoff Boost, content
-      - Category can be: TECHNICAL_SKILLS, SOFT_SKILLS, EXPERIENCE, INDUSTRY_KNOWLEDGE, INTERESTS, CORE_VALUES, GOALS, OTHER
-      - Priority is a number from 1 High, to 5 Low
-      - Tradeoff Boost is a number 1 Boost, to -1 Penalty, 0 Neutral based on the tradeoff
-      - Content is a text that describes the Memory
-      - Be careful choosing the right amount of memories you have from 10 to 30 Memories to represent the most important parts of the Job
-
-      - Example of Memory:
-      1. TECHNICAL_SKILLS / 1 / 1 / Senior in Python
-      2. SOFT_SKILLS / 3 / -1 / Great leader
-      3. EXPERIENCE / 4 / 1 / Work experience for at least 5 years in react
+            - Example of Score Topics
+      1. TECHNICAL_SKILLS / 1 / 1 / 5 years or equivalent experience in Python - We're building a data science product so demonstrable experience using data science libraries like scikit learn, tensorflow, ... is important.  
+      2. BEHAVIOR / 3 / -1 / Demonstrated remote leadership experience for teams bigger than 4 - we work fully remotely, so having worked in a team prior is important for us. 
+      3. EXPERIENCE / 4 / 1 / Experience working with chinese teams - this is our first hire outside of china so experience having worked in China is a huge plus. 
       4. ...
 
-      Memories Result 10 to 30:
+            Memories Result 10 to 30:
       `
+      // promptFindCards = `
+      // Job Description (delimited <>): <${positionsRequirements}>
+      // Job Position Description (delimited <>): <${promptConv}>
+
+      // Job Trade Offs (delimited <>): <${tradeOffsPrompt}>
+
+      // Job Priorities (delimited <>): <${prioritiesPrompt}>
+
+
+      // - Your task is to create a Memory that will indicate the best fit with a future candidate
+      // - You need to extract for each Memory the Category, Priority,  Tradeoff Boost, content
+      // - Category can be: TECHNICAL_SKILLS, SOFT_SKILLS, EXPERIENCE, INDUSTRY_KNOWLEDGE, INTERESTS, CORE_VALUES, GOALS, OTHER
+      // - Priority is a number from 1 High, to 5 Low
+      // - Tradeoff Boost is a number 1 Boost, to -1 Penalty, 0 Neutral based on the tradeoff
+      // - Content is a text that describes the Memory
+      // - Be careful choosing the right amount of memories you have from 10 to 30 Memories to represent the most important parts of the Job
+
+      // - Example of Memory:
+      // 1. TECHNICAL_SKILLS / 1 / 1 / Senior in Python
+      // 2. SOFT_SKILLS / 3 / -1 / Great leader
+      // 3. EXPERIENCE / 4 / 1 / Work experience for at least 5 years in react
+      // 4. ...
+
+      // Memories Result 10 to 30:
+      // `
 
       cardMemoriesString = await useGPTchatSimple(promptFindCards, 0,"API 2","chatGPT4");
 

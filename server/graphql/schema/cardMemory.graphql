@@ -127,8 +127,10 @@ module.exports = `
     enum typeCardMemoryEnum {
         TECHNICAL_SKILLS
         SOFT_SKILLS
+        BEHAVIOR
         EXPERIENCE
         INDUSTRY_KNOWLEDGE
+        DOMAIN_EXPERTISE
         INTERESTS
         CORE_VALUES
         GOALS
