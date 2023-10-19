@@ -3946,7 +3946,7 @@ module.exports = {
     }
   },
   askEdenUserPositionGPTFunc: async (parent, args, context, info) => {
-    const {  userID,positionID,conversation,whatToAsk } = args.fields;
+    const {  userID,positionID,conversation,whatToAsk,memoriesType } = args.fields;
     console.log("Query > askEdenUserPositionGPTFunc > args.fields = ", args.fields);
 
 
@@ -3981,6 +3981,7 @@ module.exports = {
       ...resGPTFunc,
       userID,
       positionID,
+      memoriesType,
     }
 
     printC(resGPTFunc, "0", "resGPTFunc", "p");

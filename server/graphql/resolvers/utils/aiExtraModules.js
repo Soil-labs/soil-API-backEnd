@@ -26,6 +26,9 @@ const {
 } = require("../utils/questionsEdenAIModules");
 const { model } = require("mongoose");
 
+require("dotenv").config();
+
+
 
 const { REACT_APP_API_URL, REACT_APP_API_CRON_URL } = process.env;
 
@@ -342,7 +345,7 @@ async function isCandidateAvailable(funcInput) {
 async function giveInformationRelatedToPosition(funcInput) {
 
   let {question} = funcInput.function_call
-  let {userID,positionID} = funcInput
+  let {userID,positionID,memoriesType} = funcInput
 
 
   let promptSearch = question + "\n\n"
@@ -351,8 +354,15 @@ async function giveInformationRelatedToPosition(funcInput) {
   // ----------------- User -----------------
   let filter = {}
   
-  filter.label = {"$in": ["CV_user_memory","conv_with_user_memory"]}
-  filter._id = userID;
+  if (memoriesType == "NEW") {
+    filter.label = "scoreCardMemory"
+    filter.userID = userID;
+    filter.database = process.env.REACT_APP_MONGO_DATABASE
+    
+  } else {
+    filter.label = {"$in": ["CV_user_memory","conv_with_user_memory"]}
+    filter._id = userID;
+  }
 
   printC(filter, "1", "filter", "b")
 
@@ -363,14 +373,21 @@ async function giveInformationRelatedToPosition(funcInput) {
   // ----------------- User -----------------
 
   // ----------------- Position -----------------
-
-  filter.label =  {"$in": ["requirements_position_memory","conv_for_position_memory"]}
-  filter._id = positionID;
+  filter = {}
+  if (memoriesType == "NEW") {
+    filter.label = "scoreCardMemory"
+    filter.positionID = positionID;
+    filter.database = process.env.REACT_APP_MONGO_DATABASE
+    
+  } else {
+    filter.label =  {"$in": ["requirements_position_memory","conv_for_position_memory"]}
+    filter._id = positionID;
+  }
 
   longTermMemories_Position = await findBestEmbedings(promptSearch, filter, (topK = 5), "User");
 
-
-
+  printC(longTermMemories_Position, "1", "longTermMemories_Position", "b")
+  // d00
   // ----------------- Position -----------------
 
 
@@ -401,6 +418,8 @@ async function giveInformationRelatedToPosition(funcInput) {
   funcOutput.content = funcOutputContent
 
   printC(funcOutput, "1", "funcOutput", "b")
+  // ss9
+
 
   // s9
   return funcOutput
@@ -411,23 +430,38 @@ async function giveInformationRelatedToPosition(funcInput) {
 
 async function giveQualificationsCandidate(funcInput) {
 
-  let {topicOfInterest,extraInfo} = funcInput.function_call
-  let {userID} = funcInput
+  // d0
 
+  let {topicOfInterest,extraInfo} = funcInput.function_call
+  let {userID,memoriesType} = funcInput
+
+
+  
 
   let promptSearch = topicOfInterest + "\n\n" + extraInfo
 
   filter = {}
   
-  filter.label = {"$in": ["CV_user_memory","conv_with_user_memory"]}
-  filter._id = userID;
+  if (memoriesType == "NEW") {
+
+    filter.label = "scoreCardMemory"
+    filter.userID = userID;
+    filter.database = process.env.REACT_APP_MONGO_DATABASE
+    
+  } else {
+    filter.label = {"$in": ["CV_user_memory","conv_with_user_memory"]}
+    filter._id = userID;
+  }
+
+
+
 
   printC(filter, "1", "filter", "b")
-
-
   longTermMemories_userCV = await findBestEmbedings(promptSearch, filter, (topK = 5), "User");
 
   printC(longTermMemories_userCV, "1", "longTermMemories_userCV", "b")
+
+  // s116
 
   funcOutput = {
     role: "function",
@@ -577,6 +611,23 @@ async function generateRandomID(numDigit = 8) {
   return id;
 }
 
+async function deletePineCone(deletePineIDs) {
+  const pinecone = new PineconeClient();
+  await pinecone.init({
+    environment: "us-east1-gcp",
+    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+  });
+
+  const index = await pinecone.Index("profile-eden-information");
+
+  try {
+    res = await index.delete1({ ids: deletePineIDs });
+    // console.log("res = " , res)
+  } catch (err) {
+    console.log("err = ", err);
+  }
+}
+
 
 async function upsertEmbedingPineCone(data) {
   const pinecone = new PineconeClient();
@@ -609,6 +660,43 @@ async function upsertEmbedingPineCone(data) {
       convKey: data.convKey,
     };
   }
+
+  if (data.positionID) {
+    metadata = {
+      ...metadata,
+      positionID: data.positionID,
+    };
+  }
+
+  if (data.userID) {
+    metadata = {
+      ...metadata,
+      userID: data.userID,
+    };
+  }
+
+  if (data.mongoID) {
+    metadata = {
+      ...metadata,
+      mongoID: data.mongoID,
+    };
+  }
+
+
+  if (data.category) {
+    metadata = {
+      ...metadata,
+      category: data.category,
+    };
+  }
+
+  if (data.database) {
+    metadata = {
+      ...metadata,
+      database: data.database,
+    };
+  }
+  
 
   const upsertRequest = {
     vectors: [
@@ -1112,4 +1200,5 @@ module.exports = {
   useGPTFunc,
   chooseFunctionForGPT,
   giveQualificationsCandidate,
+  deletePineCone,
 };

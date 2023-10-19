@@ -11,6 +11,20 @@ module.exports = `
         connectedCards: [connectedCards]
         keyPriority: Boolean
         futurePotential: Boolean
+        pineconeDB: pineconeDBType
+    }
+
+    type pineconeDBType {
+        pineconeID: String,
+        text: String,
+        metadata: metadataType
+    }
+
+    type metadataType {
+        label: String,
+        database: String,
+        positionID: String,
+        userID: String,
     }
 
     type connectedCards {
