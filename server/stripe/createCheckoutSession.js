@@ -23,6 +23,7 @@ const createCheckoutSession = async ({ body }, res, req) => {
       success_url: `${body.success_url}?success=true`,
       cancel_url: `${body.cancel_url}?canceled=true`,
       automatic_tax: { enabled: true },
+      allow_promotion_codes: true,
     });
 
     // console.log(session);

@@ -45,6 +45,16 @@ const cardMemoryModel = mongoose.Schema({
   }],
   keyPriority: Boolean,
   futurePotential: Boolean,
+  pineconeDB: {
+    pineconeID: String,
+    text: String,
+    metadata: {
+      label: String,
+      database: String,
+      positionID: String,
+      userID: String,
+    }
+  }
 
 
 });

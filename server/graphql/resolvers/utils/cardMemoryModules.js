@@ -6,8 +6,12 @@ const { CardMemory } = require("../../../models/cardMemoryModel");
 const { Conversation } = require("../../../models/conversationModel");
 const { Members } = require("../../../models/membersModel");
 
+const {upsertEmbedingPineCone} = require("../utils/aiExtraModules");
+
 
 const { printC } = require("../../../printModule");
+
+require("dotenv").config();
 
 
 const {
@@ -145,19 +149,226 @@ const Agents = [
   {
     ID: "CREDIBILITY",
     name: "Credibility",
-    explanation: "Check if what the candidate has credibility markers like university degree or working on companies to prove what he says",
-    // examples: "Credibility is a judgment that the other person makes about you, based on how you present yourself, how you behave, and what you say. ",
+    // explanation: `Check if the candidate has high-signal credibility markers. Examples of credibility markers that should contribute to a HIGH, positive credibility scores:  
+    // 1. Industry Accolades
+    
+    // 2. Advanced Degrees and Certifications
+    
+    // 3. Successful Projects
+    
+    // 4. Patent Ownership
+    
+    // 5. Significant Business Growth
+    
+    // 6. Published Work
+    
+    // 7. Keynote Speaking Engagements
+    
+    // 8. Leadership Roles
+    
+    // 9. Mentoring
+    
+    // 10. Positive Impact on Company
+    
+    // 11. International Experience
+    
+    // 12. Philanthropy
+    
+    // 13. Implementation of New Technologies or Systems
+    
+    // 14. Multiple Languages
+    
+    // 15. Powerful References
+    
+    // 16. Problem Solving
+    
+    // 17. Entrepreneurship
+    
+    // 18. Professional Training
+    
+    // 19. Large Social or Professional Network
+    
+    // 20. Excellence in Competitive Areas
+    
+    // 21. Creating and Driving New Strategies
+    
+    // 22. Successful Fundraising
+    
+    // 23. Influencing Industry Trend or Conventions
+    
+    // 24. Breaking Company Records
+    
+    // 25. Tailored Skills
+    
+    // 26. Outstanding ROI
+    
+    // 27. Crisis Management
+    
+    // 28. Collaborations and Partnerships
+    
+    // 29. Volunteer Leadership
+    
+    // 30. Research Contributions
+    
+    // Examples of things that should give a LOW credibility score
+    // 1. Dishonesty
+    
+    // 2. Poor Communication Skills
+    
+    // 3. Unprofessional Behavior
+    
+    // 4. Lack of Preparation
+    
+    // 5. Job Hopping
+    
+    // 6. Negative Attitude
+    
+    // 7. Poor References
+    
+    // 8. Inconsistencies in Application Materials
+    
+    // 9. Late or Missed Interviews
+    
+    // 10. Irrelevant Experience
+    
+    // 11. Failure to Follow Instructions
+    
+    // 12. Criminal History
+    
+    // 13. Inability to Explain Employment Gaps
+      
+    // 14. Lack of Flexibility
+    
+    // 15. Being Overqualified
+    
+    // 16. Not Dressing Appropriately for an Interview
+    
+    // 17. Inappropriate Behavior during Interview
+    
+    // 18. Spelling and Grammar Mistakes on Resume/CV
+    
+    // 19. Displaying Lack of Confidence
+    
+    // 20. Failure to Take Responsibility for Past Failures
+    
+    // 21. Substance Abuse
+    
+    // 22. Failure to Respect Confidentiality
+    
+    // 23. Bad Credit Score/Financial Mismanagement
+    
+    // 24. Non-verifiable Achievements
+    
+    // 25. Lack of Initiative
+    
+    // 26. Being Unresponsive
+    
+    // 27. Aggressive or Confrontational Behavior
+    
+    // 28. Failure to Demonstrate Core Values`,
+    explanation: `Check if the candidate has high-signal credibility markers. Examples of credibility markers that should contribute to a HIGH, positive credibility scores:  
+    1. Industry Accolades: Recognition by professional organizations or industry groups can be a highly influential sign of top talent. Winning industry awards, being named to prestigious "top" career lists, or receiving other professional acknowledgments.
+    
+    2. Advanced Degrees and Certifications: Notable education, such as advanced degrees (Masters, PhD), especially from renowned universities. In addition, specialized professional certifications can also be seen as an outstanding achievement.
+    
+    3. Successful Projects: An ability to efficiently manage and complete complex projects, particularly those that have significantly benefited the business in terms of revenue, efficiency, or other key performance indicators.
+    
+    4. Patent Ownership: Holding a patent for an invention or design is a very impressive achievement that indicates innovative thinking and can set an individual apart.
+    
+    5. Significant Business Growth: Demonstrating a direct impact on significant business growth such as increasing sales, boosting customer base, expanding product lines or services, increasing market share, etc.
+    
+    6. Published Work: Having your work published in well-respected journals, books, or online outlets, shows high level of expertise in your field.
+    
+    7. Keynote Speaking Engagements: Being invited to speak at industry conferences or other high-profile events indicates recognition of your expertise by peers.
+    
+    8. Leadership Roles: Holding leadership positions within reputable professional organizations or in previous employments. This could include managing large teams, leading successful initiatives, improving company culture, etc.
+    
+    9. Mentoring: Playing an official mentoring role in an organization or contributing significantly to the development of others shows leadership and teamwork skills. 
+    
+    10. Positive Impact on Company: Leaving a significant positive legacy in a previous role, such as turning around a struggling department, dramatically improving processes, or bringing in high-profile clients.
+    
+    11. International Experience: Having experience in working in different countries or serving multinational clients or teams. This shows one's ability to adapt and deal with different cultures and languages.
+    
+    12. Philanthropy: Significant involvement in charitable activities or community services, indicating a balanced perspective on work and life, while demonstrating leadership and initiative outside of work.
+    
+    
+    Examples of things that should give a LOW credibility score: 
+    1. Dishonesty: This could include lying about qualifications or experience on a resume, or being dishonest during the interview process. 
+
+    2. Poor Communication Skills: This includes not only verbal communication, but also written communication and body language. Communication is crucial in every job, and a candidate who struggles with it could be harder to place in a role.
+
+    3. Unprofessional Behavior: This could range from inappropriate language or behavior during the interview to an unprofessional or inappropriate online presence.
+
+    4. Lack of Preparation: Candidates who haven't researched the company or the role, or who aren't prepared with thoughtful questions, can be seen as uncommitted or disinterested.
+
+    5. Job Hopping: While this isn't necessarily a deal-breaker in every case, frequent job changes can sometimes be a red flag and cause concern about a candidate's stability or commitment.
+
+    6. Negative Attitude: Candidates who have a negative perspective, or who speak poorly about previous roles or employers during the interview, can be seen as a problem employee in future.
+
+    7. Poor References: A critical aspect of credibility is having positive references from past employers. If a candidate hesitates to provide references, or if the references they do provide aren't strong, this can detract from their credibility.
+
+    8. Inconsistencies in Application Materials: If there are discrepancies between a candidate's resume, cover letter, LinkedIn, or other application materials, it can raise questions about their truthfulness and attention to detail.
+
+    9. Late or Missed Interviews: Being late for an interview or missing it entirely without a valid reason displays a lack of respect for the interviewer's time and a lack of commitment to the hiring process.
+
+    10. Irrelevant Experience: If a candidate's prior work experience is completely unrelated to the role they're applying for, and they can't articulate how their skills could transfer, it could question their suitability for the role and raise doubts about their career direction.
+`,
+//     explanation_old: "Check if what the candidate has credibility markers like university degree or working on companies to prove what he says",
+//     // examples: "Credibility is a judgment that the other person makes about you, based on how you present yourself, how you behave, and what you say. ",
   },
   {
     ID: "CONSISTENCY",
     name: "Consistency",
-    explanation: "Check if the stories they tell are aligned with what they say in their CV",
+    explanation:`Check the folloiwng things & score accordingly. Score neutral if none of these apply. 
+    1. Match Employment History: A high consistency score would be given if the candidate provides detailed and matching information about their past job roles, dates, and organizations as shown on their CV. A low consistency score would be given if there are significant discrepancies.
+  
+  2. Skill Set: A high score would be given if the candidate confidently and accurately reflects the skills stated on their CV, embellishing it with real-life examples and applications. A low score would be given if the candidate fumbles or can't provide clear instances of using those skills.
+  
+  3. Specific Achievements: High points would be awarded if the candidate clearly describes achievements mentioned on the CV, including their role in it, how it was achieved and the impact of it. A low score would be given if they beat around the bush or are unable to explain the specifics.
+  
+  4. Verify Educational Details: High consistency is seen when the candidate's explanation of their educational journey, including lessons learnt, correlates with what's on the CV. A low score would result from mismatched information or inability to coherently discuss their educational background.
+  
+  5. Check Candidates' Projects: A high score would be given if candidates can thoroughly explain the projects on their CV – their role, project outcomes, results, and learnings. A low score would be given for a vague or inconsistent explanation.
+  
+  6. References: High marks would be given if references verify candidate's experience and vouch for their skills and character. A low score would be given if the references contradict the candidate's claims or do not respond.
+  
+  7. Behavioral Consistency: High score would be awarded for candidates whose behavior in the interview consistently matches their characteristic traits stated on the CV. A low score corresponds to candidates who contradict or misrepresent their traits.
+  
+  8. Competency-based Questions: A high consistency score is given if the candidate can clearly demonstrate the competences from their CV with past examples. Low score is awarded for vague or irrelevant responses.
+  
+  9. Cross-checking Details: High score if all details provided in the interview match those given in the CV. Low score if the candidate disagrees with or contradicts information in their CV.
+  
+  10. Enquire About Gaps: High score if the candidate provides logical, credible reasons for employment gaps. Low points if they are unable or unwilling to explain career gaps. `,
+    // explanation_old: "Check if the stories they tell are aligned with what they say in their CV",
     // examples: "Consistency is a judgment that the other person makes about you, based on how you present yourself, how you behave, and what you say. ",
   },
   {
     ID: "EXPERT",
     name: "Expert",
-    explanation: "Become the perfect Expert for this candidate and check if the candidate is an expert in the field",
+    explanation: `Become an expert in the field of the candidate. Score them according to the level of experitse they seem to have.
+    Categories to consider when scoring - when a candidate clearly exhibits any of these in an advanced way, give them a high score - if they don't give them a low score. :
+    1. Depth of Knowledge: An expert should have an in-depth understanding of the field's foundations, principles, and theories.They should also be knowledgeable about recent advances and current trends in the field.
+    
+    2. Practical Skills: Being able to apply theory to practice is key. These skills should extend beyond using standard tools to being able to manually adapt where necessary.
+
+    3. Problem Solving: An expert should possess strong problem-solving skills, including the ability to identify the right approaches or techniques to solve unique problems and the underlying elements that contribute to effective problem solving in their field. 
+
+    4. Experience with Real-world Projects: Experience with actual projects in the field can separate an expert from a novice.
+
+    5. Research and Innovation: If someone has conducted research, published papers, or developed new methodologies in the field, this would be a strong sign of expertise.
+
+    6. Communication: Experts should be able to communicate complex ideas effectively and the implications of results to both technical and non-technical audiences.
+
+    7. Learning Agility: Experts will exhibit a drive to stay current with new developments and integrate them into their work as applicable.
+
+    8. Understanding of Business: Experts should understand how their piece fits into the larger business or organizational context. This includes understanding how to translate business problems into field related tasks, understanding and managing risks, articulating the strategic value of their field speciifc  projects, etc. 
+
+    9. Professional References: References or endorsements from other recognized experts in the field can also be a strong indicator of a person's level of expertise. 
+
+    10. Ethics and Responsibility: Understanding the importance of areas like privacy, security, fairness, and the prevention of bias in ther field s is crucial for experts in the field. 
+
+    In conclusion, expertise extends far beyond just understanding the basics - it involves a deep, comprehensive knowledge of the field, practical experience, ongoing learning, and the ability to apply all of these to real-world situations. `,
+    // explanation_old: "Become the perfect Expert for this candidate and check if the candidate is an expert in the field",
     // examples: "Expert is a judgment that the other person makes about you, based on how you present yourself, how you behave, and what you say. ",
   }
 ]
@@ -199,7 +410,8 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
    printC(promptFindMemoriesCandidate, "5", "promptFindMemoriesCandidate", "p")
   //  s21
 
-   cardMemoriesCandidate = await useGPTchatSimple(promptFindMemoriesCandidate, 0, "API 1","chatGPT4");
+   cardMemoriesCandidate = await useGPTchatSimple(promptFindMemoriesCandidate, 0, "API 1");
+  //  cardMemoriesCandidate = await useGPTchatSimple(promptFindMemoriesCandidate, 0, "API 1","chatGPT4");
 
 
   // cardMemoriesCandidate = `1. TECHNICAL_SKILLS / Experienced Full Stack Developer with a solid track record of 7 years in the software development industry.
@@ -249,6 +461,8 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
  // --------- Regex the cardMemoriesString ----------
 
 } else {
+
+  // ------------------------- Organise the memories for the next phase connecting with the company ------------
   for (let i = 0; i < cardMemoriesDataCandidate.length; i++) {
     let cardMemory = cardMemoriesDataCandidate[i];
 
@@ -273,7 +487,10 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
       }
     }
   }
+  // ------------------------- Organise the memories for the next phase connecting with the company ------------
+
 }
+
 
   printC(cardMemoriesCandidateArray, "4", "cardMemoriesCandidateArray", "g")
   printC(oldMemoriesIDprompt, "3", "oldMemoriesIDprompt", "p")
@@ -302,13 +519,16 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
     Memories to Evaluate (delimited <>): <${oldMemoriesIDprompt}>
 
     ${agentMainPrompt}
-    - Score of Agent can be a number from 0 LOW to 10 HIGH
+    - Score of Agent can be a number from -10 LOW to 10 HIGH to 0 NEUTRAL
     - Be really harsh wit the scoring its better to put a low score than a high one, put high score only if you are SURE!
     - Only return the ID of the memory and the score of the agent
 
     - Example Results: 
     1. ID_1 / 10
-    2. ID_2 / 8
+    2. ID_2 / 2
+    3. ID_3 / -5
+    4. ID_4 / 8
+    5. ID_5 / -10
 
 
     Results: 
@@ -317,6 +537,7 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
     // printC(cardScoreAgentPrompt, "5", "cardScoreAgentPrompt", "p")
 
     cardScoreAgentString = await useGPTchatSimple(cardScoreAgentPrompt, 0, "API 1");
+    // cardScoreAgentString = await useGPTchatSimple(cardScoreAgentPrompt, 0, "API 1","chatGPT4");
 
     // cardScoreAgentString = `ID_1 / 9
     // ID_2 / 10
@@ -373,16 +594,49 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
     // --------- Regex the cardScoreAgentString ----------
 
  }
-    // printC(cardMemoriesCandidateArray, "5", "cardMemoriesCandidateArray", "g")
-    // a6
  // --------- Find Scores for Agents ----------
 
 
- // --------- Add this cards to Mongo ----------
- for (let i = 0; i < cardMemoriesCandidateArray.length; i++) {
-  let relatedCardMemory = cardMemoriesCandidateArray[i];
 
-  if (relatedCardMemory?.cardID) {
+ // --------- Add this cards to Mongo ----------
+ const reactAppMongoDatabase = process.env.REACT_APP_MONGO_DATABASE
+ for (let i = 0; i < cardMemoriesCandidateArray.length; i++) {
+  let cardMemoryCandidate = cardMemoriesCandidateArray[i];
+
+  if (cardMemoryCandidate?.cardID) {
+
+    //  ---------------- Add to Pinecone ------------------
+    cardMemoryDataNowT = await CardMemory.findOne({ _id: cardMemoryCandidate.cardID });
+
+    if (!cardMemoryDataNowT?.pineconeDB?.pineconeID) {
+      let textPinecone = cardMemoryDataNowT.content + "\n Category: " + cardMemoryDataNowT.type
+
+      let filterUpsert = {
+        text: textPinecone,
+        database: reactAppMongoDatabase,
+        label: "scoreCardMemory",
+        category: cardMemoryDataNowT.type,
+        userID: userID,
+        mongoID: cardMemoryDataNowT._id,
+      }
+
+      let resPineCone  = await upsertEmbedingPineCone(filterUpsert)
+
+      cardMemoryDataNowT.pineconeDB = {
+        pineconeID: resPineCone.pineConeID,
+        text: textPinecone,
+        metadata: {
+          label: "scoreCardMemory",
+          database: reactAppMongoDatabase,
+          userID: userID,
+        }
+      }
+
+      cardMemoryDataNowT.save();
+    }
+    //  ---------------- Add to Pinecone ------------------
+
+
     continue;
   }
 
@@ -392,16 +646,14 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
     let agent = Agents[i];
     agentArray.push({
       category: agent.ID,
-      score: relatedCardMemory[agent.ID]
+      score: cardMemoryCandidate[agent.ID]
     })
   }
 
-  // printC(agentArray, "5", "agentArray", "g")
-  // sd9
 
   cardMemoryDataNow = await addCardMemoryFunc({ 
-    content: relatedCardMemory.description,
-    type: relatedCardMemory.category,
+    content: cardMemoryCandidate.description,
+    type: cardMemoryCandidate.category,
     authorCard:{
       userID: userID,
       category: "CANDIDATE"
@@ -416,7 +668,36 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
     cardID: cardMemoryDataNow._id
   }
 
+
+  //  ---------------- Add to Pinecone ------------------
+  let textPinecone = cardMemoryDataNow.content + "\n Category: " + cardMemoryDataNow.type
+
+  let filterUpsert = {
+    text: textPinecone,
+    database: reactAppMongoDatabase,
+    label: "scoreCardMemory",
+    category: cardMemoryDataNow.type,
+    userID: userID,
+    mongoID: cardMemoryDataNow._id,
+  }
+
+  let resPineCone  = await upsertEmbedingPineCone(filterUpsert)
+
+  cardMemoryDataNow.pineconeDB = {
+    pineconeID: resPineCone.pineConeID,
+    text: textPinecone,
+    metadata: {
+      label: "scoreCardMemory",
+      database: reactAppMongoDatabase,
+      userID: userID,
+    }
+  }
+
+  cardMemoryDataNow.save();
+  //  ---------------- Add to Pinecone ------------------
+
 }
+// d13
 // --------- Add this cards to Mongo ----------
 
 
