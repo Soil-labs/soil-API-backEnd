@@ -111,6 +111,7 @@ module.exports = `
         analysisCandidateEdenAI: analysisCandidateEdenAIType
         keyAttributes: [attributeCandidateType]
         futurePotential: [attributeCandidateType]
+        cvID: String
     }
 
     type scoreCardTotalType {
