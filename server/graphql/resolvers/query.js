@@ -48,6 +48,7 @@ const {
 
 const {
   findPosition,
+  findPositionCandidate,
   findPositions,
   findUserTalentListPosition,
   findPositionsOfCommunity,
@@ -226,6 +227,7 @@ module.exports = {
 
     // ------------- POSITION QUERY -----------------
     findPosition,
+    findPositionCandidate,
     findPositions,
     findUserTalentListPosition,
     findPositionsOfCommunity,
