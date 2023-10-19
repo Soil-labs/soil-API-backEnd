@@ -24,6 +24,7 @@ const createCheckoutSession = async ({ body }, res, req) => {
       cancel_url: `${body.cancel_url}?canceled=true`,
       automatic_tax: { enabled: true },
       allow_promotion_codes: true,
+      payment_method_collection: "if_required",
     });
 
     // console.log(session);
