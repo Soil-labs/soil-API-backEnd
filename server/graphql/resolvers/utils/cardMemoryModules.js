@@ -373,6 +373,9 @@ const Agents = [
   }
 ]
 
+
+typeAccepted = ["TECHNICAL_SKILLS","SOFT_SKILLS","BEHAVIOR","EXPERIENCE","INDUSTRY_KNOWLEDGE","DOMAIN_EXPERTISE","INTERESTS","CORE_VALUES","GOALS","EDUCATION","OTHER"]
+
 async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
 
 
@@ -679,6 +682,10 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
     })
   }
 
+  // if type is not part of this array typeAccepted  then continue
+  if (!typeAccepted.includes(cardMemoryCandidate.category)) {
+    continue;
+  }
 
   cardMemoryDataNow = await addCardMemoryFunc({ 
     content: cardMemoryCandidate.description,

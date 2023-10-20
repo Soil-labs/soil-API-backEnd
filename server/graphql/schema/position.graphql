@@ -116,7 +116,7 @@ module.exports = `
 
     type scoreCardTotalType {
         score: Float,
-        scoreCardsCalculated: Boolean
+        scoreCardCalculated: Boolean
     }
 
     type scoreCardCategoryMemoryType {
