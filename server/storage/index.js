@@ -1,8 +1,6 @@
 const { Router } = require("express");
 const storeCv = require("./storeCv");
 
-const bodyParser = require("body-parser");
-
 const Multer = require("multer");
 const multer = new Multer({
   storage: Multer.memoryStorage(),

@@ -104,6 +104,7 @@ module.exports = `
 
     type cvInfoType {
         cvContent: String
+        cvFilename: String
         cvNotes: String
         cvMemory: [cvMemoryType]
         cvPreparationDone: Boolean,

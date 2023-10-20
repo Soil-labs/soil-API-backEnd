@@ -6,7 +6,6 @@ const { Conversation } = require("../../../models/conversationModel");
 
 const { ApolloError } = require("apollo-server-express");
 
-
 const { Configuration, OpenAIApi } = require("openai");
 
 const axios = require("axios");
@@ -82,9 +81,8 @@ async function positionTextToExtraQuestionsFunc(
     Only Improved only QUESTIONS: 
   `;
 
-
   // - You should stay really close to the meaning of the QUESTIONS!
-  // - make the question simple light and too the point 
+  // - make the question simple light and too the point
   // - try to add were you found the information, for example "you mention here that there is backend responsibilities, what do you mean with that?"
 
   printC(promptNewQuestions, "3", "promptNewQuestions", "b");
@@ -115,16 +113,18 @@ async function positionTextToExtraQuestionsFunc(
   for (let i = 0; i < improvedQuestionsArray.length; i++) {
     const improvedQuestion = improvedQuestionsArray[i];
 
-
     interviewQuestionsForCandidate.push({
       originalQuestionID: questionData[i]?.questionID,
       originalContent: questionData[i]?.content,
       personalizedContent: improvedQuestion.replace(/^\s*\d+\.\s*/, ""),
     });
-    
-    
   }
-  printC(interviewQuestionsForCandidate, "5", "interviewQuestionsForCandidate", "y");
+  printC(
+    interviewQuestionsForCandidate,
+    "5",
+    "interviewQuestionsForCandidate",
+    "y"
+  );
 
   return interviewQuestionsForCandidate;
 }
@@ -138,7 +138,6 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
     throw new ApolloError("Position not found");
   }
 
-
   positionsRequirements = positionData.positionsRequirements.originalContent;
   // printC(positionData,"0","positionData","b")
 
@@ -146,7 +145,9 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
   // sdf9
 
   if (!positionsRequirements) {
-    throw new ApolloError("positionsRequirements not found this means that you didn't do the alignment yet");
+    throw new ApolloError(
+      "positionsRequirements not found this means that you didn't do the alignment yet"
+    );
   }
 
   positionsRequirements = positionsRequirements.replace(/b\d+:\s/g, "");
@@ -166,20 +167,20 @@ async function positionTextAndConvoToReportCriteriaFunc(positionID) {
 
   let promptConv = "";
   if (convData) {
-    
     for (let i = 0; i < convData.conversation.length; i++) {
       let convDataNow = convData.conversation[i];
       if (convDataNow.role == "assistant")
         promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
       else
-        promptConv = promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
+        promptConv =
+          promptConv + "Employ" + ": " + convDataNow.content + " \n\n";
     }
 
     printC(promptConv, "2", "promptConv", "b");
   }
 
-  console.log("positionsRequirements = " , positionsRequirements)
-  console.log("promptConv = " , promptConv)
+  console.log("positionsRequirements = ", positionsRequirements);
+  console.log("promptConv = ", promptConv);
   // sd9
 
   promptReport = ` You are a professional Recruiter, have as input the Details of a Job Position and the Conversation with the Company Representation
@@ -248,8 +249,7 @@ async function findInterviewQuestion(
   return newQuestion;
 }
 
-async function saveCVtoUserFunc(cvContent, userID, positionID) {
-  
+async function saveCVtoUserFunc(cvContent, cvFilename, userID, positionID) {
   let userData = await Members.findOne({ _id: userID });
 
   let positionData = await Position.findOne({ _id: positionID }).select(
@@ -264,7 +264,6 @@ async function saveCVtoUserFunc(cvContent, userID, positionID) {
     throw new ApolloError("Position not found");
   }
 
-
   try {
     userData = await Members.findOneAndUpdate(
       { _id: userID },
@@ -272,6 +271,7 @@ async function saveCVtoUserFunc(cvContent, userID, positionID) {
         cvInfo: {
           ...userData.cvInfo,
           cvContent: cvContent,
+          cvFilename: cvFilename,
           cvPreparationDone: false,
           cvPreparationBio: false,
           cvPreparationNodes: false,
@@ -309,13 +309,9 @@ async function saveCVtoUserFunc(cvContent, userID, positionID) {
       Main Skills 3 words max:
       Summary 3 sentenses max:: 
     `;
-    printC(cvContentPrompt,"3","cvContentPrompt","b")
+    printC(cvContentPrompt, "3", "cvContentPrompt", "b");
 
-    titleSkillSummaryRes = await useGPTchatSimple(
-      cvContentPrompt,
-      0,
-      "API 2"
-    );
+    titleSkillSummaryRes = await useGPTchatSimple(cvContentPrompt, 0, "API 2");
 
     // titleSkillSummaryRes = `Title Role: Skilled Software Engineer
     // Main Skills: Java, Spring, Kubernetes
@@ -333,7 +329,6 @@ async function saveCVtoUserFunc(cvContent, userID, positionID) {
 
     // cvSummary = `Lolita Mileta is an experienced Lead Scrum Master and Product Owner with a background in IT and international relations. She has successfully managed teams of up to 42 people, developed hiring processes, and established strong relationships with key stakeholders. Lolita is skilled in Scrum and Agile frameworks, leadership, communication, facilitation, planning, metrics, data analysis, continuous improvement, and has a sub-major in International Tourism, business, and marketing. She is also fluent in English, Ukrainian, Russian, and proficient in Polish. Lolita has volunteered over 200 hours across various communities in the USA and is an alumni of the Future Leaders Exchange Program.`
 
-
     // printC(cvSummary, "3", "cvSummary", "g");
     // printC(titleRole, "3", "titleRole", "g");
     // printC(mainSkills, "3", "mainSkills", "g");
@@ -344,8 +339,6 @@ async function saveCVtoUserFunc(cvContent, userID, positionID) {
     // let positionData2 = await interviewQuestionCreationUserFunc(positionID, userID, cvSummary);
 
     interviewCreateCVNotesFunc(userData, cvContent);
-
-
 
     return {
       success: true,
@@ -363,7 +356,6 @@ async function saveCVtoUserFunc(cvContent, userID, positionID) {
       }
     );
   }
-
 }
 
 async function conversationCVPositionToReportFunc(memberID, positionID) {
@@ -525,7 +517,7 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
   if (!positionID) {
     return {
       success: false,
-    }
+    };
   }
 
   positionData = await Position.findOne({ _id: positionID });
@@ -533,13 +525,13 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
   if (!positionData) {
     return {
       success: false,
-    }
+    };
   }
 
   if (!memberID) {
     return {
       success: false,
-    }
+    };
   }
 
   memberData = await Members.findOne({ _id: memberID });
@@ -551,7 +543,7 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
   if (index_ == undefined || index_ == -1) {
     return {
       success: false,
-    }
+    };
   }
 
   let positionsRequirements = positionData?.positionsRequirements?.content;
@@ -564,7 +556,6 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
   // - b2: Strong understanding of HTML, CSS with SCSS and JavaScript
   // - b3: Experience with Javascript components libraries
   // - b4: Experience with TypeScript`
-
 
   printC(positionsRequirements, "3", "positionsRequirements", "g");
 
@@ -599,9 +590,8 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
     regexT = /^(\w+):/gm;
     regexB = /- (\w+): (.+)/g;
 
-    
-    console.log("change = 11")
-    
+    console.log("change = 11");
+
     while ((matchT = regexT.exec(positionsRequirements)) !== null) {
       const categoryTitle = matchT[1];
       const categoryRequirements = positionsRequirements.substring(
@@ -610,7 +600,6 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
       regexB.lastIndex = 0;
       const requirements = {};
 
-    
       let matchB;
       while ((matchB = regexB.exec(categoryRequirements)) !== null) {
         const id = matchB[1];
@@ -620,19 +609,14 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
         categories[id] = {
           categoryName: categoryTitle,
           title: title,
-
-        }
+        };
       }
-      
     }
-    
-    console.log(categories);
-    
 
+    console.log(categories);
   }
 
-
-  printC(categories,"5","categories","g")
+  printC(categories, "5", "categories", "g");
   // ---------------- Create Object for Position Report ----------------
 
   let candidateData = positionData.candidates[index_];
@@ -645,7 +629,6 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
   printC(candidateData, "0", "candidateData", "b");
 
   printC(conversationID, "1", "conversationID", "b");
-
 
   // find member and take the cvInfo.cvContent
   let cvContent = memberData.cvInfo.cvContent;
@@ -660,14 +643,15 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
   // );
 
   // ----------- prompt for conversation -------------
-  let name = "Candidate"
-  positionOR = { $or: [{ positionID: positionID }, { extraPositionsID: positionID }] }
+  let name = "Candidate";
+  positionOR = {
+    $or: [{ positionID: positionID }, { extraPositionsID: positionID }],
+  };
 
   let convData_ = await Conversation.find({
     $and: [{ userID: memberID }, positionOR],
   }).select("_id userID conversation");
 
-  
   let convData = convData_.pop();
 
   let promptConv = "";
@@ -680,9 +664,8 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
         promptConv = promptConv + name + ": " + convDataNow.content + " \n\n";
     }
   }
-  let convoCandidateRecruiterPrompt =  promptConv
+  let convoCandidateRecruiterPrompt = promptConv;
   // ----------- prompt for conversation -------------
-
 
   // convoCandidateRecruiterPrompt =  `Candidate: mi9
   // Recruiter: Can you provide examples of web UI applications you have built using TypeScript and React?
@@ -706,35 +689,34 @@ async function reportPassFailCVPositionConversationFunc(memberID, positionID) {
     "p"
   );
 
+  //   promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
 
-//   promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
+  //   Report Candidate CV to Job Position (delimiters <>): <${CVToPositionReport}>
 
-//   Report Candidate CV to Job Position (delimiters <>): <${CVToPositionReport}>
+  //   Conversation of Candidate With Recruiter (delimiters <>): <${convoCandidateRecruiterPrompt}>
 
-//   Conversation of Candidate With Recruiter (delimiters <>): <${convoCandidateRecruiterPrompt}>
+  //   Requirements of Job Position (delimiters <>): <${positionsRequirements}>
 
-//   Requirements of Job Position (delimiters <>): <${positionsRequirements}>
+  //   Your Task is to Score each of the Job Requirements based on the CV and the Conversation to find the right candidate for the Job Position
 
+  //   - You need to Score the Bullet points overall from 0 to 10 for each ID
+  //   - 10 = Perfect Match, -1 = Miss Information, 1 = No experience on this bullet point
+  //   - For each bullet point ONLY give ID, really small reason max 13 words and score
+  //   - Give exactly the same number of bullet points(IDs)
 
- 
-//   Your Task is to Score each of the Job Requirements based on the CV and the Conversation to find the right candidate for the Job Position 
+  // For example:
+  // Category 1:
+  //       - ID: Score - A really small reason
+  //       - ID: Score - A really small reason
 
-//   - You need to Score the Bullet points overall from 0 to 10 for each ID
-//   - 10 = Perfect Match, -1 = Miss Information, 1 = No experience on this bullet point
-//   - For each bullet point ONLY give ID, really small reason max 13 words and score
-//   - Give exactly the same number of bullet points(IDs)
- 
+  //   Only Output the ID, Scores, really small reason:`;
 
-// For example: 
-// Category 1:
-//       - ID: Score - A really small reason      
-//       - ID: Score - A really small reason
+  promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
 
-//   Only Output the ID, Scores, really small reason:`;
-
-promptReport = ` You are a Professional Recruiter Scoring a candidate to find the best fit for a Job Position
-
-Report Candidate CV to Job Position (delimiters <>): <${cvContent.substring(0, 3000)}>
+Report Candidate CV to Job Position (delimiters <>): <${cvContent.substring(
+    0,
+    3000
+  )}>
 
 Conversation of Candidate With Recruiter (delimiters <>): <${convoCandidateRecruiterPrompt}>
 
@@ -762,24 +744,24 @@ Category 1:
   printC(promptReport, "4", "promptReport", "y");
 
   // let report = await useGPTchatSimple(promptReport, 0,"API 1");
-  let report = await useGPTchatSimple(promptReport, 0,"API 1","chatGPT4");
+  let report = await useGPTchatSimple(promptReport, 0, "API 1", "chatGPT4");
 
   // printC(report,"4","report","g")
 
   // sdf12
 
-//     report  = `
-//     Category 1:
-//     - b1: 0 - No Info
-//     - b2: 0 - No Info
-//     - b3: 0 - No Info
+  //     report  = `
+  //     Category 1:
+  //     - b1: 0 - No Info
+  //     - b2: 0 - No Info
+  //     - b3: 0 - No Info
 
-// Category 2:
-//     - b4: 5 - The candidate has a Bachelor's degree in Computer Science, which is not directly relevant but still a technical field.
+  // Category 2:
+  //     - b4: 5 - The candidate has a Bachelor's degree in Computer Science, which is not directly relevant but still a technical field.
 
-// Category 3:
-//     - b5: 0 - No Info
-//     `
+  // Category 3:
+  //     - b5: 0 - No Info
+  //     `
 
   printC(report, "4", "report", "g");
 
@@ -831,7 +813,7 @@ Category 1:
     if (
       merged[id].score != undefined &&
       merged[id].score != null &&
-      merged[id].score != "N/A" && 
+      merged[id].score != "N/A" &&
       merged[id].score > 3
     ) {
       scoreAll += merged[id].score;
@@ -869,12 +851,8 @@ Category 1:
   };
 }
 
-async function interviewCreateCVNotesFunc(
-  userData,
-  cvContent
-) {
+async function interviewCreateCVNotesFunc(userData, cvContent) {
   try {
-    
     let promptJOB_CV = `
     candidate CV (delimiters <>) <${cvContent}>
 
@@ -888,19 +866,13 @@ async function interviewCreateCVNotesFunc(
   `;
     printC(promptJOB_CV, "3", "promptJOB_CV", "b");
 
-    infoCandidateForJob = await useGPTchatSimple(
-      promptJOB_CV,
-      0,
-      "API 2",
-    );
+    infoCandidateForJob = await useGPTchatSimple(promptJOB_CV, 0, "API 2");
 
     printC(infoCandidateForJob, "3", "infoCandidateForJob", "g");
 
     userData.cvInfo.cvNotes = infoCandidateForJob;
 
     userData = await userData.save();
-
-
   } catch (err) {
     console.log("err = ", err);
   }
@@ -922,7 +894,7 @@ async function interviewQuestionCreationUserFunc(
         { component: "positionMutation > interviewQuestionCreationUser" }
       );
 
-      printC(positionData.candidates,"0","positionData.candidates","b")
+    printC(positionData.candidates, "0", "positionData.candidates", "b");
     userData = await Members.findOne({ _id: userID }).select("_id discordName");
     if (!userData)
       throw new ApolloError("User not found", "interviewQuestionCreationUser", {
@@ -1126,23 +1098,21 @@ async function interviewQuestionCreationUserFunc(
     //   Improved QUESTIONS:
     // `
 
-  //   let promptNewQuestions = `
-  //   NOTES for this Job Role for User CV (delimiters <>): <${infoCandidateForJob}>
+    //   let promptNewQuestions = `
+    //   NOTES for this Job Role for User CV (delimiters <>): <${infoCandidateForJob}>
 
-  //   QUESTIONS (delimiters <>) <${questionsPrompt}>
+    //   QUESTIONS (delimiters <>) <${questionsPrompt}>
 
-   
-  //   - Task is to improved some of the questions using facts from NOTES to make it relevant
-  //   - the Improved QUESTIONS should have exactly the same order as the original QUESTIONS and exactly the same meaning with the original QUESTIONS
-  //   - you can only ask 1 question at a time
-  //   - Your task is to ask deeper questions from facts that provided on the NOTES, 
-  //   - example of question "you mention that you worked in Google, what were your responsibilities there?"
-    
-  //   Improved QUESTIONS: 
-  // `;
+    //   - Task is to improved some of the questions using facts from NOTES to make it relevant
+    //   - the Improved QUESTIONS should have exactly the same order as the original QUESTIONS and exactly the same meaning with the original QUESTIONS
+    //   - you can only ask 1 question at a time
+    //   - Your task is to ask deeper questions from facts that provided on the NOTES,
+    //   - example of question "you mention that you worked in Google, what were your responsibilities there?"
 
+    //   Improved QUESTIONS:
+    // `;
 
-  let promptNewQuestions = `
+    let promptNewQuestions = `
   NOTES CV: <${cvSummary}>
 
   QUESTIONS (delimiters <>) <${questionsPrompt}>
@@ -1159,28 +1129,27 @@ async function interviewQuestionCreationUserFunc(
 
     improvedQuestions = await useGPTchatSimple(promptNewQuestions, 0, "API 2");
 
-    improvedQuestions = improvedQuestions.replace(/^\s*[\r\n]/gm, '');
+    improvedQuestions = improvedQuestions.replace(/^\s*[\r\n]/gm, "");
 
     printC(improvedQuestions, "3", "improvedQuestions", "p");
 
     // sd03
 
-
-    // improvedQuestions = `1. Can you provide examples of scalable front-end web applications you have developed using Java, Spring, and Kubernetes? 
-    // 2. How proficient are you in building RESTful APIs and working with NoSQL and SQL databases, as well as deploying applications on Google Cloud Platform (GCP) using Helm? 
-    // 3. Have you worked with CloudFlare Workers or custom-built platforms before? If so, can you provide examples of how you have utilized them in your projects? 
-    // 4. How do you stay up to date with web performance optimization best practices, and can you provide examples of how you have implemented them in your previous projects? 
-    // 5. Can you describe a time when you had to mentor others on your team in developing high-quality software solutions, and how did you approach the situation? 
-    // 6. How do you ensure that the user interfaces you design and develop align with Nord Security's goal to shape a more secure and peaceful online future? 
-    // 7. Can you provide examples of user-friendly and accessible security products you have created, and how did you ensure they were both secure and easy to use? 
-    // 8. How do you prioritize professional growth and development in your career, and what steps do you take to continue learning and improving your skills? 
+    // improvedQuestions = `1. Can you provide examples of scalable front-end web applications you have developed using Java, Spring, and Kubernetes?
+    // 2. How proficient are you in building RESTful APIs and working with NoSQL and SQL databases, as well as deploying applications on Google Cloud Platform (GCP) using Helm?
+    // 3. Have you worked with CloudFlare Workers or custom-built platforms before? If so, can you provide examples of how you have utilized them in your projects?
+    // 4. How do you stay up to date with web performance optimization best practices, and can you provide examples of how you have implemented them in your previous projects?
+    // 5. Can you describe a time when you had to mentor others on your team in developing high-quality software solutions, and how did you approach the situation?
+    // 6. How do you ensure that the user interfaces you design and develop align with Nord Security's goal to shape a more secure and peaceful online future?
+    // 7. Can you provide examples of user-friendly and accessible security products you have created, and how did you ensure they were both secure and easy to use?
+    // 8. How do you prioritize professional growth and development in your career, and what steps do you take to continue learning and improving your skills?
     // 9. How do you prioritize your health and wellbeing, and what steps do you take to maintain them while working in a demanding technical role?`
 
     printC(improvedQuestions, "3", "improvedQuestions", "p");
 
     const improvedQuestionsArray = improvedQuestions
       .split("\n")
-      .map((item) => item.trim().replace(/^\d+\.\s*/, ''));
+      .map((item) => item.trim().replace(/^\d+\.\s*/, ""));
 
     printC(improvedQuestionsArray, "5", "improvedQuestionsArray", "r");
     // sd0
@@ -1285,8 +1254,6 @@ const MessageMapKG_V2APICallF = async (textToMap) => {
   return res.messageMapKG_V2.keywords;
 };
 
-
-
 const MessageMapKG_V4APICallF = async (textToMap) => {
   try {
     const query = gql`
@@ -1372,19 +1339,17 @@ const InterviewQuestionCreationUserAPICallF = async (
   return res.interviewQuestionCreationUser;
 };
 
-
-
 const interviewEdenAIFunc = async (
-  userID, positionID, positionTrainEdenAI, conversation ,
+  userID,
+  positionID,
+  positionTrainEdenAI,
+  conversation,
   timesAsked,
   unansweredQuestionsArr,
-  useMemory,
+  useMemory
 ) => {
-  
-  let questionAskingNow = undefined
-  let questionAskingID  = undefined
-
-
+  let questionAskingNow = undefined;
+  let questionAskingID = undefined;
 
   if (useMemory == undefined) {
     useMemory = true; // default to true
@@ -1400,13 +1365,10 @@ const interviewEdenAIFunc = async (
     timesAsked = 1;
   }
 
-
-
   unansweredQuestionsArr = await addMultipleQuestionsToEdenAIFunc(
     unansweredQuestionsArr
   );
 
-  
   // printC(unansweredQuestionsArr, "0", "unansweredQuestionsArr", "b");
 
   // sdf
@@ -1423,7 +1385,6 @@ const interviewEdenAIFunc = async (
   // console.log("questionAskingID = ", questionAskingID);
   // // ads23
 
-
   let originalQuestionAsking = questionAskingNow;
   let originalQuestionAskingID = questionAskingID;
   const originalTimesAsked = timesAsked;
@@ -1438,20 +1399,22 @@ const interviewEdenAIFunc = async (
       (candidate) => candidate.userID.toString() == userID.toString()
     );
 
+    newQuestion = await findInterviewQuestion(
+      positionData,
+      candidate,
+      questionAskingID,
+      positionTrainEdenAI
+    );
 
-    newQuestion = await findInterviewQuestion(positionData,candidate, questionAskingID,positionTrainEdenAI)
-
-    
     // printC(newQuestion, "1", "newQuestion", "b");
 
     // asdf09
 
+    if (newQuestion?.personalizedContent != undefined)
+      questionAskingNow = newQuestion.personalizedContent;
 
-    if (newQuestion?.personalizedContent != undefined) 
-      questionAskingNow = newQuestion.personalizedContent; 
-
-  //     console.log("questionAskingNow = ", questionAskingNow);
-  // ads23
+    //     console.log("questionAskingNow = ", questionAskingNow);
+    // ads23
 
     // ------------ Find Modified questions ------------
 
@@ -1499,11 +1462,9 @@ const interviewEdenAIFunc = async (
         Result: 
       `;
 
-      (promptQuestionAskedN =
-        prompt_conversation + "\n\n" + promptAskQuestion),
+      (promptQuestionAskedN = prompt_conversation + "\n\n" + promptAskQuestion),
         console.log("");
       console.log("");
-
 
       // printC(promptQuestionAskedN, "1", "promptQuestionAskedN", "p");
 
@@ -1547,8 +1508,12 @@ const interviewEdenAIFunc = async (
 
           questionAskingID = unansweredQuestionsArr[0].questionID;
 
-          newQuestion = await findInterviewQuestion(positionData,candidate, questionAskingID,positionTrainEdenAI)
-
+          newQuestion = await findInterviewQuestion(
+            positionData,
+            candidate,
+            questionAskingID,
+            positionTrainEdenAI
+          );
 
           // console.log("newQuestion = " , newQuestion)
           // sdf9
@@ -1563,7 +1528,6 @@ const interviewEdenAIFunc = async (
         }
         timesAsked = 1;
       } else {
-
         // printC(questionAskingNow, "1", "questionAskingNow", "b")
         // sadf0
 
@@ -1590,8 +1554,12 @@ const interviewEdenAIFunc = async (
 
         questionAskingID = unansweredQuestionsArr[0].questionID;
 
-        newQuestion = await findInterviewQuestion(positionData,candidate, questionAskingID,positionTrainEdenAI)
-
+        newQuestion = await findInterviewQuestion(
+          positionData,
+          candidate,
+          questionAskingID,
+          positionTrainEdenAI
+        );
 
         if (newQuestion?.personalizedContent != undefined)
           questionAskingNowA = newQuestion.personalizedContent;
@@ -1661,8 +1629,8 @@ const interviewEdenAIFunc = async (
 
     const newDate = new Date();
     if (conversation.length >= 2) {
-
-      if (positionTrainEdenAI == true){ // If EdenAI is talking to the company employ for training Eden
+      if (positionTrainEdenAI == true) {
+        // If EdenAI is talking to the company employ for training Eden
 
         // ------------- Update the Conversation MEMORY ----------------
         const _conversation = conversation.map((_item) => ({
@@ -1673,41 +1641,42 @@ const interviewEdenAIFunc = async (
           userID,
           _conversation,
           positionID,
-          positionTrainEdenAI,
+          positionTrainEdenAI
+        );
+        // ------------- Update the Conversation MEMORY ----------------
+      } else {
+        // If Eden is talking to the candidate on an interview
+        // ------------- Update the Conversation MEMORY ----------------
+        const _conversation = conversation.map((_item) => ({
+          ..._item,
+          date: _item.date ? _item.date : newDate,
+        }));
+        resultConv = await findAndUpdateConversationFunc(
+          userID,
+          _conversation,
+          positionID
         );
         // ------------- Update the Conversation MEMORY ----------------
 
+        console.log(
+          "originalQuestionAsking,originalQuestionAskingID,originalTimesAsked = ",
+          originalQuestionAsking,
+          originalQuestionAskingID,
+          originalTimesAsked
+        );
+        //  ------------- Update the Answered Questions ----------------
+        resultConv = await updateAnsweredQuestionFunc(
+          resultConv,
+          conversation,
+          originalQuestionAsking,
+          originalQuestionAskingID,
+          originalTimesAsked
+        );
+        //  ------------- Update the Answered Questions ----------------
 
-      } else { // If Eden is talking to the candidate on an interview 
-          // ------------- Update the Conversation MEMORY ----------------
-          const _conversation = conversation.map((_item) => ({
-            ..._item,
-            date: _item.date ? _item.date : newDate,
-          }));
-          resultConv = await findAndUpdateConversationFunc(
-            userID,
-            _conversation,
-            positionID
-          );
-          // ------------- Update the Conversation MEMORY ----------------
+        // printC(originalTimesAsked, "4", "originalTimesAsked --- SSOS", "y");
 
-          console.log("originalQuestionAsking,originalQuestionAskingID,originalTimesAsked = " , originalQuestionAsking,
-            originalQuestionAskingID,
-            originalTimesAsked,)
-          //  ------------- Update the Answered Questions ----------------
-          resultConv = await updateAnsweredQuestionFunc(
-            resultConv,
-            conversation,
-            originalQuestionAsking,
-            originalQuestionAskingID,
-            originalTimesAsked,
-          );
-          //  ------------- Update the Answered Questions ----------------
-
-          // printC(originalTimesAsked, "4", "originalTimesAsked --- SSOS", "y");
-
-
-          conversationID = resultConv._id;
+        conversationID = resultConv._id;
       }
     }
 
@@ -1943,8 +1912,7 @@ async function findConversationPrompt(conversationID, name = "Employ") {
     let convDataNow = convData.conversation[i];
     if (convDataNow.role == "assistant")
       promptConv = promptConv + "Recruiter: " + convDataNow.content + " \n\n";
-    else
-      promptConv = promptConv + name + ": " + convDataNow.content + " \n\n";
+    else promptConv = promptConv + name + ": " + convDataNow.content + " \n\n";
   }
 
   return promptConv;
@@ -2170,14 +2138,14 @@ async function useGPTchat(
 ) {
   let discussion = [...discussionOld];
 
-
   // -------- Check that discussion is less than 4000 tokens, if it is not then cut messages from teh top -------------
   let discussionTokens = 0;
   for (let i = 0; i < discussion.length; i++) {
-    discussionTokens = discussionTokens + discussion[i].content.split(" ").length;
+    discussionTokens =
+      discussionTokens + discussion[i].content.split(" ").length;
   }
 
-  printC(discussionTokens, "1", "discussionTokens", "r")
+  printC(discussionTokens, "1", "discussionTokens", "r");
 
   if (discussionTokens > 3100) {
     let discussionTokensNow = 0;
@@ -2193,7 +2161,6 @@ async function useGPTchat(
   }
   // -------- Check that discussion is less than 4000 tokens, if it is not then cut messages from teh top -------------
 
-
   discussion.unshift({
     role: "system",
     content: systemPrompt,
@@ -2206,31 +2173,28 @@ async function useGPTchat(
 
   // console.log("discussion = ", discussion);
 
-
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
-
 
   // console.log("OPENAI_API_KEY",OPENAI_API_KEY)
 
   try {
-  response = await axios.post(
-    "https://api.openai.com/v1/chat/completions",
-    {
-      messages: discussion,
-      model: "gpt-3.5-turbo",
-      temperature: temperature,
-    },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+    response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        messages: discussion,
+        model: "gpt-3.5-turbo",
+        temperature: temperature,
       },
-    }
-  );
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+      }
+    );
   } catch (err) {
     console.log("err = ", err.response.data.error);
   }
-
 
   return response.data.choices[0].message.content;
 }
@@ -2295,7 +2259,7 @@ async function useGPTchatSimple(
   return resContent;
 }
 
-async function useGPT4Simple(prompt, temperature = 0.7,chooseAPI = "API 1") {
+async function useGPT4Simple(prompt, temperature = 0.7, chooseAPI = "API 1") {
   discussion = [
     {
       role: "user",
@@ -2414,7 +2378,6 @@ const nodes_aiModule = async (
 
   memberObj = await membersScoreMap(memberObj, weightModulesObj);
 
-
   // asdf5
 
   return memberObj;
@@ -2523,13 +2486,11 @@ const totalScore_aiModule = async (
   return memberObj;
 };
 
-
-
 const sortArrayRelevantNodes_aiModule = async (memberObj) => {
   memberArray = [];
 
-  let minScore = 110
-  let maxScore = -1
+  let minScore = 110;
+  let maxScore = -1;
   for (const [memberID, member] of Object.entries(memberObj)) {
     let score = member.total.score;
 
@@ -2537,7 +2498,6 @@ const sortArrayRelevantNodes_aiModule = async (memberObj) => {
 
     totalScoreFromNodes = 0;
     totalScoreFromNodesCount = 0;
-    
 
     // -------------- Add Nodes --------------
     nodesPercentage = [];
@@ -2575,11 +2535,10 @@ const sortArrayRelevantNodes_aiModule = async (memberObj) => {
         }
       }
 
-      if (totalPercentage> 100 ) totalPercentage = 100
+      if (totalPercentage > 100) totalPercentage = 100;
 
-      nodesPercentage[nodesPercentage.length - 1].totalPercentage = parseInt( 
-        totalPercentage
-      );
+      nodesPercentage[nodesPercentage.length - 1].totalPercentage =
+        parseInt(totalPercentage);
 
       totalScoreFromNodes += parseInt(totalPercentage);
       totalScoreFromNodesCount++;
@@ -2593,10 +2552,10 @@ const sortArrayRelevantNodes_aiModule = async (memberObj) => {
     );
     // -------------- Add Nodes --------------
 
-    let scoreNowU = parseInt(totalScoreFromNodes/totalScoreFromNodesCount)
+    let scoreNowU = parseInt(totalScoreFromNodes / totalScoreFromNodesCount);
 
-    if (scoreNowU > maxScore) maxScore = scoreNowU
-    if (scoreNowU < minScore) minScore = scoreNowU
+    if (scoreNowU > maxScore) maxScore = scoreNowU;
+    if (scoreNowU < minScore) minScore = scoreNowU;
 
     memberArray.push({
       memberID: memberID,
@@ -2620,15 +2579,20 @@ const sortArrayRelevantNodes_aiModule = async (memberObj) => {
 
     let totalPercentageNow = member.matchPercentage.totalPercentage;
 
-    totalPercentageNow = mapValue(totalPercentageNow, minScore, maxScore, randomNumMin, randomNumMax)
+    totalPercentageNow = mapValue(
+      totalPercentageNow,
+      minScore,
+      maxScore,
+      randomNumMin,
+      randomNumMax
+    );
 
-    member.matchPercentage.totalPercentage = parseInt(totalPercentageNow)
+    member.matchPercentage.totalPercentage = parseInt(totalPercentageNow);
   }
 
-  
   // for (let i = 0; i < memberArray.length; i++) {
   //   let member = memberArray[i];
-    
+
   //   let nodesPercentage = member.nodesPercentage;
   //   for (let j = 0; j < nodesPercentage.length; j++) {
   //     let node = nodesPercentage[j];
@@ -2898,8 +2862,8 @@ const nodesFindMembers = async (
 ) => {
   memberIDs = [];
 
-  console.log(" = --->> tora -1",memberObj )
-// d0
+  console.log(" = --->> tora -1", memberObj);
+  // d0
 
   for (let i = 0; i < nodeData.length; i++) {
     // loop on the nodes
@@ -2919,10 +2883,8 @@ const nodesFindMembers = async (
     );
   }
   // console.log(" = --->> tora 3", memberObj,membersIDallowObj);
-  
-  // sd9
 
-  
+  // sd9
 
   return memberObj;
 };
@@ -2945,13 +2907,12 @@ const nodeScoreMembersMap = async (
   newMax_nodeMember = 1;
   // ---------- Find nodes and Max Min -----------
   for (let j = 0; j < match_v2.length; j++) {
-    console.log("match_v2[j] = " , match_v2[j])
+    console.log("match_v2[j] = ", match_v2[j]);
     if (!(match_v2[j].type == "Member")) continue;
 
     let memberID = match_v2[j].nodeResID;
 
-    console.log("memberID = ", j,memberID,membersIDallowObj);
-
+    console.log("memberID = ", j, memberID, membersIDallowObj);
 
     if (
       membersIDallowObj[memberID] == undefined &&
@@ -2959,8 +2920,7 @@ const nodeScoreMembersMap = async (
     )
       continue;
 
-    console.log("memberID = ", j,memberID,membersIDallowObj);
-
+    console.log("memberID = ", j, memberID, membersIDallowObj);
 
     let scoreUser = match_v2[j].wh_sum;
 
@@ -3327,8 +3287,6 @@ function nodeToMaxScore(x) {
 
   return y;
 }
-
-
 
 module.exports = {
   nodes_aiModule,
