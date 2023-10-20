@@ -14,6 +14,7 @@ const { cronJobToUpdateServerIcon } = require("./utils/getDiscordGuildAvatar");
 const contextResolver = require("./auth/contextResolvers");
 const authRoutes = require("./auth");
 const { stripeRoutes, stripeWebhookRoutes } = require("./stripe");
+const { storageRoutes } = require("./storage");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const twilio = require("twilio");
@@ -112,6 +113,7 @@ async function main() {
   app.use(cors());
   app.use("/auth", authRoutes());
   app.use("/stripe", stripeRoutes());
+  app.use("/storage", storageRoutes());
 
   if (
     process.env.NODE_ENV &&

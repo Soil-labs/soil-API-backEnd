@@ -111,11 +111,12 @@ module.exports = `
         analysisCandidateEdenAI: analysisCandidateEdenAIType
         keyAttributes: [attributeCandidateType]
         futurePotential: [attributeCandidateType]
+        cvID: String
     }
 
     type scoreCardTotalType {
         score: Float,
-        scoreCardsCalculated: Boolean
+        scoreCardCalculated: Boolean
     }
 
     type scoreCardCategoryMemoryType {

@@ -146,6 +146,7 @@ module.exports = `
 
     input saveCVtoUserInput {
         cvContent: String
+        cvFilename: String
         userID: ID
         positionID: ID
 
