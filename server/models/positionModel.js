@@ -148,6 +148,7 @@ const positionModel = mongoose.Schema({
               scoreCardsCandidate: [
                 {
                   cardID: String, // don't need to save the score and reason because it is already inside the card
+                  scoreAlignment: Number,
                 },
               ],
             },
