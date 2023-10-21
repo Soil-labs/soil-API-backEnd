@@ -136,6 +136,7 @@ module.exports = `
     }
     type scoreCardsCandidateType {
         card: CardMemory, # don't need to save the score and reason because it is already inside the card
+        scoreAlignment: Float,
     }
 
     type attributeCandidateType {

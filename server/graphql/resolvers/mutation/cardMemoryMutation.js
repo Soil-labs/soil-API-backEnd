@@ -946,6 +946,7 @@ module.exports = {
               if (agent?.score) {
                 scoreExternal = scoreExternal + agent.score
                 scoreExternalCont = scoreExternalCont + 1
+
               }
             }
 
@@ -964,7 +965,8 @@ module.exports = {
             scoreInternalExternalCount = scoreInternalExternalCount + 1
 
             scoreCardsCandidate.push({
-              cardID: connectedCard.cardID
+              cardID: connectedCard.cardID,
+              scoreAlignment: parseFloat((scoreExternal*0.1).toFixed(2)),
             })
           }
 
@@ -1222,7 +1224,10 @@ module.exports = {
             // printC(totalScoreCount, "4", "totalScoreCount", "g")
             // printC(averagePriorityCategory, "5", "averagePriorityCategory", "g")
 
-            // printC(scoreCardsPosition, "3", "scoreCardsPosition", "r")
+            // printC(scoreCardsPosition, "f5", "scoreCardsPosition", "p")
+            if (scoreCardsPosition.length >0 ){
+              printC(scoreCardsPosition[0].scoreCardsCandidate, "f5", "scoreCardsPosition[0].scoreCardsCandidate", "p")
+            }
             // // console.log(cardMemoriesDataPositionObj[category].idxScoreCategoryCandidates)
             // s10
 
@@ -1260,9 +1265,9 @@ module.exports = {
         }
         // printC( positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories, "8", " positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories", "b")
         // printC( positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories[6], "9", "next", "p")
-        // printC( positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories[6].scoreCardsPosition[0], "10", "next", "r")
+        printC( positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories[6].scoreCardsPosition[0], "10", "next", "r")
 
-        // d9
+        f1
         // ------------------ calculate total score and reason in each category ------------
 
     
