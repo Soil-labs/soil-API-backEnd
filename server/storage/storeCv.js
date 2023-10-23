@@ -1,7 +1,6 @@
 const { Storage, MultiPartUploadError } = require("@google-cloud/storage");
 
 const projectId = "eden-app-386212";
-const keyFilename = "mykey.json";
 
 const storage = new Storage({
   projectId,
@@ -39,20 +38,5 @@ const storeCv = async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 };
-
-async function uploadFile(
-  bucketName = "eden-cvs",
-  filePath = "./local/path/to/file.txt",
-  destFileName = "file.txt",
-  generationMatchPrecondition = 0
-) {
-  const options = {
-    destination: destFileName,
-    preconditionOpts: { ifGenerationMatch: generationMatchPrecondition },
-  };
-
-  await storage.bucket(bucketName).upload(filePath, options);
-  console.log(`${filePath} uploaded to ${bucketName}`);
-}
 
 module.exports = storeCv;
