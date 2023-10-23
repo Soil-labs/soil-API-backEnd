@@ -8,7 +8,9 @@ const storage = new Storage({
     type: "service_account",
     project_id: "eden-app-386212",
     private_key_id: process.env.GOOGLE_CLOUD_PRIVATE_KEY_ID,
-    private_key: process.env.GOOGLE_CLOUD_PRIVATE_KEY,
+    private_key: process.env.GOOGLE_CLOUD_PRIVATE_KEY.split(
+      String.raw`\n`
+    ).join("\n"),
     client_email: process.env.GOOGLE_CLOUD_CLIENT_EMAIL,
     client_id: process.env.GOOGLE_CLOUD_CLIENT_ID,
     auth_uri: "https://accounts.google.com/o/oauth2/auth",
