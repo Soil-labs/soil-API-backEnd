@@ -12,7 +12,7 @@ const multer = new Multer({
 const storageRoutes = () => {
   const router = Router();
 
-  router.post("/store-cv", cors(), multer.single("pdffile"), storeCv);
+  router.post("/store-cv", multer.single("pdffile"), storeCv);
 
   return router;
 };
