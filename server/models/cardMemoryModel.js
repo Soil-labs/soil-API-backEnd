@@ -3,6 +3,7 @@ require("dotenv").config();
 
 const cardMemoryModel = mongoose.Schema({
   content: String,
+  scoreCriteria: String,
   priority: Number,
   tradeOffBoost: Number,
   type: {

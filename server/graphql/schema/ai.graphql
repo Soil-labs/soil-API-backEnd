@@ -389,13 +389,27 @@ module.exports = `
         memoriesType: memoriesTypeEnum
     }
 
+    input askEdenUserPositionGPTFunc_V2Input {
+        userID: ID
+        positionID: ID
+        conversation: [messageChat]
+        whatToAsk: whatToAskEnum
+        memoriesType: memoriesTypeEnum
+    }
+
     enum memoriesTypeEnum {
         OLD
         NEW
     }
 
-     type askEdenUserPositionGPTFuncOutput {
+    type askEdenUserPositionGPTFuncOutput {
         reply: String
+        # keywords: [String]
+    }
+
+    type askEdenUserPositionGPTFunc_V2Output {
+        reply: String
+        testTor: String
         # keywords: [String]
     }
 
