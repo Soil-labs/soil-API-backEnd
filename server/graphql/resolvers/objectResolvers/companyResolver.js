@@ -17,7 +17,7 @@ module.exports = {
         for (const _employee of parent.employees) {
           const _employeeData = await Members.findOne({
             _id: _employee.userID,
-          });
+          }).select('_id discordName discordAvatar');
           employeesData.push({
             status: _employee.status,
             typeT: _employee.typeT,
@@ -59,15 +59,15 @@ module.exports = {
     positions: async (parent, args, context, info) => {
       // console.log("parent = ", parent);
       try {
-        const positionsID = parent.positions.map((position) => {
-          return position.positionID;
-        });
+        // const positionsID = parent.positions.map((position) => {
+        //   return position.positionID;
+        // });
 
-        const positionsData = await Position.find({ _id: positionsID });
+        // const positionsData = await Position.find({ _id: positionsID });
 
-        if (positionsData) {
-          return positionsData;
-        }
+        // if (positionsData) {
+        //   return positionsData;
+        // }
       } catch (err) {
         throw new ApolloError(
           err.message,
@@ -153,28 +153,29 @@ module.exports = {
     candidatesNum: async (parent, args, context, info) => {
       // console.log("parent 323= ", parent);
       try {
-        positions = parent.positions;
+        // positions = parent.positions;
 
-        // console.log("positions = " , positions)
+        // // console.log("positions = " , positions)
 
-        positionsIDs = [];
-        positions.forEach((position) => {
-          positionsIDs.push(position.positionID);
-        });
+        // positionsIDs = [];
+        // positions.forEach((position) => {
+        //   positionsIDs.push(position.positionID);
+        // });
 
-        const positionData = await Position.find({ _id: positionsIDs }).select(
-          "_id candidates"
-        );
+        // const positionData = await Position.find({ _id: positionsIDs }).select(
+        //   "_id candidates"
+        // );
 
-        candidatesNum = 0;
-        positionData.forEach((position) => {
-          candidatesNum_ = position.candidates.length;
+        // candidatesNum = 0;
+        // positionData.forEach((position) => {
+        //   candidatesNum_ = position.candidates.length;
 
-          candidatesNum += candidatesNum_;
-        });
+        //   candidatesNum += candidatesNum_;
+        // });
 
-        return candidatesNum;
+        // return candidatesNum;
 
+        return 3; // TODO // SOS 
         // if (positionData) {
         //   return positionData;
         // }

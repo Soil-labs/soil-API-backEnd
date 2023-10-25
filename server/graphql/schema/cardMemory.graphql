@@ -2,7 +2,8 @@ module.exports = `
  
     type CardMemory {
         _id: ID
-        content: String
+        content: String,
+        scoreCriteria: String,
         priority: Int
         tradeOffBoost: Int
         type: typeCardMemoryEnum
@@ -94,7 +95,7 @@ module.exports = `
     input deleteCardMemoryInput {
         _id: [ID]
         companyID: ID
-        userID: ID
+        userID: [ID]
         positionID: ID
     }
 

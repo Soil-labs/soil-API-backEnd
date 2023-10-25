@@ -1757,10 +1757,16 @@ module.exports = {
         if (positionTrainEdenAI == true){ // If EdenAI is talking to the company employ for training Eden
 
           // ------------- Update the Conversation MEMORY ----------------
-          const _conversation = conversation.map((_item) => ({
+          let _conversation = conversation.map((_item) => ({
             ..._item,
             date: _item.date ? _item.date : newDate,
           }));
+          _conversation.push({
+            role: "assistant",
+            content: reply,
+            date: newDate,
+          })
+
           resultConv = await findAndUpdateConversationFunc(
             userID,
             _conversation,
@@ -1772,10 +1778,16 @@ module.exports = {
 
         } else { // If Eden is talking to the candidate on an interview 
             // ------------- Update the Conversation MEMORY ----------------
-            const _conversation = conversation.map((_item) => ({
+            let _conversation = conversation.map((_item) => ({
               ..._item,
               date: _item.date ? _item.date : newDate,
             }));
+
+            _conversation.push({
+              role: "assistant",
+              content: reply,
+              date: newDate,
+            })
             resultConv = await findAndUpdateConversationFunc(
               userID,
               _conversation,
@@ -4019,6 +4031,54 @@ module.exports = {
 
 
   },
+  askEdenUserPositionGPTFunc_V2: async (parent, args, context, info) => {
+    const {  userID,positionID,conversation,whatToAsk,memoriesType } = args.fields;
+    console.log("Query > askEdenUserPositionGPTFunc_V2 > args.fields = ", args.fields);
+
+    let reply = "hey all good" 
+    // put also a random number on the reply 3 digit number
+
+    reply = reply + " " + Math.floor(Math.random() * 1000)
+
+    try {
+
+
+      // ------------ Save conversation to DB -----------
+      const newDate = new Date();
+      let _conversation = conversation.map((_item) => ({
+        ..._item,
+        date: _item.date ? _item.date : newDate,
+      }));
+      _conversation.push({
+        role: "assistant",
+        content: reply,
+        date: newDate,
+      })
+      resultConv = await findAndUpdateConversationFunc(
+        userID,
+        _conversation,
+        positionID,
+        false
+      );
+      // ------------ Save conversation to DB -----------
+
+      await wait (1)
+
+      return {
+        reply: reply,
+        testTor: "hey"
+      }
+
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "askEdenUserPositionGPTFunc_V2",
+        {
+          component: "aiQuery > askEdenUserPositionGPTFunc_V2",
+        }
+      );
+    }
+  },
   askEdenUserPosition: async (parent, args, context, info) => {
     const {  userID,positionID,conversation,whatToAsk } = args.fields;
     console.log("Query > askEdenUserPosition > args.fields = ", args.fields);
@@ -4832,3 +4892,10 @@ module.exports = {
     }
   },
 };
+
+function wait(x) {
+  return new Promise(resolve => {
+    setTimeout(resolve, x*1000);
+  });
+}
+

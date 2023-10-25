@@ -789,8 +789,16 @@ async function connectCardsPositionToCandidateAndScore(cardMemoriesCandidateArra
       // --------- Prompt for finding Cards -----------
 
       // Position Requirement  (delimited <>): <"Be really good at dancing and yoga">
+
+      evaluationCriteria = ""
+      if (cardMemoryPosition?.scoreCriteria) {
+        evaluationCriteria = `Explanation Evaluation Criteria for this Position Requirement (delimited <>): <${cardMemoryPosition.scoreCriteria}>`
+      }
+
+
       promptFindRelatedCards = `
       Position Requirement  (delimited <>): <${cardMemoryPosition.content}>
+      ${evaluationCriteria}
 
       Card Memories Candidate (delimited <>): <${cardMemoriesCandidate}>
 

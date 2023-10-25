@@ -51,6 +51,7 @@ module.exports = `
 
     input updateConversationInput {
         userID: String,  
+        positionID: String,
         conversation: [conversationInput],
         questionAskingNow: String,
         questionAskingID: ID,
