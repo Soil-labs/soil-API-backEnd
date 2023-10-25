@@ -146,6 +146,7 @@ module.exports = `
           edenGPTreplyMemory(fields: edenGPTreplyMemoryInput): edenGPTreplyMemoryOutput
           findPrioritiesTrainEdenAI(fields: findPrioritiesTrainEdenAIInput): findPrioritiesTrainEdenAIOutput
           askEdenUserPositionGPTFunc(fields: askEdenUserPositionGPTFuncInput): askEdenUserPositionGPTFuncOutput
+          askEdenUserPositionGPTFunc_V2(fields: askEdenUserPositionGPTFunc_V2Input): askEdenUserPositionGPTFunc_V2Output
           askEdenUserPosition(fields: askEdenUserPositionInput): askEdenUserPositionOutput
           edenGPTreplyChatAPI(fields: edenGPTreplyChatAPIInput): edenGPTreplyChatAPIOutput
           edenGPTreplyChatAPI_V2(fields: edenGPTreplyChatAPI_V2Input): edenGPTreplyChatAPI_V2Output

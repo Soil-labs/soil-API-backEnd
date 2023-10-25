@@ -444,12 +444,19 @@ module.exports = {
       
       let match;
       while ((match = regex.exec(cardMemoriesString)) !== null) {
-        const obj = {
+        let obj = {
           category: match[1].trim().split('. ')[1],
           priority: parseInt(match[2]),
           tradeoffBoost: parseInt(match[3]),
           description: match[4].trim(),
+          scoreCriteria: ""
         };
+
+        const descriptionParts = obj.description.split(' - ');
+        obj.description = descriptionParts[0].trim();
+        obj.scoreCriteria = descriptionParts[1] ? descriptionParts[1].trim() : '';
+
+
         cardMemoriesArray.push(obj);
       }
       
@@ -526,6 +533,7 @@ module.exports = {
       
         cardMemories.push({
           content: cardMemory.description,
+          scoreCriteria: cardMemory.scoreCriteria,
           priority: cardMemory.priority,
           tradeOffBoost: cardMemory.tradeoffBoost,
           type: cardMemory.category,
@@ -655,7 +663,7 @@ module.exports = {
 
 
       
-
+      let cardMemoryDataNowAll = []
       
       for (let i = 0; i < membersData.length; i++) {
         const memberData = membersData[i];
@@ -1007,7 +1015,7 @@ module.exports = {
         // --------------- Loop Position Cards find the reasons for the scores ---------------
         for (let i = 0; i < cardMemoriesDataPosition.length; i++) {
 
-          continue // SOS 🆘 - Remove this line to activate the reason
+          // continue // SOS 🆘 - Remove this line to activate the reason
 
           const cardMemoriesDataPositionN = cardMemoriesDataPosition[i];
 
@@ -1265,9 +1273,9 @@ module.exports = {
         }
         // printC( positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories, "8", " positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories", "b")
         // printC( positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories[6], "9", "next", "p")
-        printC( positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories[6].scoreCardsPosition[0], "10", "next", "r")
+        // printC( positionData.candidates[indexCandidateOnPosition].scoreCardCategoryMemories[6].scoreCardsPosition[0], "10", "next", "r")
 
-        f1
+        // f1
         // ------------------ calculate total score and reason in each category ------------
 
     
