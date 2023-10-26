@@ -223,7 +223,7 @@ module.exports = `
         contractDuration: String,
         yearlySalary: Float,
         socials: socialsInput,
-
+        status: PositionStatus
     }
 
     input socialsInput {
@@ -406,6 +406,7 @@ module.exports = `
     }
 
     enum PositionStatus {
+        UNPUBLISHED,
         ACTIVE,
         ARCHIVED,
         DELETED
