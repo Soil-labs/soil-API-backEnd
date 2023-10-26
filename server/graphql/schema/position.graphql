@@ -11,6 +11,7 @@ module.exports = `
         candidatesReadyToDisplay: Boolean
         candidatesFlagAnalysisCreated: Boolean
         questionsToAsk: [QuestionType]
+        memory: memoryType
         positionsRequirements: positionsRequirementsType
         nodes: [NodeDataType]
         interviewQuestionsForPosition: [interviewQuestionsForCandidateType]
@@ -20,6 +21,10 @@ module.exports = `
         candidates: [CandidateType]
         generalDetails: generalDetailsType
         status: PositionStatus
+    }
+
+    type memoryType {
+        core: String 
     }
 
     type positionsRequirementsType { 
