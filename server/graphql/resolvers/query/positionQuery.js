@@ -55,7 +55,6 @@ module.exports = {
     if (!userID) throw new ApolloError("userID is required");
 
     try {
-
       let positionData = await Position.findOne({ _id: positionID });
 
       if (!positionData) throw new ApolloError("Position not found");
@@ -160,7 +159,7 @@ module.exports = {
 
       let positionsData = await Position.find({
         _id: { $in: positionsIDs },
-        status: { $nin: ["DELETED", "ARCHIVED"] },
+        status: { $nin: ["DELETED", "ARCHIVED", "UNPUBLISHED"] },
       });
 
       return positionsData;

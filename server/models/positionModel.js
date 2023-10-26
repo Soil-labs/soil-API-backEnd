@@ -19,7 +19,12 @@ const positionModel = mongoose.Schema({
     positionIDs: [mongoose.Schema.ObjectId],
     categoryChat: {
       type: String,
-      enum: ["REJECT_CANDIDATE","ACCEPT_CANDIDATE","ASK_CANDIDATE","PITCH_POSITION_CANDIDATE"],
+      enum: [
+        "REJECT_CANDIDATE",
+        "ACCEPT_CANDIDATE",
+        "ASK_CANDIDATE",
+        "PITCH_POSITION_CANDIDATE",
+      ],
     },
   },
   employees: [
@@ -61,12 +66,16 @@ const positionModel = mongoose.Schema({
         reason: String,
       },
     ],
-    keyAttributes: [{
-      attribute: String,
-    }],
-    futurePotential: [{
-      attribute: String,
-    }],
+    keyAttributes: [
+      {
+        attribute: String,
+      },
+    ],
+    futurePotential: [
+      {
+        attribute: String,
+      },
+    ],
   },
   nodes: [
     {
@@ -135,7 +144,19 @@ const positionModel = mongoose.Schema({
         {
           category: {
             type: String,
-            enum: ["TECHNICAL_SKILLS","SOFT_SKILLS","BEHAVIOR","EXPERIENCE","INDUSTRY_KNOWLEDGE","DOMAIN_EXPERTISE","INTERESTS","CORE_VALUES","GOALS","EDUCATION","OTHER"], // ScoreCard = Checks and Balances
+            enum: [
+              "TECHNICAL_SKILLS",
+              "SOFT_SKILLS",
+              "BEHAVIOR",
+              "EXPERIENCE",
+              "INDUSTRY_KNOWLEDGE",
+              "DOMAIN_EXPERTISE",
+              "INTERESTS",
+              "CORE_VALUES",
+              "GOALS",
+              "EDUCATION",
+              "OTHER",
+            ], // ScoreCard = Checks and Balances
           },
           score: Number,
           reason: String,
@@ -226,16 +247,20 @@ const positionModel = mongoose.Schema({
           content: String,
         },
       },
-      keyAttributes: [{
-        attribute: String,
-        score: Number,
-        reason: String,
-      }],
-      futurePotential: [{
-        attribute: String,
-        score: Number,
-        reason: String,
-      }],
+      keyAttributes: [
+        {
+          attribute: String,
+          score: Number,
+          reason: String,
+        },
+      ],
+      futurePotential: [
+        {
+          attribute: String,
+          score: Number,
+          reason: String,
+        },
+      ],
     },
   ],
   generalDetails: {
@@ -258,7 +283,7 @@ const positionModel = mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["ACTIVE", "ARCHIVED", "DELETED"],
+    enum: ["UNPUBLISHED", "ACTIVE", "ARCHIVED", "DELETED"],
     default: "ACTIVE",
   },
 });
