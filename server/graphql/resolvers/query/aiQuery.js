@@ -4042,6 +4042,101 @@ module.exports = {
 
     try {
 
+      positionData = await Position.findOne({ 
+        _id: positionID,
+      }).select('_id name memory')
+
+
+      let positionCoreMemory = ""
+      let promptPositionCoreMemory = ""
+      if (positionData.memory && positionData.memory.core){
+        positionCoreMemory = positionData.memory.core
+
+        promptPositionCoreMemory = `Core Memory Position delimited by ||: |${positionCoreMemory}|`
+
+      }
+
+
+      // -------------- GPT ----------
+      let discussionT = conversation.map((item) => ({
+        role: item.role,
+        content: item.content,
+      }));
+  
+      printC(discussionT, "0", "discussionT", "p");
+  
+      let functionsUseGPT = ["coreMemoryAppend","sendMessage"]
+  
+      const systemPrompt = `You are a recruiter, your job is to create a great conversation that help the user 
+      - be concise write small answers
+      - Only say the truth if you don't know something say that you don't have this info
+      - When you see Memories Only use a memory that is absolutely relevant to the Question!
+      - Only answer exact Question that you were asked!
+      
+      ${promptPositionCoreMemory}
+      `
+  
+
+      let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT)
+      // -------------- GPT ----------
+
+      // -------------- Use Function ----------
+      resGPTFunc = {
+        ...resGPTFunc,
+        userID,
+        positionID,
+        positionData,
+        memoriesType,
+        coreMemory: {
+          positionCore: positionCoreMemory,
+          // candidateCore: "",
+        }
+      }
+
+      printC(resGPTFunc, "0", "resGPTFunc", "p");
+
+      if (resGPTFunc.content == null && resGPTFunc?.function_call?.functionName) {
+        funcOutput = await chooseFunctionForGPT(resGPTFunc)
+
+
+        if (funcOutput.name=="sendMessage"){
+          return {
+            reply: funcOutput.content,
+          }
+        }
+
+
+        printC(funcOutput, "0", "funcOutput", "p");
+
+        const funcOutputGPT = {
+          role: funcOutput.role,
+          name: funcOutput.name,
+          content: funcOutput.content,
+        }
+
+        functionsUseGPT = ["sendMessage"]
+
+        let resGPTFunc_2 = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,funcOutputGPT,0)
+ 
+
+        printC(resGPTFunc_2, "5", "resGPTFunc_2", "p");
+
+        if (resGPTFunc_2.content){
+          return {
+            reply: resGPTFunc_2.content,
+          }
+        }      
+      } else {
+        if (resGPTFunc.content){
+          return {
+            reply: resGPTFunc.content,
+          }
+        }
+      }
+      // -------------- Use Function ----------
+
+
+
 
       // ------------ Save conversation to DB -----------
       const newDate = new Date();
@@ -4066,7 +4161,6 @@ module.exports = {
 
       return {
         reply: reply,
-        testTor: "hey"
       }
 
     } catch (err) {

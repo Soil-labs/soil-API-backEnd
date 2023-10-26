@@ -408,7 +408,6 @@ module.exports = `
 
     type askEdenUserPositionGPTFunc_V2Output {
         reply: String
-        testTor: String
         # keywords: [String]
     }
 
