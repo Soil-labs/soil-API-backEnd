@@ -184,6 +184,34 @@ giveInformationRelatedToPosition: {
         required: ["detailsOfQuestion"],
     },
   },
+  coreMemoryAppend: {
+    name: "coreMemoryAppend",
+    description: "Append to the contents of core memory, which is focused on position requirements and candidate information. Only append if core memory is NEW",
+    parameters: {
+        type: "object",
+        properties: {
+            content: {
+                type: "string",
+                description: "NEW Content to write to the memory. ",
+            },
+        },
+        required: ["content"],
+    },
+  },
+  sendMessage: {
+    name: "sendMessage",
+    description: "Sends a message to the user",
+    parameters: {
+        type: "object",
+        properties: {
+            message: {
+                type: "string",
+                description: "Message contents",
+            },
+        },
+        required: ["message"],
+    },
+  },
   
 }
 
@@ -221,7 +249,7 @@ async function useGPTFunc(
   }
   // ---------------- Add Result of function ----------------
 
-  printC(discussion, "10", "discussion", "g")
+  // printC(discussion, "10", "discussion", "g")
   
   // let modelT = "gpt-3.5-turbo-0613";
   let modelT = "gpt-4-0613";
@@ -244,12 +272,12 @@ async function useGPTFunc(
     }
   );
 
-  printC(response.data.choices[0], "1", "response.data..choices[0]", "r")
+  // printC(response.data.choices[0], "1", "response.data..choices[0]", "r")
 
   // Check if it is a function or if it is a normal message
   if (response.data.choices[0].message.content == null) { // Function
     // console.log(response.data.choices[0].message.function_call.arguments)
-    printC(response.data.choices[0].message.function_call.arguments, "1", "response.data.choices[0].message.function_call.arguments", "r")
+    // printC(response.data.choices[0].message.function_call.arguments, "1", "response.data.choices[0].message.function_call.arguments", "r")
 
 
     // --------------- parse arguments of function ----------------
@@ -264,7 +292,7 @@ async function useGPTFunc(
       result[key] = value;
     }
 
-    console.log(result);
+    // console.log(result);
     // --------------- parse arguments of function ----------------
 
 
@@ -299,7 +327,6 @@ async function chooseFunctionForGPT(resGPTFunc) {
 
     funcOutput = await giveQualificationsCandidate(resGPTFunc)
 
-
   } else if (resGPTFunc.function_call.functionName == "giveQualificationsCandidate") {
 
     funcOutput = await giveQualificationsCandidate(resGPTFunc)
@@ -312,6 +339,14 @@ async function chooseFunctionForGPT(resGPTFunc) {
   } else if (resGPTFunc.function_call.functionName == "isCandidateAvailable") {
 
     funcOutput = await isCandidateAvailable(resGPTFunc)
+
+  } else if (resGPTFunc.function_call.functionName == "coreMemoryAppend") {
+
+    funcOutput = await coreMemoryAppend(resGPTFunc)
+
+  } else if (resGPTFunc.function_call.functionName == "sendMessage") {
+
+    funcOutput = await sendMessage(resGPTFunc)
 
   } else {
 
@@ -482,6 +517,56 @@ async function giveQualificationsCandidate(funcInput) {
   printC(funcOutput, "1", "funcOutput", "b")
 
   // s9
+  return funcOutput
+
+
+}
+
+async function coreMemoryAppend(funcInput) {
+
+
+  printC(funcInput, "F6", "funcInput", "p")
+
+  let {positionCore} = funcInput.coreMemory
+
+  let {positionID,positionData} = funcInput
+
+  const {content} = funcInput.function_call
+
+  // append the content on the positionCore memory
+
+  positionCore += "\n" + content
+
+  // save to database 
+
+  positionData.memory.core = positionCore
+
+  await positionData.save()
+
+
+
+  funcOutput = {
+    role: "function",
+    content:`DONE Append to the CORE memory, Reply to message `
+  }
+
+  
+  return funcOutput
+
+
+}
+
+async function sendMessage(funcInput) {
+
+
+  const {message} = funcInput.function_call
+
+  funcOutput = {
+    role: "function",
+    content: message,
+  }
+
+  
   return funcOutput
 
 

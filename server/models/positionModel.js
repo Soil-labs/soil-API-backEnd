@@ -39,6 +39,9 @@ const positionModel = mongoose.Schema({
       bestAnswer: String,
     },
   ],
+  memory: {
+    core: String,
+  },
   positionsRequirements: {
     originalContent: String,
     content: String,

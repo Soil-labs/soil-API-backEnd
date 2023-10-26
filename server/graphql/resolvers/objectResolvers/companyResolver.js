@@ -59,15 +59,15 @@ module.exports = {
     positions: async (parent, args, context, info) => {
       // console.log("parent = ", parent);
       try {
-        // const positionsID = parent.positions.map((position) => {
-        //   return position.positionID;
-        // });
+        const positionsID = parent.positions.map((position) => {
+          return position.positionID;
+        });
 
-        // const positionsData = await Position.find({ _id: positionsID });
+        const positionsData = await Position.find({ _id: positionsID }).select('_id name icon status talentList companyID generalDetails');
 
-        // if (positionsData) {
-        //   return positionsData;
-        // }
+        if (positionsData) {
+          return positionsData;
+        }
       } catch (err) {
         throw new ApolloError(
           err.message,
