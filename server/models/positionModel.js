@@ -287,7 +287,7 @@ const positionModel = mongoose.Schema({
   status: {
     type: String,
     enum: ["UNPUBLISHED", "ACTIVE", "ARCHIVED", "DELETED"],
-    default: "ACTIVE",
+    default: "UNPUBLISHED",
   },
 });
 
