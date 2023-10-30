@@ -11,6 +11,8 @@ module.exports = `
         bio: String
         oneLiner: String
 
+        memory: memoryMemberType
+
         conduct: conductType
 
         stateEdenChat: stateEdenChatType
@@ -82,6 +84,10 @@ module.exports = `
         reviewSummary: reviewSummaryType     
 
         preferences: preferencesType
+    }
+
+     type memoryMemberType {
+        core: String 
     }
 
     type conductType {

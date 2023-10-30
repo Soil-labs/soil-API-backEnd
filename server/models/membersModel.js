@@ -20,6 +20,10 @@ const memberSchema = mongoose.Schema({
   bio: String,
   oneLiner: String,
 
+  memory: {
+    core: String,
+  },
+
   conduct: {
     number: String,
     whatsappNumber: String,

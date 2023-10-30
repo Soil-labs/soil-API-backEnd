@@ -39,6 +39,10 @@ const {
   deleteMemoriesPineconeFunc,
 } = require("../utils/memoryPineconeModules");
 
+const {
+  createCardsCandidateForPositionFunc,
+  calculateScoreCardCandidateToPositionFunc,} = require("../utils/cardMemoryModules");
+
 const { arrayToObj } = require("../utils/endorsementModules");
 
 module.exports = {
@@ -414,6 +418,144 @@ module.exports = {
         err.message,
         err.extensions?.code || "moveCandidateToPosition",
         { component: "positionMutation > moveCandidateToPosition" }
+      );
+    }
+  },
+  moveCandidateToPosition_V2: async (parent, args, context, info) => {
+    const { userID, positionOldID, positionNewID } = args.fields;
+    console.log(
+      "Mutation > moveCandidateToPosition_V2 > args.fields = ",
+      args.fields
+    );
+
+
+    if (!positionOldID) throw new ApolloError("positionOldID is required");
+    let positionOldData = await Position.findOne({ _id: positionOldID });
+    if (!positionOldData) throw new ApolloError("positionOld not found");
+
+    if (!positionNewID) throw new ApolloError("positionNewID is required");
+    let positionNewData = await Position.findOne({ _id: positionNewID });
+    if (!positionNewData) throw new ApolloError("positionNew not found");
+
+    if (!userID) throw new ApolloError("userID is required");
+    let memberData = await Members.findOne({ _id: userID });
+    if (!memberData) throw new ApolloError("user not found");
+
+    try {
+      // ----------------- add candidate to New position -----------------
+      let index_candNewPos = positionNewData.candidates.findIndex(
+        (x) => x.userID.toString() == userID.toString()
+      );
+
+      if (index_candNewPos == -1) {
+        positionNewData.candidates.push({
+          userID: userID,
+          analysisCandidateEdenAI: {
+            flagAnalysisCreated: false,
+          },
+        });
+
+        index_candNewPos = positionNewData.candidates.length - 1;
+
+        await positionNewData.save();
+      }
+      // ----------------- add candidate to New position -----------------
+
+      // // ----------------- Calculate Score Job Report Candidate --------------
+      // const res = await reportPassFailCVPositionConversationFunc(
+      //   userID,
+      //   positionNewID
+      // );
+      // positionNewData = res.positionData;
+      // // ----------------- Calculate Score Job Report Candidate --------------
+
+      // wait(5000);
+
+      // ----------------- find the conversation and add the positionNewID -----------------
+      let conversationData = await Conversation.find({
+        $and: [{ userID: userID }, { positionID: positionOldID }],
+      });
+
+      // take only the last conv
+      conversationData = conversationData[conversationData.length - 1];
+
+      // add the positionNewID to the conversation
+      extraPositionsIDArr = conversationData.extraPositionsID;
+
+      if (!extraPositionsIDArr) extraPositionsIDArr = [];
+
+      // if the positionNewID is not already in the array
+      if (!extraPositionsIDArr.includes(positionNewID))
+        extraPositionsIDArr.push(positionNewID);
+
+      conversationData.extraPositionsID = extraPositionsIDArr;
+
+      await conversationData.save();
+      // ----------------- find the conversation and add the positionNewID -----------------
+
+
+      // ---------------- create cards candidate and connect to position --------
+      res = await createCardsCandidateForPositionFunc(positionNewID,userID)
+
+
+      await wait (5000);
+      // ---------------- create cards candidate and connect to position --------
+
+
+
+      // ---------------- Calculate score card to position --------
+      res = await calculateScoreCardCandidateToPositionFunc(userID,positionNewID)
+
+      await wait (2000);
+      // ---------------- Calculate score card to position --------
+
+
+      // ------------- Candidate Eden Analysis for Position -------------
+      positionNewData = await candidateEdenAnalysisPositionFunc(
+        positionNewData
+      );
+      // ------------- Candidate Eden Analysis for Position -------------
+
+      // wait(5000);
+
+      // // ------------- Move the summaryQuestions from old to new position -------------
+      // // find the candidate on old position
+      // let index_candOldPos = positionOldData.candidates.findIndex(
+      //   (x) => x.userID.toString() == userID.toString()
+      // );
+
+      // let summaryQuestions = undefined;
+
+      // if (index_candOldPos != -1)
+      //   summaryQuestions =
+      //     positionOldData.candidates[index_candOldPos]?.summaryQuestions;
+
+      // if (summaryQuestions) {
+      //   positionNewData.candidates[index_candNewPos].summaryQuestions =
+      //     summaryQuestions;
+      // }
+      // // ------------- Move the summaryQuestions from old to new position -------------
+
+      // // ------------- Move the Candidate Notes Interview from old to new position -------------
+
+      // if (index_candOldPos != -1)
+      //   notesInterview =
+      //     positionOldData.candidates[index_candOldPos]?.notesInterview;
+
+      // if (notesInterview) {
+      //   positionNewData.candidates[index_candNewPos].notesInterview =
+      //     notesInterview;
+      // }
+      // // ------------- Move the Candidate Notes Interview from old to new position -------------
+
+      // await positionNewData.save();
+
+      return positionNewData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "moveCandidateToPosition_V2",
+        { component: "positionMutation > moveCandidateToPosition_V2" }
       );
     }
   },

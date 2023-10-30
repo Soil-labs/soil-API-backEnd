@@ -338,92 +338,92 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
 
 
 
-    // ------------------- Skill Analysis -------------------
-    instructionsScore = "";
-    if (skillScore > 70) {
-      instructionsScore = "Be really positive Find all the reasons that it is a great fit";
-    } else if (skillScore > 50) {
-      instructionsScore =
-        "Be positive but also fair find the reasons that will work and report them";
-    } else if (skillScore > 30) {
-      instructionsScore =
-        "Be neutral find the reasons that will work and don't work and report them";
-    } else {
-      instructionsScore =
-        "Be negative find all the reasons that it will not be a good fit";
-    }
-    promptSkill = `
-      You are an Interviewer, create a summary if a candidate is a good fit for the position specifically focusing on the skills of the candidate.
+    // // ------------------- Skill Analysis -------------------
+    // instructionsScore = "";
+    // if (skillScore > 70) {
+    //   instructionsScore = "Be really positive Find all the reasons that it is a great fit";
+    // } else if (skillScore > 50) {
+    //   instructionsScore =
+    //     "Be positive but also fair find the reasons that will work and report them";
+    // } else if (skillScore > 30) {
+    //   instructionsScore =
+    //     "Be neutral find the reasons that will work and don't work and report them";
+    // } else {
+    //   instructionsScore =
+    //     "Be negative find all the reasons that it will not be a good fit";
+    // }
+    // promptSkill = `
+    //   You are an Interviewer, create a summary if a candidate is a good fit for the position specifically focusing on the skills of the candidate.
 
-      - JOB POSITION (delimited by <>) < ${positionRequirements} >
+    //   - JOB POSITION (delimited by <>) < ${positionRequirements} >
 
-      - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
+    //   - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
 
-      - Understand the JOB POSITION, and analyze the CANDIDATE INFO
-      - Analyze why the candidate fit or NOT for this position specifically focusing on the skills
-      - Go straight to the point!! don't unnecessary words and don't repeat yourself
+    //   - Understand the JOB POSITION, and analyze the CANDIDATE INFO
+    //   - Analyze why the candidate fit or NOT for this position specifically focusing on the skills
+    //   - Go straight to the point!! don't unnecessary words and don't repeat yourself
 
-      ${instructionsScore}
+    //   ${instructionsScore}
 
       
-      Summary of skill analysis in only 1.5 sentences MAX 45 words: 
-      `;
+    //   Summary of skill analysis in only 1.5 sentences MAX 45 words: 
+    //   `;
 
-    // printC(promptSkill,"6","promptSkill","g")
+    // // printC(promptSkill,"6","promptSkill","g")
 
-    skillAnalysis = await useGPTchatSimple(promptSkill, 0.7, "API 1");
+    // skillAnalysis = await useGPTchatSimple(promptSkill, 0.7, "API 1");
 
-    printC(skillScore, "7", "skillScore", "p");
-    printC(instructionsScore, "7", "instructionsScore", "r");
-    printC(skillAnalysis, "7", "skillAnalysis", "g");
-    // ------------------- Skill Analysis -------------------
+    // printC(skillScore, "7", "skillScore", "p");
+    // printC(instructionsScore, "7", "instructionsScore", "r");
+    // printC(skillAnalysis, "7", "skillAnalysis", "g");
+    // // ------------------- Skill Analysis -------------------
 
 
 
-    // ------------------- JobRequirements Analysis -------------------
-    instructionsScore = "";
-    if (jobRequirementsScore > 70) {
-      instructionsScore = "Be really positive Find all the reasons that it is a great fit";
-    } else if (jobRequirementsScore > 50) {
-      instructionsScore =
-        "Be positive but also fair find the reasons that will work and report them";
-    } else if (jobRequirementsScore > 30) {
-      instructionsScore =
-        "Be neutral find the reasons that will work and don't work and report them";
-    } else {
-      instructionsScore =
-        "Be negative find all the reasons that it will not be a good fit";
-    }
-    promptJobRequirements = `
-      You are an Interviewer, create a summary if a candidate is a good fit for the position specifically focusing on the Requirements of this positions and if they are fulfilled
+    // // ------------------- JobRequirements Analysis -------------------
+    // instructionsScore = "";
+    // if (jobRequirementsScore > 70) {
+    //   instructionsScore = "Be really positive Find all the reasons that it is a great fit";
+    // } else if (jobRequirementsScore > 50) {
+    //   instructionsScore =
+    //     "Be positive but also fair find the reasons that will work and report them";
+    // } else if (jobRequirementsScore > 30) {
+    //   instructionsScore =
+    //     "Be neutral find the reasons that will work and don't work and report them";
+    // } else {
+    //   instructionsScore =
+    //     "Be negative find all the reasons that it will not be a good fit";
+    // }
+    // promptJobRequirements = `
+    //   You are an Interviewer, create a summary if a candidate is a good fit for the position specifically focusing on the Requirements of this positions and if they are fulfilled
 
-      - JOB POSITION (delimited by <>) < ${positionRequirements} >
+    //   - JOB POSITION (delimited by <>) < ${positionRequirements} >
 
-      - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
+    //   - CANDIDATE INFO (delimited by <>) < ${prompt_cv} >
 
-      - Understand the JOB POSITION, and analyze the CANDIDATE INFO
-      - Analyze why the candidate fit or NOT for this position focusing on the Requirements of this positions
-      - Don't talk about Skills!
-      - Go straight to the point!! don't unnecessary words and don't repeat yourself
+    //   - Understand the JOB POSITION, and analyze the CANDIDATE INFO
+    //   - Analyze why the candidate fit or NOT for this position focusing on the Requirements of this positions
+    //   - Don't talk about Skills!
+    //   - Go straight to the point!! don't unnecessary words and don't repeat yourself
       
-      ${instructionsScore}
+    //   ${instructionsScore}
 
-      Summary the most interesting info in only 1.5 sentences MAX 45 words: 
-      `;
+    //   Summary the most interesting info in only 1.5 sentences MAX 45 words: 
+    //   `;
 
-    // printC(promptJobRequirements,"6","promptJobRequirements","g")
+    // // printC(promptJobRequirements,"6","promptJobRequirements","g")
 
-    jobRequirementsAnalysis = await useGPTchatSimple(
-      promptJobRequirements,
-      0.7,
-      "API 2"
-    );
+    // jobRequirementsAnalysis = await useGPTchatSimple(
+    //   promptJobRequirements,
+    //   0.7,
+    //   "API 2"
+    // );
 
-    printC(jobRequirementsScore, "7", "jobRequirementsScore", "p");
-    printC(instructionsScore, "7", "instructionsScore", "r");
+    // printC(jobRequirementsScore, "7", "jobRequirementsScore", "p");
+    // printC(instructionsScore, "7", "instructionsScore", "r");
 
-    printC(jobRequirementsAnalysis, "7", "jobRequirementsAnalysis", "g");
-    // ------------------- JobRequirements Analysis -------------------
+    // printC(jobRequirementsAnalysis, "7", "jobRequirementsAnalysis", "g");
+    // // ------------------- JobRequirements Analysis -------------------
 
 
     
@@ -435,12 +435,12 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
         smallVersion: smallVersion,
         oneLiner: oneLiner,
       },
-      fitRequirements: {
-        content: jobRequirementsAnalysis,
-      },
-      skills: {
-        content: skillAnalysis,
-      },
+      // fitRequirements: {
+      //   content: jobRequirementsAnalysis,
+      // },
+      // skills: {
+      //   content: skillAnalysis,
+      // },
       flagAnalysisCreated: true,
     };
     // ------------ Add to candidate ------------

@@ -3,10 +3,12 @@ const { Conversation } = require("../../../models/conversationModel");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
 
-const { useGPT4chat} = require("../utils/aiExtraModules");
+const { useGPT4chat,summarizeOldConversationMessages,upsertEmbedingPineCone} = require("../utils/aiExtraModules");
 
 
 const axios = require("axios");
+
+require("dotenv").config();
 
 const { useGPTchatSimple } = require("../utils/aiExtraModules");
 
@@ -219,15 +221,38 @@ async function updateEmployees(arr1, arr2, compareKey = "userID") {
   return arr1;
 }
 
-async function findAndUpdateConversationFunc(userID, conversation, positionID,positionTrainEdenAI) {
-  convKey = await concatenateFirstTwoMessages(conversation);
+async function findAndUpdateConversationFunc(userID, conversation, positionID,positionTrainEdenAI,conversationID="") {
 
-  // check if already exist using userID and convKey
+  let existingConversation
+  if (conversationID == "") {
+    convKey = await concatenateFirstTwoMessages(conversation);
 
-  const existingConversation = await Conversation.findOne({
-    userID,
-    convKey,
-  });
+    // check if already exist using userID and convKey
+
+    existingConversation = await Conversation.findOne({
+      userID,
+      convKey,
+    });
+  } else {
+    existingConversation = await Conversation.findOne({
+      _id: conversationID,
+    });
+  }
+
+
+  // ------ update lastMsgSummed that shows what is the last message that is not been summed up ------
+  if (existingConversation !=null){
+    if (existingConversation?.lastMsgSummed != null){ 
+      // find how many new messages are added comparing existingConversation.conversation.length and conversation.length
+      let newMessagesAdded = conversation.length - existingConversation.lastMsgSummed
+      existingConversation.lastMsgSummed = existingConversation.lastMsgSummed + newMessagesAdded
+
+    } else {
+      existingConversation.lastMsgSummed = conversation.length
+    }
+  }
+  // ------ update lastMsgSummed that shows what is the last message that is not been summed up ------
+
 
   let resultConv;
 
@@ -238,6 +263,7 @@ async function findAndUpdateConversationFunc(userID, conversation, positionID,po
     existingConversation.summaryReady = false;
     existingConversation.positionID = positionID;
     existingConversation.positionTrainEdenAI = positionTrainEdenAI;
+    existingConversation.lastMsgSummed = conversation.length
 
 
     resultConv = await existingConversation.save();
@@ -246,6 +272,7 @@ async function findAndUpdateConversationFunc(userID, conversation, positionID,po
       convKey,
       userID,
       conversation,
+      lastMsgSummed: conversation.length,
       positionID,
       positionTrainEdenAI,
       summaryReady: false,
@@ -259,6 +286,162 @@ async function findAndUpdateConversationFunc(userID, conversation, positionID,po
   // console.log("resultConv = " , resultConv)
 
   return resultConv;
+}
+
+async function updateConvOnlyNewMessages(conversationID, conversationNewMessages) {
+
+  let existingConversation
+  if (conversationID == null) {
+    return null
+  } else {
+    existingConversation = await Conversation.findOne({
+      _id: conversationID,
+    });
+
+    if (existingConversation == null){
+      return null
+    }
+  }
+
+
+  // ------ update lastMsgSummed that shows what is the last message that is not been summed up ------
+  if (existingConversation.lastMsgSummed != null){ 
+    existingConversation.lastMsgSummed = existingConversation.lastMsgSummed + conversationNewMessages.length
+
+  } else {
+    existingConversation.lastMsgSummed = existingConversation.conversation.length
+  }
+  // ------ update lastMsgSummed that shows what is the last message that is not been summed up ------
+
+
+  let resultConv;
+
+  
+  // -------- Add the conversationNewMessages to the existingConversation.conversation
+  existingConversation.conversation = existingConversation.conversation.concat(conversationNewMessages)
+
+
+  existingConversation.updatedAt = Date.now();
+  existingConversation.summaryReady = false;
+
+
+  resultConv = await existingConversation.save();
+
+  return resultConv;
+}
+
+async function summarizeConv(conversationData,positionID,userID) {
+
+
+  // -------- variable  ------
+  const thresholdNumberMessagesToSummarize = 15 // above this number will summarize
+
+  const numberMessageToSum = 10 // this is the number of messages that will summarize
+
+  const diff = thresholdNumberMessagesToSummarize - numberMessageToSum
+
+  const lastMsgSummed = conversationData.lastMsgSummed
+
+  const lenC = conversationData.conversation.length
+  // -------- variable  ------
+
+
+
+  // -------------- summarize part of the conversation  if it is too long ----------------
+  if (lastMsgSummed != null && lastMsgSummed >= thresholdNumberMessagesToSummarize){
+
+
+    conversation = conversationData.conversation.slice(lenC - thresholdNumberMessagesToSummarize,lenC - diff)
+
+    // only keep role and content from the conversation
+    conversation = conversation.map((item) => {
+      return {
+        role: item.role,
+        content: item.content
+      }
+    })
+
+
+    summaryNow = await summarizeOldConversationMessages(conversation)
+
+    printC(summaryNow, "1", "summaryNow", "r")
+
+
+    conversationData.lastMsgSummed = conversationData.lastMsgSummed - numberMessageToSum 
+
+    
+
+
+    // ----------------- Add Memories on Pinecone ------------------
+    const reactAppMongoDatabase = process.env.REACT_APP_MONGO_DATABASE
+
+    let textPinecone = summaryNow
+
+    let filterUpsert = {
+      text: textPinecone,
+      database: reactAppMongoDatabase,
+      label: "conversationMemory",
+      positionID: positionID,
+      userID: userID,
+      conversationID: conversationData._id,
+    }
+
+    let resPineCone  = await upsertEmbedingPineCone(filterUpsert)
+    // ----------------- Add Memories on Pinecone ------------------
+
+
+    conversationData.summariesMessages.push({
+      content: summaryNow,
+      date: Date.now(),
+      pineConeID: resPineCone.pineConeID,
+    })
+
+    conversationData = await conversationData.save()
+
+  }
+  // -------------- summarize part of the conversation  if it is too long ----------------
+
+
+  // -------------- Create a new conversation that has the summaries instead of the actual messages ----------------
+  let conversationWithSumAndOriginal = []
+
+  // ----------- add the two last summariesMessages  ----------- 
+  if (conversationData.summariesMessages.length > 1){
+    conversationWithSumAndOriginal.push({
+      role: "assistant",
+      content: conversationData.summariesMessages[conversationData.summariesMessages.length-2].content
+    })
+  }
+  if (conversationData.summariesMessages.length > 0){
+    conversationWithSumAndOriginal.push({
+      role: "assistant",
+      content: conversationData.summariesMessages[conversationData.summariesMessages.length-1].content
+    })
+  }
+  // ----------- add the two last summariesMessages  ----------- 
+
+
+    
+
+  // put the lastMsgSummed of the conversation
+  if (conversationData.lastMsgSummed != null){
+    let startT = 0
+    if (lenC - conversationData.lastMsgSummed>0){
+      startT = lenC - conversationData.lastMsgSummed
+    }
+    for (let i=startT;i<lenC;i++){
+      conversationWithSumAndOriginal.push({
+        role: conversationData.conversation[i].role,
+        content: conversationData.conversation[i].content
+      })
+    }
+  }
+  // -------------- Create a new conversation that has the summaries instead of the actual messages ----------------
+
+
+  return conversationWithSumAndOriginal
+
+
 }
 
 async function updateNotesRequirmentsConversation(convDataNow) {
@@ -705,8 +888,10 @@ module.exports = {
   updateQuestionAskedConvoID,
   updateAnsweredQuestionFunc,
   findAndUpdateConversationFunc,
+  updateConvOnlyNewMessages,
   findSummaryOfAnswers,
   findQuestionsAsked,
   updateNotesRequirmentsConversation,
   updatePositionInterviewedOfUser,
+  summarizeConv,
 };

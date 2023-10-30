@@ -11,7 +11,7 @@ module.exports = `
         candidatesReadyToDisplay: Boolean
         candidatesFlagAnalysisCreated: Boolean
         questionsToAsk: [QuestionType]
-        memory: memoryType
+        memory: memoryPositionType
         positionsRequirements: positionsRequirementsType
         nodes: [NodeDataType]
         interviewQuestionsForPosition: [interviewQuestionsForCandidateType]
@@ -23,7 +23,7 @@ module.exports = `
         status: PositionStatus
     }
 
-    type memoryType {
+    type memoryPositionType {
         core: String 
     }
 
@@ -327,6 +327,12 @@ module.exports = `
     }
 
     input moveCandidateToPositionInput {
+        userID: ID
+        positionOldID: ID
+        positionNewID: ID
+    }
+    
+    input moveCandidateToPosition_V2Input {
         userID: ID
         positionOldID: ID
         positionNewID: ID

@@ -44,7 +44,9 @@ const { printC } = require("../../../printModule");
 module.exports = {
   updateConversation: async (parent, args, context, info) => {
     const {
+      conversationID,
       userID,
+      positionID,
       conversation,
       questionAskingNow,
       questionAskingID,
@@ -67,11 +69,24 @@ module.exports = {
     }
 
     try {
-      // const _conversation = conversation.map((_item) => ({
-      //   ..._item,
-      //   date: _item.date ? _item.date : new Date(),
-      // }));
-      resultConv = await findAndUpdateConversationFunc(userID, conversation);
+
+      if (conversationID){
+        resultConv = await Conversation.findOne({ _id: conversationID });
+
+        resultConv.conversation = conversation;
+        resultConv.lastMsgSummed = conversation.length
+        resultConv.updatedAt = Date.now();
+        resultConv.summaryReady = false;
+
+        if (userID) resultConv.userID = userID; 
+        if (positionID) resultConv.positionID = positionID;
+
+
+        resultConv.save()
+
+      } else {
+        resultConv = await findAndUpdateConversationFunc(userID, conversation);
+      }
 
       //  ------------- Update the Answered Question ----------------
       resultConv = await updateAnsweredQuestionFunc(
@@ -85,11 +100,12 @@ module.exports = {
 
       return resultConv;
     } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "updateConversation",
-        { component: "conversationMutation > updateConversation" }
-      );
+      console.log("err = ", err);
+      // throw new ApolloError(
+      //   err.message,
+      //   err.extensions?.code || "updateConversation",
+      //   { component: "conversationMutation > updateConversation" }
+      // );
     }
   },
   updateConvSummaries: async (parent, args, context, info) => {
