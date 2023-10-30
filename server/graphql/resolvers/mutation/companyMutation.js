@@ -131,6 +131,69 @@ module.exports = {
     }
   },
 
+  updateCompanyDetails: async (parent, args, context, info) => {
+    const {
+      _id,
+      imageUrl,
+      employeesNumber,
+      tags,
+      whatsToLove,
+      mission,
+      insights,
+      edenTake,
+      funding,
+      culture,
+      benefits,
+      values,
+      founders,
+    } = args.fields;
+    console.log(
+      "Mutation > updateCompanyDetails > args.fields = ",
+      args.fields
+    );
+
+    try {
+      if (!_id) {
+        throw new ApolloError("_id is required", "updateCompanyDetails", {
+          component: "companyMutation > updateCompanyDetails",
+        });
+      }
+
+      let companyData;
+      companyData = await Company.findOne({ _id });
+
+      if (!companyData) {
+        throw new ApolloError("company not found", "updateCompanyDetails", {
+          component: "companyMutation > updateCompanyDetails",
+        });
+      }
+
+      // update
+      if (imageUrl) companyData.imageUrl = imageUrl;
+      if (employeesNumber) companyData.employeesNumber = employeesNumber;
+      if (tags) companyData.tags = tags;
+      if (whatsToLove) companyData.whatsToLove = whatsToLove;
+      if (mission) companyData.mission = mission;
+      if (insights) companyData.insights = insights;
+      if (edenTake) companyData.edenTake = edenTake;
+      if (funding) companyData.funding = funding;
+      if (culture) companyData.culture = culture;
+      if (benefits) companyData.benefits = benefits;
+      if (values) companyData.values = values;
+      if (founders) companyData.founders = founders;
+
+      await companyData.save();
+
+      return companyData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updateCompany",
+        { component: "companyMutation > updateCompany" }
+      );
+    }
+  },
+
   updateUrlCompany: async (parent, args, context, info) => {
     const { companyID } = args.fields;
     let { url } = args.fields;

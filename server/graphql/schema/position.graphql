@@ -21,6 +21,9 @@ module.exports = `
         candidates: [CandidateType]
         generalDetails: generalDetailsType
         status: PositionStatus
+
+        whoYouAre: String
+        whatTheJobInvolves: String
     }
 
     type memoryType {

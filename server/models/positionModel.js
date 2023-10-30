@@ -289,6 +289,9 @@ const positionModel = mongoose.Schema({
     enum: ["UNPUBLISHED", "ACTIVE", "ARCHIVED", "DELETED"],
     default: "UNPUBLISHED",
   },
+
+  whoYouAre: String,
+  whatTheJobInvolves: String,
 });
 
 const Position = mongoose.model("Position", positionModel);

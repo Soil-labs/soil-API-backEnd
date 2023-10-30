@@ -83,6 +83,7 @@ const {
 
 const {
   updateCompany,
+  updateCompanyDetails,
   updateUrlCompany,
   addEmployeesCompany,
   subscribeToCommunity,
@@ -270,6 +271,7 @@ module.exports = {
 
     // ------------- COMPANY MUTATION -----------------
     updateCompany,
+    updateCompanyDetails,
     updateUrlCompany,
     addEmployeesCompany,
     subscribeToCommunity,
