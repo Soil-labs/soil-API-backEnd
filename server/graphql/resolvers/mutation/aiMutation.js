@@ -3,6 +3,10 @@ const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
+const { CardMemory } = require("../../../models/cardMemoryModel");
+
+
+
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
 const { Configuration, OpenAIApi } = require("openai");
@@ -1630,6 +1634,197 @@ module.exports = {
           component: "aiMutation > updatePrioritiesTradeOffs",
         }
       );
+    }
+  },
+  createCoreMemories: async (parent, args, context, info) => {
+    const { positionID, userID,coreMemories } = args.fields;
+    console.log(
+      "Mutation > createCoreMemories > args.fields = ",
+      args.fields
+    );
+
+    let totalCoreMemory = ""
+
+    try {
+
+
+      if (positionID && userID){
+        throw new ApolloError(
+          "positionID OR userID are required, not both",
+        )
+      }
+
+      if (!positionID && !userID){
+        throw new ApolloError(
+          "positionID OR userID are required",
+        )
+      }
+
+
+      let userData, positionData, cardMemoriesData;
+
+      if (positionID){
+        positionData =  await Position.findOne({
+          _id: positionID,
+        }).select('_id name memory positionsRequirements');
+      
+        printC(positionData, "1", "positionData", "b")
+
+        f1
+
+        // ------------- Get tradeOffs and priorities -------------
+        const tradeOffs = positionData.positionsRequirements.tradeOffs
+        const priorities = positionData.positionsRequirements.priorities
+
+
+        let tradeOffsPrompt = "Tradeoffs for this Position delimited || : |"
+        for (let i = 0; i < tradeOffs.length; i++) {
+          const tradeOff = tradeOffs[i];
+          if (tradeOff.selected == tradeOff.tradeOff1)
+            tradeOffsPrompt = tradeOffsPrompt + "- Choose '" + tradeOff.tradeOff1 + "' Over '" + tradeOff.tradeOff2 + "'\n";
+          else
+            tradeOffsPrompt = tradeOffsPrompt + "- Choose '" + tradeOff.tradeOff2 + "' Over '" + tradeOff.tradeOff1 + "'\n";
+        }
+
+        tradeOffsPrompt = tradeOffsPrompt + "|"
+        printC(tradeOffsPrompt, "2", "tradeOffsPrompt", "y")
+
+        totalCoreMemory = totalCoreMemory + tradeOffsPrompt + "\n\n"
+
+        let prioritiesPrompt = "Priorities for this Position delimited || : |"
+        for (let i = 0; i < priorities.length; i++) {
+          const priority = priorities[i];
+          prioritiesPrompt = prioritiesPrompt + (i+1) + ". " + priority.priority + "\n";
+        }
+
+        prioritiesPrompt = prioritiesPrompt + "|"
+        printC(prioritiesPrompt, "2", "prioritiesPrompt", "y")
+        
+
+        totalCoreMemory = totalCoreMemory + prioritiesPrompt + "\n\n"
+        // ------------- Get tradeOffs and priorities -------------
+
+
+        if (coreMemories) {
+          positionData.memory = {
+            ...positionData.memory,
+            core: coreMemories,
+          }
+
+          await positionData.save();
+
+          return 
+        } else {
+          cardMemoriesData = await CardMemory.find({ 
+            "authorCard.positionID": positionID  
+          });
+
+        }
+      } 
+
+      if (userID){
+        userData =  await Members.findOne({
+          _id: userID,
+        }).select('_id discordName memory');
+
+        printC(userData, "1", "userData", "b")
+      
+
+        if (coreMemories) {
+          userData.memory = {
+            ...userData.memory,
+            core: coreMemories,
+          }
+
+          await userData.save();
+
+          return 
+        } else {
+          cardMemoriesData = await CardMemory.find({ 
+            "authorCard.userID": userID  
+          });
+        }
+      }
+
+      // f1
+
+      promptMemories = `All Memories delimited ||: |`
+
+      for (let i = 0; i < cardMemoriesData.length; i++) {
+        let cardMemory = cardMemoriesData[i];
+
+        promptMemories += `${cardMemory.content} \n\n`
+      }
+
+      promptMemories += '|'
+
+
+      const MAX_WORDS = 100
+
+      promptMemories += ` \n
+      -  Based on this memories create a summary of the Bullet Point CORE Memories, 
+      - It should only have the most important information of this memories
+      - It should only have maximum ${MAX_WORDS} words
+      - it should look like small parts of memory, with a small sentence then \n
+
+      Example: 
+      - .....
+      - .....
+
+      Bullet Point Core Memories: 
+      `
+
+
+      printC(promptMemories, "1", "promptMemories", "b")
+
+      summaryBulletPoints = await useGPTchatSimple(
+        promptMemories,
+        0,
+        "API 2"
+      );
+
+      printC(summaryBulletPoints, "1", "summaryBulletPoints", "g");
+
+      if (userData != null){
+
+        totalCoreMemory = totalCoreMemory + summaryBulletPoints
+
+        userData.memory = {
+          ...userData.memory,
+          core: summaryBulletPoints,
+        }
+
+        await userData.save();
+      } else if (positionData != null ){
+
+        totalCoreMemory = totalCoreMemory + `Memories delimited ||: |${summaryBulletPoints}|`
+
+
+        positionData.memory = {
+          ...positionData.memory,
+          core: totalCoreMemory,
+        }
+
+
+        await positionData.save();
+
+      }
+
+
+      return {
+        output: totalCoreMemory,
+      }
+
+
+    } catch (err) {
+      console.log("err = ", err)
+      // throw new ApolloError(
+      //   err.message,
+      //   err.extensions?.code || "createCoreMemories",
+      //   {
+      //     component: "aiMutation > createCoreMemories",
+      //   }
+      // );
     }
   },
   autoUpdateMemoryFromPositionRequirments: async (

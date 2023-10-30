@@ -8,8 +8,12 @@ module.exports = `
         extraPositionsID: [ID]
         positionTrainEdenAI: Boolean,
 
+        summariesMessages: [summariesMessagesType],
+
         #  conv: [messageChat],
         conversation: [conversationType],
+
+        lastMsgSummed: Int,
 
         summaryReady: Boolean,
 
@@ -20,6 +24,12 @@ module.exports = `
         questionsAnswered: [questionAnsweredType],
         
         updatedAt: Date,
+    }
+
+    type summariesMessagesType {
+        content: String,
+        date: Date,
+        pineConeID: String,
     }
     
     enum typeConvoEnum {
@@ -50,6 +60,7 @@ module.exports = `
     }
 
     input updateConversationInput {
+        conversationID: String,
         userID: String,  
         positionID: String,
         conversation: [conversationInput],

@@ -84,6 +84,15 @@ async function useGPTchat(
 ) {
   let discussion = [...discussionOld];
 
+  // only keep role and content
+
+  discussion = discussion.map((item) => {
+    return {
+      role: item.role,
+      content: item.content,
+    };
+  });
+
   discussion.unshift({
     role: "system",
     content: systemPrompt,
@@ -97,6 +106,7 @@ async function useGPTchat(
   console.log("discussion = ", discussion);
 
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
+  printC(OPENAI_API_KEY, "1", "OPENAI_API_KEY", "r");
   response = await axios.post(
     "https://api.openai.com/v1/chat/completions",
     {
@@ -198,6 +208,75 @@ giveInformationRelatedToPosition: {
         required: ["content"],
     },
   },
+  coreMemoryReplace: {
+    name: "coreMemoryReplace",
+    description: "Replace to the contents of core memory. To delete memories, use an empty string for new_content. Focus on position requirements and candidate information",
+    parameters: {
+        type: "object",
+        properties: {
+           oldContent: {
+                type: "string",
+                description: "Trying to replace. Must be an exact match.",
+            },
+            newContent: {
+                type: "string",
+                description: "Content to write to the memory.",
+            },
+        },
+        required: ["oldContent","newContent"],
+    },
+  },
+  recallMemorySearch: {
+    name: "recallMemorySearch",
+    description: "When there is no memory found, search prior conversation history using a string.",
+    parameters: {
+        type: "object",
+        properties: {
+            query: {
+                type: "string",
+                description: "String to search on conversation history.",
+            },
+        },
+        required: ["query"],
+    },
+  },
+  recallMemoryCandidate: {
+    name: "recallMemoryCandidate",
+    description: "When the user search for specific information about the candidate, search memories of candidate",
+    parameters: {
+        type: "object",
+        properties: {
+            query: {
+                type: "string",
+                description: "String to search on the candidate memories.",
+            },
+        },
+        required: ["query"],
+    },
+  },
+  useMemories: {
+    name: "useMemories",
+    description: "Use the memories to answer to continue the conversation",
+    parameters: {
+        type: "object",
+        properties: {
+            MemoryIDsUsed: {
+              type: "string",
+              description: "the ID of the memories that was used to answer the question",
+            },
+            MemoryIDsScoreUsed: {
+              type: "string",
+              description: "the Score on how impactful each ID memory was to answer the question from 0 to 10",
+            },
+            reply: {
+                type: "string",
+                description: "answer to the question",
+            },
+        },
+        // required: ["msg","MemoryIDsUsed","MemoryIDsScoreUsed"],
+        required: ["MemoryIDsUsed","MemoryIDsScoreUsed","reply"],
+    },
+  },
   sendMessage: {
     name: "sendMessage",
     description: "Sends a message to the user",
@@ -221,9 +300,11 @@ async function useGPTFunc(
   functionsUse,
   functionResult = {},
   temperature = 0.7,
-  chooseAPI = "API 1"
+  chooseAPI = "API 1",
 ) {
 
+
+  try {
   // --------------- Add functions ----------------
   functionUseGPT = []
 
@@ -242,17 +323,15 @@ async function useGPTFunc(
     content: systemPrompt,
   });
 
-
   // ---------------- Add Result of function ----------------
   if (functionResult.role != undefined) {
     discussion.push(functionResult)
   }
   // ---------------- Add Result of function ----------------
 
-  // printC(discussion, "10", "discussion", "g")
-  
-  // let modelT = "gpt-3.5-turbo-0613";
-  let modelT = "gpt-4-0613";
+
+  let modelT = "gpt-3.5-turbo-0613";
+  // let modelT = "gpt-4-0613";
 
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
   let response = await axios.post(
@@ -263,6 +342,7 @@ async function useGPTFunc(
       temperature: temperature,
       functions: functionUseGPT,
       function_call: "auto", 
+      max_tokens: 150,
     },
     {
       headers: {
@@ -272,13 +352,10 @@ async function useGPTFunc(
     }
   );
 
-  // printC(response.data.choices[0], "1", "response.data..choices[0]", "r")
 
+  printC(response.data.choices[0].message.function_call, "5", "response.data.choices[0].message.function_call", "r");
   // Check if it is a function or if it is a normal message
   if (response.data.choices[0].message.content == null) { // Function
-    // console.log(response.data.choices[0].message.function_call.arguments)
-    // printC(response.data.choices[0].message.function_call.arguments, "1", "response.data.choices[0].message.function_call.arguments", "r")
-
 
     // --------------- parse arguments of function ----------------
     let argFunc = response.data.choices[0].message.function_call.arguments
@@ -291,8 +368,6 @@ async function useGPTFunc(
       const [, key, value] = match;
       result[key] = value;
     }
-
-    // console.log(result);
     // --------------- parse arguments of function ----------------
 
 
@@ -309,15 +384,17 @@ async function useGPTFunc(
     }
   }
 
-  return {
-    content: null
-  }
+} catch (err) {
+  console.log("err = -----",err.response.data)
+}
+
+  
 
 }
 
 async function chooseFunctionForGPT(resGPTFunc) {
 
-  printC(resGPTFunc, "1", "resGPTFunc", "g")
+  // printC(resGPTFunc, "1", "resGPTFunc", "gg")
 
   // run the function with name resGPTFunc.function_call.functionName
 
@@ -331,7 +408,6 @@ async function chooseFunctionForGPT(resGPTFunc) {
 
     funcOutput = await giveQualificationsCandidate(resGPTFunc)
 
-
   } else if (resGPTFunc.function_call.functionName == "giveInformationRelatedToPosition") {
 
     funcOutput = await  giveInformationRelatedToPosition(resGPTFunc)
@@ -344,14 +420,24 @@ async function chooseFunctionForGPT(resGPTFunc) {
 
     funcOutput = await coreMemoryAppend(resGPTFunc)
 
+  } else if (resGPTFunc.function_call.functionName == "coreMemoryReplace") {
+
+    funcOutput = await coreMemoryReplace(resGPTFunc)
+
+  } else if (resGPTFunc.function_call.functionName == "recallMemorySearch") {
+
+    funcOutput = await recallMemorySearch(resGPTFunc)
+
+  } else if (resGPTFunc.function_call.functionName == "recallMemoryCandidate") {
+
+    funcOutput = await recallMemoryCandidate(resGPTFunc)
+
   } else if (resGPTFunc.function_call.functionName == "sendMessage") {
 
     funcOutput = await sendMessage(resGPTFunc)
 
   } else {
-
     console.log("this is a mistake there is not function")
-
   }
 
   funcOutput = {
@@ -363,6 +449,44 @@ async function chooseFunctionForGPT(resGPTFunc) {
   return funcOutput
 
 }
+
+async function summarizeOldConversationMessages(conversation) {
+
+  
+  let discussionTemp = [...conversation];
+  
+  if (discussionTemp.length < 2) return null 
+  
+
+
+  const WORD_LIMIT = 100
+
+
+  const systemPrompt = `Your job is to summarize a history of previous messages in a conversation between an AI persona and a human.
+  The conversation you are given is a from a fixed context window and may not be complete.
+  Messages sent by the AI are marked with the 'assistant' role.
+  Messages the user sends are in the 'user' role.
+  Summarize what happened in the conversation from the perspective of the AI (use the first person).
+  Keep your summary less than ${WORD_LIMIT} words, do NOT exceed this word limit.
+  You are a recruiter so you should mainly keep notes about the candidate and the position. keep everything in detail all the technologies or anything else that is needed 
+  Only output the summary, do NOT include anything else in your output.`
+
+
+
+
+  summaryNow = await useGPTchat(systemPrompt,discussionTemp,systemPrompt)
+  // summaryNow = await useGPT4chat( systemPrompt,discussionTemp,systemPrompt);
+
+
+  // f1
+
+  
+
+
+  return summaryNow
+
+}
+
 
 async function isCandidateAvailable(funcInput) {
 
@@ -525,7 +649,6 @@ async function giveQualificationsCandidate(funcInput) {
 async function coreMemoryAppend(funcInput) {
 
 
-  printC(funcInput, "F6", "funcInput", "p")
 
   let {positionCore} = funcInput.coreMemory
 
@@ -552,7 +675,222 @@ async function coreMemoryAppend(funcInput) {
 
   
   return funcOutput
+}
 
+async function coreMemoryReplace(funcInput) {
+
+
+
+  let {positionCore} = funcInput.coreMemory
+
+  let {positionID,positionData} = funcInput
+
+  const {oldContent,newContent} = funcInput.function_call
+
+  // find the oldContent and replace it with teh newContent inside the positionCore
+  positionCore = positionCore.replace(oldContent, newContent);
+
+
+  // save to database 
+
+  positionData.memory.core = positionCore
+
+  await positionData.save()
+
+
+
+  funcOutput = {
+    role: "function",
+    content:`DONE Replace the CORE memory, Reply to message `
+  }
+
+  
+  return funcOutput
+}
+
+async function recallMemorySearch(funcInput) {
+
+  const message = funcInput.function_call.query
+
+  let {discussion,systemPrompt} = funcInput.gptInput
+  const {conversationID} = funcInput
+
+  let functionsUseGPT = ["recallMemorySearch","sendMessage"]
+
+
+
+  const REACT_APP_MONGO_DATABASE = process.env.REACT_APP_MONGO_DATABASE
+  const filter = {
+    label: "conversationMemory",
+    database: REACT_APP_MONGO_DATABASE,
+  };
+  
+  if (conversationID) {
+    filter.conversationID = conversationID;
+  }
+
+  longTermMemories = await findBestEmbedings(message, filter, (topK = 3));
+
+  
+
+  let prompt_longTermMemory = "Long Term Memory delimited ||: |";
+  for (let i = 0; i < longTermMemories.length; i++) {
+    prompt_longTermMemory =
+      prompt_longTermMemory + "\n" + longTermMemories[i].metadata.text;
+  }
+
+  prompt_longTermMemory += "| \n\n";
+
+ 
+
+  discussion.push({
+    role: "function",
+    content: prompt_longTermMemory,
+    name: "recallMemorySearch"
+  })
+
+
+
+  let resGPTFuncNew = await useGPTFunc(discussion,systemPrompt,functionsUseGPT,{},0)
+
+  printC(resGPTFuncNew, "3.5", "Inside Recall memory GPT ", "b");
+
+  if (resGPTFuncNew?.function_call?.functionName == "sendMessage") {
+    funcOutput = {
+      ...funcOutput,
+      content: resGPTFunc_2.function_call.message,
+    }
+  } else if (resGPTFuncNew?.function_call?.functionName == "recallMemorySearch") {
+    if (resGPTFuncNew.function_call.repeatGPTrecallMemorySearch < 2 ) {
+      await chooseFunctionForGPT({
+        ...funcInput,
+        ...resGPTFuncNew,
+        repeatGPTrecallMemorySearch: repeatGPTrecallMemorySearch + 1
+      })
+    } else {
+      funcOutput = {
+        ...funcOutput,
+        content: "I am sorry I can't find anything related to this question",
+      }
+    }
+  } else {
+    funcOutput = {
+      ...funcOutput,
+      content: resGPTFuncNew.content,
+    }
+  }
+
+  return funcOutput
+
+}
+
+async function recallMemoryCandidate(funcInput) {
+
+  const message = funcInput.function_call.query
+
+  let {discussion,systemPrompt} = funcInput.gptInput
+  const {userID} = funcInput
+
+  let functionsUseGPT = ["useMemories"]
+
+
+
+   // -------------- Pinecone Search for Memories ----------------
+  const REACT_APP_MONGO_DATABASE = process.env.REACT_APP_MONGO_DATABASE
+  const filter = {
+    label: "scoreCardMemory",
+    database: REACT_APP_MONGO_DATABASE,
+  };
+  
+  if (userID) {
+    filter.userID = userID;
+  }
+
+  longTermMemories = await findBestEmbedings(message, filter, (topK = 5));
+
+
+  printC(longTermMemories, "1", "longTermMemories", "b")
+  // f3
+  
+
+  let prompt_longTermMemory = "Long Term Memory delimited ||: |";
+  for (let i = 0; i < longTermMemories.length; i++) {
+    prompt_longTermMemory = prompt_longTermMemory + "ID_" + (i+1) + " : " + longTermMemories[i].metadata.text + "\n";
+  }
+
+  prompt_longTermMemory += "| \n\n";
+   // -------------- Pinecone Search for Memories ----------------
+
+ 
+
+  discussion.push({
+    role: "function",
+    content: prompt_longTermMemory,
+    name: "recallMemoryCandidate"
+  })
+
+
+
+  // let resGPTFuncNew = await useGPTFunc(discussion,systemPrompt,functionsUseGPT,{},0)
+  let resGPTFuncNew = await useGPTFunc(discussion,systemPrompt,functionsUseGPT,{},0)
+
+  printC(resGPTFuncNew, "3.5", "Inside Recall memory GPT ", "b");
+
+  // f1
+
+  if (resGPTFuncNew?.function_call?.functionName == "useMemories") {
+  
+    let {MemoryIDsUsed,MemoryIDsScoreUsed} = resGPTFuncNew.function_call
+
+    // -------------- Regex the ID and score ----------------
+    const ids = MemoryIDsUsed.split(',');
+    const scores = MemoryIDsScoreUsed.split(',');
+
+    const combinedArray = [];
+
+    let cardMemoriesUsed = []
+
+    for (let i = 0; i < ids.length; i++) {
+      let obj = {
+        Id: ids[i].trim(),
+        score: scores[i].trim(),
+      };
+      obj.numberID = obj.Id.match(/\d+/);
+      obj.numberID = obj.numberID[0];
+      obj.numberID = parseInt(obj.numberID);
+
+      combinedArray.push(obj);
+
+      if (longTermMemories[obj.numberID-1]){
+        if (longTermMemories[obj.numberID-1]?.metadata?.mongoID) {
+          cardMemoriesUsed.push({
+            cardMemoryID: longTermMemories[obj.numberID-1].metadata.mongoID,
+            score: obj.score
+          })
+
+        }
+      }
+    }
+    printC(combinedArray, "1", "combinedArray", "b")
+    printC(cardMemoriesUsed, "1", "cardMemoriesUsed", "b")
+    // f2
+
+    // -------------- Regex the ID and score ----------------
+
+
+    funcOutput = {
+      content: resGPTFuncNew.function_call.reply,
+      cardMemoriesUsed: cardMemoriesUsed
+    }
+
+   
+  } else {
+    funcOutput = {
+      content: resGPTFuncNew.content,
+    }
+  }
+
+  return funcOutput
 
 }
 
@@ -564,6 +902,7 @@ async function sendMessage(funcInput) {
   funcOutput = {
     role: "function",
     content: message,
+    message: message,
   }
 
   
@@ -581,6 +920,13 @@ async function useGPT4chat(
   chooseAPI = "API 1"
 ) {
   let discussion = [...discussionOld];
+
+  discussion = discussion.map((item) => {
+    return {
+      role: item.role,
+      content: item.content,
+    };
+  });
 
   discussion.unshift({
     role: "system",
@@ -757,6 +1103,13 @@ async function upsertEmbedingPineCone(data) {
     metadata = {
       ...metadata,
       userID: data.userID,
+    };
+  }
+
+  if (data.conversationID) {
+    metadata = {
+      ...metadata,
+      conversationID: data.conversationID,
     };
   }
 
@@ -1286,4 +1639,5 @@ module.exports = {
   chooseFunctionForGPT,
   giveQualificationsCandidate,
   deletePineCone,
+  summarizeOldConversationMessages,
 };

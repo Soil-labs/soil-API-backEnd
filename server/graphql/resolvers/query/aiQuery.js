@@ -5,8 +5,9 @@ const { Position } = require("../../../models/positionModel");
 const { Company } = require("../../../models/companyModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { ChatExternalApp } = require("../../../models/chatExternalAppModel");
+const { Conversation } = require("../../../models/conversationModel");
 
-
+const {findCardMemories} = require("../utils/cardMemoryModules");
 
 const { ApolloError } = require("apollo-server-express");
 const mongoose = require("mongoose");
@@ -40,12 +41,17 @@ const {
 
 const { useGPTchatSimple} = require("../utils/aiModules");
 
-const { useGPT4chat,identifyCategoryFunc,replyToMessageBasedOnCategoryFunc,useGPTFunc,chooseFunctionForGPT} = require("../utils/aiExtraModules");
+const { useGPT4chat,identifyCategoryFunc,
+  replyToMessageBasedOnCategoryFunc,useGPTFunc,
+  chooseFunctionForGPT,
+  summarizeOldConversationMessages,} = require("../utils/aiExtraModules");
 
 
 const {
   updateAnsweredQuestionFunc,
   findAndUpdateConversationFunc,
+  updateConvOnlyNewMessages,
+  summarizeConv,
 } = require("../utils/conversationModules");
 
 const {
@@ -4032,105 +4038,157 @@ module.exports = {
 
   },
   askEdenUserPositionGPTFunc_V2: async (parent, args, context, info) => {
-    const {  userID,positionID,conversation,whatToAsk,memoriesType } = args.fields;
+    const {  userID,positionID,conversationID,newMessage,whatToAsk,memoriesType } = args.fields;
+    let { conversation } = args.fields;
     console.log("Query > askEdenUserPositionGPTFunc_V2 > args.fields = ", args.fields);
 
-    let reply = "hey all good" 
-    // put also a random number on the reply 3 digit number
+    let reply = "" 
 
-    reply = reply + " " + Math.floor(Math.random() * 1000)
+    positionData = await Position.findOne({ 
+      _id: positionID,
+    }).select('_id name memory')
 
+    memberData = await Members.findOne({
+      _id: userID,
+    }).select('_id discordName memory')
+
+
+    let discussionT
+
+    let cardMemoriesUsed = []
+    
     try {
+      // ------------ Find conversation, put the summaries to optimize, calculate summary if overflow ------
+      if (conversationID){
+        conversationData = await Conversation.findOne({
+          _id: conversationID,
+        })
 
-      positionData = await Position.findOne({ 
-        _id: positionID,
-      }).select('_id name memory')
+        conversation = await summarizeConv(conversationData,positionID,userID)
+
+        conversation.push({
+          role: "user",
+          content: newMessage,
+          date: new Date(),
+        })
+
+        discussionT = conversation.map((item) => ({
+          role: item.role,
+          content: item.content,
+        }));
+      }
+      // ------------ Find conversation, put the summaries to optimize, calculate summary if overflow ------
 
 
+
+      
+
+
+      // -------------- GPT ----------
       let positionCoreMemory = ""
       let promptPositionCoreMemory = ""
       if (positionData.memory && positionData.memory.core){
         positionCoreMemory = positionData.memory.core
-
         promptPositionCoreMemory = `Core Memory Position delimited by ||: |${positionCoreMemory}|`
-
       }
 
+      let memberCoreMemory = ""
+      let promptMemberCoreMemory = ""
+      if (memberData.memory && memberData.memory.core){
+        memberCoreMemory = memberData.memory.core
+        promptMemberCoreMemory = `Core Memory Candidate delimited by ||: |${memberCoreMemory}|`
+      }
 
-      // -------------- GPT ----------
-      let discussionT = conversation.map((item) => ({
-        role: item.role,
-        content: item.content,
-      }));
+      // printC(promptPositionCoreMemory, "0", "promptPositionCoreMemory", "p");
+      // printC(promptMemberCoreMemory, "2", "promptMemberCoreMemory", "y");
+      // f2
+
   
-      printC(discussionT, "0", "discussionT", "p");
+      let functionsUseGPT = ["coreMemoryAppend","coreMemoryReplace","recallMemorySearch","recallMemoryCandidate","sendMessage"]
   
-      let functionsUseGPT = ["coreMemoryAppend","sendMessage"]
-  
-      const systemPrompt = `You are a recruiter, your job is to create a great conversation that help the user 
+      const systemPrompt = `You are a recruiter, your job is to Present this amazing candidate that you found
       - be concise write small answers
       - Only say the truth if you don't know something say that you don't have this info
       - When you see Memories Only use a memory that is absolutely relevant to the Question!
       - Only answer exact Question that you were asked!
+      - Connect the Core Memories of the Candidate that you are Presenting and the Core Memory of what the Position is looking for 
       
       ${promptPositionCoreMemory}
       `
-  
 
-      let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT)
+
+
+      let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,{},0)
+      printC(resGPTFunc, "1", "First GPT ", "b");
       // -------------- GPT ----------
 
+
       // -------------- Use Function ----------
-      resGPTFunc = {
-        ...resGPTFunc,
-        userID,
-        positionID,
-        positionData,
-        memoriesType,
-        coreMemory: {
-          positionCore: positionCoreMemory,
-          // candidateCore: "",
+      if (resGPTFunc.content == null && resGPTFunc?.function_call?.functionName) { // If we need to run a function 
+        resGPTFunc = {
+          ...resGPTFunc,
+          userID,
+          positionID,
+          conversationID,
+          positionData,
+          memoriesType,
+          gptInput: {
+            discussion: discussionT,
+            systemPrompt: systemPrompt,
+          },
+          repeatGPTrecallMemorySearch: 0,
+          coreMemory: {
+            positionCore: positionCoreMemory,
+            // candidateCore: "",
+          }
         }
-      }
 
-      printC(resGPTFunc, "0", "resGPTFunc", "p");
 
-      if (resGPTFunc.content == null && resGPTFunc?.function_call?.functionName) {
         funcOutput = await chooseFunctionForGPT(resGPTFunc)
 
+        printC(funcOutput, "0", "funcOutput", "p")
+
+        if (funcOutput.cardMemoriesUsed){
+          cardMemoriesUsed = funcOutput.cardMemoriesUsed
+        }
+
+        // if (funcOutput.memoriesUser.length > 0){
+        //   cardMemoriesUsed = await findCardMemories(funcOutput.memoriesUser)
+        // }
 
         if (funcOutput.name=="sendMessage"){
-          return {
-            reply: funcOutput.content,
+          reply = funcOutput.content
+
+        } else if (funcOutput.name=="recallMemorySearch"){
+          reply = funcOutput.content
+          
+        } else if (funcOutput.content!=null){
+          reply = funcOutput.content
+
+        } else {
+
+          const funcOutputGPT = {
+            role: funcOutput.role,
+            name: funcOutput.name,
+            content: funcOutput.content,
+          }
+
+          functionsUseGPT = ["sendMessage"]
+
+          let resGPTFunc_2 = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,funcOutputGPT,0)
+          printC(resGPTFunc_2, "2", "Second GPT After Function ", "b");
+
+          // printC(resGPTFunc_2, "5", "resGPTFunc_2", "p");
+
+          if (resGPTFunc_2.content){
+            reply = resGPTFunc_2.content
+          }  else if (resGPTFunc_2?.function_call?.functionName == "sendMessage") {
+            reply = resGPTFunc_2.function_call.message
           }
         }
-
-
-        printC(funcOutput, "0", "funcOutput", "p");
-
-        const funcOutputGPT = {
-          role: funcOutput.role,
-          name: funcOutput.name,
-          content: funcOutput.content,
-        }
-
-        functionsUseGPT = ["sendMessage"]
-
-        let resGPTFunc_2 = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,funcOutputGPT,0)
- 
-
-        printC(resGPTFunc_2, "5", "resGPTFunc_2", "p");
-
-        if (resGPTFunc_2.content){
-          return {
-            reply: resGPTFunc_2.content,
-          }
-        }      
       } else {
         if (resGPTFunc.content){
-          return {
-            reply: resGPTFunc.content,
-          }
+          reply = resGPTFunc.content
         }
       }
       // -------------- Use Function ----------
@@ -4140,37 +4198,40 @@ module.exports = {
 
       // ------------ Save conversation to DB -----------
       const newDate = new Date();
-      let _conversation = conversation.map((_item) => ({
-        ..._item,
-        date: _item.date ? _item.date : newDate,
-      }));
+      let _conversation = []
+      _conversation.push({
+        role: "user",
+        content: newMessage,
+        date: newDate,
+      })
       _conversation.push({
         role: "assistant",
         content: reply,
         date: newDate,
       })
-      resultConv = await findAndUpdateConversationFunc(
-        userID,
+      
+      resultConv = await updateConvOnlyNewMessages(
+        conversationID,
         _conversation,
-        positionID,
-        false
       );
       // ------------ Save conversation to DB -----------
 
-      await wait (1)
+      printC(cardMemoriesUsed, "0", "cardMemoriesUsed", "p");
 
       return {
         reply: reply,
+        cardMemoriesUsed: cardMemoriesUsed,
       }
 
     } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "askEdenUserPositionGPTFunc_V2",
-        {
-          component: "aiQuery > askEdenUserPositionGPTFunc_V2",
-        }
-      );
+      console.log("err = ", err);
+    //   throw new ApolloError(
+    //     err.message,
+    //     err.extensions?.code || "askEdenUserPositionGPTFunc_V2",
+    //     {
+    //       component: "aiQuery > askEdenUserPositionGPTFunc_V2",
+    //     }
+    //   );
     }
   },
   askEdenUserPosition: async (parent, args, context, info) => {
