@@ -33,6 +33,7 @@ module.exports = `
         values: String
         
         founders: String
+        glassdoor: String
     }
 
     type StripeType {
@@ -106,6 +107,7 @@ module.exports = `
         values: String
         
         founders: String
+        glassdoor: String
     }
     
     input updateUrlInput {

@@ -185,6 +185,12 @@ module.exports = `
         positionIDs: [ID]
     }
 
+    input createCoreMemoriesInput {
+        positionID: ID
+        userID: ID
+        coreMemories: String
+    }
+
     input tradeOffsInput {
         tradeOff1: String,
         tradeOff2: String,
@@ -209,6 +215,10 @@ module.exports = `
 
     type autoUpdateMemoryFromPositionRequirmentsOutput {
         positions: [Position]
+    }
+
+    type createCoreMemoriesOutput {
+        output: String
     }
 
     input addMessagesInput {
@@ -392,7 +402,9 @@ module.exports = `
     input askEdenUserPositionGPTFunc_V2Input {
         userID: ID
         positionID: ID
+        newMessage: String
         conversation: [messageChat]
+        conversationID: ID
         whatToAsk: whatToAskEnum
         memoriesType: memoriesTypeEnum
     }
@@ -409,7 +421,13 @@ module.exports = `
 
     type askEdenUserPositionGPTFunc_V2Output {
         reply: String
+        cardMemoriesUsed: [CardMemoriesUsedType]
         # keywords: [String]
+    }
+
+    type CardMemoriesUsedType {
+        cardMemory: CardMemory
+        score: Float
     }
 
 

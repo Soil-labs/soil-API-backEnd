@@ -146,6 +146,7 @@ module.exports = {
       benefits,
       values,
       founders,
+      glassdoor,
     } = args.fields;
     console.log(
       "Mutation > updateCompanyDetails > args.fields = ",
@@ -181,6 +182,7 @@ module.exports = {
       if (benefits) companyData.benefits = benefits;
       if (values) companyData.values = values;
       if (founders) companyData.founders = founders;
+      if (glassdoor) companyData.glassdoor = glassdoor;
 
       await companyData.save();
 

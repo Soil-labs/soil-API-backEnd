@@ -16,6 +16,16 @@ const conversationSchema = mongoose.Schema({
     },
   ],
 
+  lastMsgSummed: Number,
+
+  summariesMessages: [
+    {
+      content: String,
+      date: Date,
+      pineConeID: String,
+    }
+  ],
+
   summaryReady: Boolean,
 
   summary: [

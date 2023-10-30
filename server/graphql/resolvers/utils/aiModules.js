@@ -2280,7 +2280,7 @@ async function useGPT4Simple(prompt, temperature = 0.7, chooseAPI = "API 1") {
         "Content-Type": "application/json",
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
-      timeout: 80000, 
+      timeout: 240000, 
     }
   );
 
@@ -2338,7 +2338,7 @@ async function onlyGPTchat(prompt, temperature = 0.7, chooseAPI = "API 1") {
         "Content-Type": "application/json",
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
-      timeout: 60000, 
+      timeout: 100000, 
     }
   );
 

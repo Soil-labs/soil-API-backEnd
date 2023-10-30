@@ -72,6 +72,8 @@ const companyModel = mongoose.Schema({
 
   benefits: String,
   values: String,
+  founders: String,
+  glassdoor: String,
 });
 
 const Company = mongoose.model("Company", companyModel);
