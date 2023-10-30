@@ -3,6 +3,7 @@ module.exports = `
     type Company {
         _id: ID
         name: String
+        imageUrl: String
         url: String
         slug: String
         description: String,
@@ -16,12 +17,45 @@ module.exports = `
         skillsNum: Int
         stripe: StripeType
         communitiesSubscribed: [Company]
+
+        employeesNumber: Int
+        tags: [String]
+        whatsToLove: String
+        
+        mission: String
+        insights: [CompanyInsightType]
+        edenTake: String
+
+        funding: [CompanyFoundRoundType]
+        culture: CompanyCultureType
+        
+        benefits: String
+        values: String
+        
+        founders: String
+        glassdoor: String
     }
 
     type StripeType {
         session: StripeSessionType,
         customerID: String,
         product: StripeProductType,
+    }
+    
+    type CompanyInsightType {
+        letter: String,
+        text: String,
+    }
+    
+    type CompanyFoundRoundType {
+        name: String,
+        date: String,
+        amount: String,
+    }
+    
+    type CompanyCultureType {
+        tags: [String],
+        description: String,
     }
 
     type StripeSessionType {
@@ -52,6 +86,28 @@ module.exports = `
         addCompanySubscribersID: [ID]
         addPositionSubscribersID: [ID]
         communitiesSubscribedID: [ID]
+    }
+    
+    input updateCompanyDetailsInput {
+        _id: ID
+        imageUrl: String
+        
+        employeesNumber: Int
+        tags: [String]
+        whatsToLove: String
+        
+        mission: String
+        insights: [CompanyInsightTypeInput]
+        edenTake: String
+
+        funding: [CompanyFoundRoundTypeInput]
+        culture: CompanyCultureTypeInput
+        
+        benefits: String
+        values: String
+        
+        founders: String
+        glassdoor: String
     }
     
     input updateUrlInput {
@@ -85,7 +141,23 @@ module.exports = `
     input subscribeToCommunityInput {
         companyID: ID
         communityID: ID
-    }  
+    } 
+
+    input CompanyInsightTypeInput {
+        letter: String,
+        text: String,
+    }
+    
+    input CompanyFoundRoundTypeInput {
+        name: String,
+        date: String,
+        amount: String,
+    }
+    
+    input CompanyCultureTypeInput {
+        tags: [String],
+        description: String,
+    } 
 
     enum typeCompany {
         COMPANY

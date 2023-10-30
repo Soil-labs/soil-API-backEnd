@@ -169,6 +169,7 @@ module.exports = {
       contractDuration,
       socials,
       yearlySalary,
+      status,
     } = args.fields;
     console.log(
       "Mutation > updatePositionGeneralDetails > args.fields = ",
@@ -188,6 +189,7 @@ module.exports = {
           component: "positionMutation > updateUrl",
         });
 
+      if (status) positionData.status = status;
       if (startDate) positionData.generalDetails.startDate = startDate;
       if (visaRequired) positionData.generalDetails.visaRequired = visaRequired;
       if (officePolicy) positionData.generalDetails.officePolicy = officePolicy;
@@ -729,24 +731,25 @@ module.exports = {
     }
   },
   pitchPositionToCandidate: async (parent, args, context, info) => {
-    const { positionID,userID } = args.fields;
+    const { positionID, userID } = args.fields;
     console.log(
       "Mutation > pitchPositionToCandidate > args.fields = ",
       args.fields
     );
 
     if (!positionID) throw new ApolloError("Position ID is required");
-    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements');
+    positionData = await Position.findOne({ _id: positionID }).select(
+      "_id name positionsRequirements"
+    );
     if (!positionData) throw new ApolloError("Position not found");
 
-
-
     if (!userID) throw new ApolloError("User ID is required");
-    userData = await Members.findOne({ _id: userID }).select('_id discordName cvInfo ');
+    userData = await Members.findOne({ _id: userID }).select(
+      "_id discordName cvInfo "
+    );
     if (!userData) throw new ApolloError("User not found");
 
     try {
-
       cvNotes = userData.cvInfo.cvNotes;
 
       notesRequirConv = positionData.positionsRequirements.notesRequirConv;
@@ -754,8 +757,6 @@ module.exports = {
       printC(cvNotes, "1", "cvNotes", "g");
 
       printC(notesRequirConv, "1", "notesRequirConv", "b");
-
-
 
       messagePitchPositionCandidatePrompt = `
       You are a personal career coach,
@@ -770,59 +771,61 @@ module.exports = {
       - At the end ask your client if they are interested to personally recommend you to this position 
 
       Result: 
-    `
+    `;
 
-    messagePitchPositionCandidate = await useGPTchatSimple(messagePitchPositionCandidatePrompt, 0.7, "API 1")
+      messagePitchPositionCandidate = await useGPTchatSimple(
+        messagePitchPositionCandidatePrompt,
+        0.7,
+        "API 1"
+      );
 
-    // messagePitchPositionCandidate = `Hey Reza! I came across a fantastic opportunity that I think would be a perfect fit for you
-    // I found a backend developer position at a company pioneering the transformation of buildings through spatial data
-    // With your extensive experience in web development using JavaScript frameworks, proficiency in TypeScript, and strong understanding of clients' requirements, I believe you would excel in building the backend for user-facing features and maintaining infrastructure
-    // Are you interested in pursuing this opportunity? Can I personally recommend you for this position?`
+      // messagePitchPositionCandidate = `Hey Reza! I came across a fantastic opportunity that I think would be a perfect fit for you
+      // I found a backend developer position at a company pioneering the transformation of buildings through spatial data
+      // With your extensive experience in web development using JavaScript frameworks, proficiency in TypeScript, and strong understanding of clients' requirements, I believe you would excel in building the backend for user-facing features and maintaining infrastructure
+      // Are you interested in pursuing this opportunity? Can I personally recommend you for this position?`
 
-    printC(messagePitchPositionCandidate,"4","messagePitchPositionCandidate","y")
+      printC(
+        messagePitchPositionCandidate,
+        "4",
+        "messagePitchPositionCandidate",
+        "y"
+      );
 
+      filter = {
+        phase: "QUERY",
+        sender: {
+          positionID: positionID,
+        },
+        senderType: "POSITION",
+        responder: {
+          userID: userID,
+        },
+        responderType: "USER",
+        question: {
+          content: messagePitchPositionCandidate,
+        },
+        category: "PITCH_POSITION_CANDIDATE",
+      };
 
-    filter = {
-      phase: "QUERY",
-      sender: {
-        positionID: positionID
-      },
-      senderType: "POSITION",
-      responder: {
-        userID: userID
-      },
-      responderType: "USER",
-      question: {
-        content: messagePitchPositionCandidate
-      },
-      category: "PITCH_POSITION_CANDIDATE",
-    }
+      queryResponseData = await new QueryResponse(filter);
 
-    queryResponseData = await new QueryResponse(
-      filter
-    );
+      console.log("queryResponseData = ", queryResponseData);
 
-    console.log("queryResponseData = ", queryResponseData);
+      await queryResponseData.save();
 
-    await queryResponseData.save();
+      // --------- Change the state Eden Candidate-------------
+      userData.stateEdenChat = {
+        positionIDs: [positionID],
+        categoryChat: "PITCH_POSITION_CANDIDATE",
+      };
 
+      await userData.save();
+      // --------- Change the state Eden Candidate-------------
 
-    // --------- Change the state Eden Candidate-------------
-    userData.stateEdenChat = {
-      positionIDs: [positionID],
-      categoryChat: 'PITCH_POSITION_CANDIDATE'
-    }
-
-    await userData.save()
-    // --------- Change the state Eden Candidate-------------
-
-
-    return {
-      message: messagePitchPositionCandidate,
-      queryResponse: queryResponseData
-    }
-
-     
+      return {
+        message: messagePitchPositionCandidate,
+        queryResponse: queryResponseData,
+      };
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -838,15 +841,12 @@ module.exports = {
       args.fields
     );
 
-    if (!positionID)throw new ApolloError("Position ID is required");
-    
+    if (!positionID) throw new ApolloError("Position ID is required");
 
     try {
+      positionData = await findKeyAttributeAndPotentialPositionFunc(positionID);
 
-    positionData = await findKeyAttributeAndPotentialPositionFunc(positionID)
-
-    return positionData
-     
+      return positionData;
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -855,45 +855,61 @@ module.exports = {
       );
     }
   },
-  findKeyAttributeAndPotentialCandidate: async (parent, args, context, info) => {
-    const { positionID,membersID } = args.fields;
+  findKeyAttributeAndPotentialCandidate: async (
+    parent,
+    args,
+    context,
+    info
+  ) => {
+    const { positionID, membersID } = args.fields;
     console.log(
       "Mutation > findKeyAttributeAndPotentialCandidate > args.fields = ",
       args.fields
     );
 
-    if (!positionID)throw new ApolloError("Position ID is required");
+    if (!positionID) throw new ApolloError("Position ID is required");
 
-    
-    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements candidates');
-
+    positionData = await Position.findOne({ _id: positionID }).select(
+      "_id name positionsRequirements candidates"
+    );
 
     // -------------- Decide and collect Candidates to process --------------
-    membersToProcess = []
-    idxMemberToPosition = []
+    membersToProcess = [];
+    idxMemberToPosition = [];
 
-    if (membersID){
-      membersData = await Members.find({ _id: { $in: membersID } }).select('_id discordName cvInfo ');
+    if (membersID) {
+      membersData = await Members.find({ _id: { $in: membersID } }).select(
+        "_id discordName cvInfo "
+      );
 
       // find the IDX on the positionData candidates
       for (let i = 0; i < membersData.length; i++) {
         let memberData = membersData[i];
-        idxPosition = positionData.candidates.findIndex(candidate => candidate.userID.toString() == memberData._id.toString());
-        if (idxPosition != -1){
-          membersToProcess.push(memberData)
-          idxMemberToPosition.push(idxPosition)
+        idxPosition = positionData.candidates.findIndex(
+          (candidate) =>
+            candidate.userID.toString() == memberData._id.toString()
+        );
+        if (idxPosition != -1) {
+          membersToProcess.push(memberData);
+          idxMemberToPosition.push(idxPosition);
         }
       }
-
     } else {
-      // find data for all candidates 
-      membersToProcess = await Members.find({ _id: { $in: positionData.candidates.map(candidate => candidate.userID) } }).select('_id discordName cvInfo ');
+      // find data for all candidates
+      membersToProcess = await Members.find({
+        _id: {
+          $in: positionData.candidates.map((candidate) => candidate.userID),
+        },
+      }).select("_id discordName cvInfo ");
 
       // find the IDX on the positionData candidates
       for (let i = 0; i < membersToProcess.length; i++) {
         let memberData = membersToProcess[i];
-        idxPosition = positionData.candidates.findIndex(candidate => candidate.userID.toString() == memberData._id.toString());
-        idxMemberToPosition.push(idxPosition)
+        idxPosition = positionData.candidates.findIndex(
+          (candidate) =>
+            candidate.userID.toString() == memberData._id.toString()
+        );
+        idxMemberToPosition.push(idxPosition);
       }
     }
 
@@ -902,20 +918,21 @@ module.exports = {
     printC(idxMemberToPosition, "1", "idxMemberToPosition", "g");
     // -------------- Decide and collect Candidates to process --------------
 
-
-
     try {
+      positionData = await findKeyAttributeAndPotentialCandidateFunc(
+        positionData,
+        membersToProcess,
+        idxMemberToPosition
+      );
 
-      positionData = await findKeyAttributeAndPotentialCandidateFunc(positionData,membersToProcess,idxMemberToPosition)
-
-      return positionData
-
-     
+      return positionData;
     } catch (err) {
       throw new ApolloError(
         err.message,
         err.extensions?.code || "findKeyAttributeAndPotentialCandidate",
-        { component: "positionMutation > findKeyAttributeAndPotentialCandidate" }
+        {
+          component: "positionMutation > findKeyAttributeAndPotentialCandidate",
+        }
       );
     }
   },

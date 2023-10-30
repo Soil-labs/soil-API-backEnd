@@ -106,6 +106,7 @@ module.exports = `
 
          # ------------- COMPANY MUTATION -----------------
         updateCompany(fields:updateCompanyInput): Company
+        updateCompanyDetails(fields:updateCompanyDetailsInput): Company
         updateUrlCompany(fields:updateUrlInput): Company
         addEmployeesCompany(fields:addEmployeesCompanyInput): Company
         subscribeToCommunity(fields:subscribeToCommunityInput): Company

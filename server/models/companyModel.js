@@ -5,6 +5,7 @@ const companyModel = mongoose.Schema({
   name: String,
   url: String,
   slug: String,
+  imageUrl: String,
   description: String,
   employees: [
     new mongoose.Schema(
@@ -42,6 +43,37 @@ const companyModel = mongoose.Schema({
     product: { ID: String },
   },
   communitiesSubscribed: [mongoose.Schema.ObjectId],
+
+  employeesNumber: Number,
+  tags: [String],
+  whatsToLove: String,
+
+  mission: String,
+  insights: [
+    {
+      letter: String,
+      text: String,
+    },
+  ],
+  edenTake: String,
+
+  funding: [
+    {
+      name: String,
+      date: String,
+      amount: String,
+    },
+  ],
+
+  culture: {
+    tags: [String],
+    description: String,
+  },
+
+  benefits: String,
+  values: String,
+  founders: String,
+  glassdoor: String,
 });
 
 const Company = mongoose.model("Company", companyModel);

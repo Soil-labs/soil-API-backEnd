@@ -70,7 +70,7 @@ const token = async ({ body }, res) => {
 
     // Check if user is an operator
     let userAccess;
-    if (OPERATORS.includes(dbUser.id)) {
+    if (OPERATORS.includes(dbUser._id)) {
       userAccess = ACCESS_LEVELS.OPERATOR_ACCESS;
     } else {
       userAccess = ACCESS_LEVELS.MEMBER_ACCESS;

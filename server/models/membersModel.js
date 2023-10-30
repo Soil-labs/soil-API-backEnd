@@ -82,6 +82,7 @@ const memberSchema = mongoose.Schema({
 
   cvInfo: {
     cvContent: String,
+    cvFilename: String,
     cvNotes: String,
     cvMemory: [
       {

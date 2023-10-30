@@ -6,6 +6,7 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { CardMemory } = require("../../../models/cardMemoryModel");
 
 
+
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
 const { Configuration, OpenAIApi } = require("openai");
@@ -41,7 +42,10 @@ const {
   deleteMemoriesPineconeFunc,
 } = require("../utils/memoryPineconeModules");
 
-const { wait,findRoleDescriptionAndBenefits } = require("../utils/aiExtraModules");
+const {
+  wait,
+  findRoleDescriptionAndBenefits,
+} = require("../utils/aiExtraModules");
 
 const { addNodesToMemberFunc } = require("../utils/nodeModules");
 const { PubSub } = require("graphql-subscriptions");
@@ -184,8 +188,6 @@ module.exports = {
     if (!positionData) throw new ApolloError("position not found");
 
     try {
-      
-
       console.log("member data", memberData);
 
       cvInfo = "";
@@ -199,9 +201,8 @@ module.exports = {
         console.log("else", cvInfo);
       }
 
-      
-
-      let positionRequirements = await positionData.positionsRequirements.content;
+      let positionRequirements = await positionData.positionsRequirements
+        .content;
 
       // promptInterviewLetter = `
 
@@ -239,8 +240,10 @@ module.exports = {
 
       // letter = await useGPTchatSimple(promptInterviewLetter, 0.7);
 
-
-      letterSystemPrompt = `Report Candidate CV and Interview (delimiters <>): <${cvInfo.substring(0, 2500)}>
+      letterSystemPrompt = `Report Candidate CV and Interview (delimiters <>): <${cvInfo.substring(
+        0,
+        2500
+      )}>
       
       Requirements of Job Position (delimiters <>): <${positionRequirements}>
 
@@ -249,10 +252,12 @@ module.exports = {
       COMPANY NAME (delimiters <>): <${positionData.name}>
       
       You're a world-class senior recruiter named Eden
-      You are recruiting for ${positionData.name} and you have all the information about the role given in POSITION REQUIREMENTS
+      You are recruiting for ${
+        positionData.name
+      } and you have all the information about the role given in POSITION REQUIREMENTS
       You communicate very effectively, to the point yet with care & compassion
       You have previously aligned with your hiring manger on the important TRADEOFFS, the most important SKILLS and their top PRIORITIES when it comes to what they’re looking for in a candidate
-      You just finished the first interview with the candidate named 'CANDIDATE NAME' and now you're creating a report for the hiring manager.`
+      You just finished the first interview with the candidate named 'CANDIDATE NAME' and now you're creating a report for the hiring manager.`;
 
       letterUserPrompt = `You've been asked by the hiring manager to invite the candidate for a second interview with a hiring manager
       - Based on the CV, interview & requirements explain why we're very excited to continue the conversation
@@ -261,10 +266,9 @@ module.exports = {
       - Use \n\n whenever needed to be clear message.
       - MAX 2 paragraphs 100 words
       
-      Message Inviting the candidate for second interview with hiring manager:`
+      Message Inviting the candidate for second interview with hiring manager:`;
 
-
-      letter = await useGPTchat(letterUserPrompt, [],letterSystemPrompt)
+      letter = await useGPTchat(letterUserPrompt, [], letterSystemPrompt);
 
       console.log(letter);
 
@@ -539,12 +543,9 @@ module.exports = {
 
     stringFromWebsite = message;
 
-
-
     try {
       //  ------------- Notes ----------------
 
-    
       promptConvoQuestions = `
       POSITION REQUIRMENTS: <${stringFromWebsite}>
 
@@ -558,30 +559,29 @@ module.exports = {
 
       printC(promptConvoQuestions, "2", "promptConvoQuestions", "p");
 
-      const promptConvoQuestionsRes = await useGPTchatSimple(promptConvoQuestions,0.7,'API 1');
+      const promptConvoQuestionsRes = await useGPTchatSimple(
+        promptConvoQuestions,
+        0.7,
+        "API 1"
+      );
 
       printC(promptConvoQuestionsRes, "2", "promptConvoQuestionsRes", "p");
 
-
       //  ------------- Notes ----------------
 
-
-    
       // // ------------- Report ----------------
       // promptReport = ` You have as input the Details of a Job Position
       // Job Position (delimiters <>): <${stringFromWebsite}>
 
-
       // The Recruiter Task is to create a report for the most important categories and subCategories the Candidate should have and will be evaluated!
-
 
       // - Every Category can have from  1 to 4 bullet points
       // - To include information in the output you must first find it in text of <Job Position> Do not make up fake information
       // - Include 2-4 categories from Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
       // - You need make really small bullet points maximum 15 words about what the Candidate should have to pass on every Category
-      // - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc. 
+      // - Each bullet point will have a UNIQUE ID following this order b1, b2, b3, etc.
 
-      // For example: 
+      // For example:
       //   <Category 1: title>
       //     - b1: small content max 15 words
       //     - b2: small content max 15 words
@@ -604,15 +604,14 @@ module.exports = {
       // printC(report, "1", "report", "g");
       // // ------------- Report ----------------
 
-
-      let nodeIDs
+      let nodeIDs;
       // // ---------------------- Map Nodes from Position text ---------------------
-      // promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
+      // promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph.
       //       dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
-      //       Do not have any other words except for skills. 
+      //       Do not have any other words except for skills.
 
       //       Example output (delimiters <>): Skills: <Skill_1, Skill_2, ...>
-            
+
       //       Job Position (delimiters <>): <${stringFromWebsite}>
 
       //       Skills Result:
@@ -643,7 +642,6 @@ module.exports = {
       //   console.log("didn't create nodes = ");
       // }
       // // ---------------------- Map Nodes from Position text ---------------------
-
 
       // This is for GPT3 -> don't need it on GPT4
       // // --------------- positionText to Questions ---------------
@@ -686,7 +684,6 @@ module.exports = {
       positionData.positionsRequirements.originalContent = stringFromWebsite;
       positionData.positionsRequirements.positionPreparationMemory = false;
 
-
       let positionsRequirements = {
         ...positionData.positionsRequirements,
         notesRequirConv: promptConvoQuestionsRes,
@@ -697,9 +694,7 @@ module.exports = {
       // update Mongo
       await positionData.save();
 
-
       findRoleDescriptionAndBenefits(message, positionData);
-
 
       // return {
       //   report: report,
@@ -838,23 +833,17 @@ module.exports = {
       "_id positionsRequirements"
     );
 
-
-
     if (!positionData) {
       throw new ApolloError("Position not found");
     }
 
-    let report 
+    let report;
 
     try {
-
-
       if (positionData.positionsRequirements?.content && !updatedReport) {
-
-
         return {
           success: true,
-          report: positionData.positionsRequirements?.content
+          report: positionData.positionsRequirements?.content,
         };
       }
 
@@ -911,54 +900,49 @@ module.exports = {
       if (!positionData) {
         throw new ApolloError("Position not found");
       }
-      
 
-      console.log("positionData.questionsToAsk = " , positionData.questionsToAsk)
+      console.log(
+        "positionData.questionsToAsk = ",
+        positionData.questionsToAsk
+      );
 
       // ---------- If the quesitons are already calculated -------------
       if (positionData.questionsToAsk.length > 0) {
         questionIDs = [];
         positionData.questionsToAsk.forEach((question) => {
           questionIDs.push(question.questionID);
-        })
+        });
 
-        console.log("questionIDs = " , questionIDs)
+        console.log("questionIDs = ", questionIDs);
 
         //get the questions from the DB
         questionData = await QuestionsEdenAI.find({
           _id: { $in: questionIDs },
         }).select("_id content category");
 
-        console.log("questionData = " , questionData)
-        
+        console.log("questionData = ", questionData);
 
         if (questionData.length > 0) {
-
-
           // change format of the questionData
           questionData = questionData.map((question) => {
             return {
               question: question.content,
               category: question.category,
-            }
-          })
+            };
+          });
 
-          // if and of the questionData is category null then don't reuturn it 
+          // if and of the questionData is category null then don't reuturn it
           questionData = questionData.filter((question) => {
-            return question.category != null
-          })
-
+            return question.category != null;
+          });
 
           return {
             success: true,
             questionSuggest: questionData,
-          }
+          };
         }
-
       }
       // ---------- If the quesitons are already calculated -------------
-
-
 
       positionsRequirements = positionData.positionsRequirements.content;
 
@@ -1037,7 +1021,7 @@ module.exports = {
   },
 
   saveCVtoUser: async (parent, args, context, info) => {
-    const { cvContent, userID, positionID } = args.fields;
+    const { cvContent, cvFilename, userID, positionID } = args.fields;
     // console.log("Mutation > saveCVtoUser > args.fields = ", args.fields);
 
     if (!userID) {
@@ -1057,15 +1041,19 @@ module.exports = {
     let positionRequirementsC = positionData.positionsRequirements.content;
 
     if (!positionRequirementsC) {
-      positionRequirementsC = positionData.positionsRequirements.notesRequirConv
+      positionRequirementsC =
+        positionData.positionsRequirements.notesRequirConv;
     }
 
-    if (!positionRequirementsC){
-      positionRequirementsC = positionData.positionsRequirements.originalContent
+    if (!positionRequirementsC) {
+      positionRequirementsC =
+        positionData.positionsRequirements.originalContent;
     }
 
-    if (!positionRequirementsC){
-      throw new ApolloError("Position Requirements not found, the problem might be: 1. this position is not ready 2. This position is corrupted - Please talk to the creator of the position");
+    if (!positionRequirementsC) {
+      throw new ApolloError(
+        "Position Requirements not found, the problem might be: 1. this position is not ready 2. This position is corrupted - Please talk to the creator of the position"
+      );
     }
     // printC(positionRequirementsC,"3","positionRequirementsC","b")
     // sdf9s
@@ -1080,6 +1068,7 @@ module.exports = {
           cvInfo: {
             ...userData.cvInfo,
             cvContent: cvContent,
+            cvFilename: cvFilename,
             cvPreparationDone: false,
             cvPreparationBio: false,
             cvPreparationNodes: false,
@@ -1106,7 +1095,10 @@ module.exports = {
         positionData.candidates[index_].dateApply = new Date();
         await positionData.save();
 
-        console.log("positionData.candidates[index_] = " , positionData.candidates[index_])
+        console.log(
+          "positionData.candidates[index_] = ",
+          positionData.candidates[index_]
+        );
       }
       // ----------------- add candidate to position -----------------
 
@@ -1114,7 +1106,10 @@ module.exports = {
       let cvContentPrompt = `
         CV CANDIDATE (delimiters <>): <${cvContent.substring(0, 3500)}>
 
-        JOB REQUIREMENTS (delimiters <>): <${positionRequirementsC.substring(0, 3500)}>
+        JOB REQUIREMENTS (delimiters <>): <${positionRequirementsC.substring(
+          0,
+          3500
+        )}>
 
         - You are a recruiter with task to understand the the Fit between a candidate's CV and Job Requirments
         - talk in "second person" like you are a recruiter and you are selling the position to the candidat
@@ -1149,32 +1144,29 @@ module.exports = {
       // 5. Growth: This role offers an opportunity to expand your skills in product management, a critical aspect of ML-driven products. You will also have the chance to work in a multicultural environment, enhancing your language skills and cultural competence.
       // 6. Improve: In this role, you will be able to apply your technical skills to real-world problems, improving your ability to translate complex data into actionable business strategies. You will also gain experience in lean startup methodologies and processes, which will enhance your overall understanding of product development.`
 
-
       // t
       printC(titleSkillSummaryRes, "3", "titleSkillSummaryRes", "b");
-     
 
       lines = titleSkillSummaryRes.split("\n");
-      const extractedText = lines.map(line => line.split(":")[1].trim());
+      const extractedText = lines.map((line) => line.split(":")[1].trim());
       console.log(extractedText);
 
-      const matchPercentage  = extractedText[0].replace("%","")
+      const matchPercentage = extractedText[0].replace("%", "");
       console.log("Match Percentage:", matchPercentage);
-      const strongFit = extractedText[2]
+      const strongFit = extractedText[2];
       console.log("Strong Fit:", strongFit);
-      const improvementPoints = extractedText[3]
+      const improvementPoints = extractedText[3];
       console.log("Areas to Improve:", improvementPoints);
-      const growthAreas = extractedText[4]
+      const growthAreas = extractedText[4];
       console.log("Growth Opportunities:", growthAreas);
-      const experienceAreas = extractedText[5]
+      const experienceAreas = extractedText[5];
       console.log("Experience Improvement:", experienceAreas);
 
-       const mainSkills = extractedText[1].split(", ");
+      const mainSkills = extractedText[1].split(", ");
 
       console.log("Main Skills:", mainSkills);
       printC(extractedText, "3", "extractedText", "b");
 
-      
       // ----------- CV to Summary -------------
 
       // interviewQuestionCreationUserFunc(positionID, userID, cvContent); // GPT3 Interview
@@ -1182,9 +1174,7 @@ module.exports = {
 
       interviewCreateCVNotesFunc(userData, cvContent); // GPT4 Interview
 
-
       // await wait(5000);
-
 
       //publish the userID of the saved cv
       pubsub.publish("USER_CV_SAVED", {
@@ -1243,23 +1233,21 @@ module.exports = {
         // if (userData.cvInfo.cvPreparationBio != true) {
 
         // promptSum =
-        //   `Act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) and your job is to write a short bio for that profile. Here is the structure of the bio: 
-          
-          
+        //   `Act as social media expert at wring profile bios. I will give you a string extracted from a CV(resume) and your job is to write a short bio for that profile. Here is the structure of the bio:
+
         //   Pick the most impressive achievements(highest education and the most recent position in the CV) and list them in 2 bullet points(no more than 2).
-          
-          
+
         //   Follow this structure 2 parts. First part is 1 sentences. Sencond part is two bullet points with 18 words MAX each.
-          
-        //   Part 1(do not include Part 1 in the response): 
+
+        //   Part 1(do not include Part 1 in the response):
         //   1 sentences (Opening line: Introduce yourself and your expertise)
-          
+
         //   Part 2(do not include Part 2 in the response):
-        //    - The present position that they work in and what they do there 
+        //    - The present position that they work in and what they do there
         //    - Highest level of education(list only the highest education and only list that one)
 
         //    CV: <${cvContent}>
-           
+
         //    Structured Profile:`
 
         promptSum =
@@ -1275,11 +1263,7 @@ module.exports = {
 
         printC(summaryOfCV, "0", "summaryOfCV", "b");
 
-
-
-
-        oneLinerPrompt =
-        `
+        oneLinerPrompt = `
         Your task is to create a 1 liner for a candidate that explain perfectly who he is in only 8 MAX words
 
         CV: <${cvContent}>
@@ -1287,10 +1271,9 @@ module.exports = {
         1 liner in 8 MAX words:
         `;
 
-          oneLiner = await useGPTchatSimple(oneLinerPrompt);
+        oneLiner = await useGPTchatSimple(oneLinerPrompt);
 
-          printC(oneLiner, "0", "oneLinerGPT", "b");
-
+        printC(oneLiner, "0", "oneLinerGPT", "b");
 
         userData.bio = summaryOfCV;
         userData.oneLiner = oneLiner;
@@ -1565,26 +1548,22 @@ module.exports = {
     }
   },
   updatePrioritiesTradeOffs: async (parent, args, context, info) => {
-    const { positionID, priorities,tradeOffs, } = args.fields;
+    const { positionID, priorities, tradeOffs } = args.fields;
     console.log(
       "Mutation > updatePrioritiesTradeOffs > args.fields = ",
       args.fields
     );
 
     // find the positionID
-    positionData =  await Position.findOne({
+    positionData = await Position.findOne({
       _id: positionID,
-    }).select('_id name positionsRequirements');
+    }).select("_id name positionsRequirements");
 
     if (!positionData) {
-      throw new ApolloError(
-        "Position not found",
-        "POSITION_NOT_FOUND",
-      )
+      throw new ApolloError("Position not found", "POSITION_NOT_FOUND");
     }
 
     try {
-
       // // ---------------- Priorities ----------------
       // let prioritiesNow = positionData.positionsRequirements.priorities;
       // console.log("prioritiesNow = " , prioritiesNow)
@@ -1604,51 +1583,45 @@ module.exports = {
       //   console.log("prioritiesNew = " , prioritiesNew)
 
       //   positionData.positionsRequirements.priorities = prioritiesNew;
-        
 
       // } else {
       //   positionData.positionsRequirements.priorities = priorities;
       // }
       // // ---------------- Priorities ----------------
 
-
       // ---------------- Trade Offs ----------------
       let tradeOffsNow = positionData.positionsRequirements.tradeOffs;
 
-      if (tradeOffsNow?.length > 0 && tradeOffs?.length > 0){
-
+      if (tradeOffsNow?.length > 0 && tradeOffs?.length > 0) {
         let tradeOffsObj = {};
         for (let i = 0; i < tradeOffs.length; i++) {
           key = tradeOffs[i].tradeOff1 + "_" + tradeOffs[i].tradeOff2;
           tradeOffsObj[key] = tradeOffs[i];
         }
 
-        let tradeOffsNew = []
+        let tradeOffsNew = [];
         for (let i = 0; i < tradeOffsNow.length; i++) {
           key = tradeOffsNow[i].tradeOff1 + "_" + tradeOffsNow[i].tradeOff2;
-          if (tradeOffsObj[key]){
+          if (tradeOffsObj[key]) {
             // tradeOffsNew.push(tradeOffsObj[key])
             tradeOffsNew.push({
               tradeOff1: tradeOffsObj[key].tradeOff1,
               tradeOff2: tradeOffsObj[key].tradeOff2,
               reason: tradeOffsNow[i].reason,
               selected: tradeOffsObj[key].selected,
-            })
+            });
             // tradeOffsNew.push(tradeOffsNow[i])
           } else {
-            tradeOffsNew.push(tradeOffsNow[i])
+            tradeOffsNew.push(tradeOffsNow[i]);
           }
-
         }
 
         positionData.positionsRequirements.tradeOffs = tradeOffsNew;
-        
-
       }
       // ---------------- Trade Offs ----------------
 
       await positionData.save();
-      
+
       return {
         priorities: positionData.positionsRequirements.priorities,
         tradeOffs: positionData.positionsRequirements.tradeOffs,
@@ -1962,9 +1935,8 @@ module.exports = {
         }
         // ----------- Calculate and Save Memory ------------
 
-
         // ---------------------- Map Nodes from Position text ---------------------
-        let nodeIDs
+        let nodeIDs;
         promptReportToMapSkills = `I give you a string extracted from a Job Position. Your task is to extract as much information as possible from that Job Position and list all the skills that person need to have to get hired for this position in a small paragraph. 
               dont need to have complete sentences. Make it as dense as possible with just listing the skills, industries, technologies.
               Do not have any other words except for skills. 
@@ -1975,18 +1947,18 @@ module.exports = {
   
               Skills Result:
               `;
-  
+
         let mapSkillText = await useGPTchatSimple(promptReportToMapSkills, 0);
         // let mapSkillText = `Experience with databases and SQL, Cloud experience (preferably with AWS), Programming experience, TypeScript experience, Experience building and maintaining backend systems, Experience with infrastructure improvements and scaling, Experience troubleshooting production issues and conducting root cause analysis, Experience conducting systems tests for security, performance, and availability, Team player, Strong communication skills, Ability to work in a fast-paced environment, Detail-oriented, Problem solver, Self-motivated, Adaptable, Experience maintaining and improving infrastructure in AWS, Experience maintaining TypeScript SDKs and writing internal and public documentation, Experience with observability, monitoring, and alerting for services.`
         printC(mapSkillText, "1", "mapSkillText", "g");
 
         // sd9
-  
+
         nodeIDs;
         try {
           let nodesN = await MessageMapKG_V4APICallF(mapSkillText);
           printC(nodesN, "3", "nodesN", "p");
-  
+
           nodeSave = nodesN.map((obj) => {
             return {
               _id: obj.nodeID,
@@ -1997,7 +1969,7 @@ module.exports = {
               nodeID: obj._id,
             };
           });
-  
+
           printC(nodeSave, "4", "nodeSave", "r");
         } catch (err) {
           console.log("didn't create nodes = ");
