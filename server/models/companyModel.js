@@ -72,6 +72,7 @@ const companyModel = mongoose.Schema({
 
   benefits: String,
   values: String,
+  founders: String,
 });
 
 const Company = mongoose.model("Company", companyModel);
