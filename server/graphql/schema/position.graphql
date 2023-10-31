@@ -40,7 +40,7 @@ module.exports = `
         tradeOffs: [tradeOffsType]
         priorities: [prioritiesType]
         keyAttributes: [attributeType]
-        futurePotential: [attributeType]   
+        futurePotential: [attributeType]
     }
 
     type attributeType {
@@ -278,6 +278,9 @@ module.exports = `
         mainUserID: ID
         icon: String,
         status: PositionStatus
+
+        whoYouAre: String
+        whatTheJobInvolves: String
     }
     
     input updateUrlInput {
