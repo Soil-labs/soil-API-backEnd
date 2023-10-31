@@ -43,7 +43,16 @@ const { arrayToObj } = require("../utils/endorsementModules");
 
 module.exports = {
   updatePosition: async (parent, args, context, info) => {
-    const { _id, name, icon, conduct, mainUserID, status } = args.fields;
+    const {
+      _id,
+      name,
+      icon,
+      conduct,
+      mainUserID,
+      status,
+      whoYouAre,
+      whatTheJobInvolves,
+    } = args.fields;
     let { companyID } = args.fields;
     console.log("Mutation > updatePosition > args.fields = ", args.fields);
 
@@ -73,6 +82,9 @@ module.exports = {
         if (companyID) positionData.companyID = companyID;
         if (icon) positionData.icon = icon;
         if (status) positionData.status = status;
+        if (whoYouAre) positionData.whoYouAre = whoYouAre;
+        if (whatTheJobInvolves)
+          positionData.whatTheJobInvolves = whatTheJobInvolves;
 
         // ----------------- conduct ----------------
         if (conduct) {
@@ -100,6 +112,8 @@ module.exports = {
           companyID,
           mainUserID,
           conduct,
+          whoYouAre,
+          whatTheJobInvolves,
           talentList: [
             {
               name: "Accepted",
@@ -859,7 +873,7 @@ module.exports = {
     }
   },
   deletePositionCandidate: async (parent, args, context, info) => {
-    const { positionID, userID,onlyScoreCard } = args.fields;
+    const { positionID, userID, onlyScoreCard } = args.fields;
     console.log(
       "Query > deletePositionCandidate > args.fields = ",
       args.fields
@@ -878,28 +892,25 @@ module.exports = {
 
       // find the positionData.candidates userID and return it
 
-      if (userID){
+      if (userID) {
         const index = positionData.candidates.findIndex(
           (candidate) => candidate.userID.toString() == userID.toString()
         );
 
-        if (onlyScoreCard){
+        if (onlyScoreCard) {
           positionData.candidates[index].scoreCardCategoryMemories = [];
           positionData.candidates[index].scoreCardTotal = {};
-
         } else {
           positionData.candidates[index].interviewQuestionsForCandidate = [];
         }
         positionData = await positionData.save();
 
         return [positionData.candidates[index]];
-
       } else {
         for (let i = 0; i < positionData.candidates.length; i++) {
-          if (onlyScoreCard){
+          if (onlyScoreCard) {
             positionData.candidates[i].scoreCardCategoryMemories = [];
             positionData.candidates[i].scoreCardTotal = {};
-  
           } else {
             positionData.candidates[i].interviewQuestionsForCandidate = [];
           }
@@ -907,13 +918,9 @@ module.exports = {
         positionData = await positionData.save();
 
         return positionData.candidates;
-
       }
 
-
-
       // console.log("candidate = " , candidate)
-
     } catch (err) {
       throw new ApolloError(
         err.message,
