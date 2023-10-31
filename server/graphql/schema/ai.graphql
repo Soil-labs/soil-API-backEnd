@@ -185,6 +185,11 @@ module.exports = `
         positionIDs: [ID]
     }
 
+     input transcribeAudioToTextInput {
+        message: String
+        # audioFile: Upload!
+     }
+
     input createCoreMemoriesInput {
         positionID: ID
         userID: ID
@@ -216,7 +221,9 @@ module.exports = `
     type autoUpdateMemoryFromPositionRequirmentsOutput {
         positions: [Position]
     }
-
+    type transcribeAudioToTextOutput {
+        transcription: String 
+    }
     type createCoreMemoriesOutput {
         output: String
     }

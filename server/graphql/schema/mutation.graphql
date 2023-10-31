@@ -190,6 +190,7 @@ module.exports = `
         autoUpdateMemoryFromCV(fields: autoUpdateMemoryFromCVInput): autoUpdateMemoryFromCVOutput
         autoUpdateMemoryFromPositionRequirments(fields: autoUpdateMemoryFromPositionRequirmentsInput): autoUpdateMemoryFromPositionRequirmentsOutput
         createCoreMemories(fields: createCoreMemoriesInput): createCoreMemoriesOutput
+        transcribeAudioToText(fields: transcribeAudioToTextInput): transcribeAudioToTextOutput 
         updatePrioritiesTradeOffs(fields: updatePrioritiesTradeOffsInput): updatePrioritiesTradeOffsOutput
         addMessages(fields: addMessagesInput): [AI]
         secondInterviewLetter(fields: secondInterviewLetterInput): secondInterviewLetterOutput

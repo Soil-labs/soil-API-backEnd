@@ -2199,6 +2199,16 @@ async function useGPTchat(
   return response.data.choices[0].message.content;
 }
 
+async function userWhisperAPI(file, temperature = 0) {
+  const openai = newOpenAI();
+  const transcription = openai.audio.transcriptions.create({
+    file: "",
+    model: "whisper-1",
+  });
+
+  return transcription.text;
+}
+
 async function useShaleAPI(prompt, temperature = 0) {
   const model = new ChatOpenAI(
     { openAIApiKey: "shale-jGiMw2PQ8VX+IT" },
@@ -2280,7 +2290,7 @@ async function useGPT4Simple(prompt, temperature = 0.7, chooseAPI = "API 1") {
         "Content-Type": "application/json",
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
-      timeout: 240000, 
+      timeout: 240000,
     }
   );
 
@@ -2338,7 +2348,7 @@ async function onlyGPTchat(prompt, temperature = 0.7, chooseAPI = "API 1") {
         "Content-Type": "application/json",
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
-      timeout: 100000, 
+      timeout: 100000,
     }
   );
 
@@ -3298,6 +3308,7 @@ module.exports = {
   chooseAPIkey,
   useGPTchat,
   useGPTchatSimple,
+  userWhisperAPI,
   useShaleAPI,
   arrayToObject,
   taskPlanning,
