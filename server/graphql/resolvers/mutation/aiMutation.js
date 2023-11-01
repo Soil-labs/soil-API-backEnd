@@ -1988,9 +1988,14 @@ module.exports = {
       args.fields
     );
 
+    console.log("audioFile ====== >>>>>>", await audioFile);
+
+    const file = await audioFile;
+
     // if (!audioFile) throw new ApolloError("Audio file is required");
     if (!audioFile) throw new ApolloError("Audio file is required");
-    const transcribedMessage = await useWhisperAPI(audioFile);
+
+    const transcribedMessage = await useWhisperAPI(file);
 
     try {
       return { transcription: transcribedMessage };

@@ -188,7 +188,6 @@ module.exports = `
     }
 
      input transcribeAudioToTextInput {
-        message: String
         audioFile: Upload
      }
 

@@ -2199,10 +2199,13 @@ async function useGPTchat(
   return response.data.choices[0].message.content;
 }
 
-async function useWhisperAPI(file, temperature = 0) {
-  const openai = newOpenAI();
+async function useWhisperAPI(file, temperature = 0, chooseAPI = "API 1") {
+  const configuration = new Configuration({
+    apiKey: chooseAPIkey(chooseAPI),
+  });
+  const openai = new OpenAIApi(configuration);
   const transcription = openai.audio.transcriptions.create({
-    file: "",
+    file: file,
     model: "whisper-1",
   });
 
