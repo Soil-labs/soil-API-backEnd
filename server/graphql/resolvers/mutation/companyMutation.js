@@ -133,7 +133,7 @@ module.exports = {
 
   updateCompanyDetails: async (parent, args, context, info) => {
     const {
-      _id,
+      slug,
       imageUrl,
       employeesNumber,
       tags,
@@ -154,14 +154,14 @@ module.exports = {
     );
 
     try {
-      if (!_id) {
-        throw new ApolloError("_id is required", "updateCompanyDetails", {
+      if (!slug) {
+        throw new ApolloError("slug is required", "updateCompanyDetails", {
           component: "companyMutation > updateCompanyDetails",
         });
       }
 
       let companyData;
-      companyData = await Company.findOne({ _id });
+      companyData = await Company.findOne({ slug });
 
       if (!companyData) {
         throw new ApolloError("company not found", "updateCompanyDetails", {

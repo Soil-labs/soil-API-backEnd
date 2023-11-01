@@ -89,7 +89,7 @@ module.exports = `
     }
     
     input updateCompanyDetailsInput {
-        _id: ID
+        slug: String
         imageUrl: String
         
         employeesNumber: Int
