@@ -73,16 +73,19 @@ module.exports = {
       if (conversationID){
         resultConv = await Conversation.findOne({ _id: conversationID });
 
-        resultConv.conversation = conversation;
-        resultConv.lastMsgSummed = conversation.length
-        resultConv.updatedAt = Date.now();
-        resultConv.summaryReady = false;
+        if (resultConv){
 
-        if (userID) resultConv.userID = userID; 
-        if (positionID) resultConv.positionID = positionID;
+          resultConv.conversation = conversation;
+          resultConv.lastMsgSummed = conversation.length
+          resultConv.updatedAt = Date.now();
+          resultConv.summaryReady = false;
+
+          if (userID) resultConv.userID = userID; 
+          if (positionID) resultConv.positionID = positionID;
 
 
-        resultConv.save()
+          resultConv.save()
+        }
 
       } else {
         resultConv = await findAndUpdateConversationFunc(userID, conversation);
