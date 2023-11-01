@@ -5,7 +5,9 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 const { CardMemory } = require("../../../models/cardMemoryModel");
 
-
+const {
+  findOrCreateNewConvFunc,
+} = require("../utils/conversationModules");
 
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
@@ -1543,6 +1545,35 @@ module.exports = {
         err.extensions?.code || "autoUpdateMemoryFromCV",
         {
           component: "aiMutation > autoUpdateMemoryFromCV",
+        }
+      );
+    }
+  },
+  talkToEdenGeneral_V1: async (_, args) => {
+    const { message, infoConv } = args.fields;
+    console.log(
+      "Mutation > talkToEdenGeneral_V1 > args.fields = ",
+      args.fields
+    );
+
+    let conversationID, userID, subjectConv;
+    if (infoConv) {
+      ({ conversationID, userID, subjectConv } = infoConv);
+    }
+
+    try {
+      conversationData = findOrCreateNewConvFunc({
+        conversationID
+      })
+
+
+    } catch (err) {
+      console.log("err = ", err);
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "talkToEdenGeneral_V1",
+        {
+          component: "aiMutation > talkToEdenGeneral_V1",
         }
       );
     }

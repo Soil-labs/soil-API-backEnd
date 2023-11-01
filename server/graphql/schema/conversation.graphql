@@ -8,6 +8,10 @@ module.exports = `
         extraPositionsID: [ID]
         positionTrainEdenAI: Boolean,
 
+        typeConversation: typeConversationEnum
+
+        subjectConv: subjectConvType,
+
         summariesMessages: [summariesMessagesType],
 
         #  conv: [messageChat],
@@ -24,6 +28,19 @@ module.exports = `
         questionsAnswered: [questionAnsweredType],
         
         updatedAt: Date,
+    }
+
+    enum typeConversationEnum {
+        INTERVIEW
+        ALIGNMENT_POSITION
+        PROMOTE_CANDIDATE
+        ASK_OPPORTUNITY
+    }
+
+    type subjectConvType {
+        positionIDs: [ID],
+        userIDs: [ID],
+        companyIDs: [ID],
     }
 
     type summariesMessagesType {
@@ -55,7 +72,9 @@ module.exports = `
     }
     type conversationType {
         role: String
+        typeWidget: widgetTypeEnum
         content: String
+        widgetVars: widgetVarsType
         date: Date
     }
 
@@ -80,7 +99,18 @@ module.exports = `
     }
 
     input findConversationInput {
-        _id: ID
+        _id: ID # conversationID
+        userID: ID # User Talking to 
+        subjectConv: subjectConversationInput
+        typeConversation: typeConversationEnum
+        limit: Int
+        skip: Int
+    }
+    
+    input subjectConversationInput {
+        positionIDs: [ID]
+        userIDs: [ID]
+        companyIDs: [ID]
     }
 
     input findConversationsInput {
