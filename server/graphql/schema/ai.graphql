@@ -1,4 +1,6 @@
 module.exports = `
+    scalar Upload
+
 
     type AI {
         _id: ID
@@ -187,7 +189,7 @@ module.exports = `
 
      input transcribeAudioToTextInput {
         message: String
-        # audioFile: Upload!
+        audioFile: Upload
      }
 
     input createCoreMemoriesInput {

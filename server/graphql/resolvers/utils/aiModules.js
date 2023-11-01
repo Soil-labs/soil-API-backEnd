@@ -2199,7 +2199,7 @@ async function useGPTchat(
   return response.data.choices[0].message.content;
 }
 
-async function userWhisperAPI(file, temperature = 0) {
+async function useWhisperAPI(file, temperature = 0) {
   const openai = newOpenAI();
   const transcription = openai.audio.transcriptions.create({
     file: "",
@@ -3308,7 +3308,7 @@ module.exports = {
   chooseAPIkey,
   useGPTchat,
   useGPTchatSimple,
-  userWhisperAPI,
+  useWhisperAPI,
   useShaleAPI,
   arrayToObject,
   taskPlanning,

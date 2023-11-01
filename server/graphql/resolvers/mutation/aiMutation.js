@@ -33,6 +33,7 @@ const {
   reportPassFailCVPositionConversationFunc,
   positionTextAndConvoToReportCriteriaFunc,
   positionTextToExtraQuestionsFunc,
+  useWhisperAPI,
 } = require("../utils/aiModules");
 
 const {
@@ -1981,17 +1982,18 @@ module.exports = {
   },
   transcribeAudioToText: async (parent, args, context, info) => {
     // const { audioFile } = args.fields;
-    const { message } = args.fields;
+    const { audioFile } = args.fields;
     console.log(
       "Mutation > autoUpdateMemoryFromPositionRequirments > args.fields = ",
       args.fields
     );
 
     // if (!audioFile) throw new ApolloError("Audio file is required");
-    if (!message) throw new ApolloError("Audio file is required");
+    if (!audioFile) throw new ApolloError("Audio file is required");
+    const transcribedMessage = await useWhisperAPI(audioFile);
 
     try {
-      return { transcription: message };
+      return { transcription: transcribedMessage };
     } catch (err) {
       throw new ApolloError(err.message);
     }
