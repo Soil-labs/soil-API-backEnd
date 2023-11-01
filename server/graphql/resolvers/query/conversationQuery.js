@@ -4,76 +4,20 @@ const { printC } = require("../../../printModule");
 
 const { ApolloError } = require("apollo-server-express");
 
+const {
+  findConversationFunc,
+} = require("../utils/conversationModules");
 
 module.exports = {
   findConversation: async (parent, args, context, info) => {
     const { _id,userID,subjectConv,typeConversation } = args.fields;
-    let {limit, skip} = args.fields;
     console.log("Query > findConversation > args.fields = ", args.fields);
 
-    if (!limit) limit = 1000;
-    if (!skip) skip = 0;
-
-    // const limitConversation = { conversation: { $slice: [skip, limit] } }
-    const limitConversation = { conversation: { $slice: [ -limit - skip, limit ]  } }
-
     try {
-
-      let convData = null;
-
-      if (_id){
-        convData = await Conversation.findOne({ _id: _id }, limitConversation);
-
-        if (!convData) throw new ApolloError("Conversation not found")
-
-        printC(convData, "0", "convData", "b");
-
-        return convData;
-      }
-
-      filter = {}
-
-      if (userID) filter.userID = userID;
-      if (subjectConv.userIDs) filter["subjectConv.userIDs"] = { $all: subjectConv.userIDs };
-      if (subjectConv.positionIDs) filter["subjectConv.positionIDs"] = { $all: subjectConv.positionIDs };
-      if (subjectConv.companyIDs) filter["subjectConv.companyIDs"] = { $all: subjectConv.companyIDs };
-      if (typeConversation) filter.typeConversation = typeConversation;
-      
-
+      let convData = await findConversationFunc(args.fields)
 
       
-      conversationsData = await Conversation.find(filter, limitConversation);
-
-      printC(conversationsData, "0", "conversationsData", "b");
-      // f1
-
-      if (conversationsData.length == 1) {
-        convData = conversationsData[0]
-      } else if (conversationsData.length > 1) {
-        // TODO return multiple conversation IDs later, for now we will return the last one
-        convData = conversationsData[conversationsData.length - 1]
-      }
-
-
-      if (convData == null) {
-        convData = await new Conversation({
-          userID: userID,
-          subjectConv: subjectConv,
-          typeConversation: typeConversation,
-          conversation: [],
-          summaryReady: false,
-          positionTrainEdenAI: false,
-        });
-
-        await convData.save();
-      }
-
-
-
-
       return convData;
-      
-
       
     } catch (err) {
       printC(err, "-1", "err", "r")

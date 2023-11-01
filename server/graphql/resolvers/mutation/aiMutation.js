@@ -6,8 +6,13 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { CardMemory } = require("../../../models/cardMemoryModel");
 
 const {
-  findOrCreateNewConvFunc,
+  findOrCreateNewConvFunc,findConversationFunc,
 } = require("../utils/conversationModules");
+
+
+const {
+  talkToEdenMain,
+} = require("../utils/talkToEdenModules");
 
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
@@ -1549,26 +1554,59 @@ module.exports = {
       );
     }
   },
-  talkToEdenGeneral_V1: async (_, args) => {
+  talkToEdenGeneral_V1: async (parent, args, context, info) => {
+    //--------- variables ---------
     const { message, infoConv } = args.fields;
     console.log(
       "Mutation > talkToEdenGeneral_V1 > args.fields = ",
       args.fields
     );
 
-    let conversationID, userID, subjectConv;
+    let conversationID;
     if (infoConv) {
-      ({ conversationID, userID, subjectConv } = infoConv);
+      ({ conversationID } = infoConv);
+    } else {
+      throw new ApolloError("infoConv and conversationID are required");
     }
+    //--------- variables ---------
 
     try {
-      conversationData = findOrCreateNewConvFunc({
-        conversationID
+      // ------- find the conversation  ---------
+      let convData = await findConversationFunc({_id: conversationID})
+      // ------- find the conversation  ---------
+
+      // ------- Prepare conversation, Summarize if too long, and use the summary to shorten it. ------
+      // ------- Prepare conversation, Summarize if too long, and use the summary to shorten it.------
+
+
+      // -------- Based on the Type of convData decide what AI to use --------
+      let resTalkToEden = await talkToEdenMain({
+        message,
+        convData
       })
+        // --------- Inside the AIs decide what version of this AI --------
+           // ------- 1. check the state 
+           // ------- 2. check if there is any action 
+           // ------- 3. check the type of the conversation 
+           // ------- 4. based on that decide what functions will be used on the GPT
+           // ------- 5. use the function response to decide what function to run
+           // ------- 6. run the function (collect memories, collect users, collect data from database)
+           // ------- 7. use response on the GPT, and collect the results of the function
+           // ------- 8. return back the message of the GPT 
+           // ------- 9. return back the data and the choice of widget that happen during the GPT function phase 
+        // --------- Inside the AIs decide what version of this AI --------
+      // -------- Based on the Type of convData decide what AI to use --------
+
+
+      // --------- Return back the results to user ------
+      // -- from 8. and 9.
+      // --------- Return back the results to user ------
+
+
 
 
     } catch (err) {
-      console.log("err = ", err);
+      printC(err, "-1", "err", "r")
       throw new ApolloError(
         err.message,
         err.extensions?.code || "talkToEdenGeneral_V1",
