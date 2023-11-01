@@ -193,6 +193,39 @@ async function updatePositionInterviewedOfUser(userID,positionID) {
   }
 }
 
+
+async function findOrCreateNewConvFunc(varT) {
+  const {conversationID} = varT
+
+  if (conversationID == null){
+    // create new conversation
+    const newConversation = await new Conversation({
+      convKey: "",
+      userID: "",
+      conversation: [],
+      lastMsgSummed: 0,
+      positionID: "",
+      positionTrainEdenAI: false,
+      summaryReady: false,
+      summary: [],
+      updatedAt: Date.now(),
+    });
+
+    resultConv = await newConversation.save();
+
+    return resultConv
+  } else {
+    // find the conversation
+    existingConversation = await Conversation.findOne({
+      _id: conversationID,
+    });
+
+    return existingConversation
+  }
+
+ 
+}
+
 async function updateEmployees(arr1, arr2, compareKey = "userID") {
   // arr1New = [...arr1]
   arr2.forEach((employee2) => {
@@ -894,4 +927,5 @@ module.exports = {
   updateNotesRequirmentsConversation,
   updatePositionInterviewedOfUser,
   summarizeConv,
+  findOrCreateNewConvFunc,
 };

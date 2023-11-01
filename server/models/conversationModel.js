@@ -8,11 +8,29 @@ const conversationSchema = mongoose.Schema({
   extraPositionsID: [String],
   positionTrainEdenAI: Boolean,
 
+  typeConversation: {
+    type: String,
+    enum: ["INTERVIEW","ALIGNMENT_POSITION","PROMOTE_CANDIDATE","ASK_OPPORTUNITY"],
+  },
+
+  subjectConv: {
+    positionIDs: [String],
+    userIDs: [String],
+    companyIDs: [String],
+  },
+
   conversation: [
     {
-      role: String, // user or bot
+      role: String, 
+      typeWidget: {
+        type: String,
+        enum: ["MESSAGE","INDIVIDUAL_MEMORIES","SCORECARD"],
+      },
       content: String,
       date: Date,
+      widgetVars: {
+        memoryIDs: [String],
+      },
     },
   ],
 
