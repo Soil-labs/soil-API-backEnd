@@ -90,6 +90,7 @@ module.exports = `
     
     input updateCompanyDetailsInput {
         slug: String
+        description: String
         imageUrl: String
         
         employeesNumber: Int
