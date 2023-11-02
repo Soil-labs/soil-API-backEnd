@@ -135,6 +135,7 @@ module.exports = {
     const {
       slug,
       imageUrl,
+      description,
       employeesNumber,
       tags,
       whatsToLove,
@@ -170,6 +171,7 @@ module.exports = {
       }
 
       // update
+      if (description) companyData.description = description;
       if (imageUrl) companyData.imageUrl = imageUrl;
       if (employeesNumber) companyData.employeesNumber = employeesNumber;
       if (tags) companyData.tags = tags;
