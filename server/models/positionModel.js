@@ -7,6 +7,8 @@ const positionModel = mongoose.Schema({
   url: String,
   companyID: mongoose.Schema.ObjectId,
   mainUserID: String,
+  cardsPositionCalculated: Boolean,
+  prioritiesPositionCalculated: Boolean,
   conduct: {
     number: String,
     whatsappNumber: String,
