@@ -363,7 +363,7 @@ module.exports = `
 
     input findPositionsOfCommunityInput {
         communityID: String,
-        companySlug: String,
+        slug: String,
     }
 
     input findKeyAttributeAndPotentialPositionInput {

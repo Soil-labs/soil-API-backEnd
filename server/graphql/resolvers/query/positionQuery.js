@@ -137,19 +137,19 @@ module.exports = {
     }
   },
   findPositionsOfCommunity: async (parent, args, context, info) => {
-    let { communityID,companySlug } = args.fields;
+    let { communityID,slug } = args.fields;
     console.log(
       "Query > findPositionsOfCommunity > args.fields = ",
       args.fields
     );
 
-    if (communityID && companySlug) throw new ApolloError(" Only one of communityID or companySlug is required");
-    if (!communityID && !companySlug) throw new ApolloError(" One of communityID or companySlug is required");
+    if (communityID && slug) throw new ApolloError(" Only one of communityID or slug is required");
+    if (!communityID && !slug) throw new ApolloError(" One of communityID or slug is required");
 
     try {
 
-      if (companySlug) {
-        let companyDataSlug = await Company.findOne({ slug: companySlug }).select("_id");
+      if (slug) {
+        let companyDataSlug = await Company.findOne({ slug: slug }).select("_id");
 
         communityID = companyDataSlug._id
       }

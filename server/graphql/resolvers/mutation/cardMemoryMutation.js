@@ -7,6 +7,12 @@ const { CardMemory } = require("../../../models/cardMemoryModel");
 const { Conversation } = require("../../../models/conversationModel");
 const { Members } = require("../../../models/membersModel");
 
+const {
+  findPrioritiesTrainEdenAIFunc,
+  positionSuggestQuestionsAskCandidateFunc,
+} = require("../utils/positionModules");
+
+
 const {upsertEmbedingPineCone,deletePineCone} = require("../utils/aiExtraModules");
 
 const {addCardMemoryFunc,
@@ -326,21 +332,42 @@ module.exports = {
 
     try {
     // Find all the positions, 
-    positionsData = await Position.find({prioritiesPositionCalculated: { $ne: true } }).select('_id prioritiesPositionCalculated');
+    positionsData = await Position.find({prioritiesPositionCalculated: { $ne: true } })
+      .select('_id prioritiesPositionCalculated positionsRequirements questionsToAsk');
+
     printC(positionsData.length, "3", "Number of Positions to go ", "p")
 
     if (positionsData.length == 0) return {}
 
     let positionData = positionsData[0]
 
+    let resPriorities,resQuestions
 
-    
-    // check if priorities are calculated
-      //     - [x] findPrioritiesTrainEdenAI
-    
-    // check if questions are calculated
+    if (!positionData.prioritiesPositionCalculated) {
+      resPriorities = await findPrioritiesTrainEdenAIFunc({
+        positionID: positionData._id,
+      });
+    }
+
+    // if (positionData.questionsToAsk == null || positionData.questionsToAsk.length == 0) {
+    //   resQuestions = await positionSuggestQuestionsAskCandidateFunc(args.fields)
+
+    //   if (resQuestions.questionSuggest) {
+    //   let questionsToAskTemp = resQuestions.questionSuggest
+
+    //   let questionsToAskForSave = questionsToAskTemp.map((question) => {
+    //     return {
+    //       questionContent: question.question,
+    //       questionID: question.IDCriteria,
+    //       category: question.category,
+    //     };
+    //   });
+
+      
+
+    // }
       //     - [x] positionSuggestQuestionsAskCandidate
-      //     - [x] addQuestionsToAskPositionInput
+      //     - [x] addQuestionsToAskPosition
 
 
 
