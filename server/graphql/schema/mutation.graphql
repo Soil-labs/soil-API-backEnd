@@ -128,6 +128,8 @@ module.exports = `
         addCardMemory(fields:addCardMemoryInput): CardMemory
         deleteCardMemory(fields:deleteCardMemoryInput): [CardMemory]
         createCardsForPosition(fields:createCardsForPositionInput): [CardMemory]
+        autoCreateCardsForPosition(fields:autoCreateCardsForPositionInput): [CardMemory]
+        autoCalculatePrioritiesAndQuestions(fields:autoCalculatePrioritiesAndQuestionsInput): Position
         createCardsCandidateForPosition(fields:createCardsCandidateForPositionInput): [CardMemory]
         calculateScoreCardCandidateToPosition(fields:calculateScoreCardCandidateToPositionInput): [CardMemory]
 

@@ -9,6 +9,9 @@ const {
   findOrCreateNewConvFunc,findConversationFunc,
 } = require("../utils/conversationModules");
 
+const {
+  positionSuggestQuestionsAskCandidateFunc,
+} = require("../utils/positionModules");
 
 const {
   talkToEdenMain,
@@ -895,136 +898,16 @@ module.exports = {
       args.fields
     );
 
-    try {
-      if (!positionID) {
-        throw new ApolloError("positionID is required");
-      }
+    
 
-      positionData = await Position.findOne({ _id: positionID }).select(
-        "_id positionsRequirements questionsToAsk"
-      );
+    res = await positionSuggestQuestionsAskCandidateFunc(args.fields)
 
-      if (!positionData) {
-        throw new ApolloError("Position not found");
-      }
 
-      console.log(
-        "positionData.questionsToAsk = ",
-        positionData.questionsToAsk
-      );
+    return {
+      success: true,
+      questionSuggest: res.questionSuggest,
+    };
 
-      // ---------- If the quesitons are already calculated -------------
-      if (positionData.questionsToAsk.length > 0) {
-        questionIDs = [];
-        positionData.questionsToAsk.forEach((question) => {
-          questionIDs.push(question.questionID);
-        });
-
-        console.log("questionIDs = ", questionIDs);
-
-        //get the questions from the DB
-        questionData = await QuestionsEdenAI.find({
-          _id: { $in: questionIDs },
-        }).select("_id content category");
-
-        console.log("questionData = ", questionData);
-
-        if (questionData.length > 0) {
-          // change format of the questionData
-          questionData = questionData.map((question) => {
-            return {
-              question: question.content,
-              category: question.category,
-            };
-          });
-
-          // if and of the questionData is category null then don't reuturn it
-          questionData = questionData.filter((question) => {
-            return question.category != null;
-          });
-
-          return {
-            success: true,
-            questionSuggest: questionData,
-          };
-        }
-      }
-      // ---------- If the quesitons are already calculated -------------
-
-      positionsRequirements = positionData.positionsRequirements.content;
-
-      // Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
-      let promptNewQuestions = `
-        REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
-  
-        - you can only ask 1 concise question at a time
-        - You should stay really close to the context of the REQUIREMENTS Job Position, and try to cover most of the requirements!
-        - Your goal is to ask the best questions in order to understand if the Candidate is a good fit for the Job Position
-        - Your task is to suggest MAXIMUM 9 questions for the Recruiter to ask the Candidate
-        - For every question add only ONE of this Categories (delimiters <>): < Technical Skills | Human Skills | Experiences | Industry Knowledge | Culture Fit | Other >
-
-        Example:
-         1. Concise Question - Category
-         2. Concise Question - Category
-        
-        Questions:
-      `;
-
-      printC(promptNewQuestions, "3", "promptNewQuestions", "b");
-
-      questionsSuggest = await useGPTchatSimple(promptNewQuestions, 0, "API 2");
-
-      // questionsSuggest =  `
-      // 1. Can you give an example of a time when you had to use your strong organizational skills to successfully complete a project?
-      // 2. Have you worked in a team environment before? Can you give an example of a successful teamwork experience?
-      // 3. How do you handle communication and cooperation with team members who may have different working styles or personalities?
-      // 4. Can you tell us about a time when you had to motivate yourself to learn a new skill or take on a new responsibility?
-      // 5. How familiar are you with Scrum and Kanban methodologies? Can you give an example of how you have used them in a project?
-      // 6. Have you worked with Python before? Can you give an example of a project you have completed using Python?
-      // 7. How comfortable are you with using Unix and Linux command line? Can you give an example of a task you have completed using these systems?
-      // 8. Can you explain your knowledge of telecom protocols, IP, and networking? Have you worked with these technologies before?
-      // 9. Are you able to commit to at least 4-5 hours per working day for this position? How do you plan to balance your other commitments with this job?
-      // `
-
-      printC(questionsSuggest, "3", "questionsSuggest", "b");
-
-      // const regex = /(\d+)\.\s+(.*)/g;
-      // const questionsArray = [];
-
-      // let match;
-      // while ((match = regex.exec(questionsSuggest)) !== null) {
-      //   const questionObject = {
-      //     question: match[2],
-      //   };
-      //   questionsArray.push(questionObject);
-      // }
-      const regex = /(\d+)\.\s+(.*)\s+-\s+(.*)/g;
-      const questionsArray = [];
-
-      let match;
-      while ((match = regex.exec(questionsSuggest)) !== null) {
-        const questionObject = {
-          question: match[2],
-          category: match[3].split("/")[0].trim(),
-        };
-        questionsArray.push(questionObject);
-      }
-
-      printC(questionsArray, "3", "questionsArray", "b");
-
-      return {
-        success: true,
-        questionSuggest: questionsArray,
-      };
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "positionSuggestQuestionsAskCandidate",
-        {
-          component: "aiMutation > positionSuggestQuestionsAskCandidate",
-        }
-      );
-    }
   },
 
   saveCVtoUser: async (parent, args, context, info) => {

@@ -106,6 +106,8 @@ const {
   addCardMemory,
   deleteCardMemory,
   createCardsForPosition,
+  autoCreateCardsForPosition,
+  autoCalculatePrioritiesAndQuestions,
   createCardsCandidateForPosition,
   calculateScoreCardCandidateToPosition,
 } = require("./mutation/cardMemoryMutation");
@@ -293,6 +295,8 @@ module.exports = {
     addCardMemory,
     deleteCardMemory,
     createCardsForPosition,
+    autoCreateCardsForPosition,
+    autoCalculatePrioritiesAndQuestions,
     createCardsCandidateForPosition,
     calculateScoreCardCandidateToPosition,
 

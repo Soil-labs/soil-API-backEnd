@@ -102,6 +102,12 @@ module.exports = `
     input createCardsForPositionInput {
         positionID: ID
     }
+    input autoCreateCardsForPositionInput {
+        nothing: String
+    }
+    input autoCalculatePrioritiesAndQuestionsInput {
+        nothing: String
+    }
 
     input createCardsCandidateForPositionInput {
         userID: ID

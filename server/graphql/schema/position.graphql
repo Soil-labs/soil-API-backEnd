@@ -6,6 +6,8 @@ module.exports = `
         icon: String
         url: String
         mainUser: Members
+        cardsPositionCalculated: Boolean
+        prioritiesPositionCalculated: Boolean
         conduct: conductType
         company: Company
         candidatesReadyToDisplay: Boolean
@@ -361,6 +363,7 @@ module.exports = `
 
     input findPositionsOfCommunityInput {
         communityID: String,
+        companySlug: String,
     }
 
     input findKeyAttributeAndPotentialPositionInput {
