@@ -343,28 +343,37 @@ module.exports = {
       );
 
       if (index_candNewPos == -1) {
+
+        positionNewData.allCandidateScoreCardCalculated = false;
+        positionNewData.candidatesFlagAnalysisCreated = false;
+
         positionNewData.candidates.push({
           userID: userID,
           analysisCandidateEdenAI: {
             flagAnalysisCreated: false,
           },
+          candidateScoreCardCalculated: false,
         });
 
         index_candNewPos = positionNewData.candidates.length - 1;
 
-        await positionNewData.save();
+        // await positionNewData.save();
+      } else {
+
+        positionNewData.allCandidateScoreCardCalculated = false;
+        positionNewData.candidatesFlagAnalysisCreated = false;
+
+
+        positionNewData.candidates[index_candNewPos].analysisCandidateEdenAI = {
+          flagAnalysisCreated: false,
+        };
+
+        positionNewData.candidates[index_candNewPos].candidateScoreCardCalculated = false;
+
+        // await positionNewData.save();
+
       }
       // ----------------- add candidate to New position -----------------
-
-      // ----------------- Calculate Score Job Report Candidate --------------
-      const res = await reportPassFailCVPositionConversationFunc(
-        userID,
-        positionNewID
-      );
-      positionNewData = res.positionData;
-      // ----------------- Calculate Score Job Report Candidate --------------
-
-      wait(5000);
 
       // ----------------- find the conversation and add the positionNewID -----------------
       let conversationData = await Conversation.find({
@@ -388,43 +397,75 @@ module.exports = {
       await conversationData.save();
       // ----------------- find the conversation and add the positionNewID -----------------
 
-      // ------------- Candidate Eden Analysis for Position -------------
-      positionNewData = await candidateEdenAnalysisPositionFunc(
-        positionNewData
-      );
-      // ------------- Candidate Eden Analysis for Position -------------
+      // // ----------------- Calculate Score Job Report Candidate --------------
+      // const res = await reportPassFailCVPositionConversationFunc(
+      //   userID,
+      //   positionNewID
+      // );
+      // positionNewData = res.positionData;
+      // // ----------------- Calculate Score Job Report Candidate --------------
 
-      wait(5000);
+      // wait(5000);
 
-      // ------------- Move the summaryQuestions from old to new position -------------
-      // find the candidate on old position
-      let index_candOldPos = positionOldData.candidates.findIndex(
-        (x) => x.userID.toString() == userID.toString()
-      );
+      // // ----------------- find the conversation and add the positionNewID -----------------
+      // let conversationData = await Conversation.find({
+      //   $and: [{ userID: userID }, { positionID: positionOldID }],
+      // });
 
-      let summaryQuestions = undefined;
+      // // take only the last conv
+      // conversationData = conversationData[conversationData.length - 1];
 
-      if (index_candOldPos != -1)
-        summaryQuestions =
-          positionOldData.candidates[index_candOldPos]?.summaryQuestions;
+      // // add the positionNewID to the conversation
+      // extraPositionsIDArr = conversationData.extraPositionsID;
 
-      if (summaryQuestions) {
-        positionNewData.candidates[index_candNewPos].summaryQuestions =
-          summaryQuestions;
-      }
-      // ------------- Move the summaryQuestions from old to new position -------------
+      // if (!extraPositionsIDArr) extraPositionsIDArr = [];
 
-      // ------------- Move the Candidate Notes Interview from old to new position -------------
+      // // if the positionNewID is not already in the array
+      // if (!extraPositionsIDArr.includes(positionNewID))
+      //   extraPositionsIDArr.push(positionNewID);
 
-      if (index_candOldPos != -1)
-        notesInterview =
-          positionOldData.candidates[index_candOldPos]?.notesInterview;
+      // conversationData.extraPositionsID = extraPositionsIDArr;
 
-      if (notesInterview) {
-        positionNewData.candidates[index_candNewPos].notesInterview =
-          notesInterview;
-      }
-      // ------------- Move the Candidate Notes Interview from old to new position -------------
+      // await conversationData.save();
+      // // ----------------- find the conversation and add the positionNewID -----------------
+
+      // // ------------- Candidate Eden Analysis for Position -------------
+      // positionNewData = await candidateEdenAnalysisPositionFunc(
+      //   positionNewData
+      // );
+      // // ------------- Candidate Eden Analysis for Position -------------
+
+      // wait(5000);
+
+      // // ------------- Move the summaryQuestions from old to new position -------------
+      // // find the candidate on old position
+      // let index_candOldPos = positionOldData.candidates.findIndex(
+      //   (x) => x.userID.toString() == userID.toString()
+      // );
+
+      // let summaryQuestions = undefined;
+
+      // if (index_candOldPos != -1)
+      //   summaryQuestions =
+      //     positionOldData.candidates[index_candOldPos]?.summaryQuestions;
+
+      // if (summaryQuestions) {
+      //   positionNewData.candidates[index_candNewPos].summaryQuestions =
+      //     summaryQuestions;
+      // }
+      // // ------------- Move the summaryQuestions from old to new position -------------
+
+      // // ------------- Move the Candidate Notes Interview from old to new position -------------
+
+      // if (index_candOldPos != -1)
+      //   notesInterview =
+      //     positionOldData.candidates[index_candOldPos]?.notesInterview;
+
+      // if (notesInterview) {
+      //   positionNewData.candidates[index_candNewPos].notesInterview =
+      //     notesInterview;
+      // }
+      // // ------------- Move the Candidate Notes Interview from old to new position -------------
 
       await positionNewData.save();
 
@@ -1317,7 +1358,11 @@ module.exports = {
       });
     else
       positionsData = await Position.find({
-        candidatesFlagAnalysisCreated: { $ne: true },
+        // candidatesFlagAnalysisCreated: { $ne: true },
+        $or: [
+          { "candidates.analysisCandidateEdenAI.flagAnalysisCreated": null },
+          { "candidates.analysisCandidateEdenAI.flagAnalysisCreated": false }
+        ],
       });
 
     try {

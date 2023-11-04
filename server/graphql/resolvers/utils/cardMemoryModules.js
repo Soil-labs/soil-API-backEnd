@@ -6,6 +6,8 @@ const { CardMemory } = require("../../../models/cardMemoryModel");
 const { Conversation } = require("../../../models/conversationModel");
 const { Members } = require("../../../models/membersModel");
 
+const { ApolloError } = require("apollo-server-express");
+
 const {upsertEmbedingPineCone} = require("../utils/aiExtraModules");
 
 
@@ -419,10 +421,10 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
     - Content is text that describes the Memory. Extract facts only & be hyper specific. Do NOT use any vauge non-descriptive words like "good", "proficient",etc.
     - BEHAVIOR category memories should include Situation, Task , Action & Outcome.
     - TECHNICAL_SKILL memories should have specific credibility indicators such as years of experience, the specific projects they worked on, the companies they worked on, speicifc descriptions of their contributions regarding those skills, relevant courses they took, attestations from coworkers, ... 
-    - Be intentional with what memories you want to include about this person as you have maximum 40 Memories to represent this person's talents, personality & potential. 
+    - Be intentional with what memories you want to include about this person as you have maximum 25 Memories to represent this person's talents, personality & potential. 
     - Don't repeat information, if you already have a memory, don't add another one related.
     - DO NOT MAKE THINGS UP. 
-    - Don't use all 40 memories if you don't have to
+    - Don't use all 25 memories if you don't have to
     
     - Examples of Memories:
     1. TECHNICAL_SKILLS / Worked as Senior Network Engineer at Google having worked on projects at the Google Maps team using Python, C++ & SQL. 
@@ -436,7 +438,7 @@ async function createCardsScoresCandidate_3(cvInfo,promptConv,userID) {
     9. OTHER / Recognised by his colleagues as a fun-to-be-around go-getter. 
     10. ...
 
-    Memories Result From 10 to 40 MAX:
+    Memories Result From 10 to 32 MAX:
    `
 
    printC(promptFindMemoriesCandidate, "5", "promptFindMemoriesCandidate", "p")
@@ -983,23 +985,25 @@ function wait(x) {
 }
 
 
-async function createCardsCandidateForPositionFunc(positionID, userID) {
+async function createCardsCandidateForPositionFunc(positionID, userID,positionData) {
 
 
-  if (!positionID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
-  positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements candidates');
-  if (!positionData) throw new ApolloError("Position not found", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
-  
+  if (positionData == undefined){
+    if (!positionID) return {error: "You need to give some IDs"}
+    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements candidates');
+    if (!positionData) return {error: "Position not found"}
+  }
+    
 
   // -------------- Read every Card of the Position --------------
   cardMemoriesData = await CardMemory.find({ "authorCard.positionID": positionID  });
 
-  if (cardMemoriesData.length == 0) throw new ApolloError("CardMemory for Position not found First Create Cards for the Position", { component: "cardMemoryMutation > createCardsCandidateForPosition" });
+  if (cardMemoriesData.length == 0) return {error: "CardMemory for Position not found First Create Cards for the Position"}
 
   printC(cardMemoriesData, "1", "cardMemoriesData", "b")
   // -------------- Read every Card of the Position --------------
 
-  
+
   try {
 
     let membersData = []
@@ -1089,7 +1093,7 @@ async function createCardsCandidateForPositionFunc(positionID, userID) {
 
     
   } catch (err) {
-    console.log("err = ",err)
+    printC(err, "-1", "err", "r")
     throw new ApolloError(
       err.message,
       err.extensions?.code || "createCardsCandidateForPosition",
@@ -1467,7 +1471,7 @@ async function createCardsForPositionFunc(varT) {
 
 }
 
-async function calculateScoreCardCandidateToPositionFunc(userID,positionID) {
+async function calculateScoreCardCandidateToPositionFunc(userID,positionID,positionData) {
 
   e = 0.9 // Important 😮 - Variable for Curvature of score
   u = 0.1 // Important 😮 - Variable for Curvature of score
@@ -1480,10 +1484,11 @@ async function calculateScoreCardCandidateToPositionFunc(userID,positionID) {
 
 
 
-
-  if (!positionID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
-  positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements candidates');
-  if (!positionData) throw new ApolloError("Position not found", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
+  if (positionData == undefined){
+    if (!positionID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
+    positionData = await Position.findOne({ _id: positionID }).select('_id name positionsRequirements candidates');
+    if (!positionData) throw new ApolloError("Position not found", { component: "cardMemoryMutation > calculateScoreCardCandidateToPosition" });
+  }
   
 
    // -------------- Read every Card of the Position --------------
@@ -2156,7 +2161,7 @@ async function calculateScoreCardCandidateToPositionFunc(userID,positionID) {
 
     }
     // return cardMemoriesDataCandidate
-    return 
+    return positionData
     
   } catch (err) {
     console.log(err.message)

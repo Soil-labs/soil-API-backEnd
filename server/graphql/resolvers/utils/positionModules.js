@@ -929,6 +929,8 @@ async function positionSuggestQuestionsAskCandidateFunc(varT) {
 
   const { positionID } = varT;
 
+  printC(positionID, "3", "positionID", "b")
+
 
   try {
     if (!positionID) {
@@ -947,6 +949,7 @@ async function positionSuggestQuestionsAskCandidateFunc(varT) {
       "positionData.questionsToAsk = ",
       positionData.questionsToAsk
     );
+
 
     // ---------- If the quesitons are already calculated -------------
     if (positionData.questionsToAsk.length > 0) {
@@ -986,7 +989,9 @@ async function positionSuggestQuestionsAskCandidateFunc(varT) {
     }
     // ---------- If the quesitons are already calculated -------------
 
-    positionsRequirements = positionData.positionsRequirements.content;
+
+    // positionsRequirements = positionData.positionsRequirements.content;
+    positionsRequirements = positionData.positionsRequirements.originalContent;
 
     // Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
     let promptNewQuestions = `
@@ -1022,6 +1027,8 @@ async function positionSuggestQuestionsAskCandidateFunc(varT) {
     // `
 
     printC(questionsSuggest, "3", "questionsSuggest", "b");
+
+
 
     // const regex = /(\d+)\.\s+(.*)/g;
     // const questionsArray = [];

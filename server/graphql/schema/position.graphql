@@ -20,6 +20,8 @@ module.exports = `
         convRecruiter: [convRecruiterType]
         convRecruiterReadyToDisplay: Boolean
         talentList: [talentListType]
+
+        allCandidateScoreCardCalculated: Boolean,
         candidates: [CandidateType]
         generalDetails: generalDetailsType
         status: PositionStatus
@@ -109,6 +111,7 @@ module.exports = `
         acceptedOrRejected: Boolean,
         readyToDisplay: Boolean,
         conversationID: ID,
+        candidateScoreCardCalculated: Boolean,
         dateApply: String,
         scoreCardTotal: scoreCardTotalType,
         scoreCardCategoryMemories: [scoreCardCategoryMemoryType],
