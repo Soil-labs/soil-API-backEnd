@@ -977,12 +977,22 @@ module.exports = {
       if (index_ == -1) {
         positionData.candidates.push({
           userID: userID,
+          candidateScoreCardCalculated: false,
           dateApply: new Date(),
         });
+
+        positionData.allCandidateScoreCardCalculated = false
+
 
         await positionData.save();
       } else {
         positionData.candidates[index_].dateApply = new Date();
+        positionData.candidates[index_].candidateScoreCardCalculated = false;
+
+
+        positionData.allCandidateScoreCardCalculated = false
+
+
         await positionData.save();
 
         console.log(

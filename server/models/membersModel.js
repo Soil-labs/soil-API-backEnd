@@ -95,6 +95,7 @@ const memberSchema = mongoose.Schema({
     cvPreparationNodes: Boolean,
     cvPreparationPreviousProjects: Boolean,
     cvPreparationMemory: Boolean,
+    uploadCVat: Date,
   },
 
   content: {

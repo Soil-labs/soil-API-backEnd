@@ -140,7 +140,7 @@ async function addQuestionToEdenAIFunc(content,category = undefined) {
         }
 
         // update category
-        if (category != undefined){
+        if (category != undefined && questionData?.category != undefined){
             questionData.category = category
             await questionData.save()
         }
