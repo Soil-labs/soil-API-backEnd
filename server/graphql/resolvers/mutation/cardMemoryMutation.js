@@ -2,6 +2,8 @@ const { ApolloError } = require("apollo-server-express");
 
 const { printC } = require("../../../printModule");
 
+
+const { Company } = require("../../../models/companyModel");
 const { Position } = require("../../../models/positionModel");
 const { CardMemory } = require("../../../models/cardMemoryModel");
 const { Conversation } = require("../../../models/conversationModel");
@@ -11,6 +13,10 @@ const {
   findPrioritiesTrainEdenAIFunc,
   positionSuggestQuestionsAskCandidateFunc,
 } = require("../utils/positionModules");
+
+const {
+  addMultipleQuestionsToEdenAIFunc,
+} = require("../utils/questionsEdenAIModules");
 
 
 const {upsertEmbedingPineCone,deletePineCone} = require("../utils/aiExtraModules");
@@ -286,7 +292,12 @@ module.exports = {
 
     try {
     // Find all the positions, 
-    positionsData = await Position.find({cardsPositionCalculated: { $ne: true } }).select('_id cardsPositionCalculated');
+    
+    positionsData = await Position.find({
+      cardsPositionCalculated: { $ne: true }, 
+      prioritiesPositionCalculated: true ,
+      "positionsRequirements.originalContent": { $exists: true, $ne: "" } 
+    }).select('_id cardsPositionCalculated prioritiesPositionCalculated');
     printC(positionsData.length, "3", "Number of Positions to go ", "p")
 
 
@@ -321,8 +332,296 @@ module.exports = {
 
 
   },
-  autoCalculatePrioritiesAndQuestions: async (parent, args, context, info) => {
+
+  autoCreateCardsCandidatesAndScore: async (parent, args, context, info) => {
     const { } = args.fields;
+    console.log("Mutation > autoCreateCardsCandidatesAndScore > args.fields = ", args.fields);
+
+
+    let positionsData = []
+    let positionData
+    let cardMemoriesData = []
+
+
+    try {
+
+      
+    // carsPositionNotCalculatedYet = {}
+
+    candidateScoreCardCalculatedExist = {
+      $or: [
+        { "candidates.candidateScoreCardCalculated": null},
+        { "candidates.candidateScoreCardCalculated": false},
+      ],
+    }
+
+      positionsData = await Position.find({
+        $or: [
+          { allCandidateScoreCardCalculated: { $ne: true } },
+          candidateScoreCardCalculatedExist,
+          // { "candidates.candidateScoreCardCalculated": null},
+        ],
+      }).select('_id companyID allCandidateScoreCardCalculated candidates');
+      printC(positionsData.length, "3", "Number of Positions to go ", "p")
+
+      // printC(positionsData[0], "3", "positionsData[0]", "p")
+
+      // // SOS hack delete
+      // for (let i = 0; i < positionsData.length; i++) {
+      //   // printC(positionsData[i], "3", "positionsData[i] ", "p")
+      //   if (positionsData[i].candidates) {
+      //     for (let j = 0; j < positionsData[i].candidates.length; j++) {
+      //       if (positionsData[i].candidates[j]) {
+      //         positionsData[i].candidates[j].candidateScoreCardCalculated = true;
+      //       }
+      //     }
+      //     await positionsData[i].save();
+      //     break
+      //   }
+      // }
+
+
+      // return null
+
+      // // SOS hack delete
+
+
+
+      // f1
+
+
+      // let posIdx = -1
+      // let companyData
+
+      // for (let i = 0; i < positionsData.length; i++) {
+      //   const companyID = positionsData[i].companyID;
+
+      //   companyData = await Company.findOne({ _id: companyID }).select('_id slug');
+
+      //   if (companyData == null || companyData.slug == null) {
+      //     positionsData[i].allCandidateScoreCardCalculated = true;
+      //     await positionsData[i].save();
+      //     continue
+      //   } else {
+      //     posIdx = i
+      //     break
+      //   }
+
+      // }
+
+      // if (posIdx == -1) return null
+
+      // printC(companyData, "3", "companyData", "p")
+      // printC(posIdx, "3", "posIdx", "p")
+
+      // // f2
+        
+
+      // positionData = await Position.findOne({ _id: positionsData[posIdx]._id }).select('_id companyID allCandidateScoreCardCalculated candidates');
+
+      // printC(positionData._id, "3", "positionData._id", "p")
+      // // f1
+
+      // let userIDchanged = ""
+      // // Initialize allCandidatesDone to true. This will be set to false if we find a candidate that hasn't been calculated yet.
+      // allCandidatesDone = true
+      // for (let i = 0; i < positionData.candidates.length; i++) {
+      //   const candidate = positionData.candidates[i];
+
+
+      //   // ---------------- Check if conversation is ready ----------------
+      //   positionF = {
+      //     $or: [{ positionID: positionData._id }, { extraPositionsID: positionData._id }],
+      //   }
+      //   convData = await Conversation.findOne({
+      //     $and: [positionF, { userID: candidate.userID }],
+      //   }).select("_id conversation");
+  
+      //   if (!convData) continue;
+
+      //   let updatedAtConv = convData.updatedAt;
+      //   let currentTime = new Date();
+      //   let timeDifference = (currentTime - updatedAtConv) / (1000 * 60); // time difference in minutes
+
+      //   if (timeDifference < 3) continue;
+
+        
+      //   // ---------------- Check if conversation is ready ----------------
+
+      //   // Check if the candidate's scoreCardTotal or candidateScoreCardCalculated is not true
+      //   if (candidate?.scoreCardTotal?.scoreCardCalculated != true || candidate.candidateScoreCardCalculated != true){
+          
+      //     // If not, set candidateScoreCardCalculated to true for this candidate
+      //     positionData.candidates[i].candidateScoreCardCalculated = true;
+          
+      //     // If scoreCardTotal is already calculated, skip this candidate
+      //     if (candidate?.scoreCardTotal?.scoreCardCalculated == true ){
+      //       allCandidatesDone = false
+      //       continue
+      //     }
+
+      //     // Create cards for this candidate
+      //     resCards = await createCardsCandidateForPositionFunc(positionData._id,candidate.userID,positionData)
+
+      //     // If there's an error, it means the position doesn't have cards, so we break the loop
+      //     if (resCards.error!=null){
+      //       break
+      //     }
+
+      //     // Wait for 3 seconds to avoid overloading the server
+      //     await wait(3)
+
+      //     // Calculate the score card for this candidate
+      //     positionData = await calculateScoreCardCandidateToPositionFunc(candidate.userID,positionData._id,positionData)
+
+      //     // Store the userID of the candidate whose score card was calculated
+      //     userIDchanged = candidate.userID
+
+      //     await wait(3)
+
+      //     // Since we found a candidate that hasn't been calculated, set allCandidatesDone to false
+      //     allCandidatesDone = false
+
+      //     break;
+
+      //   }
+
+      // }
+
+
+      if (positionsData.length == 0) return null
+
+      let posIdx = -1
+      let companyData
+      let userIDchanged = ""
+      // Initialize allCandidatesDone to true. This will be set to false if we find a candidate that hasn't been calculated yet.
+      allCandidatesDone = true
+
+      for (let i = 0; i < positionsData.length; i++) {
+        const companyID = positionsData[i].companyID;
+
+        companyData = await Company.findOne({ _id: companyID }).select('_id slug');
+
+        if (companyData == null || companyData.slug == null) {
+          positionsData[i].allCandidateScoreCardCalculated = true;
+          await positionsData[i].save();
+          continue
+        } else {
+          posIdx = i
+          positionData = await Position.findOne({ _id: positionsData[posIdx]._id }).select('_id companyID allCandidateScoreCardCalculated candidates');
+
+          for (let j = 0; j < positionData.candidates.length; j++) {
+            const candidate = positionData.candidates[j];
+
+            // ---------------- Check if conversation is ready ----------------
+            positionF = {
+              $or: [{ positionID: positionData._id }, { extraPositionsID: positionData._id }],
+            }
+            convData = await Conversation.findOne({
+              $and: [positionF, { userID: candidate.userID }],
+            }).select("_id conversation");
+      
+            if (!convData) {
+              // check if he applied more than an hour ago 
+              dateApply = candidate.dateApply
+              let currentTime = new Date();
+              let timeDifference = (currentTime - dateApply) / (1000 * 60 * 60); // time difference in hours
+
+              if (timeDifference > 1) {
+                // you can make the candidateScoreCardCalculated true
+                positionData.candidates[j].candidateScoreCardCalculated = true;
+                await positionData.save();
+              };
+
+              break
+            };
+
+            let updatedAtConv = convData.updatedAt;
+            let currentTime = new Date();
+            let timeDifference = (currentTime - updatedAtConv) / (1000 * 60); // time difference in minutes
+
+            if (timeDifference < 3) break;
+
+            // ---------------- Check if conversation is ready ----------------
+
+            // Check if the candidate's scoreCardTotal or candidateScoreCardCalculated is not true
+            if (candidate?.scoreCardTotal?.scoreCardCalculated != true || candidate.candidateScoreCardCalculated != true){
+              
+              // If not, set candidateScoreCardCalculated to true for this candidate
+              positionData.candidates[j].candidateScoreCardCalculated = true;
+              
+              // If scoreCardTotal is already calculated, skip this candidate
+              if (candidate?.scoreCardTotal?.scoreCardCalculated == true ){
+                allCandidatesDone = false
+                continue
+              }
+
+              // Create cards for this candidate
+              resCards = await createCardsCandidateForPositionFunc(positionData._id,candidate.userID,positionData)
+
+              // If there's an error, it means the position doesn't have cards, so we break the loop
+              if (resCards.error!=null){
+                break
+              }
+
+              // Wait for 3 seconds to avoid overloading the server
+              await wait(3)
+
+              // Calculate the score card for this candidate
+              positionData = await calculateScoreCardCandidateToPositionFunc(candidate.userID,positionData._id,positionData)
+
+              // Store the userID of the candidate whose score card was calculated
+              userIDchanged = candidate.userID
+
+              await wait(3)
+
+              // Since we found a candidate that hasn't been calculated, set allCandidatesDone to false
+              allCandidatesDone = false
+
+              break;
+
+            }
+
+          }
+          if (allCandidatesDone == false) break;
+        }
+
+      }
+
+      if (posIdx == -1) return null
+
+      printC(companyData, "3", "companyData", "p")
+      printC(posIdx, "3", "posIdx", "p")
+      printC(positionData._id, "3", "positionData._id", "p")
+
+
+      if (allCandidatesDone == true){
+        positionData.allCandidateScoreCardCalculated = true;
+      }
+      await positionData.save();
+      
+
+
+
+      printC(positionData._id, "4", "positionData._id", "p")
+      printC(userIDchanged, "5", "userIDchanged", "p")
+      printC(positionsData.length, "3", "Number of Positions to go ", "p")
+
+      return positionData
+    
+    } catch (err) {
+      printC(err, "-1", "err", "r")
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "autoCreateCardsCandidatesAndScore",
+        { component: "cardMemoryMutation > autoCreateCardsForPosition" }
+      );
+    }
+
+
+  },
+  autoCalculatePrioritiesAndQuestions: async (parent, args, context, info) => {
+    const { positionID } = args.fields;
     console.log("Mutation > autoCalculatePrioritiesAndQuestions > args.fields = ", args.fields);
 
 
@@ -331,52 +630,97 @@ module.exports = {
 
 
     try {
-    // Find all the positions, 
-    positionsData = await Position.find({prioritiesPositionCalculated: { $ne: true } })
-      .select('_id prioritiesPositionCalculated positionsRequirements questionsToAsk');
-
-    printC(positionsData.length, "3", "Number of Positions to go ", "p")
-
-    if (positionsData.length == 0) return {}
-
-    let positionData = positionsData[0]
-
-    let resPriorities,resQuestions
-
-    if (!positionData.prioritiesPositionCalculated) {
-      resPriorities = await findPrioritiesTrainEdenAIFunc({
-        positionID: positionData._id,
-      });
-    }
-
-    // if (positionData.questionsToAsk == null || positionData.questionsToAsk.length == 0) {
-    //   resQuestions = await positionSuggestQuestionsAskCandidateFunc(args.fields)
-
-    //   if (resQuestions.questionSuggest) {
-    //   let questionsToAskTemp = resQuestions.questionSuggest
-
-    //   let questionsToAskForSave = questionsToAskTemp.map((question) => {
-    //     return {
-    //       questionContent: question.question,
-    //       questionID: question.IDCriteria,
-    //       category: question.category,
-    //     };
-    //   });
-
       
+      let positionData
 
-    // }
-      //     - [x] positionSuggestQuestionsAskCandidate
-      //     - [x] addQuestionsToAskPosition
+      if (!positionID){
+        positionsData = await Position.find({
+          prioritiesPositionCalculated: { $ne: true } ,
+          "positionsRequirements.originalContent": { $exists: true, $ne: "" },
+        })
+          .select('_id prioritiesPositionCalculated positionsRequirements questionsToAsk');
+
+        printC(positionsData.length, "3", "Number of Positions to go ", "p")
+
+        if (positionsData.length == 0) return {}
+        positionData = positionsData[0]
+
+      } else {
+
+        positionData = await Position.findOne({ _id: positionID })
+        .select('_id prioritiesPositionCalculated positionsRequirements questionsToAsk');
+      }
+
+
+      let resPriorities,resQuestions
+
+
+      // --------------- if there is no jobDescription ---------------
+      if (positionData?.positionsRequirements?.originalContent == null || positionData?.positionsRequirements?.originalContent == "") {
+        positionData.prioritiesPositionCalculated = true;
+        await positionData.save();
+        return positionData
+      }
+      // --------------- if there is no jobDescription ---------------
 
 
 
-    positionData.prioritiesPositionCalculated = true;
-    await positionData.save();
+      // --------------- Calculate the priorities ---------------
+      if (!positionData.prioritiesPositionCalculated) {
+        resPriorities = await findPrioritiesTrainEdenAIFunc({
+          positionID: positionData._id,
+        });
+
+        if (resPriorities.priorities) {
+          positionData.positionsRequirements.priorities = resPriorities.priorities;
+        }
+
+        if (resPriorities.tradeOffs) {
+          positionData.positionsRequirements.tradeOffs = resPriorities.tradeOffs;
+        }
+      }
+      // --------------- Calculate the priorities ---------------
 
 
 
-    return positionData
+      // printC(positionData, "3", "positionData", "p")
+
+      // --------------- Calculate the questions ---------------
+      if (positionData.questionsToAsk == null || positionData.questionsToAsk.length == 0) {
+        resQuestions = await positionSuggestQuestionsAskCandidateFunc({
+          positionID: positionData._id,
+        })
+
+        if (resQuestions.questionSuggest) {
+          let questionsToAskTemp = resQuestions.questionSuggest
+
+          let questionsToAskForSave = questionsToAskTemp.map((question) => {
+            return {
+              questionContent: question.question,
+              questionID: question.IDCriteria,
+              category: question.category,
+            };
+          });
+
+
+          questionsToAskFinal = await addMultipleQuestionsToEdenAIFunc(questionsToAskForSave);
+
+
+          positionData.questionsToAsk = questionsToAskFinal;
+          
+        }
+      }
+      // --------------- Calculate the questions ---------------
+
+
+
+
+      positionData.prioritiesPositionCalculated = true;
+      await positionData.save();
+
+
+
+      return positionData
     } catch (err) {
       printC(err, "-1", "err", "r")
       throw new ApolloError(
