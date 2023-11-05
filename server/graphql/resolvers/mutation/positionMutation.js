@@ -557,6 +557,16 @@ module.exports = {
       }
       // ----------------- add candidate to New position -----------------
 
+      // ----------------- Calculate Score Job Report Candidate --------------
+      const res = await reportPassFailCVPositionConversationFunc(
+        userID,
+        positionNewID
+      );
+      positionNewData = res.positionData;
+      // ----------------- Calculate Score Job Report Candidate --------------
+
+      wait(5000);
+
       // ----------------- find the conversation and add the positionNewID -----------------
       let conversationData = await Conversation.find({
         $and: [{ userID: userID }, { positionID: positionOldID }],
@@ -579,75 +589,43 @@ module.exports = {
       await conversationData.save();
       // ----------------- find the conversation and add the positionNewID -----------------
 
-      // // ----------------- Calculate Score Job Report Candidate --------------
-      // const res = await reportPassFailCVPositionConversationFunc(
-      //   userID,
-      //   positionNewID
-      // );
-      // positionNewData = res.positionData;
-      // // ----------------- Calculate Score Job Report Candidate --------------
+      // ------------- Candidate Eden Analysis for Position -------------
+      positionNewData = await candidateEdenAnalysisPositionFunc(
+        positionNewData
+      );
+      // ------------- Candidate Eden Analysis for Position -------------
 
-      // wait(5000);
+      wait(5000);
 
-      // // ----------------- find the conversation and add the positionNewID -----------------
-      // let conversationData = await Conversation.find({
-      //   $and: [{ userID: userID }, { positionID: positionOldID }],
-      // });
+      // ------------- Move the summaryQuestions from old to new position -------------
+      // find the candidate on old position
+      let index_candOldPos = positionOldData.candidates.findIndex(
+        (x) => x.userID.toString() == userID.toString()
+      );
 
-      // // take only the last conv
-      // conversationData = conversationData[conversationData.length - 1];
+      let summaryQuestions = undefined;
 
-      // // add the positionNewID to the conversation
-      // extraPositionsIDArr = conversationData.extraPositionsID;
+      if (index_candOldPos != -1)
+        summaryQuestions =
+          positionOldData.candidates[index_candOldPos]?.summaryQuestions;
 
-      // if (!extraPositionsIDArr) extraPositionsIDArr = [];
+      if (summaryQuestions) {
+        positionNewData.candidates[index_candNewPos].summaryQuestions =
+          summaryQuestions;
+      }
+      // ------------- Move the summaryQuestions from old to new position -------------
 
-      // // if the positionNewID is not already in the array
-      // if (!extraPositionsIDArr.includes(positionNewID))
-      //   extraPositionsIDArr.push(positionNewID);
+      // ------------- Move the Candidate Notes Interview from old to new position -------------
 
-      // conversationData.extraPositionsID = extraPositionsIDArr;
+      if (index_candOldPos != -1)
+        notesInterview =
+          positionOldData.candidates[index_candOldPos]?.notesInterview;
 
-      // await conversationData.save();
-      // // ----------------- find the conversation and add the positionNewID -----------------
-
-      // // ------------- Candidate Eden Analysis for Position -------------
-      // positionNewData = await candidateEdenAnalysisPositionFunc(
-      //   positionNewData
-      // );
-      // // ------------- Candidate Eden Analysis for Position -------------
-
-      // wait(5000);
-
-      // // ------------- Move the summaryQuestions from old to new position -------------
-      // // find the candidate on old position
-      // let index_candOldPos = positionOldData.candidates.findIndex(
-      //   (x) => x.userID.toString() == userID.toString()
-      // );
-
-      // let summaryQuestions = undefined;
-
-      // if (index_candOldPos != -1)
-      //   summaryQuestions =
-      //     positionOldData.candidates[index_candOldPos]?.summaryQuestions;
-
-      // if (summaryQuestions) {
-      //   positionNewData.candidates[index_candNewPos].summaryQuestions =
-      //     summaryQuestions;
-      // }
-      // // ------------- Move the summaryQuestions from old to new position -------------
-
-      // // ------------- Move the Candidate Notes Interview from old to new position -------------
-
-      // if (index_candOldPos != -1)
-      //   notesInterview =
-      //     positionOldData.candidates[index_candOldPos]?.notesInterview;
-
-      // if (notesInterview) {
-      //   positionNewData.candidates[index_candNewPos].notesInterview =
-      //     notesInterview;
-      // }
-      // // ------------- Move the Candidate Notes Interview from old to new position -------------
+      if (notesInterview) {
+        positionNewData.candidates[index_candNewPos].notesInterview =
+          notesInterview;
+      }
+      // ------------- Move the Candidate Notes Interview from old to new position -------------
 
       await positionNewData.save();
 
@@ -795,6 +773,136 @@ module.exports = {
         err.message,
         err.extensions?.code || "moveCandidateToPosition_V2",
         { component: "positionMutation > moveCandidateToPosition_V2" }
+      );
+    }
+  },
+  moveCandidateToPosition_V3: async (parent, args, context, info) => {
+    const { userID, positionOldID, positionNewID,sendMessageCandidateTG } = args.fields;
+    console.log(
+      "Mutation > moveCandidateToPosition_V3 > args.fields = ",
+      args.fields
+    );
+
+    if (!positionOldID) throw new ApolloError("positionOldID is required");
+    let positionOldData = await Position.findOne({ _id: positionOldID });
+    if (!positionOldData) throw new ApolloError("positionOld not found");
+
+    if (!positionNewID) throw new ApolloError("positionNewID is required");
+    let positionNewData = await Position.findOne({ _id: positionNewID });
+    if (!positionNewData) throw new ApolloError("positionNew not found");
+
+    if (!userID) throw new ApolloError("userID is required");
+    let memberData = await Members.findOne({ _id: userID });
+    if (!memberData) throw new ApolloError("user not found");
+
+    try {
+      // ----------------- add candidate to New position -----------------
+      let index_candNewPos = positionNewData.candidates.findIndex(
+        (x) => x.userID.toString() == userID.toString()
+      );
+
+      if (index_candNewPos == -1) {
+
+        positionNewData.allCandidateScoreCardCalculated = false;
+        positionNewData.candidatesFlagAnalysisCreated = false;
+
+        positionNewData.candidates.push({
+          userID: userID,
+          analysisCandidateEdenAI: {
+            flagAnalysisCreated: false,
+          },
+          candidateScoreCardCalculated: false,
+        });
+
+        index_candNewPos = positionNewData.candidates.length - 1;
+
+        // await positionNewData.save();
+      } else {
+
+        positionNewData.allCandidateScoreCardCalculated = false;
+        positionNewData.candidatesFlagAnalysisCreated = false;
+
+
+        positionNewData.candidates[index_candNewPos].analysisCandidateEdenAI = {
+          flagAnalysisCreated: false,
+        };
+
+        positionNewData.candidates[index_candNewPos].candidateScoreCardCalculated = false;
+
+        // await positionNewData.save();
+
+      }
+      // ----------------- add candidate to New position -----------------
+
+      // ----------------- find the conversation and add the positionNewID -----------------
+      let conversationData = await Conversation.find({
+        $and: [{ userID: userID }, { positionID: positionOldID }],
+      });
+
+      // take only the last conv
+      conversationData = conversationData[conversationData.length - 1];
+
+      // add the positionNewID to the conversation
+      extraPositionsIDArr = conversationData.extraPositionsID;
+
+      if (!extraPositionsIDArr) extraPositionsIDArr = [];
+
+      // if the positionNewID is not already in the array
+      if (!extraPositionsIDArr.includes(positionNewID))
+        extraPositionsIDArr.push(positionNewID);
+
+      conversationData.extraPositionsID = extraPositionsIDArr;
+
+      await conversationData.save();
+      // ----------------- find the conversation and add the positionNewID -----------------
+
+
+
+      // ------------- Sent message with telegram to candidate -------------
+      if (sendMessageCandidateTG){
+        filter = {
+          phase: "QUERY",
+          sender: {
+            positionID: positionNewID,
+          },
+          senderType: "POSITION",
+          responder: {
+            userID: userID,
+          },
+          responderType: "USER",
+          question: {
+            content: sendMessageCandidateTG,
+          },
+          category: "PITCH_POSITION_CANDIDATE",
+        };
+
+        queryResponseData = await new QueryResponse(filter);
+
+        console.log("queryResponseData = ", queryResponseData);
+
+        await queryResponseData.save();
+
+        // --------- Change the state Eden Candidate-------------
+        memberData.stateEdenChat = {
+          positionIDs: [positionNewID],
+          categoryChat: "PITCH_POSITION_CANDIDATE",
+        };
+
+        await memberData.save();
+        // --------- Change the state Eden Candidate-------------
+      }
+      // ------------- Sent message with telegram to candidate -------------
+
+
+
+      await positionNewData.save();
+
+      return positionNewData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "moveCandidateToPosition_V3",
+        { component: "positionMutation > moveCandidateToPosition_V3" }
       );
     }
   },
@@ -1021,47 +1129,45 @@ module.exports = {
       // With your extensive experience in web development using JavaScript frameworks, proficiency in TypeScript, and strong understanding of clients' requirements, I believe you would excel in building the backend for user-facing features and maintaining infrastructure
       // Are you interested in pursuing this opportunity? Can I personally recommend you for this position?`
 
-      printC(
-        messagePitchPositionCandidate,
-        "4",
-        "messagePitchPositionCandidate",
-        "y"
-      );
+      printC(messagePitchPositionCandidate, "4", "messagePitchPositionCandidate", "y");
 
-      filter = {
-        phase: "QUERY",
-        sender: {
-          positionID: positionID,
-        },
-        senderType: "POSITION",
-        responder: {
-          userID: userID,
-        },
-        responderType: "USER",
-        question: {
-          content: messagePitchPositionCandidate,
-        },
-        category: "PITCH_POSITION_CANDIDATE",
-      };
+      // // ------------- Sent message with telegram to candidate -------------
+      // filter = {
+      //   phase: "QUERY",
+      //   sender: {
+      //     positionID: positionID,
+      //   },
+      //   senderType: "POSITION",
+      //   responder: {
+      //     userID: userID,
+      //   },
+      //   responderType: "USER",
+      //   question: {
+      //     content: messagePitchPositionCandidate,
+      //   },
+      //   category: "PITCH_POSITION_CANDIDATE",
+      // };
 
-      queryResponseData = await new QueryResponse(filter);
+      // queryResponseData = await new QueryResponse(filter);
 
-      console.log("queryResponseData = ", queryResponseData);
+      // console.log("queryResponseData = ", queryResponseData);
 
-      await queryResponseData.save();
+      // await queryResponseData.save();
 
-      // --------- Change the state Eden Candidate-------------
-      userData.stateEdenChat = {
-        positionIDs: [positionID],
-        categoryChat: "PITCH_POSITION_CANDIDATE",
-      };
+      // // --------- Change the state Eden Candidate-------------
+      // userData.stateEdenChat = {
+      //   positionIDs: [positionID],
+      //   categoryChat: "PITCH_POSITION_CANDIDATE",
+      // };
 
-      await userData.save();
-      // --------- Change the state Eden Candidate-------------
+      // await userData.save();
+      // // --------- Change the state Eden Candidate-------------
+      // // ------------- Sent message with telegram to candidate -------------
+
 
       return {
         message: messagePitchPositionCandidate,
-        queryResponse: queryResponseData,
+        // queryResponse: queryResponseData,
       };
     } catch (err) {
       throw new ApolloError(

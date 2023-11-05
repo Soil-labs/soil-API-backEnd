@@ -363,6 +363,9 @@ module.exports = {
         ],
       }).select('_id companyID allCandidateScoreCardCalculated candidates');
       printC(positionsData.length, "3", "Number of Positions to go ", "p")
+      printC(positionsData, "3", "Number of Positions to go ", "p")
+
+      // f1
 
       // printC(positionsData[0], "3", "positionsData[0]", "p")
 
@@ -502,6 +505,7 @@ module.exports = {
 
         companyData = await Company.findOne({ _id: companyID }).select('_id slug');
 
+        
         if (companyData == null || companyData.slug == null) {
           positionsData[i].allCandidateScoreCardCalculated = true;
           await positionsData[i].save();
@@ -509,6 +513,8 @@ module.exports = {
         } else {
           posIdx = i
           positionData = await Position.findOne({ _id: positionsData[posIdx]._id }).select('_id companyID allCandidateScoreCardCalculated candidates');
+
+          
 
           for (let j = 0; j < positionData.candidates.length; j++) {
             const candidate = positionData.candidates[j];
@@ -520,6 +526,9 @@ module.exports = {
             convData = await Conversation.findOne({
               $and: [positionF, { userID: candidate.userID }],
             }).select("_id conversation");
+
+            // printC(convData, "3", "convData", "p")
+            // f1
       
             if (!convData) {
               // check if he applied more than an hour ago 
@@ -533,14 +542,14 @@ module.exports = {
                 await positionData.save();
               };
 
-              break
+              continue;
             };
 
             let updatedAtConv = convData.updatedAt;
             let currentTime = new Date();
             let timeDifference = (currentTime - updatedAtConv) / (1000 * 60); // time difference in minutes
 
-            if (timeDifference < 3) break;
+            if (timeDifference < 3) continue;
 
             // ---------------- Check if conversation is ready ----------------
 
