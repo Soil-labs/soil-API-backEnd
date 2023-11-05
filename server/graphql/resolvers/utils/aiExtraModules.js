@@ -162,6 +162,24 @@ const gptFunctions = {
         required: ["topicOfInterest"],
     },
 },
+findCompanyInformation: {
+  name: "findCompanyInformation",
+  description: "Having the job Description, find the company information",
+  parameters: {
+      type: "object",
+      properties: {
+          mission: {
+              type: "string",
+              description: "What is the mission of the company, if you can't find it return back N/A",
+          },
+          description: {
+              type: "string",
+              description: "What is the description of the company, if you can't find it return back N/A",
+          },
+      },
+      required: ["mission","description"],
+  },
+},
 giveInformationRelatedToPosition: {
   name: "giveInformationRelatedToPosition",
   description: "Collect Memories and Give Information Related to the Position and Candidate, been used when there is questions around Position",
@@ -301,6 +319,8 @@ async function useGPTFunc(
   functionResult = {},
   temperature = 0.7,
   chooseAPI = "API 1",
+  functionUseVariables = [],
+  modelK = ""
 ) {
 
 
@@ -313,6 +333,10 @@ async function useGPTFunc(
       functionUseGPT.push(gptFunctions[functionsUse[i]])
     }
   }
+  for (let i = 0; i < functionUseVariables.length; i++) {
+    functionUseGPT.push(functionUseVariables[i])
+  }
+
   // --------------- Add functions ----------------
 
   
@@ -330,8 +354,13 @@ async function useGPTFunc(
   // ---------------- Add Result of function ----------------
 
 
-  let modelT = "gpt-3.5-turbo-0613";
-  // let modelT = "gpt-4-0613";
+  let modelT
+  if (modelK != "") {
+    modelT = modelK
+  } else {
+    modelT = "gpt-3.5-turbo-0613";
+    // modelT = "gpt-4-0613";
+  }
 
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
   let response = await axios.post(
@@ -342,7 +371,7 @@ async function useGPTFunc(
       temperature: temperature,
       functions: functionUseGPT,
       function_call: "auto", 
-      max_tokens: 150,
+      // max_tokens: 150,
     },
     {
       headers: {
@@ -407,6 +436,10 @@ async function chooseFunctionForGPT(resGPTFunc) {
   } else if (resGPTFunc.function_call.functionName == "giveQualificationsCandidate") {
 
     funcOutput = await giveQualificationsCandidate(resGPTFunc)
+
+  } else if (resGPTFunc.function_call.functionName == "findCompanyInformation") {
+
+    funcOutput = await findCompanyInformation(resGPTFunc)
 
   } else if (resGPTFunc.function_call.functionName == "giveInformationRelatedToPosition") {
 
