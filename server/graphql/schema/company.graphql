@@ -116,6 +116,11 @@ module.exports = `
         url: String
     }
 
+    input autoUpdatePositionCompInformationInput {
+        positionID: ID
+        mustUpdate: [String]
+    }
+
     input EmployeeTypeInput {
         typeT: employeeRole
         userID: String
