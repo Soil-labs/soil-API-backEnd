@@ -343,6 +343,14 @@ module.exports = `
         positionOldID: ID
         positionNewID: ID
     }
+
+    input moveCandidateToPosition_V3Input {
+        userID: ID
+        positionOldID: ID
+        positionNewID: ID
+
+        sendMessageCandidateTG: String
+    }
     
     input moveCandidateToPosition_V2Input {
         userID: ID
