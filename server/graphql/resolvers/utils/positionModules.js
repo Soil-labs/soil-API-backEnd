@@ -162,14 +162,18 @@ async function addMultipleQuestionsToEdenAIFunc(questionsToAsk) {
 
 async function candidateEdenAnalysisPositionFunc(positionData,userID=undefined) {
 
-
+// 
+  // f2
   for (let j = 0; j < positionData.candidates.length; j++) {
     // for (let j = 0;j<1;j++){
 
     let candidate
 
+    // printC(positionData.candidates[j].userID, "2", "positionData.candidates[j]", "b")
+    // printC(userID, "2", "userID", "b")
+
     if (userID != undefined){
-      if (positionData.candidates[j].userID.toString() == userID.toString()){
+      if (positionData.candidates[j].userID.toString() != userID.toString()){
         continue;
       }
 
@@ -185,7 +189,7 @@ async function candidateEdenAnalysisPositionFunc(positionData,userID=undefined) 
     // printC(candidate, "2", "candidate", "b");
     // f2
       
-    positionRequirements = positionData.positionsRequirements.content;
+    positionRequirements = positionData.positionsRequirements.originalContent;
 
     // printC(positionRequirements,"2","positionRequirements","b")
 
@@ -202,13 +206,13 @@ async function candidateEdenAnalysisPositionFunc(positionData,userID=undefined) 
 
     // combine the cvMemory for Prompt
     prompt_cv = "";
-    if (memberData?.cvInfo?.cvMemory) {
-      prompt_cv = memberData?.cvInfo?.cvMemory
-        ?.map((memory) => memory.memoryContent)
-        .join(" \n\n ");
-    } else {
-      prompt_cv = memberData?.cvInfo?.cvContent;
-    }
+    // if (memberData?.cvInfo?.cvMemory) {
+    //   prompt_cv = memberData?.cvInfo?.cvMemory
+    //     ?.map((memory) => memory.memoryContent)
+    //     .join(" \n\n ");
+    // } else {
+    prompt_cv = memberData?.cvInfo?.cvContent;
+    // }
 
 
 
@@ -258,12 +262,15 @@ async function candidateEdenAnalysisPositionFunc(positionData,userID=undefined) 
       Summary in 2 sentences MAX 75 words, ${instructionsScore}: 
       `;
 
-    // printC(promptBackground,"6","promptBackground","g")
+    printC(positionRequirements,"6","positionRequirements","g")
+    printC(prompt_cv,"7","prompt_cv","b")
+    // f2
 
     backgroundAnalysis = await useGPTchatSimple(
       promptBackground,
       0.7,
-      "API 2"
+      "API 2",
+      "chatGPT4"
     );
 
     // printC(backgroundScore, "7", "backgroundScore", "p");
