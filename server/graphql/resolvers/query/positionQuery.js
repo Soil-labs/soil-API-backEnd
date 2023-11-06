@@ -137,18 +137,30 @@ module.exports = {
     }
   },
   findPositionsOfCommunity: async (parent, args, context, info) => {
-    const { communityID } = args.fields;
+    let { communityID,slug } = args.fields;
     console.log(
       "Query > findPositionsOfCommunity > args.fields = ",
       args.fields
     );
 
-    if (!communityID) throw new ApolloError("communityID is required");
+    if (communityID && slug) throw new ApolloError(" Only one of communityID or slug is required");
+    if (!communityID && !slug) throw new ApolloError(" One of communityID or slug is required");
 
     try {
+
+      if (slug) {
+        let companyDataSlug = await Company.findOne({ slug: slug }).select("_id");
+
+        communityID = companyDataSlug._id
+      }
+
+
       let companyData = await Company.find({
         communitiesSubscribed: { $elemMatch: { $eq: communityID } },
-      });
+      }).select("_id positions");
+
+      console.log("companyData = ", companyData)
+
 
       if (!companyData) throw new ApolloError("Company not found");
 
@@ -157,10 +169,15 @@ module.exports = {
         .flat(1)
         .map((_pos) => _pos.positionID);
 
+
+
       let positionsData = await Position.find({
         _id: { $in: positionsIDs },
         status: { $nin: ["DELETED", "ARCHIVED", "UNPUBLISHED"] },
-      });
+      }).select("_id name status icon companyID");
+
+      // f1
+
 
       return positionsData;
     } catch (err) {

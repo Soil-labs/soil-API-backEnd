@@ -5,6 +5,17 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
 const { CardMemory } = require("../../../models/cardMemoryModel");
 
+const {
+  findOrCreateNewConvFunc,
+  findConversationFunc,
+} = require("../utils/conversationModules");
+
+const {
+  positionSuggestQuestionsAskCandidateFunc,
+} = require("../utils/positionModules");
+
+const { talkToEdenMain } = require("../utils/talkToEdenModules");
+
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
 const { Configuration, OpenAIApi } = require("openai");
@@ -887,136 +898,12 @@ module.exports = {
       args.fields
     );
 
-    try {
-      if (!positionID) {
-        throw new ApolloError("positionID is required");
-      }
+    res = await positionSuggestQuestionsAskCandidateFunc(args.fields);
 
-      positionData = await Position.findOne({ _id: positionID }).select(
-        "_id positionsRequirements questionsToAsk"
-      );
-
-      if (!positionData) {
-        throw new ApolloError("Position not found");
-      }
-
-      console.log(
-        "positionData.questionsToAsk = ",
-        positionData.questionsToAsk
-      );
-
-      // ---------- If the quesitons are already calculated -------------
-      if (positionData.questionsToAsk.length > 0) {
-        questionIDs = [];
-        positionData.questionsToAsk.forEach((question) => {
-          questionIDs.push(question.questionID);
-        });
-
-        console.log("questionIDs = ", questionIDs);
-
-        //get the questions from the DB
-        questionData = await QuestionsEdenAI.find({
-          _id: { $in: questionIDs },
-        }).select("_id content category");
-
-        console.log("questionData = ", questionData);
-
-        if (questionData.length > 0) {
-          // change format of the questionData
-          questionData = questionData.map((question) => {
-            return {
-              question: question.content,
-              category: question.category,
-            };
-          });
-
-          // if and of the questionData is category null then don't reuturn it
-          questionData = questionData.filter((question) => {
-            return question.category != null;
-          });
-
-          return {
-            success: true,
-            questionSuggest: questionData,
-          };
-        }
-      }
-      // ---------- If the quesitons are already calculated -------------
-
-      positionsRequirements = positionData.positionsRequirements.content;
-
-      // Skills, education, Experience, Industry Knowledge, Culture Fit, Communication Skills
-      let promptNewQuestions = `
-        REQUIREMENTS of Job Position (delimiters <>): <${positionsRequirements}>
-  
-        - you can only ask 1 concise question at a time
-        - You should stay really close to the context of the REQUIREMENTS Job Position, and try to cover most of the requirements!
-        - Your goal is to ask the best questions in order to understand if the Candidate is a good fit for the Job Position
-        - Your task is to suggest MAXIMUM 9 questions for the Recruiter to ask the Candidate
-        - For every question add only ONE of this Categories (delimiters <>): < Technical Skills | Human Skills | Experiences | Industry Knowledge | Culture Fit | Other >
-
-        Example:
-         1. Concise Question - Category
-         2. Concise Question - Category
-        
-        Questions:
-      `;
-
-      printC(promptNewQuestions, "3", "promptNewQuestions", "b");
-
-      questionsSuggest = await useGPTchatSimple(promptNewQuestions, 0, "API 2");
-
-      // questionsSuggest =  `
-      // 1. Can you give an example of a time when you had to use your strong organizational skills to successfully complete a project?
-      // 2. Have you worked in a team environment before? Can you give an example of a successful teamwork experience?
-      // 3. How do you handle communication and cooperation with team members who may have different working styles or personalities?
-      // 4. Can you tell us about a time when you had to motivate yourself to learn a new skill or take on a new responsibility?
-      // 5. How familiar are you with Scrum and Kanban methodologies? Can you give an example of how you have used them in a project?
-      // 6. Have you worked with Python before? Can you give an example of a project you have completed using Python?
-      // 7. How comfortable are you with using Unix and Linux command line? Can you give an example of a task you have completed using these systems?
-      // 8. Can you explain your knowledge of telecom protocols, IP, and networking? Have you worked with these technologies before?
-      // 9. Are you able to commit to at least 4-5 hours per working day for this position? How do you plan to balance your other commitments with this job?
-      // `
-
-      printC(questionsSuggest, "3", "questionsSuggest", "b");
-
-      // const regex = /(\d+)\.\s+(.*)/g;
-      // const questionsArray = [];
-
-      // let match;
-      // while ((match = regex.exec(questionsSuggest)) !== null) {
-      //   const questionObject = {
-      //     question: match[2],
-      //   };
-      //   questionsArray.push(questionObject);
-      // }
-      const regex = /(\d+)\.\s+(.*)\s+-\s+(.*)/g;
-      const questionsArray = [];
-
-      let match;
-      while ((match = regex.exec(questionsSuggest)) !== null) {
-        const questionObject = {
-          question: match[2],
-          category: match[3].split("/")[0].trim(),
-        };
-        questionsArray.push(questionObject);
-      }
-
-      printC(questionsArray, "3", "questionsArray", "b");
-
-      return {
-        success: true,
-        questionSuggest: questionsArray,
-      };
-    } catch (err) {
-      throw new ApolloError(
-        err.message,
-        err.extensions?.code || "positionSuggestQuestionsAskCandidate",
-        {
-          component: "aiMutation > positionSuggestQuestionsAskCandidate",
-        }
-      );
-    }
+    return {
+      success: true,
+      questionSuggest: res.questionSuggest,
+    };
   },
 
   saveCVtoUser: async (parent, args, context, info) => {
@@ -1086,12 +973,19 @@ module.exports = {
       if (index_ == -1) {
         positionData.candidates.push({
           userID: userID,
+          candidateScoreCardCalculated: false,
           dateApply: new Date(),
         });
+
+        positionData.allCandidateScoreCardCalculated = false;
 
         await positionData.save();
       } else {
         positionData.candidates[index_].dateApply = new Date();
+        positionData.candidates[index_].candidateScoreCardCalculated = false;
+
+        positionData.allCandidateScoreCardCalculated = false;
+
         await positionData.save();
 
         console.log(
@@ -1542,6 +1436,62 @@ module.exports = {
         err.extensions?.code || "autoUpdateMemoryFromCV",
         {
           component: "aiMutation > autoUpdateMemoryFromCV",
+        }
+      );
+    }
+  },
+  talkToEdenGeneral_V1: async (parent, args, context, info) => {
+    //--------- variables ---------
+    const { message, infoConv } = args.fields;
+    console.log(
+      "Mutation > talkToEdenGeneral_V1 > args.fields = ",
+      args.fields
+    );
+
+    let conversationID;
+    if (infoConv) {
+      ({ conversationID } = infoConv);
+    } else {
+      throw new ApolloError("infoConv and conversationID are required");
+    }
+    //--------- variables ---------
+
+    try {
+      // ------- find the conversation  ---------
+      let convData = await findConversationFunc({ _id: conversationID });
+      // ------- find the conversation  ---------
+
+      // ------- Prepare conversation, Summarize if too long, and use the summary to shorten it. ------
+      // ------- Prepare conversation, Summarize if too long, and use the summary to shorten it.------
+
+      // -------- Based on the Type of convData decide what AI to use --------
+      let resTalkToEden = await talkToEdenMain({
+        message,
+        convData,
+      });
+      // --------- Inside the AIs decide what version of this AI --------
+      // ------- 1. check the state
+      // ------- 2. check if there is any action
+      // ------- 3. check the type of the conversation
+      // ------- 4. based on that decide what functions will be used on the GPT
+      // ------- 5. use the function response to decide what function to run
+      // ------- 6. run the function (collect memories, collect users, collect data from database)
+      // ------- 7. use response on the GPT, and collect the results of the function
+      // ------- 8. return back the message of the GPT
+      // ------- 9. return back the data and the choice of widget that happen during the GPT function phase
+      // --------- Inside the AIs decide what version of this AI --------
+      // -------- Based on the Type of convData decide what AI to use --------
+
+      // --------- Return back the results to user ------
+      // -- from 8. and 9.
+      // --------- Return back the results to user ------
+    } catch (err) {
+      printC(err, "-1", "err", "r");
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "talkToEdenGeneral_V1",
+        {
+          component: "aiMutation > talkToEdenGeneral_V1",
         }
       );
     }

@@ -1,27 +1,26 @@
 const { Conversation } = require("../../../models/conversationModel");
 
+const { printC } = require("../../../printModule");
 
 const { ApolloError } = require("apollo-server-express");
 
+const {
+  findConversationFunc,
+} = require("../utils/conversationModules");
 
 module.exports = {
   findConversation: async (parent, args, context, info) => {
-    const { _id } = args.fields;
+    const { _id,userID,subjectConv,typeConversation } = args.fields;
     console.log("Query > findConversation > args.fields = ", args.fields);
 
-    if (!_id) throw new ApolloError("ID is required")
-
-
     try {
+      let convData = await findConversationFunc(args.fields)
 
-      // find conversaiotn 
-      let convData = await Conversation.findOne({ _id: _id });
       
-      if (!convData) throw new ApolloError("Conversation not found")
-
       return convData;
       
     } catch (err) {
+      printC(err, "-1", "err", "r")
       throw new ApolloError(
         err.message,
         err.extensions?.code || "findConversation",

@@ -89,7 +89,8 @@ module.exports = `
     }
     
     input updateCompanyDetailsInput {
-        _id: ID
+        slug: String
+        description: String
         imageUrl: String
         
         employeesNumber: Int
@@ -113,6 +114,11 @@ module.exports = `
     input updateUrlInput {
         companyID: ID
         url: String
+    }
+
+    input autoUpdatePositionCompInformationInput {
+        positionID: ID
+        mustUpdate: [String]
     }
 
     input EmployeeTypeInput {

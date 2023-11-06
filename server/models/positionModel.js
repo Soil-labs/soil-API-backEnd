@@ -7,6 +7,8 @@ const positionModel = mongoose.Schema({
   url: String,
   companyID: mongoose.Schema.ObjectId,
   mainUserID: String,
+  cardsPositionCalculated: Boolean,
+  prioritiesPositionCalculated: Boolean,
   conduct: {
     number: String,
     whatsappNumber: String,
@@ -130,6 +132,7 @@ const positionModel = mongoose.Schema({
   ],
   candidatesReadyToDisplay: Boolean,
   candidatesFlagAnalysisCreated: Boolean,
+  allCandidateScoreCardCalculated: Boolean,
   candidates: [
     {
       userID: String,
@@ -138,6 +141,7 @@ const positionModel = mongoose.Schema({
       acceptedOrRejected: Boolean,
       readyToDisplay: Boolean,
       conversationID: mongoose.Schema.ObjectId,
+      candidateScoreCardCalculated: Boolean,
       dateApply: Date,
       scoreCardTotal: {
         score: Number,

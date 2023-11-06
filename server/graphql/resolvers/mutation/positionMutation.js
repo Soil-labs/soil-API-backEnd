@@ -9,6 +9,8 @@ const { Node } = require("../../../models/nodeModal");
 const { Conversation } = require("../../../models/conversationModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
+const { useGPTFunc} = require("../utils/aiExtraModules");
+
 const { wait } = require("../utils/aiExtraModules");
 
 const {
@@ -280,6 +282,186 @@ module.exports = {
     }
   },
 
+  autoUpdatePositionCompInformation: async (parent, args, context, info) => {
+    const { positionID,mustUpdate } = args.fields;
+    let { url } = args.fields;
+    try {
+
+      positionData = await Position.findOne({ _id: positionID }).select('-candidates');
+      if (!positionData) throw new ApolloError("Position not found");
+
+      let positionsRequirements = positionData.positionsRequirements?.originalContent
+
+      if (!positionsRequirements) throw new ApolloError("positionsRequirements/job_description not found");
+
+      companyData = await Company.findOne({ _id: positionData.companyID });
+      if (!companyData) throw new ApolloError("Company not found");
+
+
+      let variablesUsed = []
+      if (mustUpdate && mustUpdate.length != 0){
+        variablesUsed = [...mustUpdate];
+      }
+
+      // printC(variablesUsed, "1", "variablesUsed", "b")
+      // f3
+
+      // --------------- Check what the Company already have ----------------
+      if (!companyData.mission && !variablesUsed.includes("mission")) 
+        variablesUsed.push("mission")
+      if (!companyData.description && !variablesUsed.includes("description")) 
+        variablesUsed.push("description")
+      if (!companyData.benefits && !variablesUsed.includes("benefits")) 
+        variablesUsed.push("benefits")
+      if (!companyData.values && !variablesUsed.includes("values")) 
+        variablesUsed.push("values")
+      if (!companyData.founders && !variablesUsed.includes("founders")) 
+        variablesUsed.push("founders")
+      if (!companyData.whatsToLove && !variablesUsed.includes("whatsToLove")) 
+        variablesUsed.push("whatsToLove")
+      
+      // --------------- Check what the Company already have ----------------
+
+      // --------------- Check what the Position already have ----------------
+      if (!positionData.whatTheJobInvolves && !variablesUsed.includes("whatTheJobInvolves")) 
+        variablesUsed.push("whatTheJobInvolves")
+      if (!positionData.whoYouAre && !variablesUsed.includes("whoYouAre")) 
+        variablesUsed.push("whoYouAre")
+      
+      
+      // --------------- Check what the Position already have ----------------
+
+
+      if (variablesUsed.length == 0) throw new ApolloError("No variables to update");
+      
+      
+      // ----------------- Prepare variables -----------------
+      const variablesData = {
+        mission: {
+          description: "What is the mission of the company, if you can't find it return back N/A",
+          mongo:"Company",
+        },
+        description: {
+          description: "What is the description of the company, if you can't find it return back N/A",
+          mongo:"Company",
+        },
+        whoYouAre: {
+          description: "What is the Skills and requirement that candidate need to have for this Job, if you can't find it return back N/A",
+          mongo:"Position",
+        },
+        whatTheJobInvolves: {
+          description: "What are the tasks and responsibilities involved in this job, if you can't find it return back N/A",
+          mongo:"Position",
+        },
+        benefits: {
+          description: "What are the benefits offered by the company or position, if you can't find it return back N/A",
+          mongo:"Company",
+        },
+        values: {
+          description: "What are the values of the company, if you can't find it return back N/A",
+          mongo:"Company",
+        },
+        founders: {
+          description: "Who are the founders of the company, if you can't find it return back N/A",
+          mongo:"Company",
+        },
+        whatsToLove: {
+          description: "What are the things to love about this Company, be creative ",
+          mongo:"Company",
+        }
+      }
+
+      // const variablesUsed = ["mission","whoYouAre"]
+      // const variablesUsed = ["mission","description"]
+
+      let propertiesUsed = {}
+      for (let i = 0; i < variablesUsed.length; i++) {
+        const variableUsed = variablesUsed[i];
+
+        if (!variablesData[variableUsed]) continue;
+
+        propertiesUsed[variableUsed] = {
+          type: "string",
+          description: variablesData[variableUsed].description,
+        }
+
+      }
+      printC(propertiesUsed, "1", "propertiesUsed", "b");
+      // ----------------- Prepare variables -----------------
+
+
+      // ----------------- use GPT to find position -----------------
+      // functionsUseGPT = ["findCompanyInformation"]
+      functionsUseGPT = []
+      functionUseVariables = [{
+        name: "findCompanyInformation",
+        description: "Having the job Description, find the company information",
+        parameters: {
+            type: "object",
+            properties: {
+                ...propertiesUsed,
+            },
+            required: variablesUsed,
+        },
+      }]
+
+  
+      const systemPrompt = `You are a recruiter, you try to find and fill all the information about the company and the position
+
+      Job Description (delimited <>): <${positionsRequirements}>
+      `
+
+      // printC(systemPrompt, "1", "systemPrompt", "b");
+      // f2
+
+      discussionT = [{
+        role: "user",
+        content: systemPrompt
+      }]
+
+      modelK = "gpt-4-0613";
+  
+      let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,{},0,"API 1",functionUseVariables,modelK)
+
+      printC(resGPTFunc, "2", "resGPTFunc", "p");
+      // ----------------- use GPT to find position -----------------
+
+
+      // ---------------- Extract the variables and add to Mongo ----------------
+      let objectVar = resGPTFunc.function_call
+
+      for (const [variable, content] of Object.entries(objectVar)) {
+        variableData = variablesData[variable]
+
+        if (!variableData) continue;
+
+        if (variableData.mongo == "Company") {
+          companyData[variable] = content
+
+        } else if (variableData.mongo == "Position") {
+
+          positionData[variable] = content
+
+        }
+      }
+
+      await companyData.save()
+
+      await positionData.save()
+      // ---------------- Extract the variables and add to Mongo ----------------
+
+
+
+      return positionData;
+
+    } catch (err) {
+      printC(err, "-1", "err", "r");
+      throw new ApolloError(err.message, err.extensions?.code || "autoUpdatePositionCompInformation", {
+        component: "positionMutation > autoUpdatePositionCompInformation",
+      });
+    }
+  },
+
   interviewQuestionCreationUser: async (parent, args, context, info) => {
     const { positionID, userID, cvContent } = args.fields;
     console.log(
@@ -343,16 +525,35 @@ module.exports = {
       );
 
       if (index_candNewPos == -1) {
+
+        positionNewData.allCandidateScoreCardCalculated = false;
+        positionNewData.candidatesFlagAnalysisCreated = false;
+
         positionNewData.candidates.push({
           userID: userID,
           analysisCandidateEdenAI: {
             flagAnalysisCreated: false,
           },
+          candidateScoreCardCalculated: false,
         });
 
         index_candNewPos = positionNewData.candidates.length - 1;
 
-        await positionNewData.save();
+        // await positionNewData.save();
+      } else {
+
+        positionNewData.allCandidateScoreCardCalculated = false;
+        positionNewData.candidatesFlagAnalysisCreated = false;
+
+
+        positionNewData.candidates[index_candNewPos].analysisCandidateEdenAI = {
+          flagAnalysisCreated: false,
+        };
+
+        positionNewData.candidates[index_candNewPos].candidateScoreCardCalculated = false;
+
+        // await positionNewData.save();
+
       }
       // ----------------- add candidate to New position -----------------
 
@@ -572,6 +773,136 @@ module.exports = {
         err.message,
         err.extensions?.code || "moveCandidateToPosition_V2",
         { component: "positionMutation > moveCandidateToPosition_V2" }
+      );
+    }
+  },
+  moveCandidateToPosition_V3: async (parent, args, context, info) => {
+    const { userID, positionOldID, positionNewID,sendMessageCandidateTG } = args.fields;
+    console.log(
+      "Mutation > moveCandidateToPosition_V3 > args.fields = ",
+      args.fields
+    );
+
+    if (!positionOldID) throw new ApolloError("positionOldID is required");
+    let positionOldData = await Position.findOne({ _id: positionOldID });
+    if (!positionOldData) throw new ApolloError("positionOld not found");
+
+    if (!positionNewID) throw new ApolloError("positionNewID is required");
+    let positionNewData = await Position.findOne({ _id: positionNewID });
+    if (!positionNewData) throw new ApolloError("positionNew not found");
+
+    if (!userID) throw new ApolloError("userID is required");
+    let memberData = await Members.findOne({ _id: userID });
+    if (!memberData) throw new ApolloError("user not found");
+
+    try {
+      // ----------------- add candidate to New position -----------------
+      let index_candNewPos = positionNewData.candidates.findIndex(
+        (x) => x.userID.toString() == userID.toString()
+      );
+
+      if (index_candNewPos == -1) {
+
+        positionNewData.allCandidateScoreCardCalculated = false;
+        positionNewData.candidatesFlagAnalysisCreated = false;
+
+        positionNewData.candidates.push({
+          userID: userID,
+          analysisCandidateEdenAI: {
+            flagAnalysisCreated: false,
+          },
+          candidateScoreCardCalculated: false,
+        });
+
+        index_candNewPos = positionNewData.candidates.length - 1;
+
+        // await positionNewData.save();
+      } else {
+
+        positionNewData.allCandidateScoreCardCalculated = false;
+        positionNewData.candidatesFlagAnalysisCreated = false;
+
+
+        positionNewData.candidates[index_candNewPos].analysisCandidateEdenAI = {
+          flagAnalysisCreated: false,
+        };
+
+        positionNewData.candidates[index_candNewPos].candidateScoreCardCalculated = false;
+
+        // await positionNewData.save();
+
+      }
+      // ----------------- add candidate to New position -----------------
+
+      // ----------------- find the conversation and add the positionNewID -----------------
+      let conversationData = await Conversation.find({
+        $and: [{ userID: userID }, { positionID: positionOldID }],
+      });
+
+      // take only the last conv
+      conversationData = conversationData[conversationData.length - 1];
+
+      // add the positionNewID to the conversation
+      extraPositionsIDArr = conversationData.extraPositionsID;
+
+      if (!extraPositionsIDArr) extraPositionsIDArr = [];
+
+      // if the positionNewID is not already in the array
+      if (!extraPositionsIDArr.includes(positionNewID))
+        extraPositionsIDArr.push(positionNewID);
+
+      conversationData.extraPositionsID = extraPositionsIDArr;
+
+      await conversationData.save();
+      // ----------------- find the conversation and add the positionNewID -----------------
+
+
+
+      // ------------- Sent message with telegram to candidate -------------
+      if (sendMessageCandidateTG){
+        filter = {
+          phase: "QUERY",
+          sender: {
+            positionID: positionNewID,
+          },
+          senderType: "POSITION",
+          responder: {
+            userID: userID,
+          },
+          responderType: "USER",
+          question: {
+            content: sendMessageCandidateTG,
+          },
+          category: "PITCH_POSITION_CANDIDATE",
+        };
+
+        queryResponseData = await new QueryResponse(filter);
+
+        console.log("queryResponseData = ", queryResponseData);
+
+        await queryResponseData.save();
+
+        // --------- Change the state Eden Candidate-------------
+        memberData.stateEdenChat = {
+          positionIDs: [positionNewID],
+          categoryChat: "PITCH_POSITION_CANDIDATE",
+        };
+
+        await memberData.save();
+        // --------- Change the state Eden Candidate-------------
+      }
+      // ------------- Sent message with telegram to candidate -------------
+
+
+
+      await positionNewData.save();
+
+      return positionNewData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "moveCandidateToPosition_V3",
+        { component: "positionMutation > moveCandidateToPosition_V3" }
       );
     }
   },
@@ -798,47 +1129,45 @@ module.exports = {
       // With your extensive experience in web development using JavaScript frameworks, proficiency in TypeScript, and strong understanding of clients' requirements, I believe you would excel in building the backend for user-facing features and maintaining infrastructure
       // Are you interested in pursuing this opportunity? Can I personally recommend you for this position?`
 
-      printC(
-        messagePitchPositionCandidate,
-        "4",
-        "messagePitchPositionCandidate",
-        "y"
-      );
+      printC(messagePitchPositionCandidate, "4", "messagePitchPositionCandidate", "y");
 
-      filter = {
-        phase: "QUERY",
-        sender: {
-          positionID: positionID,
-        },
-        senderType: "POSITION",
-        responder: {
-          userID: userID,
-        },
-        responderType: "USER",
-        question: {
-          content: messagePitchPositionCandidate,
-        },
-        category: "PITCH_POSITION_CANDIDATE",
-      };
+      // // ------------- Sent message with telegram to candidate -------------
+      // filter = {
+      //   phase: "QUERY",
+      //   sender: {
+      //     positionID: positionID,
+      //   },
+      //   senderType: "POSITION",
+      //   responder: {
+      //     userID: userID,
+      //   },
+      //   responderType: "USER",
+      //   question: {
+      //     content: messagePitchPositionCandidate,
+      //   },
+      //   category: "PITCH_POSITION_CANDIDATE",
+      // };
 
-      queryResponseData = await new QueryResponse(filter);
+      // queryResponseData = await new QueryResponse(filter);
 
-      console.log("queryResponseData = ", queryResponseData);
+      // console.log("queryResponseData = ", queryResponseData);
 
-      await queryResponseData.save();
+      // await queryResponseData.save();
 
-      // --------- Change the state Eden Candidate-------------
-      userData.stateEdenChat = {
-        positionIDs: [positionID],
-        categoryChat: "PITCH_POSITION_CANDIDATE",
-      };
+      // // --------- Change the state Eden Candidate-------------
+      // userData.stateEdenChat = {
+      //   positionIDs: [positionID],
+      //   categoryChat: "PITCH_POSITION_CANDIDATE",
+      // };
 
-      await userData.save();
-      // --------- Change the state Eden Candidate-------------
+      // await userData.save();
+      // // --------- Change the state Eden Candidate-------------
+      // // ------------- Sent message with telegram to candidate -------------
+
 
       return {
         message: messagePitchPositionCandidate,
-        queryResponse: queryResponseData,
+        // queryResponse: queryResponseData,
       };
     } catch (err) {
       throw new ApolloError(
@@ -1317,7 +1646,11 @@ module.exports = {
       });
     else
       positionsData = await Position.find({
-        candidatesFlagAnalysisCreated: { $ne: true },
+        // candidatesFlagAnalysisCreated: { $ne: true },
+        $or: [
+          { "candidates.analysisCandidateEdenAI.flagAnalysisCreated": null },
+          { "candidates.analysisCandidateEdenAI.flagAnalysisCreated": false }
+        ],
       });
 
     try {

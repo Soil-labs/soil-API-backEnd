@@ -183,6 +183,82 @@ module.exports = `
         users: [Members]
     }
 
+
+    input talkToEdenGeneral_V1Input {
+        message: String
+        infoConv: conversationInfoInput
+        requestAction: requestActionConversationInput
+        stateChange: stateChangeConversationInput
+    }
+
+    input stateChangeConversationInput {
+        typeState: typeStateConvEnum
+        reqVars: reqVarsStateInput
+    }
+
+    input reqVarsStateInput {
+        positionIDs: [ID]
+    }
+
+    enum typeStateConvEnum {
+        FIND_NEW_POSITION
+    }
+
+    input conversationInfoInput {
+        conversationID: ID
+    }
+    
+    input requestActionConversationInput {
+        typeAction: typeActionConvEnum
+        reqVars: reqVarsActionInput
+    }
+
+    enum typeActionConvEnum {
+        FIND_NEW_POSITION
+    }
+
+    input reqVarsActionInput {
+        positionIDs: [ID]
+    }
+
+    type talkToEdenGeneral_V1Output {
+        chatResp: [chatRespType]
+        state: stateConversationType
+    }
+
+    type stateConversationType {
+        typeState: typeStateConvEnum
+        reqVars: reqVarsStateType
+    }
+
+    type reqVarsStateType {
+        positionIDs: [ID]
+    }
+
+    type chatRespType {
+        role: roleEnum
+        typeWidget: widgetTypeEnum
+        content: String
+        widgetVars: widgetVarsType
+        date: Date
+    }
+
+    enum roleEnum {
+        assistant
+        user
+    }
+
+
+    enum widgetTypeEnum {
+        MESSAGE
+        INDIVIDUAL_MEMORIES
+        SCORECARD
+    }
+
+    type widgetVarsType {
+        memories: [CardMemory]
+    }
+
     input autoUpdateMemoryFromPositionRequirmentsInput {
         positionIDs: [ID]
     }

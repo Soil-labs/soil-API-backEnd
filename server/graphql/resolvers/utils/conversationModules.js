@@ -193,6 +193,109 @@ async function updatePositionInterviewedOfUser(userID,positionID) {
   }
 }
 
+
+async function findConversationFunc(varT) {
+  
+  const { _id,userID,subjectConv,typeConversation } = varT;
+  let {limit, skip} = varT;
+
+  if (!limit) limit = 1000;
+  if (!skip) skip = 0;
+
+  // const limitConversation = { conversation: { $slice: [skip, limit] } }
+  const limitConversation = { conversation: { $slice: [ -limit - skip, limit ]  } }
+
+
+  let convData = null;
+
+  // ----------- if we already have the conversationID ----------------
+  if (_id){
+    convData = await Conversation.findOne({ _id: _id }, limitConversation);
+
+    if (!convData) throw new ApolloError("Conversation not found")
+
+    printC(convData, "0", "convData", "b");
+
+    return convData;
+  }
+  // ----------- if we already have the conversationID ----------------
+
+
+  filter = {}
+
+  if (userID) filter.userID = userID;
+  if (subjectConv.userIDs) filter["subjectConv.userIDs"] = { $all: subjectConv.userIDs };
+  if (subjectConv.positionIDs) filter["subjectConv.positionIDs"] = { $all: subjectConv.positionIDs };
+  if (subjectConv.companyIDs) filter["subjectConv.companyIDs"] = { $all: subjectConv.companyIDs };
+  if (typeConversation) filter.typeConversation = typeConversation;
+  
+
+
+  
+  conversationsData = await Conversation.find(filter, limitConversation);
+
+  printC(conversationsData, "0", "conversationsData", "b");
+  // f1
+
+  if (conversationsData.length == 1) {
+    convData = conversationsData[0]
+  } else if (conversationsData.length > 1) {
+    // TODO return multiple conversation IDs later, for now we will return the last one
+    convData = conversationsData[conversationsData.length - 1]
+  }
+
+
+  if (convData == null) {
+    convData = await new Conversation({
+      userID: userID,
+      subjectConv: subjectConv,
+      typeConversation: typeConversation,
+      conversation: [],
+      summaryReady: false,
+      positionTrainEdenAI: false,
+    });
+
+    await convData.save();
+  }
+
+  return convData;
+
+ 
+}
+
+
+async function findOrCreateNewConvFunc(varT) {
+  const {conversationID} = varT
+
+  if (conversationID == null){
+    // create new conversation
+    const newConversation = await new Conversation({
+      convKey: "",
+      userID: "",
+      conversation: [],
+      lastMsgSummed: 0,
+      positionID: "",
+      positionTrainEdenAI: false,
+      summaryReady: false,
+      summary: [],
+      updatedAt: Date.now(),
+    });
+
+    resultConv = await newConversation.save();
+
+    return resultConv
+  } else {
+    // find the conversation
+    existingConversation = await Conversation.findOne({
+      _id: conversationID,
+    });
+
+    return existingConversation
+  }
+
+ 
+}
+
 async function updateEmployees(arr1, arr2, compareKey = "userID") {
   // arr1New = [...arr1]
   arr2.forEach((employee2) => {
@@ -894,4 +997,6 @@ module.exports = {
   updateNotesRequirmentsConversation,
   updatePositionInterviewedOfUser,
   summarizeConv,
+  findOrCreateNewConvFunc,
+  findConversationFunc,
 };
