@@ -1633,7 +1633,7 @@ module.exports = {
   },
 
   updateAnalysisEdenAICandidates: async (parent, args, context, info) => {
-    const { positionIDs } = args.fields;
+    const { positionIDs,userID } = args.fields;
     console.log(
       "Mutation > updateAnalysisEdenAICandidates > args.fields = ",
       args.fields
@@ -1646,22 +1646,28 @@ module.exports = {
       });
     else
       positionsData = await Position.find({
-        // candidatesFlagAnalysisCreated: { $ne: true },
-        $or: [
-          { "candidates.analysisCandidateEdenAI.flagAnalysisCreated": null },
-          { "candidates.analysisCandidateEdenAI.flagAnalysisCreated": false }
+        $and: [
+          { candidatesFlagAnalysisCreated: true  },
+          {
+            $or: [
+              { "candidates.analysisCandidateEdenAI.flagAnalysisCreated": null },
+              { "candidates.analysisCandidateEdenAI.flagAnalysisCreated": false },
+            ],
+          },
         ],
       });
 
     try {
       for (let i = 0; i < positionsData.length; i++) {
         positionsData[i] = await candidateEdenAnalysisPositionFunc(
-          positionsData[i]
+          positionsData[i],
+          userID
         );
       }
 
       return positionsData;
     } catch (err) {
+      printC(err, "-1", "err", "r")
       throw new ApolloError(
         err.message,
         err.extensions?.code || "updateAnalysisEdenAICandidates",

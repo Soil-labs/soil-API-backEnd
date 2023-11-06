@@ -160,17 +160,30 @@ async function addMultipleQuestionsToEdenAIFunc(questionsToAsk) {
 }
 
 
-async function candidateEdenAnalysisPositionFunc(positionData) {
+async function candidateEdenAnalysisPositionFunc(positionData,userID=undefined) {
 
 
   for (let j = 0; j < positionData.candidates.length; j++) {
     // for (let j = 0;j<1;j++){
 
-    candidate = positionData.candidates[j];
+    let candidate
 
-    if (candidate?.analysisCandidateEdenAI?.flagAnalysisCreated == true)
-      continue;
+    if (userID != undefined){
+      if (positionData.candidates[j].userID.toString() == userID.toString()){
+        continue;
+      }
 
+      candidate = positionData.candidates[j];
+    } else {
+      candidate = positionData.candidates[j];
+
+      if (candidate?.analysisCandidateEdenAI?.flagAnalysisCreated == true)
+        continue;
+    }
+
+
+    // printC(candidate, "2", "candidate", "b");
+    // f2
       
     positionRequirements = positionData.positionsRequirements.content;
 
@@ -197,55 +210,38 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
       prompt_cv = memberData?.cvInfo?.cvContent;
     }
 
-    // printC(prompt_cv,"5","prompt_cv","b")
 
-    // ------------------- Find the Score ----------------------
-    // Background Score
-    let matchScore = candidate.overallScore;
-    // Skill Score
-    let skillScore = candidate.skillScore;
-    //JobRequirement Score
-    let jobRequirementsScore = 0;
-    let jobRequirementsScoreCount = 0;
-    if (candidate?.compareCandidatePosition?.reportPassFail) {
-      for (let k = 0;k < candidate?.compareCandidatePosition?.reportPassFail.length;k++) {
-        let score =
-          candidate?.compareCandidatePosition?.reportPassFail[k].score;
 
-        if (score != undefined && score > 3) {
-          jobRequirementsScore += score;
-          jobRequirementsScoreCount += 1;
-        }
-      }
+    // ----------------- Find score -----------------
+    
+    let backgroundScore;
+    if (candidate.scoreCardTotal && candidate.scoreCardTotal.score) {
+      backgroundScore = candidate.scoreCardTotal.score;
+    } else {
+      backgroundScore = 0.5; // default value will make eden to be neutreal 
     }
 
-    if (jobRequirementsScoreCount > 0) {
-      jobRequirementsScore =
-        (jobRequirementsScore / jobRequirementsScoreCount) * 10;
-    }
 
-    let backgroundScore =
-      (matchScore + skillScore + jobRequirementsScore) / 3;
-
-    // ------------------- Find the Score ----------------------
-
-
-
+    printC(backgroundScore, "7", "backgroundScore", "g");
 
     // ------------------- Background Analysis -------------------
     let instructionsScore = "";
-    if (backgroundScore > 70) {
+    if (backgroundScore > 0.8) {
       instructionsScore = "Be really positive Find all the reasons that it is a great fit";
-    } else if (backgroundScore > 50) {
+    } else if (backgroundScore > 0.6) {
       instructionsScore =
         "Be positive but also fair find the reasons that will work and report them";
-    } else if (backgroundScore > 30) {
+    } else if (backgroundScore > 0.4) {
       instructionsScore =
         "Be neutral find the reasons that will work and don't work and report them";
     } else {
       instructionsScore =
         "Be negative find all the reasons that it will not be a good fit";
     }
+
+    printC(backgroundScore, "7", "backgroundScore", "p");
+    printC(instructionsScore, "7", "instructionsScore", "r");
+
 
     promptBackground = `
       You are an Interviewer, create a summary if a candidate is a good fit for the position.
@@ -257,9 +253,9 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
       - Understand the JOB POSITION, and analyze the CANDIDATE INFO
       - Analyze why the candidate fit or or NOT for this position based on specific previous relevant positions and relevant education that the candidate had 
 
-      ${instructionsScore}
       
-      Summary in 2 sentences basing analysis on specific names of previous jobs MAX 45 words: 
+      
+      Summary in 2 sentences MAX 75 words, ${instructionsScore}: 
       `;
 
     // printC(promptBackground,"6","promptBackground","g")
@@ -270,10 +266,12 @@ async function candidateEdenAnalysisPositionFunc(positionData) {
       "API 2"
     );
 
-    printC(backgroundScore, "7", "backgroundScore", "p");
-    printC(instructionsScore, "7", "instructionsScore", "r");
+    // printC(backgroundScore, "7", "backgroundScore", "p");
+    // printC(instructionsScore, "7", "instructionsScore", "r");
 
     printC(backgroundAnalysis, "7", "backgroundAnalysis", "g");
+    // f1
+
 
     // ------------------- Background Analysis -------------------
 
