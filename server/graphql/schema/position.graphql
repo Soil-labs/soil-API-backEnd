@@ -26,6 +26,7 @@ module.exports = `
         generalDetails: generalDetailsType
         status: PositionStatus
 
+        whatsToLove: String
         whoYouAre: String
         whatTheJobInvolves: String
     }
@@ -212,8 +213,18 @@ module.exports = `
         officeLocation: String,
         contractType: String,
         contractDuration: String,
-        yearlySalary: Float,
+        yearlySalary: yearlySalaryType,
         socials: socialsType,
+    }
+
+    type yearlySalaryType {
+        min: Int,
+        max: Int,
+    }
+    
+    input yearlySalaryInput {
+        min: Int,
+        max: Int,
     }
 
     type socialsType {
@@ -234,7 +245,7 @@ module.exports = `
         officeLocation: String,
         contractType: String,
         contractDuration: String,
-        yearlySalary: Float,
+        yearlySalary: yearlySalaryInput,
         socials: socialsInput,
         status: PositionStatus
     }
@@ -284,6 +295,7 @@ module.exports = `
         icon: String,
         status: PositionStatus
 
+        whatsToLove: String
         whoYouAre: String
         whatTheJobInvolves: String
     }
