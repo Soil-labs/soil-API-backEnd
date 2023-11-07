@@ -700,6 +700,7 @@ module.exports = {
       let positionsRequirements = {
         ...positionData.positionsRequirements,
         notesRequirConv: stringFromWebsite,
+        content: stringFromWebsite,
       };
 
       positionData.positionsRequirements = positionsRequirements;
