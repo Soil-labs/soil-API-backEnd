@@ -554,30 +554,29 @@ module.exports = {
     stringFromWebsite = message;
 
     try {
-      //  ------------- Notes ----------------
+      // //  ------------- Notes ----------------
+      // promptConvoQuestions = `
+      // POSITION REQUIRMENTS: <${stringFromWebsite}>
 
-      promptConvoQuestions = `
-      POSITION REQUIRMENTS: <${stringFromWebsite}>
+      // - you are a recruiter, your task is to create Notes based on POSITION REQUIRMENTS that are Efficient and concise.
+      // - the format will be on bullet points
+      // - each bullet point can be from 1 to 2 sentenses
+      // - you can create as many bullet points as you need
 
-      - you are a recruiter, your task is to create Notes based on POSITION REQUIRMENTS that are Efficient and concise.
-      - the format will be on bullet points
-      - each bullet point can be from 1 to 2 sentenses
-      - you can create as many bullet points as you need
+      // Position Notes:
+      // `;
 
-      Position Notes:
-      `;
+      // printC(promptConvoQuestions, "2", "promptConvoQuestions", "p");
 
-      printC(promptConvoQuestions, "2", "promptConvoQuestions", "p");
+      // const promptConvoQuestionsRes = await useGPTchatSimple(
+      //   promptConvoQuestions,
+      //   0.7,
+      //   "API 1"
+      // );
 
-      const promptConvoQuestionsRes = await useGPTchatSimple(
-        promptConvoQuestions,
-        0.7,
-        "API 1"
-      );
+      // printC(promptConvoQuestionsRes, "2", "promptConvoQuestionsRes", "p");
 
-      printC(promptConvoQuestionsRes, "2", "promptConvoQuestionsRes", "p");
-
-      //  ------------- Notes ----------------
+      // //  ------------- Notes ----------------
 
       // // ------------- Report ----------------
       // promptReport = ` You have as input the Details of a Job Position
@@ -686,17 +685,21 @@ module.exports = {
       //   );
       // // --------------- positionText to Questions ---------------
 
-      if (nodeIDs) {
-        positionData.nodes = nodeIDs;
-      }
+      // if (nodeIDs) {
+      //   positionData.nodes = nodeIDs;
+      // }
       // positionData.interviewQuestionsForPosition =
       //   interviewQuestionsForCandidate;
       positionData.positionsRequirements.originalContent = stringFromWebsite;
       positionData.positionsRequirements.positionPreparationMemory = false;
 
+      // let positionsRequirements = {
+      //   ...positionData.positionsRequirements,
+      //   notesRequirConv: promptConvoQuestionsRes,
+      // };
       let positionsRequirements = {
         ...positionData.positionsRequirements,
-        notesRequirConv: promptConvoQuestionsRes,
+        notesRequirConv: stringFromWebsite,
       };
 
       positionData.positionsRequirements = positionsRequirements;
@@ -704,7 +707,7 @@ module.exports = {
       // update Mongo
       await positionData.save();
 
-      findRoleDescriptionAndBenefits(message, positionData);
+      // findRoleDescriptionAndBenefits(message, positionData);
 
       // return {
       //   report: report,
