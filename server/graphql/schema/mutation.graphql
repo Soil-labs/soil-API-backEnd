@@ -196,6 +196,7 @@ module.exports = `
         talkToEdenGeneral_V1(fields: talkToEdenGeneral_V1Input): talkToEdenGeneral_V1Output
         autoUpdateMemoryFromPositionRequirments(fields: autoUpdateMemoryFromPositionRequirmentsInput): autoUpdateMemoryFromPositionRequirmentsOutput
         createCoreMemories(fields: createCoreMemoriesInput): createCoreMemoriesOutput
+        transcribeAudioToText(fields: transcribeAudioToTextInput): transcribeAudioToTextOutput 
         updatePrioritiesTradeOffs(fields: updatePrioritiesTradeOffsInput): updatePrioritiesTradeOffsOutput
         addMessages(fields: addMessagesInput): [AI]
         secondInterviewLetter(fields: secondInterviewLetterInput): secondInterviewLetterOutput
