@@ -9,6 +9,8 @@ const { ApolloError } = require("apollo-server-express");
 const { Configuration, OpenAIApi } = require("openai");
 
 const axios = require("axios");
+const FormData = require("form-data");
+
 const { PineconeClient } = require("@pinecone-database/pinecone");
 
 const { request, gql } = require("graphql-request");
@@ -2199,17 +2201,41 @@ async function useGPTchat(
   return response.data.choices[0].message.content;
 }
 
-async function useWhisperAPI(file, temperature = 0, chooseAPI = "API 1") {
-  const configuration = new Configuration({
-    apiKey: chooseAPIkey(chooseAPI),
-  });
-  const openai = new OpenAIApi(configuration);
-  const transcription = openai.audio.transcriptions.create({
-    file: file,
-    model: "whisper-1",
-  });
+async function useWhisperAPI(fileBuffer, temperature = 0, chooseAPI = "API 1") {
+  let OPENAI_API_KEY = chooseAPIkey(chooseAPI); // Ensure this function returns the correct API key
 
-  return transcription.text;
+  const formData = new FormData();
+  formData.append("file", fileBuffer, "audio.webm"); // Replace 'audio.webm' with the correct filename and extension
+
+  formData.append("model", "whisper-1");
+  if (temperature !== 0) {
+    formData.append("temperature", temperature);
+  }
+
+  try {
+    const response = await axios.post(
+      "https://api.openai.com/v1/audio/transcriptions",
+      formData,
+      {
+        headers: {
+          ...formData.getHeaders(), // This will set the correct content type for multipart/form-data
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+        timeout: 240000, // 4 minutes timeout
+      }
+    );
+
+    // Check for and return the transcription text
+    if (response.data && response.data.text) {
+      return response.data.text;
+    } else {
+      throw new Error("No transcription text found in response");
+    }
+  } catch (error) {
+    // Handle the error as before
+    console.error("Error during API call:", error);
+    return null; // Return null or throw an error as appropriate
+  }
 }
 
 async function useShaleAPI(prompt, temperature = 0) {
