@@ -277,7 +277,7 @@ const positionModel = mongoose.Schema({
     officeLocation: String,
     contractType: String,
     contractDuration: String,
-    yearlySalary: Number,
+    yearlySalary: { min: Number, max: Number },
     socials: {
       portfolio: String,
       linkedin: String,
@@ -294,6 +294,7 @@ const positionModel = mongoose.Schema({
     default: "UNPUBLISHED",
   },
 
+  whatsToLove: String,
   whoYouAre: String,
   whatTheJobInvolves: String,
 });

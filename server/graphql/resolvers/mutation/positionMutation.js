@@ -9,7 +9,7 @@ const { Node } = require("../../../models/nodeModal");
 const { Conversation } = require("../../../models/conversationModel");
 const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 
-const { useGPTFunc} = require("../utils/aiExtraModules");
+const { useGPTFunc } = require("../utils/aiExtraModules");
 
 const { wait } = require("../utils/aiExtraModules");
 
@@ -43,7 +43,8 @@ const {
 
 const {
   createCardsCandidateForPositionFunc,
-  calculateScoreCardCandidateToPositionFunc,} = require("../utils/cardMemoryModules");
+  calculateScoreCardCandidateToPositionFunc,
+} = require("../utils/cardMemoryModules");
 
 const { arrayToObj } = require("../utils/endorsementModules");
 
@@ -57,6 +58,7 @@ module.exports = {
       mainUserID,
       status,
       whoYouAre,
+      whatsToLove,
       whatTheJobInvolves,
     } = args.fields;
     let { companyID } = args.fields;
@@ -88,6 +90,7 @@ module.exports = {
         if (companyID) positionData.companyID = companyID;
         if (icon) positionData.icon = icon;
         if (status) positionData.status = status;
+        if (whatsToLove) positionData.whatsToLove = whatsToLove;
         if (whoYouAre) positionData.whoYouAre = whoYouAre;
         if (whatTheJobInvolves)
           positionData.whatTheJobInvolves = whatTheJobInvolves;
@@ -118,6 +121,7 @@ module.exports = {
           companyID,
           mainUserID,
           conduct,
+          whatsToLove,
           whoYouAre,
           whatTheJobInvolves,
           talentList: [
@@ -283,23 +287,27 @@ module.exports = {
   },
 
   autoUpdatePositionCompInformation: async (parent, args, context, info) => {
-    const { positionID,mustUpdate } = args.fields;
+    const { positionID, mustUpdate } = args.fields;
     let { url } = args.fields;
     try {
-
-      positionData = await Position.findOne({ _id: positionID }).select('-candidates');
+      positionData = await Position.findOne({ _id: positionID }).select(
+        "-candidates"
+      );
       if (!positionData) throw new ApolloError("Position not found");
 
-      let positionsRequirements = positionData.positionsRequirements?.originalContent
+      let positionsRequirements =
+        positionData.positionsRequirements?.originalContent;
 
-      if (!positionsRequirements) throw new ApolloError("positionsRequirements/job_description not found");
+      if (!positionsRequirements)
+        throw new ApolloError(
+          "positionsRequirements/job_description not found"
+        );
 
       companyData = await Company.findOne({ _id: positionData.companyID });
       if (!companyData) throw new ApolloError("Company not found");
 
-
-      let variablesUsed = []
-      if (mustUpdate && mustUpdate.length != 0){
+      let variablesUsed = [];
+      if (mustUpdate && mustUpdate.length != 0) {
         variablesUsed = [...mustUpdate];
       }
 
@@ -307,74 +315,85 @@ module.exports = {
       // f3
 
       // --------------- Check what the Company already have ----------------
-      if (!companyData.mission && !variablesUsed.includes("mission")) 
-        variablesUsed.push("mission")
-      if (!companyData.description && !variablesUsed.includes("description")) 
-        variablesUsed.push("description")
-      if (!companyData.benefits && !variablesUsed.includes("benefits")) 
-        variablesUsed.push("benefits")
-      if (!companyData.values && !variablesUsed.includes("values")) 
-        variablesUsed.push("values")
-      if (!companyData.founders && !variablesUsed.includes("founders")) 
-        variablesUsed.push("founders")
-      if (!companyData.whatsToLove && !variablesUsed.includes("whatsToLove")) 
-        variablesUsed.push("whatsToLove")
-      
+      if (!companyData.mission && !variablesUsed.includes("mission"))
+        variablesUsed.push("mission");
+      if (!companyData.description && !variablesUsed.includes("description"))
+        variablesUsed.push("description");
+      if (!companyData.benefits && !variablesUsed.includes("benefits"))
+        variablesUsed.push("benefits");
+      if (!companyData.values && !variablesUsed.includes("values"))
+        variablesUsed.push("values");
+      if (!companyData.founders && !variablesUsed.includes("founders"))
+        variablesUsed.push("founders");
+      if (!companyData.whatsToLove && !variablesUsed.includes("whatsToLove"))
+        variablesUsed.push("whatsToLove");
+
       // --------------- Check what the Company already have ----------------
 
       // --------------- Check what the Position already have ----------------
-      if (!positionData.whatTheJobInvolves && !variablesUsed.includes("whatTheJobInvolves")) 
-        variablesUsed.push("whatTheJobInvolves")
-      if (!positionData.whoYouAre && !variablesUsed.includes("whoYouAre")) 
-        variablesUsed.push("whoYouAre")
-      
-      
+      if (
+        !positionData.whatTheJobInvolves &&
+        !variablesUsed.includes("whatTheJobInvolves")
+      )
+        variablesUsed.push("whatTheJobInvolves");
+      if (!positionData.whoYouAre && !variablesUsed.includes("whoYouAre"))
+        variablesUsed.push("whoYouAre");
+      if (!positionData.whatsToLove && !variablesUsed.includes("whatsToLove"))
+        variablesUsed.push("whatsToLove");
+
       // --------------- Check what the Position already have ----------------
 
+      if (variablesUsed.length == 0)
+        throw new ApolloError("No variables to update");
 
-      if (variablesUsed.length == 0) throw new ApolloError("No variables to update");
-      
-      
       // ----------------- Prepare variables -----------------
       const variablesData = {
         mission: {
-          description: "What is the mission of the company, if you can't find it return back N/A",
-          mongo:"Company",
+          description:
+            "What is the mission of the company, if you can't find it return back N/A",
+          mongo: "Company",
         },
         description: {
-          description: "What is the description of the company, if you can't find it return back N/A",
-          mongo:"Company",
+          description:
+            "What is the description of the company, if you can't find it return back N/A",
+          mongo: "Company",
         },
         whoYouAre: {
-          description: "What is the Skills and requirement that candidate need to have for this Job, if you can't find it return back N/A",
-          mongo:"Position",
+          description:
+            "What is the Skills and requirement that candidate need to have for this Job, if you can't find it return back N/A",
+          mongo: "Position",
         },
         whatTheJobInvolves: {
-          description: "What are the tasks and responsibilities involved in this job, if you can't find it return back N/A",
-          mongo:"Position",
+          description:
+            "What are the tasks and responsibilities involved in this job, if you can't find it return back N/A",
+          mongo: "Position",
         },
         benefits: {
-          description: "What are the benefits offered by the company or position, if you can't find it return back N/A",
-          mongo:"Company",
+          description:
+            "What are the benefits offered by the company or position, if you can't find it return back N/A",
+          mongo: "Company",
         },
         values: {
-          description: "What are the values of the company, if you can't find it return back N/A",
-          mongo:"Company",
+          description:
+            "What are the values of the company, if you can't find it return back N/A",
+          mongo: "Company",
         },
         founders: {
-          description: "Who are the founders of the company, if you can't find it return back N/A",
-          mongo:"Company",
+          description:
+            "Who are the founders of the company, if you can't find it return back N/A",
+          mongo: "Company",
         },
         whatsToLove: {
-          description: "What are the things to love about this Company, be creative ",
-          mongo:"Company",
-        }
-      }
+          description:
+            "What are the things to love about this Company, be creative ",
+          mongo: "Company",
+        },
+      };
 
       // const variablesUsed = ["mission","whoYouAre"]
       // const variablesUsed = ["mission","description"]
 
-      let propertiesUsed = {}
+      let propertiesUsed = {};
       for (let i = 0; i < variablesUsed.length; i++) {
         const variableUsed = variablesUsed[i];
 
@@ -383,82 +402,90 @@ module.exports = {
         propertiesUsed[variableUsed] = {
           type: "string",
           description: variablesData[variableUsed].description,
-        }
-
+        };
       }
       printC(propertiesUsed, "1", "propertiesUsed", "b");
       // ----------------- Prepare variables -----------------
 
-
       // ----------------- use GPT to find position -----------------
       // functionsUseGPT = ["findCompanyInformation"]
-      functionsUseGPT = []
-      functionUseVariables = [{
-        name: "findCompanyInformation",
-        description: "Having the job Description, find the company information",
-        parameters: {
+      functionsUseGPT = [];
+      functionUseVariables = [
+        {
+          name: "findCompanyInformation",
+          description:
+            "Having the job Description, find the company information",
+          parameters: {
             type: "object",
             properties: {
-                ...propertiesUsed,
+              ...propertiesUsed,
             },
             required: variablesUsed,
+          },
         },
-      }]
+      ];
 
-  
       const systemPrompt = `You are a recruiter, you try to find and fill all the information about the company and the position
 
       Job Description (delimited <>): <${positionsRequirements}>
-      `
+      `;
 
       // printC(systemPrompt, "1", "systemPrompt", "b");
       // f2
 
-      discussionT = [{
-        role: "user",
-        content: systemPrompt
-      }]
+      discussionT = [
+        {
+          role: "user",
+          content: systemPrompt,
+        },
+      ];
 
       modelK = "gpt-4-0613";
-  
-      let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,{},0,"API 1",functionUseVariables,modelK)
+
+      let resGPTFunc = await useGPTFunc(
+        discussionT,
+        systemPrompt,
+        functionsUseGPT,
+        {},
+        0,
+        "API 1",
+        functionUseVariables,
+        modelK
+      );
 
       printC(resGPTFunc, "2", "resGPTFunc", "p");
       // ----------------- use GPT to find position -----------------
 
-
       // ---------------- Extract the variables and add to Mongo ----------------
-      let objectVar = resGPTFunc.function_call
+      let objectVar = resGPTFunc.function_call;
 
       for (const [variable, content] of Object.entries(objectVar)) {
-        variableData = variablesData[variable]
+        variableData = variablesData[variable];
 
         if (!variableData) continue;
 
         if (variableData.mongo == "Company") {
-          companyData[variable] = content
-
+          companyData[variable] = content;
         } else if (variableData.mongo == "Position") {
-
-          positionData[variable] = content
-
+          positionData[variable] = content;
         }
       }
 
-      await companyData.save()
+      await companyData.save();
 
-      await positionData.save()
+      await positionData.save();
       // ---------------- Extract the variables and add to Mongo ----------------
 
-
-
       return positionData;
-
     } catch (err) {
       printC(err, "-1", "err", "r");
-      throw new ApolloError(err.message, err.extensions?.code || "autoUpdatePositionCompInformation", {
-        component: "positionMutation > autoUpdatePositionCompInformation",
-      });
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "autoUpdatePositionCompInformation",
+        {
+          component: "positionMutation > autoUpdatePositionCompInformation",
+        }
+      );
     }
   },
 
@@ -525,7 +552,6 @@ module.exports = {
       );
 
       if (index_candNewPos == -1) {
-
         positionNewData.allCandidateScoreCardCalculated = false;
         positionNewData.candidatesFlagAnalysisCreated = false;
 
@@ -541,19 +567,18 @@ module.exports = {
 
         // await positionNewData.save();
       } else {
-
         positionNewData.allCandidateScoreCardCalculated = false;
         positionNewData.candidatesFlagAnalysisCreated = false;
-
 
         positionNewData.candidates[index_candNewPos].analysisCandidateEdenAI = {
           flagAnalysisCreated: false,
         };
 
-        positionNewData.candidates[index_candNewPos].candidateScoreCardCalculated = false;
+        positionNewData.candidates[
+          index_candNewPos
+        ].candidateScoreCardCalculated = false;
 
         // await positionNewData.save();
-
       }
       // ----------------- add candidate to New position -----------------
 
@@ -645,7 +670,6 @@ module.exports = {
       args.fields
     );
 
-
     if (!positionOldID) throw new ApolloError("positionOldID is required");
     let positionOldData = await Position.findOne({ _id: positionOldID });
     if (!positionOldData) throw new ApolloError("positionOld not found");
@@ -710,22 +734,20 @@ module.exports = {
       await conversationData.save();
       // ----------------- find the conversation and add the positionNewID -----------------
 
-
       // ---------------- create cards candidate and connect to position --------
-      res = await createCardsCandidateForPositionFunc(positionNewID,userID)
+      res = await createCardsCandidateForPositionFunc(positionNewID, userID);
 
-
-      await wait (5000);
+      await wait(5000);
       // ---------------- create cards candidate and connect to position --------
 
-
-
       // ---------------- Calculate score card to position --------
-      res = await calculateScoreCardCandidateToPositionFunc(userID,positionNewID)
+      res = await calculateScoreCardCandidateToPositionFunc(
+        userID,
+        positionNewID
+      );
 
-      await wait (2000);
+      await wait(2000);
       // ---------------- Calculate score card to position --------
-
 
       // ------------- Candidate Eden Analysis for Position -------------
       positionNewData = await candidateEdenAnalysisPositionFunc(
@@ -777,7 +799,8 @@ module.exports = {
     }
   },
   moveCandidateToPosition_V3: async (parent, args, context, info) => {
-    const { userID, positionOldID, positionNewID,sendMessageCandidateTG } = args.fields;
+    const { userID, positionOldID, positionNewID, sendMessageCandidateTG } =
+      args.fields;
     console.log(
       "Mutation > moveCandidateToPosition_V3 > args.fields = ",
       args.fields
@@ -802,7 +825,6 @@ module.exports = {
       );
 
       if (index_candNewPos == -1) {
-
         positionNewData.allCandidateScoreCardCalculated = false;
         positionNewData.candidatesFlagAnalysisCreated = false;
 
@@ -818,19 +840,18 @@ module.exports = {
 
         // await positionNewData.save();
       } else {
-
         positionNewData.allCandidateScoreCardCalculated = false;
         positionNewData.candidatesFlagAnalysisCreated = false;
-
 
         positionNewData.candidates[index_candNewPos].analysisCandidateEdenAI = {
           flagAnalysisCreated: false,
         };
 
-        positionNewData.candidates[index_candNewPos].candidateScoreCardCalculated = false;
+        positionNewData.candidates[
+          index_candNewPos
+        ].candidateScoreCardCalculated = false;
 
         // await positionNewData.save();
-
       }
       // ----------------- add candidate to New position -----------------
 
@@ -856,10 +877,8 @@ module.exports = {
       await conversationData.save();
       // ----------------- find the conversation and add the positionNewID -----------------
 
-
-
       // ------------- Sent message with telegram to candidate -------------
-      if (sendMessageCandidateTG){
+      if (sendMessageCandidateTG) {
         filter = {
           phase: "QUERY",
           sender: {
@@ -892,8 +911,6 @@ module.exports = {
         // --------- Change the state Eden Candidate-------------
       }
       // ------------- Sent message with telegram to candidate -------------
-
-
 
       await positionNewData.save();
 
@@ -1129,7 +1146,12 @@ module.exports = {
       // With your extensive experience in web development using JavaScript frameworks, proficiency in TypeScript, and strong understanding of clients' requirements, I believe you would excel in building the backend for user-facing features and maintaining infrastructure
       // Are you interested in pursuing this opportunity? Can I personally recommend you for this position?`
 
-      printC(messagePitchPositionCandidate, "4", "messagePitchPositionCandidate", "y");
+      printC(
+        messagePitchPositionCandidate,
+        "4",
+        "messagePitchPositionCandidate",
+        "y"
+      );
 
       // // ------------- Sent message with telegram to candidate -------------
       // filter = {
@@ -1163,7 +1185,6 @@ module.exports = {
       // await userData.save();
       // // --------- Change the state Eden Candidate-------------
       // // ------------- Sent message with telegram to candidate -------------
-
 
       return {
         message: messagePitchPositionCandidate,
@@ -1633,7 +1654,7 @@ module.exports = {
   },
 
   updateAnalysisEdenAICandidates: async (parent, args, context, info) => {
-    const { positionIDs,userID } = args.fields;
+    const { positionIDs, userID } = args.fields;
     console.log(
       "Mutation > updateAnalysisEdenAICandidates > args.fields = ",
       args.fields
@@ -1647,11 +1668,15 @@ module.exports = {
     else
       positionsData = await Position.find({
         $and: [
-          { candidatesFlagAnalysisCreated: true  },
+          { candidatesFlagAnalysisCreated: true },
           {
             $or: [
-              { "candidates.analysisCandidateEdenAI.flagAnalysisCreated": null },
-              { "candidates.analysisCandidateEdenAI.flagAnalysisCreated": false },
+              {
+                "candidates.analysisCandidateEdenAI.flagAnalysisCreated": null,
+              },
+              {
+                "candidates.analysisCandidateEdenAI.flagAnalysisCreated": false,
+              },
             ],
           },
         ],
@@ -1667,7 +1692,7 @@ module.exports = {
 
       return positionsData;
     } catch (err) {
-      printC(err, "-1", "err", "r")
+      printC(err, "-1", "err", "r");
       throw new ApolloError(
         err.message,
         err.extensions?.code || "updateAnalysisEdenAICandidates",
