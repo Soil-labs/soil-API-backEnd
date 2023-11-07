@@ -1647,7 +1647,7 @@ module.exports = {
     else
       positionsData = await Position.find({
         $and: [
-          { candidatesFlagAnalysisCreated: true  },
+          { allCandidateScoreCardCalculated: true  },
           {
             $or: [
               { "candidates.analysisCandidateEdenAI.flagAnalysisCreated": null },
@@ -1656,6 +1656,9 @@ module.exports = {
           },
         ],
       });
+
+    // printC(positionsData.length, "0", "positionsData.length", "g")
+    // f1
 
     try {
       for (let i = 0; i < positionsData.length; i++) {
