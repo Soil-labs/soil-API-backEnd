@@ -1457,12 +1457,15 @@ async function useGPT4Simple(prompt, temperature = 0.7,chooseAPI = "API 1") {
     },
   ];
 
+  // let model = "gpt-4";
+  let model = "gpt-4-1106-preview";
+
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
   response = await axios.post(
     "https://api.openai.com/v1/chat/completions",
     {
       messages: discussion,
-      model: "gpt-4",
+      model: model,
       temperature: temperature,
     },
     {
