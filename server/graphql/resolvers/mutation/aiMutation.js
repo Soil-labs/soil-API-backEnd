@@ -6,16 +6,15 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { CardMemory } = require("../../../models/cardMemoryModel");
 
 const {
-  findOrCreateNewConvFunc,findConversationFunc,
+  findOrCreateNewConvFunc,
+  findConversationFunc,
 } = require("../utils/conversationModules");
 
 const {
   positionSuggestQuestionsAskCandidateFunc,
 } = require("../utils/positionModules");
 
-const {
-  talkToEdenMain,
-} = require("../utils/talkToEdenModules");
+const { talkToEdenMain } = require("../utils/talkToEdenModules");
 
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
@@ -45,6 +44,7 @@ const {
   reportPassFailCVPositionConversationFunc,
   positionTextAndConvoToReportCriteriaFunc,
   positionTextToExtraQuestionsFunc,
+  useWhisperAPI,
 } = require("../utils/aiModules");
 
 const {
@@ -902,16 +902,12 @@ module.exports = {
       args.fields
     );
 
-    
-
-    res = await positionSuggestQuestionsAskCandidateFunc(args.fields)
-
+    res = await positionSuggestQuestionsAskCandidateFunc(args.fields);
 
     return {
       success: true,
       questionSuggest: res.questionSuggest,
     };
-
   },
 
   saveCVtoUser: async (parent, args, context, info) => {
@@ -985,17 +981,14 @@ module.exports = {
           dateApply: new Date(),
         });
 
-        positionData.allCandidateScoreCardCalculated = false
-
+        positionData.allCandidateScoreCardCalculated = false;
 
         await positionData.save();
       } else {
         positionData.candidates[index_].dateApply = new Date();
         positionData.candidates[index_].candidateScoreCardCalculated = false;
 
-
-        positionData.allCandidateScoreCardCalculated = false
-
+        positionData.allCandidateScoreCardCalculated = false;
 
         await positionData.save();
 
@@ -1469,41 +1462,35 @@ module.exports = {
 
     try {
       // ------- find the conversation  ---------
-      let convData = await findConversationFunc({_id: conversationID})
+      let convData = await findConversationFunc({ _id: conversationID });
       // ------- find the conversation  ---------
 
       // ------- Prepare conversation, Summarize if too long, and use the summary to shorten it. ------
       // ------- Prepare conversation, Summarize if too long, and use the summary to shorten it.------
 
-
       // -------- Based on the Type of convData decide what AI to use --------
       let resTalkToEden = await talkToEdenMain({
         message,
-        convData
-      })
-        // --------- Inside the AIs decide what version of this AI --------
-           // ------- 1. check the state 
-           // ------- 2. check if there is any action 
-           // ------- 3. check the type of the conversation 
-           // ------- 4. based on that decide what functions will be used on the GPT
-           // ------- 5. use the function response to decide what function to run
-           // ------- 6. run the function (collect memories, collect users, collect data from database)
-           // ------- 7. use response on the GPT, and collect the results of the function
-           // ------- 8. return back the message of the GPT 
-           // ------- 9. return back the data and the choice of widget that happen during the GPT function phase 
-        // --------- Inside the AIs decide what version of this AI --------
+        convData,
+      });
+      // --------- Inside the AIs decide what version of this AI --------
+      // ------- 1. check the state
+      // ------- 2. check if there is any action
+      // ------- 3. check the type of the conversation
+      // ------- 4. based on that decide what functions will be used on the GPT
+      // ------- 5. use the function response to decide what function to run
+      // ------- 6. run the function (collect memories, collect users, collect data from database)
+      // ------- 7. use response on the GPT, and collect the results of the function
+      // ------- 8. return back the message of the GPT
+      // ------- 9. return back the data and the choice of widget that happen during the GPT function phase
+      // --------- Inside the AIs decide what version of this AI --------
       // -------- Based on the Type of convData decide what AI to use --------
-
 
       // --------- Return back the results to user ------
       // -- from 8. and 9.
       // --------- Return back the results to user ------
-
-
-
-
     } catch (err) {
-      printC(err, "-1", "err", "r")
+      printC(err, "-1", "err", "r");
       throw new ApolloError(
         err.message,
         err.extensions?.code || "talkToEdenGeneral_V1",
@@ -1603,129 +1590,126 @@ module.exports = {
     }
   },
   createCoreMemories: async (parent, args, context, info) => {
-    const { positionID, userID,coreMemories } = args.fields;
-    console.log(
-      "Mutation > createCoreMemories > args.fields = ",
-      args.fields
-    );
+    const { positionID, userID, coreMemories } = args.fields;
+    console.log("Mutation > createCoreMemories > args.fields = ", args.fields);
 
-    let totalCoreMemory = ""
+    let totalCoreMemory = "";
 
     try {
-
-
-      if (positionID && userID){
-        throw new ApolloError(
-          "positionID OR userID are required, not both",
-        )
+      if (positionID && userID) {
+        throw new ApolloError("positionID OR userID are required, not both");
       }
 
-      if (!positionID && !userID){
-        throw new ApolloError(
-          "positionID OR userID are required",
-        )
+      if (!positionID && !userID) {
+        throw new ApolloError("positionID OR userID are required");
       }
-
 
       let userData, positionData, cardMemoriesData;
 
-      if (positionID){
-        positionData =  await Position.findOne({
+      if (positionID) {
+        positionData = await Position.findOne({
           _id: positionID,
-        }).select('_id name memory positionsRequirements');
-      
-        printC(positionData, "1", "positionData", "b")
+        }).select("_id name memory positionsRequirements");
 
-        f1
+        printC(positionData, "1", "positionData", "b");
+
+        f1;
 
         // ------------- Get tradeOffs and priorities -------------
-        const tradeOffs = positionData.positionsRequirements.tradeOffs
-        const priorities = positionData.positionsRequirements.priorities
+        const tradeOffs = positionData.positionsRequirements.tradeOffs;
+        const priorities = positionData.positionsRequirements.priorities;
 
-
-        let tradeOffsPrompt = "Tradeoffs for this Position delimited || : |"
+        let tradeOffsPrompt = "Tradeoffs for this Position delimited || : |";
         for (let i = 0; i < tradeOffs.length; i++) {
           const tradeOff = tradeOffs[i];
           if (tradeOff.selected == tradeOff.tradeOff1)
-            tradeOffsPrompt = tradeOffsPrompt + "- Choose '" + tradeOff.tradeOff1 + "' Over '" + tradeOff.tradeOff2 + "'\n";
+            tradeOffsPrompt =
+              tradeOffsPrompt +
+              "- Choose '" +
+              tradeOff.tradeOff1 +
+              "' Over '" +
+              tradeOff.tradeOff2 +
+              "'\n";
           else
-            tradeOffsPrompt = tradeOffsPrompt + "- Choose '" + tradeOff.tradeOff2 + "' Over '" + tradeOff.tradeOff1 + "'\n";
+            tradeOffsPrompt =
+              tradeOffsPrompt +
+              "- Choose '" +
+              tradeOff.tradeOff2 +
+              "' Over '" +
+              tradeOff.tradeOff1 +
+              "'\n";
         }
 
-        tradeOffsPrompt = tradeOffsPrompt + "|"
-        printC(tradeOffsPrompt, "2", "tradeOffsPrompt", "y")
+        tradeOffsPrompt = tradeOffsPrompt + "|";
+        printC(tradeOffsPrompt, "2", "tradeOffsPrompt", "y");
 
-        totalCoreMemory = totalCoreMemory + tradeOffsPrompt + "\n\n"
+        totalCoreMemory = totalCoreMemory + tradeOffsPrompt + "\n\n";
 
-        let prioritiesPrompt = "Priorities for this Position delimited || : |"
+        let prioritiesPrompt = "Priorities for this Position delimited || : |";
         for (let i = 0; i < priorities.length; i++) {
           const priority = priorities[i];
-          prioritiesPrompt = prioritiesPrompt + (i+1) + ". " + priority.priority + "\n";
+          prioritiesPrompt =
+            prioritiesPrompt + (i + 1) + ". " + priority.priority + "\n";
         }
 
-        prioritiesPrompt = prioritiesPrompt + "|"
-        printC(prioritiesPrompt, "2", "prioritiesPrompt", "y")
-        
+        prioritiesPrompt = prioritiesPrompt + "|";
+        printC(prioritiesPrompt, "2", "prioritiesPrompt", "y");
 
-        totalCoreMemory = totalCoreMemory + prioritiesPrompt + "\n\n"
+        totalCoreMemory = totalCoreMemory + prioritiesPrompt + "\n\n";
         // ------------- Get tradeOffs and priorities -------------
-
 
         if (coreMemories) {
           positionData.memory = {
             ...positionData.memory,
             core: coreMemories,
-          }
+          };
 
           await positionData.save();
 
-          return 
+          return;
         } else {
-          cardMemoriesData = await CardMemory.find({ 
-            "authorCard.positionID": positionID  
+          cardMemoriesData = await CardMemory.find({
+            "authorCard.positionID": positionID,
           });
-
         }
-      } 
+      }
 
-      if (userID){
-        userData =  await Members.findOne({
+      if (userID) {
+        userData = await Members.findOne({
           _id: userID,
-        }).select('_id discordName memory');
+        }).select("_id discordName memory");
 
-        printC(userData, "1", "userData", "b")
-      
+        printC(userData, "1", "userData", "b");
 
         if (coreMemories) {
           userData.memory = {
             ...userData.memory,
             core: coreMemories,
-          }
+          };
 
           await userData.save();
 
-          return 
+          return;
         } else {
-          cardMemoriesData = await CardMemory.find({ 
-            "authorCard.userID": userID  
+          cardMemoriesData = await CardMemory.find({
+            "authorCard.userID": userID,
           });
         }
       }
 
       // f1
 
-      promptMemories = `All Memories delimited ||: |`
+      promptMemories = `All Memories delimited ||: |`;
 
       for (let i = 0; i < cardMemoriesData.length; i++) {
         let cardMemory = cardMemoriesData[i];
 
-        promptMemories += `${cardMemory.content} \n\n`
+        promptMemories += `${cardMemory.content} \n\n`;
       }
 
-      promptMemories += '|'
+      promptMemories += "|";
 
-
-      const MAX_WORDS = 100
+      const MAX_WORDS = 100;
 
       promptMemories += ` \n
       -  Based on this memories create a summary of the Bullet Point CORE Memories, 
@@ -1738,52 +1722,40 @@ module.exports = {
       - .....
 
       Bullet Point Core Memories: 
-      `
+      `;
 
+      printC(promptMemories, "1", "promptMemories", "b");
 
-      printC(promptMemories, "1", "promptMemories", "b")
-
-      summaryBulletPoints = await useGPTchatSimple(
-        promptMemories,
-        0,
-        "API 2"
-      );
+      summaryBulletPoints = await useGPTchatSimple(promptMemories, 0, "API 2");
 
       printC(summaryBulletPoints, "1", "summaryBulletPoints", "g");
 
-      if (userData != null){
-
-        totalCoreMemory = totalCoreMemory + summaryBulletPoints
+      if (userData != null) {
+        totalCoreMemory = totalCoreMemory + summaryBulletPoints;
 
         userData.memory = {
           ...userData.memory,
           core: summaryBulletPoints,
-        }
+        };
 
         await userData.save();
-      } else if (positionData != null ){
-
-        totalCoreMemory = totalCoreMemory + `Memories delimited ||: |${summaryBulletPoints}|`
-
+      } else if (positionData != null) {
+        totalCoreMemory =
+          totalCoreMemory + `Memories delimited ||: |${summaryBulletPoints}|`;
 
         positionData.memory = {
           ...positionData.memory,
           core: totalCoreMemory,
-        }
-
+        };
 
         await positionData.save();
-
       }
-
 
       return {
         output: totalCoreMemory,
-      }
-
-
+      };
     } catch (err) {
-      console.log("err = ", err)
+      console.log("err = ", err);
       // throw new ApolloError(
       //   err.message,
       //   err.extensions?.code || "createCoreMemories",
@@ -1960,6 +1932,29 @@ module.exports = {
           component: "aiMutation > autoUpdateMemoryFromPositionRequirments",
         }
       );
+    }
+  },
+  transcribeAudioToText: async (parent, args, context, info) => {
+    // const { audioFile } = args.fields;
+    const { audioFile } = args.fields;
+    console.log(
+      "Mutation > autoUpdateMemoryFromPositionRequirments > args.fields = ",
+      args.fields
+    );
+
+    console.log("audioFile ====== >>>>>>", await audioFile);
+
+    const file = await audioFile;
+
+    // if (!audioFile) throw new ApolloError("Audio file is required");
+    if (!audioFile) throw new ApolloError("Audio file is required");
+
+    const transcribedMessage = await useWhisperAPI(file);
+
+    try {
+      return { transcription: transcribedMessage };
+    } catch (err) {
+      throw new ApolloError(err.message);
     }
   },
   messageToGPT: combineResolvers(

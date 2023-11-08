@@ -86,6 +86,7 @@ module.exports = `
         updatePositionGeneralDetails(fields:updatePositionGeneralDetailsInput): Position
         updateUrl(fields:updateUrlInput): Position
         autoUpdatePositionCompInformation(fields:autoUpdatePositionCompInformationInput): Position
+        autoUpdatePositionCompInformation_V2(fields:autoUpdatePositionCompInformationInput): Position
         addQuestionsToAskPosition(fields:addQuestionsToAskPositionInput): Position
         interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Position
         moveCandidateToPosition(fields:moveCandidateToPositionInput): Position
@@ -196,6 +197,7 @@ module.exports = `
         talkToEdenGeneral_V1(fields: talkToEdenGeneral_V1Input): talkToEdenGeneral_V1Output
         autoUpdateMemoryFromPositionRequirments(fields: autoUpdateMemoryFromPositionRequirmentsInput): autoUpdateMemoryFromPositionRequirmentsOutput
         createCoreMemories(fields: createCoreMemoriesInput): createCoreMemoriesOutput
+        transcribeAudioToText(fields: transcribeAudioToTextInput): transcribeAudioToTextOutput 
         updatePrioritiesTradeOffs(fields: updatePrioritiesTradeOffsInput): updatePrioritiesTradeOffsOutput
         addMessages(fields: addMessagesInput): [AI]
         secondInterviewLetter(fields: secondInterviewLetterInput): secondInterviewLetterOutput
