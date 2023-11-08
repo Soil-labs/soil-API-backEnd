@@ -86,6 +86,7 @@ module.exports = `
         updatePositionGeneralDetails(fields:updatePositionGeneralDetailsInput): Position
         updateUrl(fields:updateUrlInput): Position
         autoUpdatePositionCompInformation(fields:autoUpdatePositionCompInformationInput): Position
+        autoUpdatePositionCompInformation_V2(fields:autoUpdatePositionCompInformationInput): Position
         addQuestionsToAskPosition(fields:addQuestionsToAskPositionInput): Position
         interviewQuestionCreationUser(fields:interviewQuestionCreationUserInput): Position
         moveCandidateToPosition(fields:moveCandidateToPositionInput): Position
