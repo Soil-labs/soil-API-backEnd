@@ -2,6 +2,8 @@ const { Position } = require("../../../models/positionModel");
 const { Company } = require("../../../models/companyModel");
 
 const { ApolloError } = require("apollo-server-express");
+const util = require("util");
+
 var ObjectId = require("mongoose").Types.ObjectId;
 module.exports = {
   findPosition: async (parent, args, context, info) => {
@@ -137,30 +139,31 @@ module.exports = {
     }
   },
   findPositionsOfCommunity: async (parent, args, context, info) => {
-    let { communityID,slug } = args.fields;
+    let { communityID, slug } = args.fields;
     console.log(
       "Query > findPositionsOfCommunity > args.fields = ",
       args.fields
     );
 
-    if (communityID && slug) throw new ApolloError(" Only one of communityID or slug is required");
-    if (!communityID && !slug) throw new ApolloError(" One of communityID or slug is required");
+    if (communityID && slug)
+      throw new ApolloError(" Only one of communityID or slug is required");
+    if (!communityID && !slug)
+      throw new ApolloError(" One of communityID or slug is required");
 
     try {
-
       if (slug) {
-        let companyDataSlug = await Company.findOne({ slug: slug }).select("_id");
+        let companyDataSlug = await Company.findOne({ slug: slug }).select(
+          "_id"
+        );
 
-        communityID = companyDataSlug._id
+        communityID = companyDataSlug._id;
       }
-
 
       let companyData = await Company.find({
         communitiesSubscribed: { $elemMatch: { $eq: communityID } },
       }).select("_id positions");
 
-      console.log("companyData = ", companyData)
-
+      console.log("companyData = ", companyData);
 
       if (!companyData) throw new ApolloError("Company not found");
 
@@ -169,15 +172,14 @@ module.exports = {
         .flat(1)
         .map((_pos) => _pos.positionID);
 
-
-
       let positionsData = await Position.find({
         _id: { $in: positionsIDs },
         status: { $nin: ["DELETED", "ARCHIVED", "UNPUBLISHED"] },
-      }).select("_id name status icon companyID");
+      }).select(
+        "_id name status icon companyID generalDetails whatTheJobInvolves whatsToLove whoYouAre"
+      );
 
       // f1
-
 
       return positionsData;
     } catch (err) {
