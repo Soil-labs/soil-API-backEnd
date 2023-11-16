@@ -1,3 +1,4 @@
+require("dotenv").config();
 const { AI } = require("../../../models/aiModel");
 const { Node } = require("../../../models/nodeModal");
 const { Members } = require("../../../models/membersModel");
@@ -66,19 +67,12 @@ const { filter } = require("mathjs");
 globalThis.fetch = fetch;
 
 function chooseAPIkey(chooseAPI = "") {
-  // openAI_keys = [
-  //   "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",
-  //   // "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",
-  //   "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",
-  //   "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",
-  // ];
-
-  let openAI_keys = ["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"];
+  let openAI_keys = [process.env.REACT_APP_OPENAI_1];
 
   if (chooseAPI == "API 2") {
-    openAI_keys = ["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"];
+    openAI_keys = [process.env.REACT_APP_OPENAI_2];
   } else if (chooseAPI == "API 1") {
-    openAI_keys = ["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"];
+    openAI_keys = [process.env.REACT_APP_OPENAI_1];
   }
 
   // randomly choose one of the keys
@@ -100,7 +94,7 @@ function remapValues(data, min, max, newMin, newMax) {
 }
 async function useGPT(prompt, temperature = 0.7, model = "text-davinci-003") {
   const configuration = new Configuration({
-    apiKey: "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",
+    apiKey: process.env.REACT_APP_OPENAI_1,
   });
   const openai = new OpenAIApi(configuration);
   // let model = "text-curie-001";
@@ -3526,7 +3520,7 @@ module.exports = {
     console.log("Query > edenGPTreply > args.fields = ", args.fields);
     try {
       const configuration = new Configuration({
-        apiKey: "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",
+        apiKey: process.env.REACT_APP_OPENAI_1,
       });
       const openai = new OpenAIApi(configuration);
 
@@ -3778,34 +3772,6 @@ module.exports = {
 
       reply = useGPT(prompot_General);
 
-      // // -------------- Find Keywords -------------
-      // const configuration = new Configuration({
-      //   apiKey: "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",
-      // });
-      // const openai = new OpenAIApi(configuration);
-      // // let keywordsEdenArray = [];
-      // const response_keywords = await openai.createCompletion({
-      //   model: "curie:ft-eden-protocol-2023-02-23-08-44-12",
-      //   prompt: message + "\nKeywords:",
-      //   temperature: 0.7,
-      //   stop: ["==END=="],
-      //   max_tokens: 300,
-      //   // top_p: 1,
-      //   // frequency_penalty: 0,
-      //   // presence_penalty: 0,
-      // });
-
-      // let keywordsEden = response_keywords.data.choices[0].text;
-      // // console.log("keywordsEden = " , keywordsEden)
-
-      // var keywordsEdenArray = keywordsEden.split(',');
-
-      // // delete any empty string
-      // keywordsEdenArray = keywordsEdenArray.filter(function (el) {
-      //   return el != "";
-      // });
-
-      // // -------------- Find Keywords -------------
 
       return {
         reply: reply,
@@ -4872,7 +4838,7 @@ module.exports = {
       // asdf1
 
       const configuration = new Configuration({
-        apiKey: "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",
+        apiKey: process.env.REACT_APP_OPENAI_1,
       });
       const openai = new OpenAIApi(configuration);
 

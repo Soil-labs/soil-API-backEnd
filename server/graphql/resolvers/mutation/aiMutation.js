@@ -1,3 +1,4 @@
+require("dotenv").config();
 const { AI } = require("../../../models/aiModel");
 const { Members } = require("../../../models/membersModel");
 const { Position } = require("../../../models/positionModel");
@@ -2754,13 +2755,7 @@ async function generateRandomID(numDigit = 8) {
 // }
 
 function chooseAPIkey() {
-  // openAI_keys = [
-  //   "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",
-  //   // "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",
-  //   "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",
-  //   "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",
-  // ];
-  openAI_keys = ["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"];
+  openAI_keys = [process.env.REACT_APP_OPENAI_1];
 
   // randomly choose one of the keys
   let randomIndex = Math.floor(Math.random() * openAI_keys.length);
