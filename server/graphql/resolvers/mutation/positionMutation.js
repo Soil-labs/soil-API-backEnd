@@ -646,8 +646,10 @@ module.exports = {
         } else {
           gptResult = await useGPTchatSimple(prompt, 0.2, "API 2", "chatGPT4");
         }
-        // let gptResult = "hey"
-        // await wait(11000);
+        
+        if (gptResult.includes('Result:')) {
+          gptResult = gptResult.replace('Result:', '');
+        }
 
         if (gptResult.includes('N/A')) {
           gptResult = 'N/A';
