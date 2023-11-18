@@ -63,7 +63,11 @@ module.exports = {
           return position.positionID;
         });
 
-        const positionsData = await Position.find({ _id: positionsID }).select('_id name icon status talentList companyID generalDetails');
+        //         const positionsData = await Position.find({ _id: positionsID }).select('_id name icon status talentList companyID generalDetails');
+        const graphQLaskFor = info.fieldNodes[0].selectionSet.selections.map(field => field.name.value);
+
+        const positionsData = await Position.find({ _id: positionsID }).select(graphQLaskFor);
+
 
         if (positionsData) {
           return positionsData;

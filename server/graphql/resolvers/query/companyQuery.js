@@ -78,14 +78,14 @@ module.exports = {
     if (!slug) throw new ApolloError("slug is required");
 
     try {
-      // console.log("change = ");
-      let companyData = await Company.findOne({ slug: slug });
+      const graphQLaskFor = info.fieldNodes[0].selectionSet.selections.map(field => field.name.value)
+
+      // let companyData = await Company.findOne({ slug: slug });
+      let companyData = await Company.findOne({ slug: slug }).select(graphQLaskFor);
+
       // console.log("change = 1", companyData);
 
       if (!companyData) throw new ApolloError("Company not found");
-
-//       console.log("companyData = 0d-d-d-d-d-d-d-d", companyData);
-// df9
 
 
       return companyData;
