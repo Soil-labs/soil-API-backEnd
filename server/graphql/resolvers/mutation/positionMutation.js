@@ -548,8 +548,8 @@ module.exports = {
         variablesUsed.push("whatTheJobInvolves");
       if (!positionData.whoYouAre && !variablesUsed.includes("whoYouAre"))
         variablesUsed.push("whoYouAre");
-      if (!positionData.whatsToLove && !variablesUsed.includes("whatsToLove"))
-        variablesUsed.push("whatsToLove");
+      // if (!positionData.whatsToLove && !variablesUsed.includes("whatsToLove"))
+      //   variablesUsed.push("whatsToLove");
 
       // --------------- Check what the Position already have ----------------
       
@@ -642,9 +642,9 @@ module.exports = {
         let prompt = `${systemPrompt}\n\n${variableData.description} \n\n ${variableData.size} \n\n Result:`;
         let gptResult;
         if (Math.random() < 0.5) {
-          gptResult = await useGPTchatSimple(prompt, 0.2, "API 1", "chatGPT4");
+          gptResult = await useGPTchatSimple(prompt, 0.7, "API 1", "chatGPT4");
         } else {
-          gptResult = await useGPTchatSimple(prompt, 0.2, "API 2", "chatGPT4");
+          gptResult = await useGPTchatSimple(prompt, 0.7, "API 2", "chatGPT4");
         }
         
         if (gptResult.includes('Result:')) {
