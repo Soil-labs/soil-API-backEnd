@@ -565,7 +565,7 @@ module.exports = {
         mission: {
           description: `Section to improve: about the company. Your objective is to write a paragraph in the "we-form" in plain, simple & easy to understand English and give an easy to understand answer to the following questions: what does the company do? How does it do that? Why is it good at doing that? Avoid non-descriptive words such as "transform, "innovate, "revolutionize, "streamline,... etc. Instead explain what makes them "transformational, "innovative" or "revolutionary". If you can't find enough meaningful info to go off in the job description provided return N/A.`,
           mongo:"Company",
-          size: "maximum of 1 paragraph and nothing else!"
+          size: "maximum of 1 small paragraph and nothing else!"
         },
         description: {
           description: `Section to improve: the company's purpose. How does the company do to make people's lives better? What's the simplest way to explain it? Give that explanation in plain, simple & easy to understand English - maximum one sentence. Do not mention the company again & state it in imperative form. Avoid non-descriptive words such as "transform", "innovate", "revolutionize" etc. Instead explain what makes them "transformational, "innovative" or "revolutionary". If you can't find enough meaningful info to go off in the job-description provided return N/A.`,
@@ -575,17 +575,17 @@ module.exports = {
         whoYouAre: {
           description: `Section to improve: who you are. Your objective is to get the right candidate excited to apply by writing concise bullet points in plain, simple & and easy-to-understand active English sentences that paint a compelling picture of who the ideal candidate would be for this position. Focus on human traits & culture fit topics. Write this in a way that the ideal candidate can write this and think "that's me!!" Avoid non-descriptive words such as "go-getter, "ninja, "wizzard", "passionate",... etc. Instead, explain what those things mean concretely. Be inspired by the original style that the job-post is written in. If you can't find enough meaningful info to go off in the job description provided return N/A.`,
           mongo:"Position",
-          size: "maximum of 6 small bullet points and nothing else!"
+          size: "maximum of 5 small bullet points and nothing else!"
         },
         whatTheJobInvolves: {
           description: `Section to improve: what the job involves. Your objective is to get the right candidate excited to apply by writing concise bullet points in plain, simple & and easy-to-understand active English sentences that paint a compelling picture of the responsibilities & requirements for the position. Write this in a way that the ideal candidate can write this and think "that's me!!" Avoid non-descriptive words such as "go-getter", "ninja", "wizzard", "passionate",... etc. Instead, explain what those things mean concretely.  Be inspired by the original style that the job-post is written in. If you can't find enough meaningful info to go off in the job description provided return N/A.`,
           mongo:"Position",
-          size: "maximum of 6 small bullet points and nothing else!"
+          size: "maximum of 5 small bullet points and nothing else!"
         },
         benefits: {
           description: `Section to improve: perks & benefits.  List all the perks & benefits of working at the company in bullet points. Do not invent anything. If you can't find enough meaningful info to go off in the job description provided return N/A.`,
           mongo:"Company",
-          size: "maximum of 5 small bullet points and nothing else!"
+          size: "maximum of 4 small bullet points and nothing else!"
         },
         values: {
           description: `Section to improve: Values. How would you describe what the company values? Write this in a value statement with concrete evidence below of how they enact the value in bullet points. Here's a great example: 
@@ -598,23 +598,23 @@ module.exports = {
 
             If you can't find enough meaningful info to go off in the job description provided return N/A.`,
           mongo:"Company",
-          size: "maximum of 1 paragraphs and nothing else!"
+          size: "maximum of 1 small paragraphs and nothing else!"
         },
         founders: {
           description: `Who are the founders of the company, what's their track record & what makes them awesome. If you can't find enough meaningful info to go off in the job description provided return N/A.`,
           mongo:"Company",
-          size: "maximum of 1 paragraphs and nothing else!"
+          size: "maximum of 1 small paragraphs and nothing else!"
         },
         whatsToLove: {
           description: `Section to improve: What's to love? Why is it an extraordinary opportunity to work at this company? Why should someone apply? Write two sentences in plain, simple & easy to understand English. Avoid non-descriptive words such as "transform", "innovate", "revolutionize", "streamline",... etc. Instead explain what makes them "transformational, "innovative" or "revolutionary".   The first sentence starts with "apply if ..."  & the second sentence explains further why working here would be the best thing ever. Write about the company in third person. If you can't find enough meaningful info to go off in the job description provided return N/A.`,
           mongo:"Company",
-          size: "maximum of 1 paragraphs and nothing else!"
+          size: "maximum of 1 small paragraphs and nothing else!"
         },
         edenTake: {
           description: `Section to improve: Eden's take. Write an honest review in 2 paragraphs maximum, as a recruiter in the industry, about the company explaining in simple terms what makes this company unique in your view, what the company does in laymen's terms, what they're exceptionally good at etc. Avoid non-descriptive words such as "transform", "innovate", "revolutionize", "streamline",... etc. Instead explain what makes them "transformational, "innovative" or "revolutionary".  
           If you can't find enough meaningful info to go off in the job description provided return N/A.`,
           mongo:"Company",
-          size: "Write an honest review in 2 paragraphs maximum and nothing else!"
+          size: "Write an honest review in 1 small paragraphs maximum and nothing else!"
 
         }
       };
@@ -640,7 +640,12 @@ module.exports = {
 
         // let gptResult = await runGPTFunction(systemPrompt, variableData.description);
         let prompt = `${systemPrompt}\n\n${variableData.description} \n\n ${variableData.size} \n\n Result:`;
-        let gptResult = await useGPTchatSimple(prompt,0.7,"API 1","chatGPT4");
+        let gptResult;
+        if (Math.random() < 0.5) {
+          gptResult = await useGPTchatSimple(prompt, 0.2, "API 1", "chatGPT4");
+        } else {
+          gptResult = await useGPTchatSimple(prompt, 0.2, "API 2", "chatGPT4");
+        }
         // let gptResult = "hey"
         // await wait(11000);
 
@@ -661,7 +666,7 @@ module.exports = {
         }
         
         
-        await wait(2000);
+        await wait(700);
       }
 
 

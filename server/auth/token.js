@@ -14,12 +14,13 @@ const token = async ({ body }, res) => {
   try {
     const { accessToken } = body;
     console.log("start accessing the token here ", accessToken);
+    console.log("process.env.GOOGLE_CLIENT_ID ", process.env.GOOGLE_CLIENT_ID);
     // Verify the token from Google and extract user information
     const ticket = await client.verifyIdToken({
       idToken: accessToken,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
-    console.log("the ticket is ", ticket);
+    // console.log("the ticket is ", ticket);
 
     if (!accessToken) throw new Error("Invalid Token supplied");
     // const authResponse = await axios
@@ -35,7 +36,7 @@ const token = async ({ body }, res) => {
     //let { user } = authResponse?.data;
 
     const payload = ticket.getPayload();
-    console.log("payload is ", payload);
+    // console.log("payload is ", payload);
     const userid = payload["sub"];
     const email = payload["email"];
     const name = payload["name"];
