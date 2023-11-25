@@ -752,20 +752,21 @@ async function assistantGPT_V1(data) {
       filterSave,
       conversationData,
     })
+    // ----- save conv ----
+    resCon = await saveConversation({
+      _conversation,
+      newMessage: resSentMessage.reply,
+      role: "assistant",
+      funcGPToutput: resSentMessage.funcGPToutput,
+      assistantName,
+      pubsub,
+      conversationID,
+    })
+    _conversation = resCon._conversation;
+    // ----- save conv ----
   }
 
-  // ----- save conv ----
-  resCon = await saveConversation({
-    _conversation,
-    newMessage: resSentMessage.reply,
-    role: "assistant",
-    funcGPToutput: resSentMessage.funcGPToutput,
-    assistantName,
-    pubsub,
-    conversationID,
-  })
-  _conversation = resCon._conversation;
-  // ----- save conv ----
+  
 
 
 

@@ -4071,11 +4071,6 @@ module.exports = {
     const {  positionID,conversationID,newMessage,memoriesType,newThread } = args.fields;
     console.log("Query > searchEden_V1 > args.fields = ", args.fields);
 
-
-    positionData = await Position.findOne({ 
-      _id: positionID,
-    }).select('_id name memory')
-
     
     try {
 
