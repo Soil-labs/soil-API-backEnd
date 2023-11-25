@@ -708,109 +708,82 @@ async function assistantGPT_V1(data) {
     conversationID,
   })
   _conversation = resCon._conversation;
-
-  await wait(3000)
-
-
-  resCon = await saveConversation({
-    _conversation,
-    newMessage:"nice to meet you",
-    role: "assistant",
-    pubsub,
-    conversationID,
-  })
-  _conversation = resCon._conversation;
-  await wait(3000)
-
-  resCon = await saveConversation({
-    _conversation,
-    newMessage:"nice to meet you 3" + newMessage,
-    role: "assistant",
-    pubsub,
-    conversationID,
-  })
-  _conversation = resCon._conversation;
-  await wait(3000)
-
   // ------------ Save conversation to DB -----------
 
-  return {
-    reply: "I am a bot",
+  
+  resSentMessage = await sentMessageAssistantGPT({
+    newMessage,
+    threadID_openAI,
+    assistantID_openAI,
+    openai,
+    filterSave,
+    conversationData,
+  })
+
+  if (newMessage.error) 
+    return {
+      error: newMessage.error
+    }
+
+  // ----- save conv ----
+  resCon = await saveConversation({
+    _conversation,
+    newMessage: resSentMessage.reply,
+    role: "assistant",
+    funcGPToutput: resSentMessage.funcGPToutput,
+    assistantName,
+    conversationID,
+    pubsub,
+  })
+  _conversation = resCon._conversation;
+  // ----- save conv ----
+
+
+  printC(resSentMessage, "10", "resSentMessage", "p")
+
+  if (resSentMessage.funcGPToutput) {
+
+    resSentMessage = await sentMessageAssistantGPT({
+      funcGPToutput: resSentMessage.funcGPToutput,
+      run: resSentMessage.run,
+      threadID_openAI,
+      assistantID_openAI,
+      openai,
+      filterSave,
+      conversationData,
+    })
   }
 
-  // resSentMessage = await sentMessageAssistantGPT({
-  //   newMessage,
-  //   threadID_openAI,
-  //   assistantID_openAI,
-  //   openai,
-  //   filterSave,
-  //   conversationData,
-  // })
-
-  // if (newMessage.error) 
-  //   return {
-  //     error: newMessage.error
-  //   }
-
-  // // ----- save conv ----
-  // resCon = await saveConversation({
-  //   _conversation,
-  //   newMessage: resSentMessage.reply,
-  //   role: "assistant",
-  //   funcGPToutput: resSentMessage.funcGPToutput,
-  //   assistantName,
-  //   conversationID,
-  //   pubsub,
-  // })
-  // _conversation = resCon._conversation;
-  // // ----- save conv ----
-
-
-  // printC(resSentMessage, "10", "resSentMessage", "p")
-
-  // if (resSentMessage.funcGPToutput) {
-
-  //   resSentMessage = await sentMessageAssistantGPT({
-  //     funcGPToutput: resSentMessage.funcGPToutput,
-  //     run: resSentMessage.run,
-  //     threadID_openAI,
-  //     assistantID_openAI,
-  //     openai,
-  //     filterSave,
-  //     conversationData,
-  //   })
-  // }
-
-  // // ----- save conv ----
-  // resCon = await saveConversation({
-  //   _conversation,
-  //   newMessage: resSentMessage.reply,
-  //   role: "assistant",
-  //   funcGPToutput: resSentMessage.funcGPToutput,
-  //   assistantName,
-  //   pubsub,
-  //   conversationID,
-  // })
-  // _conversation = resCon._conversation;
-  // // ----- save conv ----
+  // ----- save conv ----
+  resCon = await saveConversation({
+    _conversation,
+    newMessage: resSentMessage.reply,
+    role: "assistant",
+    funcGPToutput: resSentMessage.funcGPToutput,
+    assistantName,
+    pubsub,
+    conversationID,
+  })
+  _conversation = resCon._conversation;
+  // ----- save conv ----
 
 
 
 
 
-  // // ------------ Save conversation to DB -----------
-  // printC(_conversation, "10", "_conversation", "p")
-  // printC(conversationID, "10", "conversationID", "p")
-  // resultConv = await updateConvOnlyNewMessages(
-  //   conversationID,
-  //   _conversation,
-  // );
-  // // ------------ Save conversation to DB -----------
+  // ------------ Save conversation to DB -----------
+  printC(_conversation, "10", "_conversation", "p")
+  printC(conversationID, "10", "conversationID", "p")
+  resultConv = await updateConvOnlyNewMessages(
+    conversationID,
+    _conversation,
+  );
+  // ------------ Save conversation to DB -----------
 
 
-  // return {
-  //   reply: resSentMessage.reply,
-  // }
+  return {
+    reply: resSentMessage.reply,
+  }
   
 }
 
