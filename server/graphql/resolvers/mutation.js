@@ -57,6 +57,10 @@ const {
   updateConvSummaries,
 } = require("./mutation/conversationMutation");
 
+const {
+  conversationUpdated,
+} = require("./query/aiQuery");
+
 const { addQuestionToEdenAI } = require("./mutation/questionsEdenAIMutation");
 
 const {
@@ -405,6 +409,7 @@ module.exports = {
     memberUpdatedInRoom,
     userCVSavedToDB,
     memberDataConnectedTG,
+    conversationUpdated,
     positionDataConnectedTG,
   },
 };

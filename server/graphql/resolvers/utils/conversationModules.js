@@ -385,6 +385,7 @@ async function findAndUpdateConversationFunc(userID, conversation, positionID,po
   return resultConv;
 }
 
+
 async function updateConvOnlyNewMessages(conversationID, conversationNewMessages) {
 
   let existingConversation
