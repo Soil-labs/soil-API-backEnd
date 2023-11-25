@@ -707,6 +707,13 @@ async function assistantGPT_V1(data) {
     pubsub,
     conversationID,
   })
+  resCon = await saveConversation({
+    _conversation,
+    newMessage:"nice to meet you",
+    role: "assistant",
+    pubsub,
+    conversationID,
+  })
   _conversation = resCon._conversation;
   // ------------ Save conversation to DB -----------
 
