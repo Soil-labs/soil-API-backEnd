@@ -709,6 +709,9 @@ async function assistantGPT_V1(data) {
   })
   _conversation = resCon._conversation;
 
+  await wait(3000)
+
+
   resCon = await saveConversation({
     _conversation,
     newMessage:"nice to meet you",
@@ -716,6 +719,9 @@ async function assistantGPT_V1(data) {
     pubsub,
     conversationID,
   })
+  _conversation = resCon._conversation;
+  await wait(3000)
+
   resCon = await saveConversation({
     _conversation,
     newMessage:"nice to meet you 3" + newMessage,
@@ -724,6 +730,7 @@ async function assistantGPT_V1(data) {
     conversationID,
   })
   _conversation = resCon._conversation;
+  await wait(3000)
 
   // ------------ Save conversation to DB -----------
 
@@ -806,6 +813,11 @@ async function assistantGPT_V1(data) {
   // }
   
 }
+
+async function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 
 module.exports = {
   findBestEmbedings,
