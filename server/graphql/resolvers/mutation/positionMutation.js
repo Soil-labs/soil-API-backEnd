@@ -445,7 +445,8 @@ module.exports = {
         },
       ];
 
-      modelK = "gpt-4-0613";
+      // modelK = "gpt-4-0613";
+      modelK = "gpt-4-1106-preview";
 
       let resGPTFunc = await useGPTFunc(
         discussionT,

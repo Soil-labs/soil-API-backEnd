@@ -8,6 +8,23 @@ const conversationSchema = mongoose.Schema({
   extraPositionsID: [String],
   positionTrainEdenAI: Boolean,
 
+  threadID_openAI: String,
+
+  stateSearch: {
+    currentState: {
+      type: String,
+      enum: ["SEARCHING","FOUND","NOT_FOUND"],
+    },
+    memories: [{
+      content: String,
+      score: Number,
+      primitives: [{
+        type: String,
+        score: Number,
+      }]
+    }]
+  },
+
   typeConversation: {
     type: String,
     enum: ["INTERVIEW","ALIGNMENT_POSITION","PROMOTE_CANDIDATE","ASK_OPPORTUNITY"],
@@ -24,12 +41,20 @@ const conversationSchema = mongoose.Schema({
       role: String, 
       typeWidget: {
         type: String,
-        enum: ["MESSAGE","INDIVIDUAL_MEMORIES","SCORECARD"],
+        enum: ["MESSAGE","INDIVIDUAL_MEMORIES","SCORECARD","ADD_STATE"],
       },
       content: String,
       date: Date,
       widgetVars: {
         memoryIDs: [String],
+        memory: {
+          content: String,
+          score: Number,
+          primitives: [{
+            type: String,
+            score: Number,
+          }]
+        },
       },
     },
   ],

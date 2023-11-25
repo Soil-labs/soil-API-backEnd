@@ -253,10 +253,12 @@ module.exports = `
         MESSAGE
         INDIVIDUAL_MEMORIES
         SCORECARD
+        ADD_STATE
     }
 
     type widgetVarsType {
         memories: [CardMemory]
+        memory: memoryStateType
     }
 
     input autoUpdateMemoryFromPositionRequirmentsInput {
@@ -492,6 +494,27 @@ module.exports = `
         whatToAsk: whatToAskEnum
         memoriesType: memoriesTypeEnum
     }
+    input searchEden_V1Input {
+        positionID: ID
+        newMessage: String
+        conversationID: ID
+        memoriesType: memoriesTypeEnum
+        newThread: Boolean
+        
+        # memoriesInput: [MemoryInput]
+    }
+
+    input MemoryInput {
+        content: String
+        score: Float
+        primitives: [PrimitiveInput]
+    }
+
+    input PrimitiveInput {
+        type: String
+        score: Float
+    }
+    
 
     enum memoriesTypeEnum {
         OLD
@@ -506,6 +529,12 @@ module.exports = `
     type askEdenUserPositionGPTFunc_V2Output {
         reply: String
         cardMemoriesUsed: [CardMemoriesUsedType]
+        # keywords: [String]
+    }
+
+    type searchEden_V1Output {
+        reply: String
+        stateSearch: stateSearchType
         # keywords: [String]
     }
 
