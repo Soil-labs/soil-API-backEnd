@@ -13,7 +13,8 @@ module.exports = `
         groupNodes: [Node]
 
         state: stateEnum
-        
+
+        graphNeighbors: [graphNeighborType]        
 
 
         match_v2_update: match_v2_updateType
@@ -28,6 +29,19 @@ module.exports = `
         open: Boolean # on the tree structure if they are originally open 
         level: Int # Shows the level of the Node for the user, this can be used on the UI -> treeOfRelatedNodes
 
+    }
+
+     type graphNeighborType {
+        node: Node
+        hopNumTotal: Int
+        weightTotal: Float
+        weightSeparate: [weightSeparateType]
+    }
+
+    type weightSeparateType {
+        node: Node
+        weight: Float
+        hopNum: Int
     }
 
     type match_v2_updateType {
@@ -88,6 +102,16 @@ module.exports = `
         relatedNode_name: String
         weight: String
         connection: String
+    }
+
+    input createNode_V2Input {
+        name: String
+        node: String
+    }
+
+    input connectMemoriesToKnowledgeGraph_V2Input {
+        userID: ID
+        positionID: ID
     }
 
     input createNodeCategoryGroupInput {

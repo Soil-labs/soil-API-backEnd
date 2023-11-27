@@ -15,10 +15,11 @@ const nodeSchema = mongoose.Schema({
   name: String,
 
   relatedNodes: [mongoose.Schema.ObjectId],
-  subNodes: [mongoose.Schema.ObjectId],
-  aboveNodes: [mongoose.Schema.ObjectId],
-  categoryNodes: [mongoose.Schema.ObjectId],
-  groupNodes: [mongoose.Schema.ObjectId],
+
+  subNodes: [mongoose.Schema.ObjectId], // Deprecated
+  aboveNodes: [mongoose.Schema.ObjectId], // Deprecated
+  categoryNodes: [mongoose.Schema.ObjectId], // Deprecated
+  groupNodes: [mongoose.Schema.ObjectId], // Deprecated
 
   state: {
     // if this node is approved to be on the Knowedge Graph
@@ -26,7 +27,22 @@ const nodeSchema = mongoose.Schema({
     enum: ["waiting", "rejected", "approved"],
     default: "approved",
   },
-  match_v2_update: {
+
+  graphNeighbors: [{
+    nodeID: mongoose.Schema.ObjectId,
+    hopNumTotal: Number,
+    weightTotal: Number,
+    weightSeparate: [{
+      nodeID: mongoose.Schema.ObjectId,
+      weight: Number,
+      hopNum: Number,
+    }],
+  }],
+  
+
+
+  
+  match_v2_update: { // Deprecated
     member: {
       type: Boolean,
       default: true,
@@ -36,7 +52,7 @@ const nodeSchema = mongoose.Schema({
       default: true,
     },
   },
-  match_v2: [
+  match_v2: [ // Deprecated
     {
       serverID: [String],
       nodeResID: String,

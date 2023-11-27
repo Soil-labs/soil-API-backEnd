@@ -1279,9 +1279,9 @@ module.exports = {
 
           nodeIDs = nodeSave.map((obj) => obj._id);
 
-          await addNodesToMemberFunc(userData._id, nodeIDs);
+          // await addNodesToMemberFunc(userData._id, nodeIDs);
 
-          printC(nodeSave, "3", "nodeSave", "r");
+          // printC(nodeSave, "3", "nodeSave", "r");
 
           userData.cvInfo.cvPreparationNodes = true;
         }
@@ -1296,6 +1296,7 @@ module.exports = {
         users: usersData,
       };
     } catch (err) {
+      printC(err, "-1", "err", "r")
       throw new ApolloError(
         err.message,
         err.extensions?.code || "autoUpdateUserInfoFromCV",

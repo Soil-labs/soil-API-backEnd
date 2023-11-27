@@ -4,7 +4,6 @@ const { Company } = require("../models/companyModel");
 const {
   retrieveAndMergeServersUserIsIn,
 } = require("../utils/updateUserServersInDB");
-const { createNode_neo4j } = require("../neo4j/func_neo4j");
 const { ACCESS_LEVELS, OPERATORS } = require("./constants");
 
 const { OAuth2Client } = require("google-auth-library");
