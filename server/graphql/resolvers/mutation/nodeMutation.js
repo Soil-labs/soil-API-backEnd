@@ -13,6 +13,9 @@ const {
   IsOnlyOperator,
 } = require("../../../utils/authorization");
 
+const { printC } = require("../../../printModule");
+
+const { createNodeFunc,memoriesToKnowledgeGraphFunc } = require("../utils/nodeModules_V2");
 
 async function findOrCreateNode(node,nodeID,nodeName,serverID) {
   let nodeData;
@@ -462,7 +465,56 @@ module.exports = {
 
       return nodeData;
     },
-  // ),
+    createNode_V2: async (parent, args, context, info) => {
+      const { name, node } = args.fields;
+      console.log("Mutation > createNode_V2 > args.fields = ", args.fields);
+
+      if (!name) throw new ApolloError("You need to specify the name of the node");
+
+
+      try {
+
+        nodeData = await createNodeFunc({
+          name,
+          node,
+        })
+  
+  
+        return nodeData;
+      } catch (err) {
+        printC(err, "-1", "err", "r");
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "nodeMutation > createNode_V2" }
+        );
+      }
+    },
+    connectMemoriesToKnowledgeGraph_V2: async (parent, args, context, info) => {
+      const { userID, positionID } = args.fields;
+      console.log("Mutation > connectMemoriesToKnowledgeGraph_V2 > args.fields = ", args.fields);
+
+      if (!userID && !positionID) throw new ApolloError("You need to specify the userID or positionID of the node");
+
+
+      try {
+
+        nodeData = await memoriesToKnowledgeGraphFunc({
+          userID,
+          positionID,
+        })
+  
+  
+        return nodeData;
+      } catch (err) {
+        printC(err, "-1", "err", "r");
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "nodeMutation > connectMemoriesToKnowledgeGraph_V2" }
+        );
+      }
+    },
 };
 
 async function connect_node_to_subNode(nodeData, subNodes, weight = undefined) {
