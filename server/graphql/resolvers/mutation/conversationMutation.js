@@ -38,6 +38,9 @@ const {
   deleteMemoriesPineconeFunc,
 } = require("../utils/memoryPineconeModules");
 
+const { PubSub } = require("graphql-subscriptions");
+const pubsub = new PubSub();
+
 const { printC } = require("../../../printModule");
 
 

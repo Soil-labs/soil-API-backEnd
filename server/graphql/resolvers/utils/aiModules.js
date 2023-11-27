@@ -7,7 +7,7 @@ const { Conversation } = require("../../../models/conversationModel");
 
 const { ApolloError } = require("apollo-server-express");
 
-const { Configuration, OpenAIApi } = require("openai");
+const { OpenAI } = require("openai");
 
 const axios = require("axios");
 const FormData = require("form-data");
@@ -2267,6 +2267,8 @@ async function useGPTchatSimple(
         resContent = await onlyGPTDavinci(prompt, temperature, apiKey);
       } else if (useMode == "chatGPT4") {
         resContent = await useGPT4Simple(prompt, temperature, apiKey);
+      } else if (useMode == "chatGPT4-old") {
+        resContent = await useGPT4Simple(prompt, temperature, apiKey,"gpt-4");
       }
       success = true;
     } catch (e) {
@@ -2293,7 +2295,7 @@ async function useGPTchatSimple(
   return resContent;
 }
 
-async function useGPT4Simple(prompt, temperature = 0.7, chooseAPI = "API 1") {
+async function useGPT4Simple(prompt, temperature = 0.7, chooseAPI = "API 1",model="gpt-4-1106-preview") {
   discussion = [
     {
       role: "user",
@@ -2306,7 +2308,9 @@ async function useGPT4Simple(prompt, temperature = 0.7, chooseAPI = "API 1") {
     "https://api.openai.com/v1/chat/completions",
     {
       messages: discussion,
-      model: "gpt-4",
+      model: model,
+      // model: "gpt-4-1106-preview",
+      // model: "gpt-4",
       temperature: temperature,
     },
     {
@@ -2327,11 +2331,12 @@ async function onlyGPTDavinci(
   chooseAPI = "API 1",
   max_tokens = 3000
 ) {
-  const configuration = new Configuration({
-    apiKey: chooseAPIkey(chooseAPI),
-  });
+  // const configuration = new Configuration({
+  //   apiKey: chooseAPIkey(chooseAPI),
+  // });
 
-  const openai = new OpenAIApi(configuration);
+  // const openai = new OpenAIApi(configuration);
+  const openai = new OpenAI({ apiKey: chooseAPIkey(chooseAPI) });
 
   // let model = "text-curie-001";
   let model = "text-davinci-003";

@@ -49,6 +49,8 @@ const {
   createNode,
   relatedNode,
   relatedNode_name,
+  createNode_V2,
+  connectMemoriesToKnowledgeGraph_V2,
   createNodeCategoryGroup,
 } = require("./mutation/nodeMutation");
 
@@ -56,6 +58,10 @@ const {
   updateConversation,
   updateConvSummaries,
 } = require("./mutation/conversationMutation");
+
+const {
+  conversationUpdated,
+} = require("./query/aiQuery");
 
 const { addQuestionToEdenAI } = require("./mutation/questionsEdenAIMutation");
 
@@ -249,6 +255,8 @@ module.exports = {
     createNode,
     relatedNode,
     relatedNode_name,
+    createNode_V2,
+    connectMemoriesToKnowledgeGraph_V2,
     createNodeCategoryGroup,
 
     // ------------- CONVERSATION MUTATION -----------------
@@ -405,6 +413,7 @@ module.exports = {
     memberUpdatedInRoom,
     userCVSavedToDB,
     memberDataConnectedTG,
+    conversationUpdated,
     positionDataConnectedTG,
   },
 };

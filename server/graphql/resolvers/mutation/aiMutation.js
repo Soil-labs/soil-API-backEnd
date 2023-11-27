@@ -19,7 +19,7 @@ const { talkToEdenMain } = require("../utils/talkToEdenModules");
 
 const { ApolloError } = require("apollo-server-express");
 const axios = require("axios");
-const { Configuration, OpenAIApi } = require("openai");
+const { Configuration, OpenAIApi,OpenAI } = require("openai");
 const math = require("mathjs");
 const numeric = require("numeric");
 const fs = require("fs");
@@ -64,12 +64,13 @@ const pubsub = new PubSub();
 
 globalThis.fetch = fetch;
 
-const configuration = new Configuration({
-  apiKey: chooseAPIkey(),
-});
+// const configuration = new Configuration({
+//   apiKey: chooseAPIkey(),
+// });
 
 console.log("chooseAPIkey = ", chooseAPIkey());
-const openai = new OpenAIApi(configuration);
+// const openai = new OpenAIApi(configuration);
+const openai = new OpenAI({ apiKey: chooseAPIkey() });
 
 module.exports = {
   addMessage: async (parent, args, context, info) => {
@@ -1012,19 +1013,20 @@ module.exports = {
         - You are a recruiter with task to understand the the Fit between a candidate's CV and Job Requirments
         - talk in "second person" like you are a recruiter and you are selling the position to the candidat
 
-        1. persentage:  Percentage of match from 0 to 100
+        1. percentage:  Percentage of match from 0 to 100, without any other information just a number!!!
         2. skills: Main Skills CV CANDIDATE , 7 skills Max
         3. strengths: Were CV CANDIDATE has Strong Fit for  JOB REQUIREMENTS, 2 sentence Max
         4. weaknesses: Were the CV CANDIDATE can Improve for this  JOB REQUIREMENTS, 2 sentence Max
         5. growth: Were the CANDIDATE will Grow being in this JOB, 2 sentence Max
         6. improve: Were the Candidate will Improve the Professional Experience in this JOB, 2 sentence Max
 
-        1. persentage:
-        2. skills:
-        3. strengths:
-        4. weaknesses:
-        5. growth:
-        6. improve:
+        example: 
+        1. percentage: 30% 
+        2. skills: react, javascript, ...
+        3. strengths: ... 
+        4. weaknesses: ...
+        5. growth: ... 
+        6. improve: ... 
       `;
       printC(cvContentPrompt, "3", "cvContentPrompt", "b");
 
@@ -1032,7 +1034,7 @@ module.exports = {
         cvContentPrompt,
         0,
         "API 1",
-        "chatGPT4"
+        "chatGPT4-old"
       );
 
       // titleSkillSummaryRes = `1. Percentage: 70%
@@ -1046,8 +1048,24 @@ module.exports = {
       printC(titleSkillSummaryRes, "3", "titleSkillSummaryRes", "b");
 
       lines = titleSkillSummaryRes.split("\n");
-      const extractedText = lines.map((line) => line.split(":")[1].trim());
-      console.log(extractedText);
+      printC(lines, "3", "lines", "b")
+      // printC(lines.split(":"), "3", "lines.split()", "b")
+      // printC(lines.split(":")[1], "3", "lines.split()", "b")
+      const extractedText = lines.map((line) => {
+      
+        let sp = line.split(":")
+
+        if (sp.length > 1) {
+          return line.split(":")[1].trim()
+        } else {
+          return line
+        }
+
+
+        // line.split(":")[1].trim()
+      });
+      // console.log(extractedText);
+      // f1
 
       const matchPercentage = extractedText[0].replace("%", "");
       console.log("Match Percentage:", matchPercentage);
@@ -1090,6 +1108,7 @@ module.exports = {
         experienceAreas: experienceAreas,
       };
     } catch (err) {
+      printC(err, "-1", "err", "r");
       throw new ApolloError(
         err.message,
         err.extensions?.code || "saveCVtoUser",
@@ -1260,9 +1279,9 @@ module.exports = {
 
           nodeIDs = nodeSave.map((obj) => obj._id);
 
-          await addNodesToMemberFunc(userData._id, nodeIDs);
+          // await addNodesToMemberFunc(userData._id, nodeIDs);
 
-          printC(nodeSave, "3", "nodeSave", "r");
+          // printC(nodeSave, "3", "nodeSave", "r");
 
           userData.cvInfo.cvPreparationNodes = true;
         }
@@ -1277,6 +1296,7 @@ module.exports = {
         users: usersData,
       };
     } catch (err) {
+      printC(err, "-1", "err", "r")
       throw new ApolloError(
         err.message,
         err.extensions?.code || "autoUpdateUserInfoFromCV",

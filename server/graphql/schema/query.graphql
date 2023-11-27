@@ -147,6 +147,7 @@ module.exports = `
           findPrioritiesTrainEdenAI(fields: findPrioritiesTrainEdenAIInput): findPrioritiesTrainEdenAIOutput
           askEdenUserPositionGPTFunc(fields: askEdenUserPositionGPTFuncInput): askEdenUserPositionGPTFuncOutput
           askEdenUserPositionGPTFunc_V2(fields: askEdenUserPositionGPTFunc_V2Input): askEdenUserPositionGPTFunc_V2Output
+          searchEden_V1(fields: searchEden_V1Input): searchEden_V1Output
           askEdenUserPosition(fields: askEdenUserPositionInput): askEdenUserPositionOutput
           edenGPTreplyChatAPI(fields: edenGPTreplyChatAPIInput): edenGPTreplyChatAPIOutput
           edenGPTreplyChatAPI_V2(fields: edenGPTreplyChatAPI_V2Input): edenGPTreplyChatAPI_V2Output

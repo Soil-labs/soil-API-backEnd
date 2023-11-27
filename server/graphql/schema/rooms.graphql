@@ -19,6 +19,9 @@ module.exports = `
     input memberDataConnectedTGInput {
         _id: ID,
     }
+    input conversationUpdatedInput {
+        conversationID: ID,
+    }
     input positionDataConnectedTGInput {
         _id: ID,
     }

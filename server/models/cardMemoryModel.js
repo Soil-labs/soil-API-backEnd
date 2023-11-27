@@ -55,7 +55,11 @@ const cardMemoryModel = mongoose.Schema({
       positionID: String,
       userID: String,
     }
-  }
+  },
+  primitives: {
+    nodeID: String,
+    score: Number,
+  },
 
 
 });

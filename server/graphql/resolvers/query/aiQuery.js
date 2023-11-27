@@ -8,6 +8,9 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { ChatExternalApp } = require("../../../models/chatExternalAppModel");
 const { Conversation } = require("../../../models/conversationModel");
 
+const { PubSub,withFilter } = require("graphql-subscriptions");
+const pubsub = new PubSub();
+
 const {
   findPrioritiesTrainEdenAIFunc,
 } = require("../utils/positionModules");
@@ -22,7 +25,7 @@ const fetch = require("node-fetch");
 
 const { PineconeClient } = require("@pinecone-database/pinecone");
 // import { PineconeClient } from "@pinecone-database/pinecone";
-const { Configuration, OpenAIApi } = require("openai");
+const { Configuration, OpenAIApi,OpenAI } = require("openai");
 
 const { printC } = require("../../../printModule");
 
@@ -50,6 +53,8 @@ const { useGPT4chat,identifyCategoryFunc,
   replyToMessageBasedOnCategoryFunc,useGPTFunc,
   chooseFunctionForGPT,
   summarizeOldConversationMessages,} = require("../utils/aiExtraModules");
+
+  const { assistantGPT_V1} = require("../utils/aiExtra_2_Modules");
 
 
 const {
@@ -93,10 +98,11 @@ function remapValues(data, min, max, newMin, newMax) {
   return data;
 }
 async function useGPT(prompt, temperature = 0.7, model = "text-davinci-003") {
-  const configuration = new Configuration({
-    apiKey: process.env.REACT_APP_OPENAI_1,
-  });
-  const openai = new OpenAIApi(configuration);
+  // const configuration = new Configuration({
+  //   apiKey: process.env.REACT_APP_OPENAI_1,
+  // });
+  // const openai = new OpenAIApi(configuration);
+  const openai = new OpenAI({ apiKey: process.env.REACT_APP_OPENAI_1 });
   // let model = "text-curie-001";
   // let model = "text-davinci-003";
   const response = await openai.createCompletion({
@@ -166,7 +172,8 @@ async function useGPTchat(
   if (useMode == "chatGPT") {
     model = "gpt-3.5-turbo";
   } else if (useMode == "chatGPT4") {
-    model = "gpt-4"
+    // model = "gpt-4"
+    model = "gpt-4-1106-preview"
   }
 
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
@@ -227,7 +234,8 @@ async function useGPT4Simple(prompt, temperature = 0.7) {
     "https://api.openai.com/v1/chat/completions",
     {
       messages: discussion,
-      model: "gpt-4",
+      model: "gpt-4-1106-preview",
+      // model: "gpt-4",
       temperature: temperature,
     },
     {
@@ -3519,10 +3527,11 @@ module.exports = {
     const { message } = args.fields;
     console.log("Query > edenGPTreply > args.fields = ", args.fields);
     try {
-      const configuration = new Configuration({
-        apiKey: process.env.REACT_APP_OPENAI_1,
-      });
-      const openai = new OpenAIApi(configuration);
+      // const configuration = new Configuration({
+      //   apiKey: process.env.REACT_APP_OPENAI_1,
+      // });
+      // const openai = new OpenAIApi(configuration);
+      const openai = new OpenAI({ apiKey: process.env.REACT_APP_OPENAI_1 });
 
       console.log("change = 1");
 
@@ -4048,14 +4057,52 @@ module.exports = {
       }
 
     } catch (err) {
-      console.log("err = ", err);
-    //   throw new ApolloError(
-    //     err.message,
-    //     err.extensions?.code || "askEdenUserPositionGPTFunc_V2",
-    //     {
-    //       component: "aiQuery > askEdenUserPositionGPTFunc_V2",
-    //     }
-    //   );
+      printC(err, "-1", "err", "r");
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "askEdenUserPositionGPTFunc_V2",
+        {
+          component: "aiQuery > askEdenUserPositionGPTFunc_V2",
+        }
+      );
+    }
+  },
+  searchEden_V1: async (parent, args, context, info) => {
+    const {  positionID,conversationID,newMessage,memoriesType,newThread } = args.fields;
+    console.log("Query > searchEden_V1 > args.fields = ", args.fields);
+
+    
+    try {
+
+      res = await assistantGPT_V1({
+        conversationID: conversationID,
+        newMessage: newMessage,
+        assistantName: "Search Eden",
+        newThread: newThread,
+        pubsub,
+      })
+
+      // find conversationData 
+      conversationData = await Conversation.findOne({
+        _id: conversationID,
+      }).select('-conversation -summariesMessages -questionsAnswered');
+      
+
+
+      return {
+        reply: res.reply,
+        stateSearch: conversationData.stateSearch,
+      }
+
+    } catch (err) {
+      printC(err, "-1", "err", "r");
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "searchEden_V1",
+        {
+          component: "aiQuery > searchEden_V1",
+        }
+      );
     }
   },
   askEdenUserPosition: async (parent, args, context, info) => {
@@ -4837,10 +4884,11 @@ module.exports = {
       console.log("prompt = ", prompt);
       // asdf1
 
-      const configuration = new Configuration({
-        apiKey: process.env.REACT_APP_OPENAI_1,
-      });
-      const openai = new OpenAIApi(configuration);
+      // const configuration = new Configuration({
+      //   apiKey: process.env.REACT_APP_OPENAI_1,
+      // });
+      // const openai = new OpenAIApi(configuration);
+      const openai = new OpenAI({ apiKey: process.env.REACT_APP_OPENAI_1 });
 
       // -------------- Find Reply -------------
       const response = await openai.createCompletion({
@@ -4869,6 +4917,23 @@ module.exports = {
         }
       );
     }
+  },
+  conversationUpdated: {
+    subscribe: withFilter(
+      () => pubsub.asyncIterator('CONVERSATION_UPDATED'),
+      (payload, variables) => {
+
+        const {conversationID} = variables.fields
+
+        if (conversationID == undefined) throw new Error("There is no conversationID")
+
+        // console.log("payload = " , payload)
+        // console.log("variables = " , variables)
+
+
+        return payload.conversationID.toString() == conversationID.toString();
+      }
+    ),
   },
 };
 

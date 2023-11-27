@@ -8,6 +8,11 @@ module.exports = `
         extraPositionsID: [ID]
         positionTrainEdenAI: Boolean,
 
+
+        threadID_openAI: String,
+
+        stateSearch: stateSearchType
+
         typeConversation: typeConversationEnum
 
         subjectConv: subjectConvType,
@@ -28,6 +33,28 @@ module.exports = `
         questionsAnswered: [questionAnsweredType],
         
         updatedAt: Date,
+    }
+
+    type stateSearchType {
+        currentState: stateSearchEnum
+        memories: [memoryStateType]
+    }
+
+    enum stateSearchEnum {
+        SEARCHING
+        FOUND
+        NOT_FOUND
+    }
+
+    type memoryStateType {
+        content: String
+        score: Float
+        primitives: [primitiveType]
+    }
+
+    type primitiveType {
+        type: String
+        score: Float
     }
 
     enum typeConversationEnum {
