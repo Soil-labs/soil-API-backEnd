@@ -310,6 +310,32 @@ giveInformationRelatedToPosition: {
         required: ["message"],
     },
   },
+  memory_primitives: {
+    name: "memory_primitives",
+    description: "Save the primitives of the memory and the score from 0(not important) to 10(really important), you can maximum return 12 primitives, you need to return all primitives in 1 function call! ",
+    parameters: {
+      type: "object",
+      properties: {
+        primitive_1: {type: "string",description: "1 Primitive, category of this primitive, score from 0 to 10"},
+        score_1: {type: "string",description: "1 score of the first primitive, score from 0 to 10"},
+        primitive_2: {type: "string",description: "2 Primitive and score, category of this primitive, score from 0 to 10"},
+        score_2: {type: "string",description: "2 score of the second primitive, score from 0 to 10"},
+        primitive_3: {type: "string",description: "3 Primitive and score, category of this primitive, score from 0 to 10"},
+        score_3: {type: "string",description: "3 score of the third primitive, score from 0 to 10"},
+        primitive_4: {type: "string",description: "4 Primitive and score, category of this primitive, score from 0 to 10"},
+        score_4: {type: "string",description: "4 score of the fourth primitive, score from 0 to 10"},
+        // primitive_5: {type: "string",description: "5 Primitive and score, category of this primitive, score from 0 to 10"},
+        // primitive_6: {type: "string",description: "6 Primitive and score, category of this primitive, score from 0 to 10"},
+        // primitive_7: {type: "string",description: "7 Primitive and score, category of this primitive, score from 0 to 10"},
+        // primitive_8: {type: "string",description: "8 Primitive and score, category of this primitive, score from 0 to 10"},
+        // primitive_9: {type: "string",description: "9 Primitive and score, category of this primitive, score from 0 to 10"},
+        // primitive_10: {type: "string",description: "10 Primitive and score, category of this primitive, score from 0 to 10"},
+        // primitive_11: {type: "string",description: "11 Primitive and score, category of this primitive, score from 0 to 10"},
+        // primitive_12: {type: "string",description: "12 Primitive and score, category of this primitive, score from 0 to 10"}
+      },
+      required: ["primitive_1","score_1"],
+    }
+  }
   
 }
 
