@@ -571,7 +571,7 @@ module.exports = {
         description: {
           description: `Section to improve: the company's purpose. How does the company do to make people's lives better? What's the simplest way to explain it? Give that explanation in plain, simple & easy to understand English - maximum one sentence. Do not mention the company again & state it in imperative form. Avoid non-descriptive words such as "transform", "innovate", "revolutionize" etc. Instead explain what makes them "transformational, "innovative" or "revolutionary". If you can't find enough meaningful info to go off in the job-description provided return N/A.`,
           mongo:"Company",
-          size: "maximum of 1 sentence and nothing else!"
+          size: "maximum of 1 sentence, always put something here"
         },
         whoYouAre: {
           description: `Section to improve: who you are. Your objective is to get the right candidate excited to apply by writing concise bullet points in plain, simple & and easy-to-understand active English sentences that paint a compelling picture of who the ideal candidate would be for this position. Focus on human traits & culture fit topics. Write this in a way that the ideal candidate can write this and think "that's me!!" Avoid non-descriptive words such as "go-getter, "ninja, "wizzard", "passionate",... etc. Instead, explain what those things mean concretely. Be inspired by the original style that the job-post is written in. If you can't find enough meaningful info to go off in the job description provided return N/A.`,

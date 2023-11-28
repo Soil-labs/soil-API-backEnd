@@ -5,7 +5,9 @@ const { Node } = require("../../../models/nodeModal");
 const { CardMemory } = require("../../../models/cardMemoryModel");
 const { printC } = require("../../../printModule");
 
-
+const {
+  useGPTFunc,
+} = require("../utils/aiExtraModules");
 
 const { request, gql} = require('graphql-request');
 
@@ -75,6 +77,26 @@ const memoriesToKnowledgeGraphFunc = async (data) => {
   printC(cardMemoriesData, "1", "cardMemoriesData", "b")
 
 
+  // ---------------- use GPT function ----------------
+  let discussionT = [{
+    role: "user",
+    content: "I know react for like 10 years and a bit of figma the past month ",
+  }];
+
+  functionsUseGPT = ["memory_primitives"]
+
+
+  const systemPrompt = `Your job is to take memories and split them up into the primitives together with score for this memory,
+
+  - you need to focus on finding a job, job descriptions and CVs of people and anything related to matching people with jobs 
+  
+  Example of primitives: 
+  Javascript, leader, marketing, manager`
+
+  let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT)
+
+  printC(resGPTFunc, "1", "resGPTFunc", "b")
+  // ---------------- use GPT function ----------------
 
   
 
