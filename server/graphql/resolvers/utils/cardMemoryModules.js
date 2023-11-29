@@ -23,7 +23,7 @@ const {
 
 async function addCardMemoryFunc(filter) {
 
-    let { _id, content, priority, tradeOffBoost, type, connectedCards, authorCard, score } = filter;
+    let { _id, content,scoreCriteria, priority, tradeOffBoost, type, connectedCards, authorCard, score } = filter;
 
 
 
@@ -41,6 +41,7 @@ async function addCardMemoryFunc(filter) {
       if (type) cardMemoryData.type = type;
       if (authorCard) cardMemoryData.authorCard = authorCard;
       if (score) cardMemoryData.score = score;
+      if (scoreCriteria) cardMemoryData.scoreCriteria = scoreCriteria;
       
       if (connectedCards) {
         // Check if the cardID already exist on the connectedCards
@@ -80,6 +81,7 @@ async function addCardMemoryFunc(filter) {
 
       cardMemoryData = new CardMemory({
         content,
+        scoreCriteria,
         priority,
         tradeOffBoost,
         type,

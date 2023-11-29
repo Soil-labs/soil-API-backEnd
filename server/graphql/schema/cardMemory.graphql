@@ -106,6 +106,32 @@ module.exports = `
         positionID: ID
     }
 
+    # input editCardMemoryInput {
+    #     positionID: ID
+    #     cardMemoryID: ID
+    #     content: String
+    #     scoreCriteria: String
+    #     updateCandidatesPosition: Boolean
+    #     type: typeCardMemoryEnum
+    #     priority: Int
+    #     tradeOffBoost: Int
+    # }
+
+    input editCardMemoryInput {
+        positionID: ID
+        updateCandidatesPosition: Boolean
+        batchCards: [batchCardsInput]
+    }
+
+    input batchCardsInput {
+        cardMemoryID: ID
+        content: String
+        scoreCriteria: String
+        type: typeCardMemoryEnum
+        priority: Int
+        tradeOffBoost: Int
+    }
+
     input createCardsForPositionInput {
         positionID: ID
     }
