@@ -211,14 +211,51 @@ module.exports = {
 
       }
 
-      printC(cardMemoriesData, "1", "cardMemoriesData", "b")
+
+
+
 
       // sd9
 
-      deleteCardIDs = []
+      let deleteCardIDs = []
       deletePineconeIDs = []
       for (let i = 0; i < cardMemoriesData.length; i++) {
         const cardMemory = cardMemoriesData[i];
+
+
+        // // ------ Delete the card from position ---------
+        // if (cardMemory.authorCard.positionID) {
+        //   // find the positionData
+        //   let positionData = await Position.findOne({ _id: cardMemory.authorCard.positionID }).select('_id candidates');
+
+        //   for (let j = 0; j < positionData.candidates.length; j++) {
+        //     let candidate = positionData.candidates[j];
+
+        //     // printC(candidate.scoreCardCategoryMemories, "1", "candidate.scoreCardCategoryMemories", "y")
+
+        //     let scoreCardCategoryMemories = candidate.scoreCardCategoryMemories
+
+        //     for (let k = 0; k < scoreCardCategoryMemories.length; k++) {
+        //       let scoreCardCategoryMemory = scoreCardCategoryMemories[k];
+
+        //       if (scoreCardCategoryMemory.scoreCardsPosition) {
+        //         for (let l = 0; l < scoreCardCategoryMemory.scoreCardsPosition.length; l++) {
+        //           let scoreCardsPosition = scoreCardCategoryMemory.scoreCardsPosition[l];
+
+        //           // console.log("scoreCardsPosition = ", scoreCardsPosition)
+
+        //           if (deleteCardIDs.includes(scoreCardsPosition.cardID)) {
+        //             console.log("scoreCardsPosition = ", scoreCardsPosition)
+        //             // scoreCardCategoryMemory.scoreCardsPosition.splice(l, 1);
+        //           }
+        //         }
+        //       }
+
+        //     }
+        //   }
+        // }
+        // f1
+        // // ------ Delete the card from position ---------
 
         deleteCardIDs.push(cardMemory._id)
         deletePineconeIDs.push(cardMemory.pineconeDB.pineconeID)
@@ -251,6 +288,57 @@ module.exports = {
 
       }
 
+      
+      deleteCardIDsString = []
+      for(let i = 0; i < deleteCardIDs.length; i++) {
+        deleteCardIDsString.push(deleteCardIDs[i].toString())
+      }
+      
+      printC(deleteCardIDsString, "1", "deleteCardIDsString", "b")
+
+      for (let i = 0; i < cardMemoriesData.length; i++) {
+          const cardMemory = cardMemoriesData[i];
+
+
+          // ------ Delete the card from position ---------
+          if (cardMemory.authorCard.positionID) {
+            // find the positionData
+            let positionData = await Position.findOne({ _id: cardMemory.authorCard.positionID }).select('_id candidates');
+
+            for (let j = 0; j < positionData.candidates.length; j++) {
+              let candidate = positionData.candidates[j];
+
+              // printC(candidate.scoreCardCategoryMemories, "1", "candidate.scoreCardCategoryMemories", "y")
+
+              let scoreCardCategoryMemories = candidate.scoreCardCategoryMemories
+
+              for (let k = 0; k < scoreCardCategoryMemories.length; k++) {
+                let scoreCardCategoryMemory = scoreCardCategoryMemories[k];
+
+                if (scoreCardCategoryMemory.scoreCardsPosition) {
+                  for (let l = 0; l < scoreCardCategoryMemory.scoreCardsPosition.length; l++) {
+                    let scoreCardsPosition = scoreCardCategoryMemory.scoreCardsPosition[l];
+
+                    console.log("scoreCardsPosition.cardID = ", scoreCardsPosition.cardID)
+
+                    if (deleteCardIDsString.includes(scoreCardsPosition.cardID.toString())) {
+                      console.log("scoreCardsPosition = ", scoreCardsPosition)
+                      // scoreCardCategoryMemory.scoreCardsPosition.splice(l, 1);
+
+                      // delete from position this 
+                      positionData.candidates[j].scoreCardCategoryMemories[k].scoreCardsPosition.splice(l, 1);
+                    }
+                  }
+                }
+
+              }
+            }
+            positionData.save(  )
+          }
+          // f1
+        }
+        // ------ Delete the card from position ---------
+
       await deletePineCone(deletePineconeIDs)
 
       await CardMemory.deleteMany({ _id: deleteCardIDs});
@@ -269,6 +357,109 @@ module.exports = {
         { component: "cardMemoryMutation > deleteCardMemory" }
       );
     }
+  },
+  editCardMemory: async (parent, args, context, info) => {
+    // const { positionID,cardMemoryID,content,type,priority,tradeOffBoost, scoreCriteria,updateCandidatesPosition} = args.fields;
+    const { positionID,batchCards,updateCandidatesPosition} = args.fields;
+    console.log("Mutation > editCardMemory > args.fields = ", args.fields);
+    
+    if (!positionID) throw new ApolloError("You need to give some IDs", { component: "cardMemoryMutation > editCardMemory" });
+
+    try {
+
+      allCardMemoriesData = []
+
+      for (let i = 0; i < batchCards.length; i++) {
+        const { cardMemoryID,content,type,priority,tradeOffBoost, scoreCriteria} = batchCards[i];
+
+
+
+  
+        if (!content) continue;
+
+        let cardMemoryData
+        if (cardMemoryID){
+          cardMemoryData = await CardMemory.findOne({ _id: cardMemoryID });
+        
+
+          printC(cardMemoryData, "1", "cardMemoryData", "b")
+
+          // update the card content and scoreCriteria
+          if(content) {
+            cardMemoryData.content = content;
+          }
+          if(scoreCriteria) {
+            cardMemoryData.scoreCriteria = scoreCriteria;
+          }
+        } else {
+          cardMemoryData = await addCardMemoryFunc({
+            content,
+            scoreCriteria,
+            type,
+            priority: priority,
+            tradeOffBoost: tradeOffBoost,
+            authorCard: {
+              positionID: positionID,
+              category: "POSITION",
+            }
+
+          })
+        }
+
+        if (updateCandidatesPosition) {
+
+          positionData = await Position.findOne({ _id: positionID }).select('_id companyID allCandidateScoreCardCalculated candidates');
+
+          printC(positionData._id, "3", "positionData._id", "p")
+
+          positionData.allCandidateScoreCardCalculated = false;
+
+
+          for (let i = 0; i < positionData.candidates.length; i++) {
+
+            
+            if (positionData.candidates[i]) {
+              positionData.candidates[i].candidateScoreCardCalculated = false;
+              positionData.candidates[i].scoreCardCategoryMemories = []
+            }
+
+
+            if (positionData.candidates[i] && positionData.candidates[i].scoreCardTotal) {
+              positionData.candidates[i].scoreCardTotal.score = 0;
+              positionData.candidates[i].scoreCardTotal.scoreCardCalculated = false;
+            }
+
+            
+          }
+          
+          cardMemoryData.connectedCards = []
+
+
+          await positionData.save();
+          
+          
+        }
+
+        await cardMemoryData.save();
+
+
+
+
+        // return cardMemoryData
+        allCardMemoriesData.push(cardMemoryData)
+      }
+      return allCardMemoriesData
+    } catch (err) {
+      printC(err, "-1", "err", "r")
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "editCardMemory",
+        { component: "cardMemoryMutation > editCardMemory" }
+      );
+    }
+
+
+
   },
   createCardsForPosition: async (parent, args, context, info) => {
     const { positionID} = args.fields;
