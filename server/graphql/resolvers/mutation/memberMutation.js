@@ -299,8 +299,8 @@ module.exports = {
     }
   ),
   updateMember:
-    combineResolvers(
-      IsAuthenticated,
+    // combineResolvers(
+      // IsAuthenticated,
     async (parent, args, { user }, info) => {
       const {
         discordName,
@@ -732,7 +732,7 @@ module.exports = {
         );
       }
     },
-  ),
+  // ),
 
   addNodesToMember:
     // combineResolvers(
