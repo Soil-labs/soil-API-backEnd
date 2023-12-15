@@ -1139,10 +1139,22 @@ module.exports = {
         });
       }
 
-      for (let i = 0; i < usersData.length; i++) {
+      // printC(usersData.length, "0", "usersData.length", "b");
+
+      // f1
+
+      if (usersData.length == 0) {
+        return {
+          success: true,
+          users: [],
+        }
+      }
+
+
+      for (let i = 0; i < 1; i++) {
+        // for (let i = 0; i < usersData.length; i++) {
         // if (usersData.length > 0) {
         // SOS 🆘 delete - only test one user at a time
-        let i = 0; // SOS 🆘 delete
         let userData = usersData[i];
         let cvContent = userData.cvInfo.cvContent;
 
@@ -1214,7 +1226,6 @@ module.exports = {
           - Always use "•" for a bullet point, never this "-". 
     
           This is the format: 
-
           [
             {
               "title": "Job Title, Company Name",
@@ -1222,6 +1233,8 @@ module.exports = {
                             
             }
           ]
+
+          ONLY Use English Alpha numeric characters, no special characters, no emojis, no non-english characters.
     
          `;
 
@@ -1230,9 +1243,17 @@ module.exports = {
 
           let modifiedResult = await responseFromGPT.replace(/\\n|\n/g, "");
 
-          printC("modifiedResult", modifiedResult);
+          printC(modifiedResult, "3", "modifiedResult", "b");
 
-          result = JSON.parse(modifiedResult);
+          try {
+            result = JSON.parse(modifiedResult);
+          } catch (err) {
+            printC(err, "-1", "err", "r")
+          }
+
+          printC(result, "3", "result", "b");
+
+
 
           userData.previousProjects = result;
 
