@@ -58,13 +58,13 @@ const login = async ({ body }, res, req) => {
       dbUser = await new Members(fields);
       dbUser.save();
       //save a connection
-      createNode_neo4j({
-        // await createNode_neo4j({
-        node: "Member",
-        id: dbUser._id,
-        name: dbUser.discordName,
-        serverID: [],
-      });
+      // createNode_neo4j({
+      //   // await createNode_neo4j({
+      //   node: "Member",
+      //   id: dbUser._id,
+      //   name: dbUser.discordName,
+      //   serverID: [],
+      // });
     }
 
     // Generate auth token

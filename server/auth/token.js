@@ -59,12 +59,12 @@ const token = async ({ body }, res) => {
       dbUser = await new Members(fields);
       dbUser.save();
       //save a connection
-      await createNode_neo4j({
-        node: "Member",
-        id: dbUser._id,
-        name: dbUser.discordName,
-        serverID: [],
-      });
+      // await createNode_neo4j({
+      //   node: "Member",
+      //   id: dbUser._id,
+      //   name: dbUser.discordName,
+      //   serverID: [],
+      // });
     }
 
     //await retrieveAndMergeServersUserIsIn(accessToken, dbUser);
