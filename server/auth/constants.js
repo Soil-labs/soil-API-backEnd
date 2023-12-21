@@ -5,7 +5,7 @@ const ACCESS_LEVELS = {
 };
 
 const OPERATORS = [
-  "108867786318229498302", // eloi gil
+  // "108867786318229498302", // eloi gil
   "114666133746770334577", // Tom Husson
   "102785674053816073334", // Miltiadis Saratzidis
   "106958172939374281455", // Sergey Belyaev
