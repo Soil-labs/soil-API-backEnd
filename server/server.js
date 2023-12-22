@@ -23,6 +23,7 @@ require("dotenv").config();
 
 const typeDefs = require("./graphql/schema");
 const resolvers = require("./graphql/resolvers");
+const { mailServiceRoutes } = require("./mail-service");
 
 async function main() {
   const app = express();
@@ -114,6 +115,7 @@ async function main() {
   app.use("/auth", authRoutes());
   app.use("/stripe", stripeRoutes());
   app.use("/storage", storageRoutes());
+  app.use("/mail-service", mailServiceRoutes());
 
   if (
     process.env.NODE_ENV &&

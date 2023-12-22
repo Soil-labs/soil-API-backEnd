@@ -126,6 +126,7 @@ module.exports = `
         keyAttributes: [attributeCandidateType]
         futurePotential: [attributeCandidateType]
         cvID: String
+        submitted: Boolean
     }
 
     type scoreCardTotalType {
@@ -408,6 +409,10 @@ module.exports = `
     input addCandidatesPositionInput {
         positionID: ID
         candidates: [candidatesInput]
+    }
+    input submitCandidatePositionInput {
+        positionID: ID
+        candidateID: ID
     }
 
     input addConvRecruiterToPositionInput {
