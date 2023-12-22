@@ -1591,7 +1591,10 @@ module.exports = {
       );
 
       let candidatesN = positionData.candidates.map((_candidate) => {
-        if (_candidate.userID === candidateID) _candidate.submitted = true;
+        if (_candidate.userID === candidateID) {
+          _candidate.submitted = true;
+          _candidate.dateApply = new Date();
+        }
         return _candidate;
       });
 
