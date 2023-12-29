@@ -13,6 +13,7 @@ const { useGPTFunc } = require("../utils/aiExtraModules");
 
 const { wait } = require("../utils/aiExtraModules");
 const sendNewApplicantMailFunc = require("../../../utils/email/sendNewApplicantMailFunc");
+const sendMailConfirmApplicationFunc = require("../../../utils/email/sendMailConfirmApplicationFunc");
 
 const {
   addMultipleQuestionsToEdenAIFunc,
@@ -1587,7 +1588,7 @@ module.exports = {
         });
 
       userData = await Members.findOne({ _id: { $in: candidateID } }).select(
-        "_id discordName positionsApplied"
+        "_id discordName positionsApplied conduct.email"
       );
 
       let candidatesN = positionData.candidates.map((_candidate) => {
@@ -1640,6 +1641,24 @@ module.exports = {
         //   dashboardUrl: `https://edenprotocol.app/${companyData.slug}/dashboard/${positionID}`,
         // });
       });
+
+      console.log("send confirmation mail =====>", {
+        mailTo: userData.conduct.email,
+        candidateName: userData.discordName,
+        jobTitle: positionData.name,
+        companyName: companyData.name,
+        applicationSubmittedUrl: `https://edenprotocol.app/interview/${positionID}/submitted`,
+      });
+
+      if (userData.conduct && userData.conduct.email) {
+        sendMailConfirmApplicationFunc({
+          mailTo: userData.conduct.email,
+          candidateName: userData.discordName,
+          jobTitle: positionData.name,
+          companyName: companyData.name,
+          applicationSubmittedUrl: `https://edenprotocol.app/interview/${positionID}/submitted`,
+        });
+      }
 
       return positionDataN;
     } catch (err) {
