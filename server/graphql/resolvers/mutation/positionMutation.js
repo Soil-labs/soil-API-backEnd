@@ -12,6 +12,8 @@ const { QuestionsEdenAI } = require("../../../models/questionsEdenAIModel");
 const { useGPTFunc } = require("../utils/aiExtraModules");
 
 const { wait } = require("../utils/aiExtraModules");
+const sendNewApplicantMailFunc = require("../../../utils/email/sendNewApplicantMailFunc");
+const sendMailConfirmApplicationFunc = require("../../../utils/email/sendMailConfirmApplicationFunc");
 
 const {
   addMultipleQuestionsToEdenAIFunc,
@@ -327,8 +329,8 @@ module.exports = {
         variablesUsed.push("founders");
       if (!companyData.whatsToLove && !variablesUsed.includes("whatsToLove"))
         variablesUsed.push("whatsToLove");
-      if (!companyData.edenTake && !variablesUsed.includes("edenTake")) 
-        variablesUsed.push("edenTake")
+      if (!companyData.edenTake && !variablesUsed.includes("edenTake"))
+        variablesUsed.push("edenTake");
       // --------------- Check what the Company already have ----------------
 
       // --------------- Check what the Position already have ----------------
@@ -390,7 +392,7 @@ module.exports = {
           mongo: "Company",
         },
       };
-      
+
       // const variablesUsed = ["mission","whoYouAre"]
       // const variablesUsed = ["mission","description"]
 
@@ -433,7 +435,7 @@ module.exports = {
       const systemPrompt = `'You are a world-class senior recruiter named Eden. You are helping a hiring manager who has just given you their job description to improve each section. For each requested section your output is concise, clear & to-the-point bullet points except when explicitly asked otherwise. You deeply understand that a job-description is mainly to sell & attract the right talent on the opportunity.' 
 
       Job Description (delimited <>): <${positionsRequirements}>
-      `
+      `;
 
       // printC(systemPrompt, "1", "systemPrompt", "b");
       // f2
@@ -497,7 +499,10 @@ module.exports = {
   autoUpdatePositionCompInformation_V2: async (parent, args, context, info) => {
     const { positionID, mustUpdate } = args.fields;
 
-    console.log("Mutation > autoUpdatePositionCompInformation_V2 > args.fields = ", args.fields);
+    console.log(
+      "Mutation > autoUpdatePositionCompInformation_V2 > args.fields = ",
+      args.fields
+    );
 
     try {
       positionData = await Position.findOne({ _id: positionID }).select(
@@ -537,8 +542,8 @@ module.exports = {
         variablesUsed.push("founders");
       if (!companyData.whatsToLove && !variablesUsed.includes("whatsToLove"))
         variablesUsed.push("whatsToLove");
-      if (!companyData.edenTake && !variablesUsed.includes("edenTake")) 
-        variablesUsed.push("edenTake")
+      if (!companyData.edenTake && !variablesUsed.includes("edenTake"))
+        variablesUsed.push("edenTake");
       // --------------- Check what the Company already have ----------------
 
       // --------------- Check what the Position already have ----------------
@@ -553,40 +558,38 @@ module.exports = {
       //   variablesUsed.push("whatsToLove");
 
       // --------------- Check what the Position already have ----------------
-      
-      printC(variablesUsed, "1", "variablesUsed", "b")
-      // f1
 
+      printC(variablesUsed, "1", "variablesUsed", "b");
+      // f1
 
       if (variablesUsed.length == 0)
         throw new ApolloError("No variables to update");
 
-      
       const variablesData = {
         mission: {
           description: `Section to improve: about the company. Your objective is to write a paragraph in the "we-form" in plain, simple & easy to understand English and give an easy to understand answer to the following questions: what does the company do? How does it do that? Why is it good at doing that? Avoid non-descriptive words such as "transform, "innovate, "revolutionize, "streamline,... etc. Instead explain what makes them "transformational, "innovative" or "revolutionary". If you can't find enough meaningful info to go off in the job description provided return N/A.`,
-          mongo:"Company",
-          size: "maximum of 1 small paragraph and nothing else!"
+          mongo: "Company",
+          size: "maximum of 1 small paragraph and nothing else!",
         },
         description: {
           description: `Section to improve: the company's purpose. How does the company do to make people's lives better? What's the simplest way to explain it? Give that explanation in plain, simple & easy to understand English - maximum one sentence. Do not mention the company again & state it in imperative form. Avoid non-descriptive words such as "transform", "innovate", "revolutionize" etc. Instead explain what makes them "transformational, "innovative" or "revolutionary". If you can't find enough meaningful info to go off in the job-description provided return N/A.`,
-          mongo:"Company",
-          size: "maximum of 1 sentence, always put something here"
+          mongo: "Company",
+          size: "maximum of 1 sentence, always put something here",
         },
         whoYouAre: {
           description: `Section to improve: who you are. Your objective is to get the right candidate excited to apply by writing concise bullet points in plain, simple & and easy-to-understand active English sentences that paint a compelling picture of who the ideal candidate would be for this position. Focus on human traits & culture fit topics. Write this in a way that the ideal candidate can write this and think "that's me!!" Avoid non-descriptive words such as "go-getter, "ninja, "wizzard", "passionate",... etc. Instead, explain what those things mean concretely. Be inspired by the original style that the job-post is written in. If you can't find enough meaningful info to go off in the job description provided return N/A.`,
-          mongo:"Position",
-          size: "maximum of 5 small bullet points and nothing else!"
+          mongo: "Position",
+          size: "maximum of 5 small bullet points and nothing else!",
         },
         whatTheJobInvolves: {
           description: `Section to improve: what the job involves. Your objective is to get the right candidate excited to apply by writing concise bullet points in plain, simple & and easy-to-understand active English sentences that paint a compelling picture of the responsibilities & requirements for the position. Write this in a way that the ideal candidate can write this and think "that's me!!" Avoid non-descriptive words such as "go-getter", "ninja", "wizzard", "passionate",... etc. Instead, explain what those things mean concretely.  Be inspired by the original style that the job-post is written in. If you can't find enough meaningful info to go off in the job description provided return N/A.`,
-          mongo:"Position",
-          size: "maximum of 5 small bullet points and nothing else!"
+          mongo: "Position",
+          size: "maximum of 5 small bullet points and nothing else!",
         },
         benefits: {
           description: `Section to improve: perks & benefits.  List all the perks & benefits of working at the company in bullet points. Do not invent anything. If you can't find enough meaningful info to go off in the job description provided return N/A.`,
-          mongo:"Company",
-          size: "maximum of 4 small bullet points and nothing else!"
+          mongo: "Company",
+          size: "maximum of 4 small bullet points and nothing else!",
         },
         values: {
           description: `Section to improve: Values. How would you describe what the company values? Write this in a value statement with concrete evidence below of how they enact the value in bullet points. Here's a great example: 
@@ -598,34 +601,31 @@ module.exports = {
             - We care about the stakeholders of our project
 
             If you can't find enough meaningful info to go off in the job description provided return N/A.`,
-          mongo:"Company",
-          size: "maximum of 1 small paragraphs and nothing else!"
+          mongo: "Company",
+          size: "maximum of 1 small paragraphs and nothing else!",
         },
         founders: {
           description: `Who are the founders of the company, what's their track record & what makes them awesome. If you can't find enough meaningful info to go off in the job description provided return N/A.`,
-          mongo:"Company",
-          size: "maximum of 1 small paragraphs and nothing else!"
+          mongo: "Company",
+          size: "maximum of 1 small paragraphs and nothing else!",
         },
         whatsToLove: {
           description: `Section to improve: What's to love? Why is it an extraordinary opportunity to work at this company? Why should someone apply? Write two sentences in plain, simple & easy to understand English. Avoid non-descriptive words such as "transform", "innovate", "revolutionize", "streamline",... etc. Instead explain what makes them "transformational, "innovative" or "revolutionary".   The first sentence starts with "apply if ..."  & the second sentence explains further why working here would be the best thing ever. Write about the company in third person. If you can't find enough meaningful info to go off in the job description provided return N/A.`,
-          mongo:"Company",
-          size: "maximum of 1 small paragraphs and nothing else!"
+          mongo: "Company",
+          size: "maximum of 1 small paragraphs and nothing else!",
         },
         edenTake: {
           description: `Section to improve: Eden's take. Write an honest review in 2 paragraphs maximum, as a recruiter in the industry, about the company explaining in simple terms what makes this company unique in your view, what the company does in laymen's terms, what they're exceptionally good at etc. Avoid non-descriptive words such as "transform", "innovate", "revolutionize", "streamline",... etc. Instead explain what makes them "transformational, "innovative" or "revolutionary".  
           If you can't find enough meaningful info to go off in the job description provided return N/A.`,
-          mongo:"Company",
-          size: "Write an honest review in 1 small paragraphs maximum and nothing else!"
-
-        }
+          mongo: "Company",
+          size: "Write an honest review in 1 small paragraphs maximum and nothing else!",
+        },
       };
 
       const systemPrompt = `'You are a world-class senior recruiter named Eden. You are helping a hiring manager who has just given you their job description to improve each section. For each requested section your output is concise, clear & to-the-point bullet points except when explicitly asked otherwise. You deeply understand that a job-description is mainly to sell & attract the right talent on the opportunity.' 
 
       Job Description (delimited <>): <${positionsRequirements}>
-      `
-
-    
+      `;
 
       for (let i = 0; i < variablesUsed.length; i++) {
         let key = variablesUsed[i];
@@ -638,7 +638,6 @@ module.exports = {
 
         if (!variableData) continue;
 
-
         // let gptResult = await runGPTFunction(systemPrompt, variableData.description);
         let prompt = `${systemPrompt}\n\n${variableData.description} \n\n ${variableData.size} \n\n Result:`;
         let gptResult;
@@ -647,32 +646,27 @@ module.exports = {
         } else {
           gptResult = await useGPTchatSimple(prompt, 0.7, "API 2", "chatGPT4");
         }
-        
-        if (gptResult.includes('Result:')) {
-          gptResult = gptResult.replace('Result:', '');
+
+        if (gptResult.includes("Result:")) {
+          gptResult = gptResult.replace("Result:", "");
         }
 
-        if (gptResult.includes('N/A')) {
-          gptResult = 'N/A';
+        if (gptResult.includes("N/A")) {
+          gptResult = "N/A";
         }
-
 
         if (variableData.mongo == "Company") {
           companyData[key] = gptResult;
 
           await companyData.save();
-
         } else if (variableData.mongo == "Position") {
           positionData[key] = gptResult;
 
           await positionData.save();
         }
-        
-        
+
         await wait(700);
       }
-
-
 
       return positionData;
     } catch (err) {
@@ -1336,7 +1330,7 @@ module.exports = {
       messagePitchPositionCandidate = await useGPTchatSimple(
         messagePitchPositionCandidatePrompt,
         0.7,
-        "API 1",
+        "API 1"
       );
 
       // messagePitchPositionCandidate = `Hey Reza! I came across a fantastic opportunity that I think would be a perfect fit for you
@@ -1562,6 +1556,120 @@ module.exports = {
       );
     }
   },
+
+  submitCandidatePosition: async (parent, args, context, info) => {
+    try {
+      const { positionID, candidateID } = args.fields;
+      console.log(
+        "Mutation > submitCandidatePosition > args.fields = ",
+        args.fields
+      );
+
+      if (!candidateID)
+        throw new ApolloError(
+          "candidateID is required",
+          "submitCandidatePosition",
+          {
+            component: "positionMutation > submitCandidatePosition",
+          }
+        );
+
+      if (!positionID)
+        throw new ApolloError(
+          "Position ID is required",
+          "submitCandidatePosition",
+          { component: "positionMutation > submitCandidatePosition" }
+        );
+
+      positionData = await Position.findOne({ _id: positionID });
+      if (!positionData)
+        throw new ApolloError("Position not found", "submitCandidatePosition", {
+          component: "positionMutation > submitCandidatePosition",
+        });
+
+      userData = await Members.findOne({ _id: { $in: candidateID } }).select(
+        "_id discordName positionsApplied conduct.email"
+      );
+
+      let candidatesN = positionData.candidates.map((_candidate) => {
+        if (_candidate.userID === candidateID) {
+          _candidate.submitted = true;
+          _candidate.dateApply = new Date();
+        }
+        return _candidate;
+      });
+
+      // console.log("candidatesN = ", candidatesN);
+      // sdf00
+
+      await checkAndAddPositionToMember(userData, positionID);
+
+      // find one and updates
+      let positionDataN = await Position.findOneAndUpdate(
+        { _id: positionID },
+        {
+          candidates: candidatesN,
+        },
+        { new: true }
+      );
+
+      // --------- Send email alert to employees ---------
+      // @TODO abstract this into a company notification service
+      const companyData = await Company.findOne({
+        _id: positionData.companyID,
+      }).select("name slug employees");
+
+      const employeesArr = await Members.find({
+        _id: companyData.employees.map((_employee) => _employee.userID),
+        "conduct.email": { $ne: null },
+      }).select("conduct.email discordName");
+
+      employeesArr.forEach((_employee) => {
+        console.log({
+          mailTo: _employee.conduct.email,
+          hiringManagerName: _employee.discordName,
+          jobTitle: positionData.name,
+          candidateName: userData.discordName,
+          dashboardUrl: `https://edenprotocol.app/${companyData.slug}/dashboard/${positionID}`,
+        });
+
+        // sendNewApplicantMailFunc({
+        //   mailTo: _employee.conduct.email,
+        //   hiringManagerName: _employee.discordName,
+        //   jobTitle: positionData.name,
+        //   candidateName: userData.discordName,
+        //   dashboardUrl: `https://edenprotocol.app/${companyData.slug}/dashboard/${positionID}`,
+        // });
+      });
+
+      console.log("send confirmation mail =====>", {
+        mailTo: userData.conduct.email,
+        candidateName: userData.discordName,
+        jobTitle: positionData.name,
+        companyName: companyData.name,
+        applicationSubmittedUrl: `https://edenprotocol.app/interview/${positionID}/submitted`,
+      });
+
+      if (userData.conduct && userData.conduct.email) {
+        sendMailConfirmApplicationFunc({
+          mailTo: userData.conduct.email,
+          candidateName: userData.discordName,
+          jobTitle: positionData.name,
+          companyName: companyData.name,
+          applicationSubmittedUrl: `https://edenprotocol.app/interview/${positionID}/submitted`,
+        });
+      }
+
+      return positionDataN;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "submitCandidatePosition",
+        { component: "positionMutation > submitCandidatePosition" }
+      );
+    }
+  },
+
   deletePositionCandidate: async (parent, args, context, info) => {
     const { positionID, userID, onlyScoreCard } = args.fields;
     console.log(
@@ -1866,7 +1974,7 @@ module.exports = {
     else
       positionsData = await Position.find({
         $and: [
-          { allCandidateScoreCardCalculated: true  },
+          { allCandidateScoreCardCalculated: true },
           {
             $or: [
               {

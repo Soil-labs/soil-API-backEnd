@@ -99,6 +99,7 @@ module.exports = `
         findKeyAttributeAndPotentialPosition(fields:findKeyAttributeAndPotentialPositionInput): Position
         findKeyAttributeAndPotentialCandidate(fields:findKeyAttributeAndPotentialCandidateInput): Position
         addCandidatesPosition(fields:addCandidatesPositionInput): Position
+        submitCandidatePosition(fields:submitCandidatePositionInput): Position
         deletePositionCandidate(fields:deletePositionCandidateInput): [CandidateType]
         addConvRecruiterToPosition(fields:addConvRecruiterToPositionInput): Position
         updatePositionUserAnswers(fields:updatePositionUserAnswersInput): [Position]
