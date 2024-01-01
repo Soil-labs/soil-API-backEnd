@@ -14,7 +14,7 @@ module.exports = `
         futurePotential: Boolean
         pineconeDB: pineconeDBType
 
-        primitives: PrimitivesType
+        primitives: [PrimitivesType]
    
     }
      type PrimitivesType {

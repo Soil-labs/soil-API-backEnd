@@ -6,6 +6,7 @@ const {
   createNode_neo4j_field,
   updateNode_neo4j_serverID_f,
   makeConnection_neo4j,
+  deleteNode_neo4j,
 } = require("../../../neo4j/func_neo4j");
 const { combineResolvers } = require("graphql-resolvers");
 const {
@@ -13,9 +14,17 @@ const {
   IsOnlyOperator,
 } = require("../../../utils/authorization");
 
+const {deletePineCone} = require("../utils/aiExtraModules");
+const { CardMemory } = require("../../../models/cardMemoryModel");
+
+
+
 const { printC } = require("../../../printModule");
 
-const { createNodeFunc,memoriesToKnowledgeGraphFunc } = require("../utils/nodeModules_V2");
+const { createNodeFunc,memoriesToKnowledgeGraphFunc,connectNeighborNodesKGFunc,
+  findNeighborNodesFunc,findCardMemoriesAndMembersFromNodes,
+  rankMembersFunc,orderedMembersFunc,
+  rankBasedOnNodeInputFunc } = require("../utils/nodeModules_V2");
 
 async function findOrCreateNode(node,nodeID,nodeName,serverID) {
   let nodeData;
@@ -375,7 +384,59 @@ module.exports = {
       return nodeData;
     },
   // ),
+  deleteNodes: async (parent, args, context, info) => {
+    let { _id  } = args.fields;
+    console.log("Mutation > relatedNode > args.fields = ", args.fields);
 
+
+    try {
+
+      if (_id == undefined || _id.length == 0) {
+        nodesData = await Node.find({})
+
+        _id = nodesData.map(node => node._id);
+      }
+
+      let nodesDataDeleted = []
+
+      for (let i = 0; i < _id.length; i++) {
+        let nodeIDNow = _id[i];
+
+        // then delete from Mongo
+        let nodeData = await Node.findOneAndDelete({ _id: nodeIDNow });
+
+        if (!nodeData) continue;
+
+        // delete first from neo4j
+        deleteNode_neo4j({
+          nodeID: nodeIDNow,
+        });
+
+        if (nodeData.pineconeID){
+          deletePineCone(nodeData.pineconeID)
+        }
+
+        
+
+        nodesDataDeleted.push(nodeData)
+
+      }
+
+      return nodesDataDeleted;
+      
+
+    } catch (err) {
+      printC(err, "-1", "err", "r");
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > addNewMember" }
+      );
+    }
+
+
+    return nodeData;
+  },
   relatedNode_name: 
   // combineResolvers(
   //   IsAuthenticated,
@@ -491,27 +552,168 @@ module.exports = {
       }
     },
     connectMemoriesToKnowledgeGraph_V2: async (parent, args, context, info) => {
-      const { userID, positionID } = args.fields;
+      let { userID, positionID } = args.fields;
+      const { runAuto } = args.fields;
+      let {createKGconnections} = args.fields;
       console.log("Mutation > connectMemoriesToKnowledgeGraph_V2 > args.fields = ", args.fields);
 
-      if (!userID && !positionID) throw new ApolloError("You need to specify the userID or positionID of the node");
+
+      let noPrimitivesCardsData = []
+
+      if (!userID && !positionID && runAuto != undefined){ // find your own userID or positionID based on runAuto
+
+        let category
+        if (runAuto == "MEMBER"){
+          category = "CANDIDATE"
+        } else if (runAuto == "POSITION"){
+          category = "POSITION"
+        }
+
+        noPrimitivesCardsData = await CardMemory.find({ 
+          "primitives": { $exists: false },
+          "authorCard.category": category,
+        }).select("_id authorCard")
+
+        printC(noPrimitivesCardsData,"1", "noPrimitivesCardsData", "g")
 
 
+
+        if (noPrimitivesCardsData.length > 0) {
+          const firstCard = noPrimitivesCardsData[0];
+          if (runAuto == "MEMBER") {
+            userID = firstCard.authorCard.userID;
+          } else if (runAuto == "POSITION") {
+            positionID = firstCard.authorCard.positionID;
+          }
+        } else {
+          return {}
+        }
+        
+
+      }
+
+
+      printC(userID,"1", "----------------", "p")
+      printC(userID,"1", "userID", "p")
+      printC(userID,"1", "------------", "p")
+      printC(noPrimitivesCardsData.length,"1", "noPrimitivesCardsData.length", "p")
+      
+
+      f1
       try {
 
         nodeData = await memoriesToKnowledgeGraphFunc({
           userID,
           positionID,
+          createKGconnections,
         })
   
   
-        return nodeData;
+        return {
+          usersLeft: noPrimitivesCardsData.length,
+          userConnectedToKGID: userID,
+          positionConnectedToKGID: positionID,
+          node: nodeData
+        };
       } catch (err) {
         printC(err, "-1", "err", "r");
         throw new ApolloError(
           err.message,
           err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
           { component: "nodeMutation > connectMemoriesToKnowledgeGraph_V2" }
+        );
+      }
+    },
+    connectNeighborNodesKG: async (parent, args, context, info) => {
+      const { nodesID } = args.fields;
+      console.log("Mutation > connectNeighborNodesKG > args.fields = ", args.fields);
+
+      if (!nodesID) throw new ApolloError("You need to specify the nodesID of the node");
+
+
+
+      try {
+
+        let nodesData = []
+        for (let i = 0; i < nodesID.length; i++) {
+            let nodeID = nodesID[i];
+
+            let res = await connectNeighborNodesKGFunc({
+              nodeID,
+            })
+
+            if (res.nodeData){
+              nodesData.push(res.nodeData)
+            }
+
+        }
+  
+  
+        return nodesData;
+      } catch (err) {
+        printC(err, "-1", "err", "r");
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "nodeMutation > connectNeighborNodesKG" }
+        );
+      }
+    },
+    showMembersConnectedToNodes: async (parent, args, context, info) => {
+      const { nodesID } = args.fields;
+      console.log("Mutation > showMembersConnectedToNodes > args.fields = ", args.fields);
+
+      if (!nodesID) throw new ApolloError("You need to specify the nodesID of the node");
+
+
+      try {
+
+        let nodesData = await Node.find({ _id: nodesID }).select("-match_v2 -match_v2_update -subNodes -aboveNodes -categoryNodes -groupNodes");
+
+
+
+
+        let resFindNeighborNodesFunc = await findNeighborNodesFunc({
+          nodesData,
+        })
+        let neighborsDict = resFindNeighborNodesFunc.neighborsDict
+        let neighborsNodeIDs = resFindNeighborNodesFunc.neighborsNodeIDs
+        
+
+        let resFindCardMemoriesAndMembersFromNodes = await findCardMemoriesAndMembersFromNodes({
+          neighborsDict,
+          neighborsNodeIDs,
+        })
+        let membersDict = resFindCardMemoriesAndMembersFromNodes.membersDict
+        let nodeInputDict = resFindCardMemoriesAndMembersFromNodes.nodeInputDict
+
+
+        let resRankBasedOnNodeInputFunc = await rankBasedOnNodeInputFunc({
+          nodeInputDict,
+          membersDict,
+          nodesID,
+        })
+        membersDict = resRankBasedOnNodeInputFunc.membersDict
+        nodeInputDict = resRankBasedOnNodeInputFunc.nodeInputDict
+
+
+
+        let resRankMembersFunc = await orderedMembersFunc({
+          membersDict,
+        })
+        let membersArray = resRankMembersFunc.membersArray
+
+        
+
+        return membersArray;
+        
+
+      } catch (err) {
+        printC(err, "-1", "err", "r");
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "nodeMutation > showMembersConnectedToNodes" }
         );
       }
     },

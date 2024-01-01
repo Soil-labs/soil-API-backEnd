@@ -1,5 +1,8 @@
 const { Members } = require("../../../models/membersModel");
+const { Position } = require("../../../models/positionModel");
 const { Node } = require("../../../models/nodeModal");
+const { CardMemory } = require("../../../models/cardMemoryModel");
+
 
 const { ApolloError } = require("apollo-server-express");
 
@@ -162,7 +165,7 @@ module.exports = {
           err.message,
           err.extensions?.code || "DATABASE_SEARCH_ERROR",
           {
-            component: "userResolver > members",
+            component: "nodeResolver > members",
             user: context.req.user?._id,
           }
         );
@@ -196,7 +199,7 @@ module.exports = {
           err.message,
           err.extensions?.code || "DATABASE_SEARCH_ERROR",
           {
-            component: "userResolver > members",
+            component: "nodeResolver > members",
             user: context.req.user?._id,
           }
         );
@@ -220,7 +223,7 @@ module.exports = {
           err.message,
           err.extensions?.code || "DATABASE_SEARCH_ERROR",
           {
-            component: "userResolver > members",
+            component: "nodeResolver > members",
             user: context.req.user?._id,
           }
         );
@@ -244,7 +247,7 @@ module.exports = {
           err.message,
           err.extensions?.code || "DATABASE_SEARCH_ERROR",
           {
-            component: "userResolver > members",
+            component: "nodeResolver > members",
             user: context.req.user?._id,
           }
         );
@@ -278,7 +281,320 @@ module.exports = {
           err.message,
           err.extensions?.code || "DATABASE_SEARCH_ERROR",
           {
-            component: "userResolver > members",
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    connectedCardMemories: async (parent, args, context, info) => {
+      // console.log("parent = " , parent)
+
+      try {
+        const connectedCardMemories = parent.connectedCardMemories;
+
+
+        return connectedCardMemories;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+  },
+  ConnectedCardMemory: {
+    card: async (parent, args, context, info) => {
+
+      try {
+        const cardID = parent.cardID;
+
+        cardMemoryData = await CardMemory.findOne({ _id: cardID })
+
+        
+
+        return cardMemoryData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+
+    }
+  },
+  ConnectedNodes: {
+    node: async (parent, args, context, info) => {
+
+      try {
+        const nodeID = parent.nodeID;
+
+        // console.log("nodeID = ", nodeID)
+
+        nodeData = await Node.findOne({ _id: nodeID })
+
+        
+
+        return nodeData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+
+    }
+  },
+  GraphNeighborType: {
+    node: async (parent, args, context, info) => {
+
+      try {
+        const nodeID = parent.nodeID;
+
+        // console.log("nodeID = ", nodeID)
+        // console.log("parent = ", parent)
+
+        nodeData = await Node.findOne({ _id: nodeID }).select('-graphNeighbors -match_v2_update -match_v2')
+
+        
+
+        return nodeData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+
+    },
+    weightSeparate: async (parent, args, context, info) => {
+
+      try {
+        let weightSeparate = parent.weightSeparate;
+
+        // console.log("nodeID = ", nodeID)
+        console.log("parent wi = ", parent)
+
+        // take only the nodesID
+        weightSeparateIDs = weightSeparate.map((item) => {
+          return item.nodeID;
+        });
+        
+        
+        nodeData = await Node.find({ _id: { $in: weightSeparateIDs } }).select('-graphNeighbors -match_v2_update -match_v2')
+
+
+        console.log("nodeData = ", nodeData)
+
+        for (i = 0; i < weightSeparate.length; i++) {
+          weightSeparate[i].node = nodeData[i];
+        }
+
+        
+
+        return weightSeparate;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+
+    }
+  },
+  ShowMembersConnectedToNodesOutput: {
+    member: async (parent, args, context, info) => {
+
+      try {
+        const memberID = parent.memberID;
+
+        memberData = await Members.findOne({ _id: memberID })        
+
+        return memberData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    primitiveCardMemInput: async (parent, args, context, info) => {
+
+      try {
+
+        return parent.nodeInput;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+  },
+  PrimitiveCardInput: {
+    nodeInput: async (parent, args, context, info) => {
+
+      try {
+
+        nodeData = await Node.findOne({ _id: parent.nodeInputID}).select('-graphNeighbors -match_v2_update -match_v2')
+
+        return nodeData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    neighborNodeWithMemOutput: async (parent, args, context, info) => {
+
+      try {
+
+        return parent.neighborNodeWithMem;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+  },
+  NeighborNodeWithMem: {
+    nodeOutput: async (parent, args, context, info) => {
+
+      try {
+        const neighborNodeID =  parent.neighborNodeID;
+
+        if (neighborNodeID != null) {
+          nodeData = await Node.findOne({ _id: parent.neighborNodeID}).select('-graphNeighbors -match_v2_update -match_v2')
+
+          if (nodeData)
+            return nodeData;
+        }
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    cardMemoryOutput: async (parent, args, context, info) => {
+
+      try {
+        const cardMemoryID = parent.cardMemoryID;
+
+        if (cardMemoryID!=null){
+
+          cardMemoryData = await CardMemory.findOne({ _id: cardMemoryID})
+
+          if (cardMemoryData)
+            return cardMemoryData;
+        }
+
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+  },
+  ConnectMemoriesToKnowledgeGraph_V2Output: {
+    userConnectedToKG: async (parent, args, context, info) => {
+
+      try {
+        // console.log("parent = ", parent)
+
+        const userConnectedToKGID = parent.userConnectedToKGID;
+
+        if (userConnectedToKGID == null){
+          return null;
+        }
+        memberData = await Members.findOne({ _id: userConnectedToKGID })  
+
+        if (memberData == null){
+          return null;
+        }
+
+        return memberData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+    positionConnectedToKG: async (parent, args, context, info) => {
+
+      try {
+        // console.log("parent = ", parent)
+
+        const positionConnectedToKGID = parent.positionConnectedToKGID;
+
+        if (positionConnectedToKGID == null){
+          return null;
+        }
+        positionData = await Position.findOne({ _id: positionConnectedToKGID })  
+
+        if (positionData == null){
+          return null;
+        }
+
+        return positionData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
             user: context.req.user?._id,
           }
         );

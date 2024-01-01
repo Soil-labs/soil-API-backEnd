@@ -49,8 +49,11 @@ const {
   createNode,
   relatedNode,
   relatedNode_name,
+  deleteNodes,
   createNode_V2,
   connectMemoriesToKnowledgeGraph_V2,
+  connectNeighborNodesKG,
+  showMembersConnectedToNodes,
   createNodeCategoryGroup,
 } = require("./mutation/nodeMutation");
 
@@ -256,8 +259,11 @@ module.exports = {
     createNode,
     relatedNode,
     relatedNode_name,
+    deleteNodes,
     createNode_V2,
     connectMemoriesToKnowledgeGraph_V2,
+    connectNeighborNodesKG,
+    showMembersConnectedToNodes,
     createNodeCategoryGroup,
 
     // ------------- CONVERSATION MUTATION -----------------

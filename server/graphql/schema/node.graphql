@@ -3,7 +3,10 @@ module.exports = `
     type Node {
         _id: ID
         name: String
+        cleanName: String
         node: String
+
+        pineconeID: String
         
         relatedNodes: [Node]
         subNodes: [Node]
@@ -14,7 +17,10 @@ module.exports = `
 
         state: stateEnum
 
-        graphNeighbors: [graphNeighborType]        
+        graphNeighbors: [GraphNeighborType]   
+
+        connectedCardMemories: [ConnectedCardMemory]
+        connectedNodes: [ConnectedNodes]
 
 
         match_v2_update: match_v2_updateType
@@ -28,13 +34,23 @@ module.exports = `
         star: Boolean # on the tree structure if they have a star
         open: Boolean # on the tree structure if they are originally open 
         level: Int # Shows the level of the Node for the user, this can be used on the UI -> treeOfRelatedNodes
-
     }
 
-     type graphNeighborType {
+    type ConnectedCardMemory {
+        card: CardMemory
+        score: Float
+    }
+
+    type ConnectedNodes {
         node: Node
-        hopNumTotal: Int
+        score: Float
+    }
+
+     type GraphNeighborType {
+        node: Node
+        hopN: Int
         weightTotal: Float
+        score: Float
         weightSeparate: [weightSeparateType]
     }
 
@@ -104,6 +120,10 @@ module.exports = `
         connection: String
     }
 
+    input deleteNodeInput {
+        _id: [ID]
+    }
+
     input createNode_V2Input {
         name: String
         node: String
@@ -112,6 +132,79 @@ module.exports = `
     input connectMemoriesToKnowledgeGraph_V2Input {
         userID: ID
         positionID: ID
+        createKGconnections: Boolean
+        runAuto: runAutoEnum
+    }
+
+    type ConnectMemoriesToKnowledgeGraph_V2Output {
+        node: Node
+        usersLeft: Int
+        userConnectedToKG: Members
+        positionConnectedToKG: Position
+    }
+
+    enum runAutoEnum {
+        MEMBER
+        POSITION
+    }
+
+    input connectNeighborNodesKGInput {
+        nodesID: [ID]
+    }
+
+    input showMembersConnectedToNodesInput {
+        nodesID: [ID]
+        cardMemoriesStructure: [cardMemoriesStructureInput]
+    }
+
+    input cardMemoriesStructureInput {
+        cardMemoryID: ID
+        importance: Int
+        primitives: [PrimitiveCardMemInput]
+    }
+
+    input PrimitiveCardMemInput {
+        nodeID: ID
+        importance: Int
+    }
+
+    type ShowMembersConnectedToNodesOutput {
+        member: Members
+        rank: Int
+        score: Float
+        primitiveCardMemInput: [PrimitiveCardInput]
+    }
+
+    type PrimitiveCardInput {
+        nodeInput: Node
+        cardMemoryInput: CardMemory
+        score: Float
+        neighborNodeWithMemOutput: [NeighborNodeWithMem]
+    }
+
+    type NeighborNodeWithMem {
+        nodeOutput: Node
+        cardMemoryOutput: CardMemory
+        scoreCard: Float
+        scoreNode: Float
+        scoreTotal: Float
+    }
+
+    type cardMemoriesFromInputType {
+        cardMemory: CardMemory
+        score: Float
+        cardMemoryMember: [CardMemoryMemberType]
+    }
+
+    type CardMemoryMemberType {
+        cardMemory: CardMemory
+        score: Float
+        primitives: [PrimitiveCardMemType]
+    }
+
+    type PrimitiveCardMemType {
+        node: Node
+        score: Float
     }
 
     input createNodeCategoryGroupInput {
