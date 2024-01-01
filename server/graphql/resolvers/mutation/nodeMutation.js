@@ -599,7 +599,7 @@ module.exports = {
       printC(noPrimitivesCardsData.length,"1", "noPrimitivesCardsData.length", "p")
       
 
-      f1
+      // f1
       try {
 
         nodeData = await memoriesToKnowledgeGraphFunc({
