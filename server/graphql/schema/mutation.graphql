@@ -69,8 +69,11 @@ module.exports = `
         createNode(fields:createNodeInput): Node
         relatedNode(fields:relatedNodeInput): Node
         relatedNode_name(fields:relatedNode_nameInput): Node
+        deleteNodes(fields:deleteNodeInput): [Node]
         createNode_V2(fields:createNode_V2Input): Node
-        connectMemoriesToKnowledgeGraph_V2(fields:connectMemoriesToKnowledgeGraph_V2Input): Node
+        connectMemoriesToKnowledgeGraph_V2(fields:connectMemoriesToKnowledgeGraph_V2Input): ConnectMemoriesToKnowledgeGraph_V2Output
+        connectNeighborNodesKG(fields:connectNeighborNodesKGInput): [Node]
+        showMembersConnectedToNodes(fields:showMembersConnectedToNodesInput): [ShowMembersConnectedToNodesOutput]
         createNodeCategoryGroup(fields:createNodeCategoryGroupInput): Node
 
 

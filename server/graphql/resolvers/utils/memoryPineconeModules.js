@@ -39,7 +39,7 @@ async function deletePineCone(deletePineIDs) {
   const pinecone = new PineconeClient();
   await pinecone.init({
     environment: "us-east1-gcp",
-    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+    apiKey: process.env.PINECONE_API_KEY,
   });
 
   const index = await pinecone.Index("profile-eden-information");
@@ -106,7 +106,7 @@ async function upsertEmbedingPineCone(data) {
   const pinecone = new PineconeClient();
   await pinecone.init({
     environment: "us-east1-gcp",
-    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+    apiKey: process.env.PINECONE_API_KEY,
   });
 
   const index = await pinecone.Index("profile-eden-information");
@@ -233,6 +233,11 @@ async function addMemoryPineconeFunc(filter) {
     filterUpsert = {
       ...filterUpsert,
       _id: filter.positionID,
+    };
+  } else if (filter.nodeID) {
+    filterUpsert = {
+      ...filterUpsert,
+      _id: filter.nodeID,
     };
   }
 

@@ -1,5 +1,6 @@
 
 const { CardMemory } = require("../../../models/cardMemoryModel");
+const { Node } = require("../../../models/nodeModal");
 
 
 const { ApolloError } = require("apollo-server-express");
@@ -35,6 +36,32 @@ module.exports = {
 
        
         // return cardsData
+
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "memoryPinecone > position",
+          }
+        );
+      }
+    },
+  },
+  PrimitivesType: {
+    node: async (parent, args, context, info) => {
+      try {
+
+        // console.log("parent = ", parent);
+
+        let nodeID = parent.nodeID
+
+
+        nodeData = await Node.findOne({ _id: nodeID })
+
+        return nodeData
+
+        
 
       } catch (err) {
         throw new ApolloError(

@@ -310,28 +310,70 @@ giveInformationRelatedToPosition: {
         required: ["message"],
     },
   },
+  compareKeywords: {
+    name: "compareKeywords",
+    description: "Compare the Main Keyword with the Compare Keywords and identify if any of the examples is the same with the Main Keyword - Be really strict, it needs to be exactly the same meaning of keyword and not just similar",
+    parameters: {
+        type: "object",
+        properties: {
+            keywordID: {
+                type: "string",
+                description: "The ID of Compare Keyword that is the same, return NA if it is not the same to any",
+                // description: "The ID of Compare Keyword that is the same, if 0 then it is not the same to any",
+            },
+        },
+        required: ["keywordID"],
+    },
+  },
+  connectNeighborNodesKG: {
+    name: "connectNeighborNodesKG",
+    description: "Find the connected nodes on the Knowledge Graph and the score on how related they are to the main node, 0 is the lowest score and 10 is the highest score.",
+    parameters: {
+        type: "object",
+        properties: {
+          node_1: {type: "string",description: "1 Node"},
+          score_1: {type: "string",description: "1 score"},
+          node_2: {type: "string",description: "2 Node"},
+          score_2: {type: "string",description: "2 score"},
+          node_3: {type: "string",description: "3 Node"},
+          score_3: {type: "string",description: "3 score"},
+          node_4: {type: "string",description: "4 Node"},
+          score_4: {type: "string",description: "4 score"},
+        },
+        // required: ["node_1","score_1","node_2","score_2","node_3","score_3","node_4","score_4","node_5","score_5","node_6","score_6"],
+        required: ["node_1","score_1","node_2","score_2","node_3","score_3","node_4","score_4"],
+    },
+  },
   memory_primitives: {
     name: "memory_primitives",
-    description: "Save the primitives of the memory and the score from 0(not important) to 10(really important), you can maximum return 12 primitives, you need to return all primitives in 1 function call! ",
+    description: "Save the primitives of the memory and the score from 0(not important) to 10(really important), Always use memory_primitives function ",
     parameters: {
       type: "object",
       properties: {
-        primitive_1: {type: "string",description: "1 Primitive, category of this primitive, score from 0 to 10"},
-        score_1: {type: "string",description: "1 score of the first primitive, score from 0 to 10"},
-        primitive_2: {type: "string",description: "2 Primitive and score, category of this primitive, score from 0 to 10"},
-        score_2: {type: "string",description: "2 score of the second primitive, score from 0 to 10"},
-        primitive_3: {type: "string",description: "3 Primitive and score, category of this primitive, score from 0 to 10"},
-        score_3: {type: "string",description: "3 score of the third primitive, score from 0 to 10"},
-        primitive_4: {type: "string",description: "4 Primitive and score, category of this primitive, score from 0 to 10"},
-        score_4: {type: "string",description: "4 score of the fourth primitive, score from 0 to 10"},
-        // primitive_5: {type: "string",description: "5 Primitive and score, category of this primitive, score from 0 to 10"},
-        // primitive_6: {type: "string",description: "6 Primitive and score, category of this primitive, score from 0 to 10"},
-        // primitive_7: {type: "string",description: "7 Primitive and score, category of this primitive, score from 0 to 10"},
-        // primitive_8: {type: "string",description: "8 Primitive and score, category of this primitive, score from 0 to 10"},
-        // primitive_9: {type: "string",description: "9 Primitive and score, category of this primitive, score from 0 to 10"},
-        // primitive_10: {type: "string",description: "10 Primitive and score, category of this primitive, score from 0 to 10"},
-        // primitive_11: {type: "string",description: "11 Primitive and score, category of this primitive, score from 0 to 10"},
-        // primitive_12: {type: "string",description: "12 Primitive and score, category of this primitive, score from 0 to 10"}
+        primitive_1: {type: "string",description: "1 Primitive"},
+        score_1: {type: "string",description: "1 score"},
+        primitive_2: {type: "string",description: "2 Primitive"},
+        score_2: {type: "string",description: "2 score"},
+        primitive_3: {type: "string",description: "3 Primitive"},
+        score_3: {type: "string",description: "3 score"},
+        primitive_4: {type: "string",description: "4 Primitive"},
+        score_4: {type: "string",description: "4 score"},
+        primitive_5: {type: "string",description: "5 Primitive"},
+        score_5: {type: "string",description: "5 score"},
+        primitive_6: {type: "string",description: "6 Primitive"},
+        score_6: {type: "string",description: "6 score"},
+        primitive_7: {type: "string",description: "7 Primitive"},
+        score_7: {type: "string",description: "7 score"},
+        primitive_8: {type: "string",description: "8 Primitive"},
+        score_8: {type: "string",description: "8 score"},
+        primitive_9: {type: "string",description: "9 Primitive"},
+        score_9: {type: "string",description: "9 score"},
+        primitive_10: {type: "string",description: "10 Primitive"},
+        score_10: {type: "string",description: "10 score"},
+        primitive_11: {type: "string",description: "11 Primitive"},
+        score_11: {type: "string",description: "11 score"},
+        primitive_12: {type: "string",description: "12 Primitive"},
+        score_12: {type: "string",description: "12 score"}
       },
       required: ["primitive_1","score_1"],
     }
@@ -387,6 +429,7 @@ async function useGPTFunc(
   } else {
     modelT = "gpt-3.5-turbo-0613";
     // modelT = "gpt-4-0613";
+    // modelT = "gpt-4-1106-preview";
   }
 
   let OPENAI_API_KEY = chooseAPIkey(chooseAPI);
@@ -1108,7 +1151,7 @@ async function deletePineCone(deletePineIDs) {
   const pinecone = new PineconeClient();
   await pinecone.init({
     environment: "us-east1-gcp",
-    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+    apiKey: process.env.PINECONE_API_KEY,
   });
 
   const index = await pinecone.Index("profile-eden-information");
@@ -1126,7 +1169,7 @@ async function upsertEmbedingPineCone(data) {
   const pinecone = new PineconeClient();
   await pinecone.init({
     environment: "us-east1-gcp",
-    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+    apiKey: process.env.PINECONE_API_KEY,
   });
 
   const index = await pinecone.Index("profile-eden-information");
@@ -1656,7 +1699,7 @@ async function findBestEmbedings(message, filter, topK = 3) {
   const pinecone = new PineconeClient();
   await pinecone.init({
     environment: "us-east1-gcp",
-    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+    apiKey: process.env.PINECONE_API_KEY,
   });
 
   const index = await pinecone.Index("profile-eden-information");

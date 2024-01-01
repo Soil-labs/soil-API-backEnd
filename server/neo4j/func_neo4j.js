@@ -1,4 +1,6 @@
+const { printSchema } = require("graphql");
 const { driver } = require("../../server/neo4j_config");
+
 
 module.exports = {
   generalFunc_neo4j: async (req, res) => {
@@ -293,6 +295,148 @@ module.exports = {
     result = await session.writeTransaction((tx) => tx.run(fun));
 
     session.close();
+  },
+  connectNeighborNodesKG_neo4j: async (req, res) => {
+    const { nodeID, graphNeighborsDict} = req;
+
+    const session = driver.session({ database: "neo4j" });
+
+
+    // ----------------- find on Neo4j and add on Dictionary-----------------
+    // let resultConnectedNodes = await session.writeTransaction((tx) =>
+    //   tx.run(`MATCH (start:SKILL {_id: "${nodeID}"})-[*0..2]-(neighbors)
+    //   RETURN DISTINCT neighbors`)
+    // );
+    let resultConnectedNodes = await session.writeTransaction((tx) =>
+      tx.run(`// find 1 to 3 hop nodes with Id
+      MATCH rp = (start:SKILL {_id: "${nodeID}"})-[*0..3]-(neighbors)
+      RETURN rp`)
+    );
+
+    
+    let recConnectedNodes = resultConnectedNodes.records.map((row) => {
+      return row;
+    });
+
+
+    let nodesConnectedSimple = [];
+    let nodesConnectedDict = {};
+    let nodesConnectedIDs =  [];
+    if (recConnectedNodes.length > 0) {
+      for (let i = 0; i < recConnectedNodes.length; ++i) {
+        if ( recConnectedNodes[i] && recConnectedNodes[i]._fields[0]) {
+
+          nPath = recConnectedNodes[i]._fields[0];
+          
+          if (nPath.end && nPath.segments && nPath.segments.length > 0 ) {
+            // console.log("nPath = ",nPath.end.properties.name,"-- hop = ",nPath.segments.length)
+
+            // --- If the node is already on dictionary continue -----
+            let replace  = false
+            if (graphNeighborsDict[nPath.end.properties._id]) {
+              if (graphNeighborsDict[nPath.end.properties._id].hopN <= nPath.segments.length) {
+                continue;
+              } else {
+                replace = true
+              }
+            }
+            // --- If the node is already on dictionary continue -----
+
+            nodesConnectedSimple.push({
+              nodeID: nPath.end.properties._id,
+              hopN: nPath.segments.length,
+              weightTotal: 0,
+              weightSeparate: [],
+            });
+
+            let nodConIdx = nodesConnectedSimple.length - 1;
+
+            for (let j = 0; j < nPath.segments.length; ++j) {
+              // console.log("nPath.segments[j] = ",nPath.segments[j].end.properties.name, "-- Weight = ",nPath.segments[j].relationship.properties.weight.low)
+
+              nodesConnectedSimple[nodConIdx].weightTotal += nPath.segments[j].relationship.properties.weight.low;
+
+              nodesConnectedSimple[nodConIdx].weightSeparate.push({
+                nodeID: nPath.segments[j].end.properties._id,
+                weight: nPath.segments[j].relationship.properties.weight.low,
+                hopNum: j+1,
+              });
+
+            }
+
+            // SOS 🆘
+            // ------------ Calculate the score ------------
+            const weightTotal = (nodesConnectedSimple[nodConIdx].weightTotal)*0.1
+            const hopN = (nodesConnectedSimple[nodConIdx].hopN * 1.1)
+            
+            let averageWeight = weightTotal/hopN
+            let score = averageWeight ** hopN
+
+            nodesConnectedSimple[nodConIdx].score = score
+            // ------------ Calculate the score ------------
+
+            // if (nPath.end.properties._id.toString() == "6584a1f493e35f75b8d65f8c"){
+            //   console.log("hey",nPath.segments.length)
+            // }
+            // if (replace == true ){
+            //   console.log("replace = ",nPath.end.properties._id)
+            // }
+            // console.log("nPath.end.properties._id,",nPath.end.properties._id)
+            nodesConnectedIDs.push(nPath.end.properties._id)
+            if (nodesConnectedDict[nPath.end.properties._id]){
+
+              if ( nPath.segments.length < nodesConnectedDict[nPath.end.properties._id].hopN ){
+                nodesConnectedDict[nPath.end.properties._id] = {
+                  nodeID: nPath.end.properties._id,
+                  hopN: nPath.segments.length,
+                  weightTotal: nodesConnectedSimple[nodConIdx].weightTotal,
+                  score: nodesConnectedSimple[nodConIdx].score,
+                  weightSeparate: nodesConnectedSimple[nodConIdx].weightSeparate,
+                  replace: replace,
+                }
+              }
+
+            } else {
+              nodesConnectedDict[nPath.end.properties._id] = {
+                nodeID: nPath.end.properties._id,
+                hopN: nPath.segments.length,
+                weightTotal: nodesConnectedSimple[nodConIdx].weightTotal,
+                score: nodesConnectedSimple[nodConIdx].score,
+                weightSeparate: nodesConnectedSimple[nodConIdx].weightSeparate,
+                replace: replace,
+              }
+            }
+          }
+        }
+        // console.log("---------------")
+      }
+    }
+    // ----------------- find on Neo4j and add on Dictionary-----------------
+
+    //  ---- Add the hop 0 node which is itself ----
+    if (!graphNeighborsDict[nodeID] && !nodesConnectedDict[nodeID]){
+      nodesConnectedIDs.push(nodeID)
+      nodesConnectedDict[nodeID] = {
+        nodeID: nodeID,
+        hopN: 0,
+        weightTotal: 1,
+        score: 1,
+        weightSeparate: [],
+        replace: false,
+      }
+    }
+
+    // console.log("nodesConnectedDict = ",nodesConnectedDict)
+    // f1
+
+    //  ---- Add the hop 0 node which is itself ----
+    
+
+    return {
+      nodesConnected: nodesConnectedSimple,
+      nodesConnectedIDs: nodesConnectedIDs,
+      nodesConnectedDict: nodesConnectedDict,
+    };
   },
   matchMembersToProject_neo4j: async (req, res) => {
     console.log("change = 11100011");

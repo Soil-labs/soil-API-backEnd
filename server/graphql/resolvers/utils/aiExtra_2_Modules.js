@@ -201,7 +201,7 @@ async function findBestEmbedings(message, filter, topK = 3) {
   const pinecone = new PineconeClient();
   await pinecone.init({
     environment: "us-east1-gcp",
-    apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+    apiKey: process.env.PINECONE_API_KEY,
   });
 
   const index = await pinecone.Index("profile-eden-information");
@@ -256,6 +256,7 @@ async function prepareDataAssistantGPT(data) {
   const openai = new OpenAI({ apiKey: chooseAPIkey(chooseAPI) });
 
 
+  let conversationData;
 
   if (conversationID == undefined) {
     flagCreateNewThread = true;
@@ -270,7 +271,7 @@ async function prepareDataAssistantGPT(data) {
 
     if (conversationData.threadID_openAI) threadID_openAI = conversationData.threadID_openAI;
 
-  }
+  } 
 
   if (newThread == true) {
     flagCreateNewThread = true;
@@ -608,6 +609,20 @@ const assistantFunctions = {
       }
     }
   },
+  "Memory to Primitives": {
+    assistantID_openAI:"asst_d7lczmnTtJGr49Rgv77cACrs",
+    functions: {
+      "memory_primitives":{
+        typeWidget: "ADD_STATE",
+        primitive: {
+          type: "string",
+        },
+        // score: { // 0 - 10
+        //   type: "number",
+        // },
+      }
+    }
+  },
 }
 
 async function saveConversation(data) {
@@ -788,6 +803,40 @@ async function assistantGPT_V1(data) {
   
 }
 
+async function useGPTFuncAssistant(data) {
+
+  // ----------------- Data -----------------
+  const {newMessage,assistantName,conversationID,pubsub} = data;
+
+  prepData = await prepareDataAssistantGPT(data);
+
+  const {threadID_openAI,assistantID_openAI,openai} = prepData;
+  let {conversationData,filterSave} = prepData;
+  // ----------------- Data -----------------
+
+  
+  resSentMessage = await sentMessageAssistantGPT({
+    newMessage,
+    threadID_openAI,
+    assistantID_openAI,
+    openai,
+    filterSave,
+    conversationData,
+  })
+
+  if (newMessage.error) return { error: newMessage.error }
+
+  printC(resSentMessage, "10", "resSentMessage", "p")
+
+
+
+  return {
+    reply: resSentMessage.reply,
+    funcGPToutput: resSentMessage.funcGPToutput,
+  }
+  
+}
+
 async function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -797,4 +846,5 @@ module.exports = {
   findBestEmbedings,
   useGPTchatSimple,
   assistantGPT_V1,
+  useGPTFuncAssistant,
 };
