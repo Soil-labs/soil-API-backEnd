@@ -13,6 +13,9 @@ const nodeSchema = mongoose.Schema({
   node: String, // Role, topic, type_project, subRole
 
   name: String,
+  cleanName: String,
+
+  pineconeID: String, 
 
   relatedNodes: [mongoose.Schema.ObjectId],
 
@@ -30,13 +33,24 @@ const nodeSchema = mongoose.Schema({
 
   graphNeighbors: [{
     nodeID: mongoose.Schema.ObjectId,
-    hopNumTotal: Number,
+    hopN: Number,
     weightTotal: Number,
+    score: Number,
     weightSeparate: [{
       nodeID: mongoose.Schema.ObjectId,
       weight: Number,
       hopNum: Number,
     }],
+  }],
+
+  connectedCardMemories: [{
+    cardID: mongoose.Schema.ObjectId,
+    score: Number,
+  }],
+
+  connectedNodes: [{
+    nodeID: mongoose.Schema.ObjectId,
+    score: Number,
   }],
   
 

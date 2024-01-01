@@ -40,7 +40,14 @@ const {
   Epic,
 } = require("./objectResolvers/projectsResolver");
 const { Skills } = require("./objectResolvers/skillsResolver");
-const { Node } = require("./objectResolvers/nodeResolver");
+const { Node,
+ConnectedCardMemory,
+GraphNeighborType,
+ShowMembersConnectedToNodesOutput,
+PrimitiveCardInput,
+NeighborNodeWithMem,
+ConnectMemoriesToKnowledgeGraph_V2Output,
+ConnectedNodes } = require("./objectResolvers/nodeResolver");
 const { KeywordValue,
 CardMemoriesUsedType } = require("./objectResolvers/aiResolver");
 const { Graph } = require("./objectResolvers/graphVisualResolver");
@@ -59,7 +66,8 @@ const {
 } = require("./objectResolvers/positionResolver");
 const { Company } = require("./objectResolvers/companyResolver");
 const { MemoryPinecone } = require("./objectResolvers/memoryPineconeResolver");
-const { connectedCards } = require("./objectResolvers/cardMemoryResolver");
+const { connectedCards,
+PrimitivesType } = require("./objectResolvers/cardMemoryResolver");
 const { SkillCategory } = require("./objectResolvers/skillCategoryResolver");
 const {
   SkillSubCategory,
@@ -115,6 +123,13 @@ module.exports = {
   Epic,
   Skills,
   Node,
+  ConnectedCardMemory,
+  GraphNeighborType,
+  ShowMembersConnectedToNodesOutput,
+  PrimitiveCardInput,
+  NeighborNodeWithMem,
+  ConnectMemoriesToKnowledgeGraph_V2Output,
+  ConnectedNodes,
   KeywordValue,
   CardMemoriesUsedType,
   Graph,
@@ -123,6 +138,7 @@ module.exports = {
   Company,
   MemoryPinecone,
   connectedCards,
+  PrimitivesType,
   Position,
   CandidateType,
   talentListType,

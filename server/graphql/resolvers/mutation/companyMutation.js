@@ -289,7 +289,7 @@ module.exports = {
   addEmployeesCompany:
     // combineResolvers(
     async (parent, args, context, info) => {
-      const { companyID, employees } = args.fields;
+      const { companyID, positionID,slug, employees } = args.fields;
       console.log(
         "Mutation > addEmployeesCompany > args.fields = ",
         args.fields
@@ -300,12 +300,17 @@ module.exports = {
           component: "companyMutation > addEmployeesCompany",
         });
 
-      if (!companyID)
+      if (!companyID && !slug)
         throw new ApolloError("Company ID is required", "addEmployeesCompany", {
           component: "companyMutation > addEmployeesCompany",
         });
 
-      companyData = await Company.findOne({ _id: companyID });
+      if (companyID){
+        companyData = await Company.findOne({ _id: companyID });
+      } else if (slug)  {
+        companyData = await Company.findOne({ slug: slug });
+
+      }
 
       if (!companyData)
         throw new ApolloError("Company not found", "addEmployeesCompany", {
@@ -320,7 +325,7 @@ module.exports = {
             if (!_member) return;
             let memberCompanies = await updateArr(
               _member.companies,
-              [{ companyID: companyID, typeT: _employee.typeT }],
+              [{ companyID: companyData._id, typeT: _employee.typeT }],
               "companyID"
             );
             await Members.findOneAndUpdate(
@@ -341,7 +346,7 @@ module.exports = {
 
         // find one and updates
         let companyDataN = await Company.findOneAndUpdate(
-          { _id: companyID },
+          { _id: companyData._id },
           { employees: compEmployees },
           { new: true }
         );

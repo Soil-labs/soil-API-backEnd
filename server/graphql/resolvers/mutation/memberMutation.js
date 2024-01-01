@@ -145,7 +145,7 @@ async function generate12DigitID(inputString) {
 //   const pinecone = new PineconeClient();
 //   await pinecone.init({
 //     environment: "us-east1-gcp",
-//     apiKey: "901d81d8-cc8d-4648-aeec-229ce61d476d",
+    // apiKey: process.env.PINECONE_API_KEY,
 //   });
 
 //   const index = await pinecone.Index("profile-eden-information");
