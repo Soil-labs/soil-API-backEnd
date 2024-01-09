@@ -495,6 +495,57 @@ module.exports = {
       }
     },
   },
+  CardMemoryOutputType: {
+    cardMemory: async (parent, args, context, info) => {
+
+      try {
+        const cardMemoryID = parent.cardMemoryID;
+
+        if (cardMemoryID!=null){
+
+          cardMemoryData = await CardMemory.findOne({ _id: cardMemoryID})
+
+          if (cardMemoryData)
+            return cardMemoryData;
+        }
+
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+  },
+  NodeOutputType: {
+    node: async (parent, args, context, info) => {
+
+      try {
+        const nodeOutputID =  parent.nodeOutputID;
+
+        if (nodeOutputID != null) {
+          nodeData = await Node.findOne({ _id: parent.nodeOutputID}).select('-graphNeighbors -match_v2_update -match_v2')
+
+          if (nodeData)
+            return nodeData;
+        }
+
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+  },
   NeighborNodeWithMem: {
     nodeOutput: async (parent, args, context, info) => {
 

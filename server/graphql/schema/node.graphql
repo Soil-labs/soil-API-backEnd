@@ -155,6 +155,16 @@ module.exports = `
     input showMembersConnectedToNodesInput {
         nodesID: [ID]
         cardMemoriesStructure: [cardMemoriesStructureInput]
+        pageSize: Int
+        pageNumber: Int
+        neighborNodeMaxSize: Int
+    }
+
+    input textToPrimitivesAndTalentInput {
+        text: String,
+        pageSize: Int
+        pageNumber: Int
+        neighborNodeMaxSize: Int
     }
 
     input cardMemoriesStructureInput {
@@ -175,11 +185,32 @@ module.exports = `
         primitiveCardMemInput: [PrimitiveCardInput]
     }
 
+    type TextToPrimitivesAndTalentOutput {
+        member: Members
+        rank: Int
+        score: Float
+        primitiveCardMemInput: [PrimitiveCardInput]
+    }
+
     type PrimitiveCardInput {
         nodeInput: Node
         cardMemoryInput: CardMemory
         score: Float
         neighborNodeWithMemOutput: [NeighborNodeWithMem]
+        cardMemoryOutput:[CardMemoryOutputType]
+    }
+
+    type CardMemoryOutputType {
+        cardMemory: CardMemory
+        scoreCardTotal: Float
+        nodeOutput: [NodeOutputType]
+    }
+
+    type NodeOutputType {
+        node: Node
+        scoreTotal: Float
+        scoreNode: Float
+        scoreCard: Float
     }
 
     type NeighborNodeWithMem {
