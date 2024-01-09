@@ -3528,4 +3528,66 @@ module.exports = {
       );
     }
   },
+  findCandidateInfoForMember: async (parent, args, context, info) => {
+    const { memberID } = args.fields;
+    console.log(
+      "Query > findCandidateInfoForMember > args.fields = ",
+      args.fields
+    );
+
+    try {
+      console.log("memberID = ", memberID);
+
+      positionData = await Position.find({
+        "candidates.userID": memberID,
+      }).select("_id name candidates");
+
+      console.log("positionData = ", positionData);
+
+      let positionID = positionData[0]._id;
+
+      let candidateInfo = []
+
+      for (let i = 0; i < positionData.length; i++) {
+        let positionNow = positionData[i];
+
+        for (let j=0; j<memberID.length; j++){
+          let candidateIdx = positionNow.candidates.findIndex(
+            (candidate) => candidate.userID.toString() == memberID[j].toString()
+          );
+
+          if (candidateIdx == -1) continue;
+
+          let candidateNow = positionNow.candidates[candidateIdx];
+
+          candidateInfo.push({
+            positionID: positionNow._id,
+            userID: candidateNow.userID,
+            scoreCardTotal: candidateNow.scoreCardTotal,
+            conversationID: candidateNow.conversationID,
+            scoreCardCategoryMemories: candidateNow.scoreCardCategoryMemories,
+            keyAttributes: candidateNow.keyAttributes,
+            futurePotential: candidateNow.futurePotential,
+            dateApply: candidateNow.dateApply,
+            overallScore: candidateNow.overallScore,
+            skillScore: candidateNow.skillScore,
+            conversationID: candidateNow.conversationID,
+            readyToDisplay: candidateNow.readyToDisplay,
+            summaryQuestions: candidateNow.summaryQuestions,
+            notesInterview: candidateNow.notesInterview,
+            compareCandidatePosition: candidateNow.compareCandidatePosition,
+            analysisCandidateEdenAI: candidateNow.analysisCandidateEdenAI
+          });
+        }
+      }
+
+      return candidateInfo;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "findCandidateInfoForMember",
+        { component: "memberQuery > findCandidateInfoForMember" }
+      );
+    }
+  },
 };

@@ -38,6 +38,7 @@ module.exports = `
             memberRadioChartCharacterAttributes(fields:memberRadioChartCharacterAttributesInput): [memberRadioChartCharacterAttributesOutput]
             candidateNotesEdenAI(fields:candidateNotesEdenAIInput): [candidateNotesEdenAIOutput]
             candidateNotesComparePositionEdenAI(fields:candidateNotesComparePositionEdenAIInput): [candidateNotesComparePositionEdenAIOutput]
+            findCandidateInfoForMember(fields:findCandidateInfoForMemberInput): [CandidateType]
             matchNodesToProjectRoles(fields:matchNodesToProjectRolesInput): [matchSkillsToProjectsOutput]
             matchNodesToProjectRoles_old(fields:matchNodesToProjectRolesInput): [matchSkillsToProjectsOutput]
 
