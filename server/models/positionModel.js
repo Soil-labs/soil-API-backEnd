@@ -143,6 +143,7 @@ const positionModel = mongoose.Schema({
       conversationID: mongoose.Schema.ObjectId,
       candidateScoreCardCalculated: Boolean,
       dateApply: Date,
+      submitted: { type: Boolean, default: false },
       scoreCardTotal: {
         score: Number,
         scoreCardCalculated: Boolean,

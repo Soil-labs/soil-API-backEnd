@@ -63,9 +63,7 @@ const {
   updateConvSummaries,
 } = require("./mutation/conversationMutation");
 
-const {
-  conversationUpdated,
-} = require("./query/aiQuery");
+const { conversationUpdated } = require("./query/aiQuery");
 
 const { addQuestionToEdenAI } = require("./mutation/questionsEdenAIMutation");
 
@@ -85,6 +83,7 @@ const {
   findKeyAttributeAndPotentialPosition,
   findKeyAttributeAndPotentialCandidate,
   addCandidatesPosition,
+  submitCandidatePosition,
   deletePositionCandidate,
   addConvRecruiterToPosition,
   updatePositionUserAnswers,
@@ -291,6 +290,7 @@ module.exports = {
     findKeyAttributeAndPotentialPosition,
     findKeyAttributeAndPotentialCandidate,
     addCandidatesPosition,
+    submitCandidatePosition,
     deletePositionCandidate,
     addConvRecruiterToPosition,
     updatePositionUserAnswers,

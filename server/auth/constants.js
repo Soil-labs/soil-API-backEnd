@@ -9,7 +9,6 @@ const OPERATORS = [
   "114666133746770334577", // Tom Husson
   "102785674053816073334", // Miltiadis Saratzidis
   "106958172939374281455", // Sergey Belyaev
-  "113589215262737174259", // Roman Shalak
 ];
 
 module.exports = {
