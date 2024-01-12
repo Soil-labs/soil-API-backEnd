@@ -5,7 +5,7 @@ const app = express();
 const originAuth = (req, res, next) => {
   const ip = req.ip.includes("::ffff:") ? req.ip.split("::ffff:")[1] : req.ip;
   const geo = geoip.lookup(ip);
-  const referer = req.headers.referer || "";
+  const host = req.headers.host || "";
   const allowedDomain = "edeprotocol.app";
   const developDomain = "eden-saas-develop.vercel.app";
 
@@ -14,8 +14,8 @@ const originAuth = (req, res, next) => {
   //   console.log("Region", geo.region);
 
   if (
-    referer.includes(allowedDomain) ||
-    referer.includes(developDomain) ||
+    host.includes(allowedDomain) ||
+    host.includes(developDomain) ||
     (geo && geo.region === "TN") ||
     (geo && geo.region === "CT")
   ) {
