@@ -35,7 +35,7 @@ async function main() {
     })
   );
 
-  app.use(originAuth);
+  // app.use(originAuth);
 
   const httpServer = createServer(app);
 
