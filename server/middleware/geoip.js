@@ -15,6 +15,7 @@ const originAuth = (req, res, next) => {
 
   console.log("middleware ======= ", allowedDomain);
   console.log("middleware ======= ", developDomain);
+  console.log("middleware ======= ", geo);
   // console.log("middleware ======= ", geo.region);
   console.log("middleware ======= ", ip);
   if (
