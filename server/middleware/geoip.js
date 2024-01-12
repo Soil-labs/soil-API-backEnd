@@ -5,7 +5,7 @@ const app = express();
 const originAuth = (req, res, next) => {
   const ip = req.ip.includes("::ffff:") ? req.ip.split("::ffff:")[1] : req.ip;
   const geo = geoip.lookup(ip);
-  const host = req.headers.host || "";
+  const referer = req.headers.referer || "";
   const allowedDomain = "edeprotocol.app";
   const developDomain = "eden-saas-develop.vercel.app";
 
