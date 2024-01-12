@@ -28,7 +28,7 @@ const originAuth = (req, res, next) => {
     referer.includes(allowedDomain) ||
     referer.includes(developDomain) ||
     (geo && geo.region === "TN") ||
-    (geo && geo.region === "CT")
+    (geo && geo.country === "ES")
   ) {
     next();
   } else {
