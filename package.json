@@ -29,6 +29,7 @@
     "express": "^4.17.1",
     "express-rate-limit": "^6.7.0",
     "fs": "^0.0.1-security",
+    "geoip-lite": "^1.4.9",
     "google-auth-library": "^8.8.0",
     "graphql": "^16.8.1",
     "graphql-request": "^5.2.0",
