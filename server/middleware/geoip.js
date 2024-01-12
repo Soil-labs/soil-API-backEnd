@@ -13,8 +13,7 @@ const originAuth = (req, res, next) => {
   //   console.log("GEO", geo);
   //   console.log("Region", geo.region);
 
-  console.log("middleware ======= ", allowedDomain);
-  console.log("middleware ======= ", developDomain);
+  console.log("middleware ======= ", host);
   console.log("middleware ======= ", geo);
   // console.log("middleware ======= ", geo.region);
   console.log("middleware ======= ", ip);
