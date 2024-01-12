@@ -3,7 +3,14 @@ const geoip = require("geoip-lite");
 const app = express();
 
 const originAuth = (req, res, next) => {
-  const ip = req.ip.includes("::ffff:") ? req.ip.split("::ffff:")[1] : req.ip;
+  let ip;
+  if (req.headers["x-forwarded-for"]) {
+    ip = req.headers["x-forwarded-for"].includes("::ffff:")
+      ? req.headers["x-forwarded-for"].split("::ffff:")[1]
+      : req.headers["x-forwarded-for"];
+  } else {
+    ip = req.ip.includes("::ffff:") ? req.ip.split("::ffff:")[1] : req.ip;
+  }
   const geo = geoip.lookup(ip);
   const referer = req.headers.referer || "";
   const allowedDomain = "edeprotocol.app";
