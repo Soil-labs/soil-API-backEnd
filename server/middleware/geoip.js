@@ -23,9 +23,6 @@ const originAuth = (req, res, next) => {
     (geo && geo.region === "TN") ||
     (geo && geo.region === "CT")
   ) {
-    console.log("middleware ======= ", allowedDomain);
-    console.log("middleware ======= ", developDomain);
-    console.log("middleware ======= ", geo.region);
     next();
   } else {
     res.status(403).send("Access Denied.");
