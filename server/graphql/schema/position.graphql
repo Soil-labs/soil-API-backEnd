@@ -126,6 +126,7 @@ module.exports = `
         keyAttributes: [attributeCandidateType]
         futurePotential: [attributeCandidateType]
         cvID: String
+        positionID: ID
         submitted: Boolean
     }
 

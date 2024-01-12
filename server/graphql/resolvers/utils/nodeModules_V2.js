@@ -78,6 +78,94 @@ const createNodeFunc = async (data) => {
   
 };
 
+const memoryToPrimitivesFun = async (data) => {
+
+  let {memory} = data;
+
+
+
+  // ---------------- Memory to Primitives using GPT ----------------
+  let discussionT = [{
+    role: "user",
+    content: memory,
+    // content: "I know react for like 10 years and a bit of figma the past month ",
+  }];
+
+  functionsUseGPT = ["memory_primitives"]
+
+
+  const systemPrompt = `Your job is to take memories and split them up into the primitives together with score for this memory,
+
+  - you need to focus on finding a job, job descriptions and CVs of people and anything related to matching people with jobs 
+
+  - Always use memory_primitives function
+  
+  Example of primitives: 
+  Javascript, leader, marketing, manager`
+
+  let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT)
+  // resGPTFunc = {
+  //   content: null,
+  //   function_call: {functionName: "memory_primitives",
+  //     primitive_1: "marketing",score_1: 8,primitive_2: "react",score_2: 7},
+  //     // primitive_1: "react",score_1: 8,primitive_2: "marketing",score_2: 7},
+  //     // primitive_1: "react",score_1: 8,},
+  //     // primitive_1: "marketing",score_1: 8,},
+  // }
+
+  printC(resGPTFunc, "1", "resGPTFunc", "b")
+  // ---------------- Memory to Primitives using GPT ----------------
+
+
+  // ---------------- Organize primitives and scores ----------------
+  let primitives = []
+  let nodesData = []
+  let nodesID = []
+  if (resGPTFunc.function_call) {
+    for (let [key, value] of Object.entries(resGPTFunc.function_call)) {
+      if (!key.includes("primitive")) continue;
+
+      if (value == "NA" || value == "") 
+        continue;
+
+      
+      let keyNumber = key.split("_")[1]; // separate the number from the key
+
+      const score = resGPTFunc.function_call[`score_${keyNumber}`]
+
+      value = value.replace("'", "")
+
+
+      let resCheckPrimitive = await checkNodeExistAddToKG({
+        name: value,
+        scoreConnection: score,
+        createNewNodeIfNotExist: false,
+      })
+
+      if (resCheckPrimitive.nodeData) {
+        primitives.push({
+          name: value,
+          score: score,
+          nodeData: resCheckPrimitive.nodeData,
+        })
+        nodesData.push(resCheckPrimitive.nodeData)
+        nodesID.push(resCheckPrimitive.nodeData._id)
+      }
+     
+
+    }
+  }
+  // ---------------- Organize primitives and scores ----------------
+
+
+  return {
+    primitives,
+    nodesData,
+    nodesID,
+  }
+
+}
+
 const memoryToKnowledgeGraphFunc = async (data) => {
 
   let {cardMemory,userID,positionID} = data;
@@ -144,6 +232,7 @@ const memoryToKnowledgeGraphFunc = async (data) => {
       resAddPrimitive = await checkNodeExistAddToKG({
         name: value,
         scoreConnection: score,
+        createNewNodeIfNotExist: true,
       })
       // printC(resAddPrimitive, "1", "resAddPrimitive", "b")
 
@@ -231,6 +320,7 @@ const createNewKGnodeConnections = async (data) => {
       resAddPrimitive = await checkNodeExistAddToKG({
         name: value,
         scoreConnection: score,
+        createNewNodeIfNotExist: true,
       })
 
       if (nodeData._id.toString() == resAddPrimitive.nodeData._id.toString()){
@@ -398,7 +488,7 @@ const connectCardMemoryAndNode = async (data) => {
 
 const checkNodeExistAddToKG = async (data) => {
 
-  const {name,scoreConnection} = data;
+  const {name,scoreConnection,createNewNodeIfNotExist} = data;
 
   
   
@@ -510,14 +600,20 @@ const checkNodeExistAddToKG = async (data) => {
 
 
   // ------------- Create Node / Primitive -------------
-  nodeData = await createNodeFunc({
-    name,
-    node:"SKILL",
-  })
-
-  return {
-    nodeData: nodeData,
-    newNode: true,
+  if (createNewNodeIfNotExist == true){
+    nodeData = await createNodeFunc({
+      name,
+      node:"SKILL",
+    })
+    
+    return {
+      nodeData: nodeData,
+      newNode: true,
+    }
+  } else {
+    return {
+      err: "node not found"
+    }
   }
   // ------------- Create Node / Primitive -------------
 }
@@ -837,7 +933,9 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
       for (let k=0; k < neighborNodeInfo.length; k++) {
        
         const scoreNeighbor = neighborNodeInfo[k].score
+        const scoreHop = neighborNodeInfo[k].hopN
         const nodeInputID = neighborNodeInfo[k].nodeInputID
+
 
 
         // ------------- Organize the members Dictionary -------------
@@ -847,16 +945,68 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
 
             key = `${neighborNodeID}_${cardMemoryID}`
 
-            if (membersDict[memberID].nodeInput[nodeInputID].neighborNodeWithMem[key]) {
-              continue;
-            } else {
+            if (!membersDict[memberID].nodeInput[nodeInputID]) {
+              membersDict[memberID].nodeInput[nodeInputID] = {};
+            }
+            if (!membersDict[memberID].nodeInput[nodeInputID].neighborNodeWithMem) {
+              membersDict[memberID].nodeInput[nodeInputID].neighborNodeWithMem = {};
+            }
+
+            if (!membersDict[memberID].nodeInput[nodeInputID].neighborNodeWithMem[key]) {
               membersDict[memberID].nodeInput[nodeInputID].neighborNodeWithMem[key] = {
                 neighborNodeID: neighborNodeID,
                 cardMemoryID: cardMemoryID,
                 scoreNeighbor: scoreNeighbor,
+                scoreHop: scoreHop,
                 scoreCard: scoreCard,
               }
             }
+
+            // --------- membersCardDict ------
+            if (!membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID]) {
+              if (!membersDict[memberID].nodeInput[nodeInputID]) {
+                membersDict[memberID].nodeInput[nodeInputID] = {};
+              }
+              if (!membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput) {
+                membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput = {};
+              }
+              membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID] = {
+                cardMemoryID: cardMemoryID,
+                scoreCardTotal: scoreNeighbor*scoreCard*0.1,
+                scoreCardTotalNum: 1,
+                nodeOutput: []
+              };
+              let nodeOutputExists = membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID].nodeOutput.some(
+                output => output.nodeOutputID.toString() == neighborNodeID.toString()
+              );
+              if (!nodeOutputExists) {
+                membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID].nodeOutput.push({
+                  nodeOutputID: neighborNodeID,
+                  scoreNode: scoreNeighbor,
+                  scoreHop: scoreHop,
+                  scoreCard: scoreCard,
+                  scoreTotal: scoreNeighbor*scoreCard*0.1,
+                });
+              }
+            } else {
+              membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID].scoreCardTotal += scoreNeighbor*scoreCard*0.1
+              membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID].scoreCardTotalNum += 1
+              
+              let nodeOutputExists = membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID].nodeOutput.some(
+                output => output.nodeOutputID.toString() == neighborNodeID.toString()
+              );
+              if (!nodeOutputExists) {
+                membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID].nodeOutput.push({
+                  nodeOutputID: neighborNodeID,
+                  scoreNode: scoreNeighbor,
+                  scoreHop: scoreHop,
+                  scoreCard: scoreCard,
+                  scoreTotal: scoreNeighbor*scoreCard*0.1,
+                });
+              }
+            }
+            // --------- membersCardDict ------
+            
           } else {
             membersDict[memberID].nodeInput[nodeInputID] = {}
 
@@ -870,8 +1020,34 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
               neighborNodeID: neighborNodeID,
               cardMemoryID: cardMemoryID,
               scoreNeighbor: scoreNeighbor,
+              scoreHop: scoreHop,
               scoreCard: scoreCard,
             }
+
+            // --------- membersCardDict ------
+            membersDict[memberID].nodeInput[nodeInputID] = {}
+
+            membersDict[memberID].nodeInput[nodeInputID].importance = -1
+            membersDict[memberID].nodeInput[nodeInputID].scoreNode = -1
+
+            membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput = {}
+
+            membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID] = {
+              cardMemoryID: cardMemoryID,
+              scoreCardTotal: scoreNeighbor*scoreCard*0.1,
+              scoreCardTotalNum: 1,
+              nodeOutput: []
+            }
+
+            membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID].nodeOutput.push({
+              nodeOutputID: neighborNodeID,
+              scoreNode: scoreNeighbor,
+              scoreHop: scoreHop,
+              scoreCard: scoreCard,
+              scoreTotal: scoreNeighbor*scoreCard*0.1,
+            })
+
+            // --------- membersCardDict ------
           }
 
         } else {
@@ -894,6 +1070,37 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
             scoreCard: scoreCard,
           }
 
+          // --------- membersCardDict ------
+          membersDict[memberID] = {}; 
+          membersDict[memberID].scoreMember = -1
+
+          membersDict[memberID].nodeInput = {}
+          membersDict[memberID].nodeInput[nodeInputID] = {}
+
+          membersDict[memberID].nodeInput[nodeInputID].importance = -1
+          membersDict[memberID].nodeInput[nodeInputID].scoreNode = -1
+          membersDict[memberID].nodeInput[nodeInputID].neighborNodeWithMem = {}
+          membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput = {}
+
+
+          membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID] = {
+            cardMemoryID: cardMemoryID,
+            scoreCardTotal: scoreNeighbor*scoreCard*0.1,
+            scoreCardTotalNum: 1,
+            nodeOutput: []
+          }
+
+          membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID].nodeOutput.push({
+            nodeOutputID: neighborNodeID,
+            scoreNode: scoreNeighbor,
+            scoreHop: scoreHop,
+            scoreCard: scoreCard,
+            scoreTotal: scoreNeighbor*scoreCard*0.1,
+          })
+          // --------- membersCardDict ------
+
+
+
 
         }
         // ------------- Organize the members Dictionary -------------
@@ -904,7 +1111,7 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
   // ------------- Organize the members -------------
 
   // printC(membersDict, "1", "membersDict", "b")
-  // printC(membersDict['110217248786571144324'].nodeInput, "1", "membersDict", "b")
+  // printC(membersDict['106687126440283720518'].nodeInput, "1", "membersDict", "b")
   // f1
 
   // ------------- Organize based on nodeInputID -------------
@@ -1148,40 +1355,88 @@ const rankBasedOnNodeInputFunc = async (data) => {
 
 const orderedMembersFunc = async (data) => {
 
-  const {membersDict} = data;
+  const {membersDict,pageSize,pageNumber,neighborNodeMaxSize,scoreCardMaxSize} = data;
   
 
   // ------------- transform dictionary into ordered array for members and nodeInput ---------
-  membersArray = []
+  let membersArray = []
+  let membersArrayCardMemArray = []
   for (let memberID in membersDict) {
     membersArray.push({
       ...membersDict[memberID],
       score: parseFloat(membersDict[memberID].scoreMember.toFixed(2)),
       memberID: memberID,
     });
+    membersArrayCardMemArray.push({
+      ...membersDict[memberID],
+      score: parseFloat(membersDict[memberID].scoreMember.toFixed(2)),
+      memberID: memberID,
+    });
     let nodeInputArray = [];
+
+    
+
     for (let nodeInputID in membersDict[memberID].nodeInput) {
 
       let nodeInputDictTemp = membersDict[memberID].nodeInput[nodeInputID];
       let neighborNodeWithMem = [];
+      let cardMemoryOutput = [];
+
 
       for (let key in nodeInputDictTemp.neighborNodeWithMem) {
-        neighborNodeWithMem.push({
-          ...nodeInputDictTemp.neighborNodeWithMem[key],
-          scoreNode: parseFloat(nodeInputDictTemp.neighborNodeWithMem[key].scoreNeighbor.toFixed(2)),
-          scoreCard: parseFloat((nodeInputDictTemp.neighborNodeWithMem[key].scoreCard*0.1).toFixed(2)),
-          scoreTotal: parseFloat((nodeInputDictTemp.neighborNodeWithMem[key].scoreNeighbor*nodeInputDictTemp.neighborNodeWithMem[key].scoreCard*0.1).toFixed(2)),
-        });
+        if (neighborNodeWithMem.length < neighborNodeMaxSize){
+          neighborNodeWithMem.push({
+            ...nodeInputDictTemp.neighborNodeWithMem[key],
+            scoreNode: parseFloat(nodeInputDictTemp.neighborNodeWithMem[key].scoreNeighbor.toFixed(2)),
+            scoreCard: parseFloat((nodeInputDictTemp.neighborNodeWithMem[key].scoreCard*0.1).toFixed(2)),
+            scoreTotal: parseFloat((nodeInputDictTemp.neighborNodeWithMem[key].scoreNeighbor*nodeInputDictTemp.neighborNodeWithMem[key].scoreCard*0.1).toFixed(2)),
+          });
+        }
       }
+
+      for (let key in nodeInputDictTemp.cardMemoryOutput) {
+
+        // if (cardMemoryOutput.length < neighborNodeMaxSize){
+
+          let scoreCardTotal = nodeInputDictTemp.cardMemoryOutput[key].scoreCardTotal
+          let scoreCardTotalNum = nodeInputDictTemp.cardMemoryOutput[key].scoreCardTotalNum
+          
+          
+          scoreCardTotal = parseFloat((scoreCardTotal / scoreCardTotalNum).toFixed(2))
+          
+          
+          let nodeOutputTemp = nodeInputDictTemp.cardMemoryOutput[key].nodeOutput
+
+          let nodeOutputOrdered = nodeOutputTemp.sort((a, b) => b.scoreTotal - a.scoreTotal)
+
+
+          // Slice the nodeOutput array to neighborNodeMaxSize length
+          nodeOutputOrdered = nodeOutputOrdered.slice(0, neighborNodeMaxSize);
+
+          cardMemoryOutput.push({
+            scoreCardTotal: scoreCardTotal,
+            cardMemoryID: key,
+            nodeOutput: nodeOutputOrdered,
+          });
+        // }
+      }
+
+      // Sort cardMemoryOutput array based on scoreCardTotal
+      cardMemoryOutput.sort((a, b) => b.scoreCardTotal - a.scoreCardTotal);
+      // Cut cardMemoryOutput array to neighborNodeMaxSize length
+      cardMemoryOutput = cardMemoryOutput.slice(0, scoreCardMaxSize);
 
 
       nodeInputArray.push({
         neighborNodeWithMem,
         score: parseFloat(membersDict[memberID].nodeInput[nodeInputID].scoreNode.toFixed(2)),
         nodeInputID: nodeInputID,
+        cardMemoryOutput: cardMemoryOutput,
       });
+
+
     }
-    nodeInputArray.sort((a, b) => b.scoreNode - a.scoreNode); // sort input from best to worst score
+    nodeInputArray.sort((a, b) => b.score - a.score); // sort input from best to worst score
 
     membersArray[membersArray.length - 1].nodeInput = nodeInputArray;
   }
@@ -1189,6 +1444,13 @@ const orderedMembersFunc = async (data) => {
   // ------------- transform dictionary into ordered array for members and nodeInput ---------
 
 
+  // ------------- Pagination -------------
+  const startIndex = (pageNumber - 1) * pageSize;
+  const endIndex = pageNumber * pageSize;
+
+
+  membersArray = membersArray.slice(startIndex, endIndex);
+  // ------------- Pagination -------------
 
 
 
@@ -1316,4 +1578,5 @@ module.exports = {
     rankMembersFunc,
     rankBasedOnNodeInputFunc,
     orderedMembersFunc,
+    memoryToPrimitivesFun,
   };

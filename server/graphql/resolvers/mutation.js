@@ -54,6 +54,7 @@ const {
   connectMemoriesToKnowledgeGraph_V2,
   connectNeighborNodesKG,
   showMembersConnectedToNodes,
+  textToPrimitivesAndTalent,
   createNodeCategoryGroup,
 } = require("./mutation/nodeMutation");
 
@@ -263,6 +264,7 @@ module.exports = {
     connectMemoriesToKnowledgeGraph_V2,
     connectNeighborNodesKG,
     showMembersConnectedToNodes,
+    textToPrimitivesAndTalent,
     createNodeCategoryGroup,
 
     // ------------- CONVERSATION MUTATION -----------------

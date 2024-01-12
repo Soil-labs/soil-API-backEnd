@@ -23,7 +23,7 @@ const { printC } = require("../../../printModule");
 
 const { createNodeFunc,memoriesToKnowledgeGraphFunc,connectNeighborNodesKGFunc,
   findNeighborNodesFunc,findCardMemoriesAndMembersFromNodes,
-  rankMembersFunc,orderedMembersFunc,
+  rankMembersFunc,orderedMembersFunc,memoryToPrimitivesFun,
   rankBasedOnNodeInputFunc } = require("../utils/nodeModules_V2");
 
 async function findOrCreateNode(node,nodeID,nodeName,serverID) {
@@ -661,7 +661,13 @@ module.exports = {
     },
     showMembersConnectedToNodes: async (parent, args, context, info) => {
       const { nodesID } = args.fields;
+      let {pageSize, pageNumber,neighborNodeMaxSize} = args.fields;
       console.log("Mutation > showMembersConnectedToNodes > args.fields = ", args.fields);
+
+      if (!pageSize) pageSize = 10
+      if (!pageNumber) pageNumber = 1
+
+      if (pageNumber == 0) throw new ApolloError("pageNumber can't be 0, starts form 1 ");
 
       if (!nodesID) throw new ApolloError("You need to specify the nodesID of the node");
 
@@ -700,6 +706,9 @@ module.exports = {
 
         let resRankMembersFunc = await orderedMembersFunc({
           membersDict,
+          pageSize,
+          pageNumber,
+          neighborNodeMaxSize,
         })
         let membersArray = resRankMembersFunc.membersArray
 
@@ -714,6 +723,102 @@ module.exports = {
           err.message,
           err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
           { component: "nodeMutation > showMembersConnectedToNodes" }
+        );
+      }
+    },
+    textToPrimitivesAndTalent: async (parent, args, context, info) => {
+      const { text } = args.fields;
+      let {pageSize, pageNumber,neighborNodeMaxSize,scoreCardMaxSize} = args.fields;
+      console.log("Mutation > textToPrimitivesAndTalent > args.fields = ", args.fields);
+
+      if (!pageSize) pageSize = 10
+      if (!pageNumber) pageNumber = 1
+      if (pageNumber == 0) throw new ApolloError("pageNumber can't be 0, starts form 1 ");
+
+      if (!neighborNodeMaxSize) neighborNodeMaxSize = 3
+      if (!scoreCardMaxSize) scoreCardMaxSize = 6
+
+      printC(text,"1", "text", "p")
+
+      try {
+
+        // ---------------- Memory to Primitives --------------
+        let resMemoryToPrimitivesFun = await memoryToPrimitivesFun({
+          memory: text,
+        })
+        let primitives = resMemoryToPrimitivesFun.primitives
+        let nodesData = resMemoryToPrimitivesFun.nodesData
+        let nodesID = resMemoryToPrimitivesFun.nodesID
+        // ---------------- Memory to Primitives --------------
+
+
+
+
+        // ---------------- Find Members based on the nodes ----------------
+        let resFindNeighborNodesFunc = await findNeighborNodesFunc({
+          nodesData,
+        })
+        let neighborsDict = resFindNeighborNodesFunc.neighborsDict
+        let neighborsNodeIDs = resFindNeighborNodesFunc.neighborsNodeIDs
+        
+
+        let resFindCardMemoriesAndMembersFromNodes = await findCardMemoriesAndMembersFromNodes({
+          neighborsDict,
+          neighborsNodeIDs,
+        })
+        let membersDict = resFindCardMemoriesAndMembersFromNodes.membersDict
+        let nodeInputDict = resFindCardMemoriesAndMembersFromNodes.nodeInputDict
+
+        
+
+        let resRankBasedOnNodeInputFunc = await rankBasedOnNodeInputFunc({
+          nodeInputDict,
+          membersDict,
+          nodesID,
+        })
+        membersDict = resRankBasedOnNodeInputFunc.membersDict
+        nodeInputDict = resRankBasedOnNodeInputFunc.nodeInputDict
+
+
+        // printC(membersDict,"1", "membersDict", "p")
+        // printC(membersDict["113683633121156649655"],"1", "membersDict", "p")
+        // printC(membersDict["113683633121156649655"].nodeInput["65847fb7182115721db30a17"],"1", "membersDict", "p")
+        // printC(membersDict["106662011105885655262"].nodeInput["65847fb7182115721db30a17"].neighborNodeWithMem,"1", "membersDict", "p")
+        // // printC(membersDict["106662011105885655262"].nodeInput["6584819c182115721db30eb0"].cardMemoryOutput["65903c6d7528570007afdc10"],"1", "membersDict", "p")
+        // f2
+        
+
+
+        let resRankMembersFunc = await orderedMembersFunc({
+          membersDict,
+          pageSize,
+          pageNumber,
+          neighborNodeMaxSize,
+          scoreCardMaxSize,
+        })
+        let membersArray = resRankMembersFunc.membersArray
+        // ---------------- Find Members based on the nodes ----------------
+
+
+        // printC(membersArray,"1", "membersArray", "p")
+        // printC(membersArray[0],"1", "membersArray", "p")
+        // printC(membersArray[0].nodeInput,"1", "membersArray", "p")
+        // printC(membersArray[0].nodeInput[0].cardMemoryOutput,"1", "membersArray", "p")
+        // printC(membersArray[0].nodeInput[0].cardMemoryOutput[0].nodeOutput,"1", "membersArray", "p")
+        // f1
+
+        
+
+        return membersArray;
+
+        
+
+      } catch (err) {
+        printC(err, "-1", "err", "r");
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "nodeMutation > textToPrimitivesAndTalent" }
         );
       }
     },
