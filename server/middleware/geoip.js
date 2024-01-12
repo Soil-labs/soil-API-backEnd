@@ -13,16 +13,20 @@
 //   //   console.log("GEO", geo);
 //   //   console.log("Region", geo.region);
 
-//   if (
-//     host.includes(allowedDomain) ||
-//     host.includes(developDomain) ||
-//     (geo && geo.region === "TN") ||
-//     (geo && geo.region === "CT")
-//   ) {
-//     next();
-//   } else {
-//     res.status(403).send("Access Denied.");
-//   }
-// };
+  console.log("middleware ======= ", referer);
+  console.log("middleware ======= ", geo);
+  // console.log("middleware ======= ", geo.region);
+  console.log("middleware ======= ", ip);
+  if (
+    referer.includes(allowedDomain) ||
+    referer.includes(developDomain) ||
+    (geo && geo.region === "TN") ||
+    (geo && geo.region === "CT")
+  ) {
+    next();
+  } else {
+    res.status(403).send("Access Denied.");
+  }
+};
 
 // module.exports = originAuth;
