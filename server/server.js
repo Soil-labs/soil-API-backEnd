@@ -17,7 +17,7 @@ const { stripeRoutes, stripeWebhookRoutes } = require("./stripe");
 const { storageRoutes } = require("./storage");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
-const originAuth = require("./middleware/geoip");
+// const originAuth = require("./middleware/geoip");
 
 require("dotenv").config();
 
@@ -35,7 +35,7 @@ async function main() {
     })
   );
 
-  app.use(originAuth);
+  // app.use(originAuth);
 
   const httpServer = createServer(app);
 
@@ -94,7 +94,7 @@ async function main() {
 
   mongoose
     .connect(
-      `mongodb+srv://milts10:O1eSaOUKmE1xXiEz@cluster0.tilvd.mongodb.net/${DATABASE_MONGO}?retryWrites=true&w=majority`,
+      `mongodb+srv://${process.env.REACT_APP_MONGO_USERNAME}:${process.env.REACT_APP_MONGO_PASSWORD}@${process.env.REACT_APP_MONGO_CLUSTER_ADDRESS}/${DATABASE_MONGO}?retryWrites=true&w=majority`,
       {
         useNewUrlParser: true,
         useUnifiedTopology: true,

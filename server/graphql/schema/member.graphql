@@ -366,6 +366,10 @@ module.exports = `
         memberID: ID
         positionID: ID
     }
+
+    input findCandidateInfoForMemberInput {
+        memberID: [ID]
+    }
     
     type matchProjectRoles {
         matchPercentage: Float,
