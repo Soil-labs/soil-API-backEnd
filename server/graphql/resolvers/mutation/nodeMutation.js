@@ -801,10 +801,10 @@ module.exports = {
 
 
         // printC(membersArray,"1", "membersArray", "p")
-        // printC(membersArray[0],"1", "membersArray", "p")
-        // printC(membersArray[0].nodeInput,"1", "membersArray", "p")
-        // printC(membersArray[0].nodeInput[0].cardMemoryOutput,"1", "membersArray", "p")
-        // printC(membersArray[0].nodeInput[0].cardMemoryOutput[0].nodeOutput,"1", "membersArray", "p")
+        // printC(membersArray[2],"1", "membersArray", "p")
+        // printC(membersArray[2].nodeInput,"1", "membersArray", "p")
+        // // // printC(membersArray[0].nodeInput[0].cardMemoryOutput,"1", "membersArray", "p")
+        // // // printC(membersArray[0].nodeInput[0].cardMemoryOutput[0].nodeOutput,"1", "membersArray", "p")
         // f1
 
         

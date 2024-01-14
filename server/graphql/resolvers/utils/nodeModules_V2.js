@@ -1230,12 +1230,12 @@ const rankBasedOnNodeInputFunc = async (data) => {
 
       scoreMemberNodeTemp = a*Math.pow(scoreMemberNodeTemp,2) + b
 
-      if (scoreMemberNodeTemp > 1) {
-        members[memberID].scoreMemberNodeTemp = 1
-        scoreMemberNodeTemp = 1
-      } else {
+      // if (scoreMemberNodeTemp > 1) {
+      //   members[memberID].scoreMemberNodeTemp = 1
+      //   scoreMemberNodeTemp = 1
+      // } else {
         members[memberID].scoreMemberNodeTemp = scoreMemberNodeTemp
-      }
+      // }
 
       if (scoreMemberNodeTemp > maxScoreTemp)
         maxScoreTemp = scoreMemberNodeTemp
@@ -1250,6 +1250,10 @@ const rankBasedOnNodeInputFunc = async (data) => {
   }
   // ------------- Calculate the Scores -------------
 
+  // printC(nodeInputDict, "1", "nodeInputDict", "b")
+  // printC(nodeInputDict["65847fb7182115721db30a17"], "1", "nodeInputDict[65847fb7182115721db30a17]", "b")
+
+  // f1
 
   // ------------- Normalize the Scores -------------
   for (let nodeInputID in nodeInputDict) {
@@ -1263,9 +1267,11 @@ const rankBasedOnNodeInputFunc = async (data) => {
 
     const maxScoreTemp = nodeInputDict[nodeInputID].maxScoreTemp
     let maxScoreExtra = maxScoreTemp*(e)
-    if (maxScoreExtra > 1 ) maxScoreExtra = 1
+    // if (maxScoreExtra > 1 ) maxScoreExtra = 1
     // ------------- Prepare min max -------------
 
+    // printC(minScoreExtra, "1", "minScoreExtra", "b")
+    // printC(maxScoreExtra, "1", "maxScoreExtra", "b")
 
     if (Object.keys(members).length == 1 ){
       for (let memberID in members) {
@@ -1278,9 +1284,15 @@ const rankBasedOnNodeInputFunc = async (data) => {
       let scoreMemberNodeTemp = members[memberID].scoreMemberNodeTemp
 
       const scoreMemberNodeNormalize = (scoreMemberNodeTemp - minScoreExtra)/(maxScoreExtra - minScoreExtra)
+      // const scoreMemberNodeNormalize = scoreMemberNodeTemp
 
       members[memberID].scoreMemberNodeNormalize = scoreMemberNodeNormalize
+
+      // printC(scoreMemberNodeTemp, "1", "scoreMemberNodeTemp", "b")
+      // printC(scoreMemberNodeNormalize, "1", "scoreMemberNodeNormalize", "b")
     }
+
+    // f1
 
   }
   // ------------- Normalize the Scores -------------
@@ -1300,13 +1312,17 @@ const rankBasedOnNodeInputFunc = async (data) => {
       let scoreNode = 0
       if (nodeInputDict[nodeInputID].members[memberID] && nodeInputDict[nodeInputID].members[memberID].scoreMemberNodeNormalize){
         scoreNode = nodeInputDict[nodeInputID].members[memberID].scoreMemberNodeNormalize
+        scoreNodeReal = nodeInputDict[nodeInputID].members[memberID].scoreMemberNodeTemp
       }
 
       if (membersDict[memberID].nodeInput[nodeInputID] && membersDict[memberID].nodeInput[nodeInputID].scoreNode){
         membersDict[memberID].nodeInput[nodeInputID].scoreNode = scoreNode // save this score that we found before on the membersDict
+        membersDict[memberID].nodeInput[nodeInputID].scoreNodeReal = scoreNodeReal // save this score that we found before on the membersDict
+
       } else {
         membersDict[memberID].nodeInput[nodeInputID] = {}
         membersDict[memberID].nodeInput[nodeInputID].scoreNode = scoreNode
+        membersDict[memberID].nodeInput[nodeInputID].scoreNodeReal = scoreNodeReal
       }
 
       scoreEuclideanAllNodes += Math.pow(scoreNode,2)
@@ -1334,7 +1350,8 @@ const rankBasedOnNodeInputFunc = async (data) => {
     if (Object.keys(membersDict).length == 1) {
       scoreMemberEuclNormalize = membersDict[memberID].scoreMemberEuclNormalize = scoreMemberEucl;
     } else {
-      scoreMemberEuclNormalize = (scoreMemberEucl - minEuclScore)/(maxEuclScore - minEuclScore)
+      // scoreMemberEuclNormalize = (scoreMemberEucl - minEuclScore)/(maxEuclScore - minEuclScore)
+      scoreMemberEuclNormalize = scoreMemberEucl
     }
     
     membersDict[memberID].scoreMember = scoreMemberEuclNormalize
@@ -1430,6 +1447,7 @@ const orderedMembersFunc = async (data) => {
       nodeInputArray.push({
         neighborNodeWithMem,
         score: parseFloat(membersDict[memberID].nodeInput[nodeInputID].scoreNode.toFixed(2)),
+        scoreReal: membersDict[memberID].nodeInput[nodeInputID].scoreNodeReal,
         nodeInputID: nodeInputID,
         cardMemoryOutput: cardMemoryOutput,
       });
