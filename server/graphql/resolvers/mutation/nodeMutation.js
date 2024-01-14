@@ -728,12 +728,15 @@ module.exports = {
     },
     textToPrimitivesAndTalent: async (parent, args, context, info) => {
       const { text } = args.fields;
-      let {pageSize, pageNumber,neighborNodeMaxSize} = args.fields;
+      let {pageSize, pageNumber,neighborNodeMaxSize,scoreCardMaxSize} = args.fields;
       console.log("Mutation > textToPrimitivesAndTalent > args.fields = ", args.fields);
 
       if (!pageSize) pageSize = 10
       if (!pageNumber) pageNumber = 1
       if (pageNumber == 0) throw new ApolloError("pageNumber can't be 0, starts form 1 ");
+
+      if (!neighborNodeMaxSize) neighborNodeMaxSize = 3
+      if (!scoreCardMaxSize) scoreCardMaxSize = 6
 
       printC(text,"1", "text", "p")
 
@@ -779,10 +782,10 @@ module.exports = {
 
         // printC(membersDict,"1", "membersDict", "p")
         // printC(membersDict["113683633121156649655"],"1", "membersDict", "p")
-        // printC(membersDict["113683633121156649655"].nodeInput["658f54dc6d61911565327e0a"],"1", "membersDict", "p")
-        // // printC(membersDict["106662011105885655262"].nodeInput["6584819c182115721db30eb0"].cardMemoryOutput,"1", "membersDict", "p")
+        // printC(membersDict["113683633121156649655"].nodeInput["65847fb7182115721db30a17"],"1", "membersDict", "p")
+        // printC(membersDict["106662011105885655262"].nodeInput["65847fb7182115721db30a17"].neighborNodeWithMem,"1", "membersDict", "p")
         // // printC(membersDict["106662011105885655262"].nodeInput["6584819c182115721db30eb0"].cardMemoryOutput["65903c6d7528570007afdc10"],"1", "membersDict", "p")
-        // f1
+        // f2
         
 
 
@@ -791,16 +794,17 @@ module.exports = {
           pageSize,
           pageNumber,
           neighborNodeMaxSize,
+          scoreCardMaxSize,
         })
         let membersArray = resRankMembersFunc.membersArray
         // ---------------- Find Members based on the nodes ----------------
 
 
         // printC(membersArray,"1", "membersArray", "p")
-        // printC(membersArray[0],"1", "membersArray", "p")
-        // printC(membersArray[0].nodeInput,"1", "membersArray", "p")
-        // printC(membersArray[0].nodeInput[0].cardMemoryOutput,"1", "membersArray", "p")
-        // printC(membersArray[0].nodeInput[0].cardMemoryOutput[0].nodeOutput,"1", "membersArray", "p")
+        // printC(membersArray[2],"1", "membersArray", "p")
+        // printC(membersArray[2].nodeInput,"1", "membersArray", "p")
+        // // // printC(membersArray[0].nodeInput[0].cardMemoryOutput,"1", "membersArray", "p")
+        // // // printC(membersArray[0].nodeInput[0].cardMemoryOutput[0].nodeOutput,"1", "membersArray", "p")
         // f1
 
         

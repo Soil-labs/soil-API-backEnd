@@ -107,8 +107,8 @@ const memoryToPrimitivesFun = async (data) => {
   // resGPTFunc = {
   //   content: null,
   //   function_call: {functionName: "memory_primitives",
-  //     // primitive_1: "marketing",score_1: 8,primitive_2: "react",score_2: 7},
-  //     primitive_1: "react",score_1: 8,primitive_2: "marketing",score_2: 7},
+  //     primitive_1: "marketing",score_1: 8,primitive_2: "react",score_2: 7},
+  //     // primitive_1: "react",score_1: 8,primitive_2: "marketing",score_2: 7},
   //     // primitive_1: "react",score_1: 8,},
   //     // primitive_1: "marketing",score_1: 8,},
   // }
@@ -933,7 +933,9 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
       for (let k=0; k < neighborNodeInfo.length; k++) {
        
         const scoreNeighbor = neighborNodeInfo[k].score
+        const scoreHop = neighborNodeInfo[k].hopN
         const nodeInputID = neighborNodeInfo[k].nodeInputID
+
 
 
         // ------------- Organize the members Dictionary -------------
@@ -955,6 +957,7 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
                 neighborNodeID: neighborNodeID,
                 cardMemoryID: cardMemoryID,
                 scoreNeighbor: scoreNeighbor,
+                scoreHop: scoreHop,
                 scoreCard: scoreCard,
               }
             }
@@ -980,6 +983,7 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
                 membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID].nodeOutput.push({
                   nodeOutputID: neighborNodeID,
                   scoreNode: scoreNeighbor,
+                  scoreHop: scoreHop,
                   scoreCard: scoreCard,
                   scoreTotal: scoreNeighbor*scoreCard*0.1,
                 });
@@ -995,6 +999,7 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
                 membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID].nodeOutput.push({
                   nodeOutputID: neighborNodeID,
                   scoreNode: scoreNeighbor,
+                  scoreHop: scoreHop,
                   scoreCard: scoreCard,
                   scoreTotal: scoreNeighbor*scoreCard*0.1,
                 });
@@ -1015,6 +1020,7 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
               neighborNodeID: neighborNodeID,
               cardMemoryID: cardMemoryID,
               scoreNeighbor: scoreNeighbor,
+              scoreHop: scoreHop,
               scoreCard: scoreCard,
             }
 
@@ -1036,6 +1042,7 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
             membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID].nodeOutput.push({
               nodeOutputID: neighborNodeID,
               scoreNode: scoreNeighbor,
+              scoreHop: scoreHop,
               scoreCard: scoreCard,
               scoreTotal: scoreNeighbor*scoreCard*0.1,
             })
@@ -1086,6 +1093,7 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
           membersDict[memberID].nodeInput[nodeInputID].cardMemoryOutput[cardMemoryID].nodeOutput.push({
             nodeOutputID: neighborNodeID,
             scoreNode: scoreNeighbor,
+            scoreHop: scoreHop,
             scoreCard: scoreCard,
             scoreTotal: scoreNeighbor*scoreCard*0.1,
           })
@@ -1222,12 +1230,12 @@ const rankBasedOnNodeInputFunc = async (data) => {
 
       scoreMemberNodeTemp = a*Math.pow(scoreMemberNodeTemp,2) + b
 
-      if (scoreMemberNodeTemp > 1) {
-        members[memberID].scoreMemberNodeTemp = 1
-        scoreMemberNodeTemp = 1
-      } else {
+      // if (scoreMemberNodeTemp > 1) {
+      //   members[memberID].scoreMemberNodeTemp = 1
+      //   scoreMemberNodeTemp = 1
+      // } else {
         members[memberID].scoreMemberNodeTemp = scoreMemberNodeTemp
-      }
+      // }
 
       if (scoreMemberNodeTemp > maxScoreTemp)
         maxScoreTemp = scoreMemberNodeTemp
@@ -1242,6 +1250,10 @@ const rankBasedOnNodeInputFunc = async (data) => {
   }
   // ------------- Calculate the Scores -------------
 
+  // printC(nodeInputDict, "1", "nodeInputDict", "b")
+  // printC(nodeInputDict["65847fb7182115721db30a17"], "1", "nodeInputDict[65847fb7182115721db30a17]", "b")
+
+  // f1
 
   // ------------- Normalize the Scores -------------
   for (let nodeInputID in nodeInputDict) {
@@ -1255,9 +1267,11 @@ const rankBasedOnNodeInputFunc = async (data) => {
 
     const maxScoreTemp = nodeInputDict[nodeInputID].maxScoreTemp
     let maxScoreExtra = maxScoreTemp*(e)
-    if (maxScoreExtra > 1 ) maxScoreExtra = 1
+    // if (maxScoreExtra > 1 ) maxScoreExtra = 1
     // ------------- Prepare min max -------------
 
+    // printC(minScoreExtra, "1", "minScoreExtra", "b")
+    // printC(maxScoreExtra, "1", "maxScoreExtra", "b")
 
     if (Object.keys(members).length == 1 ){
       for (let memberID in members) {
@@ -1270,9 +1284,15 @@ const rankBasedOnNodeInputFunc = async (data) => {
       let scoreMemberNodeTemp = members[memberID].scoreMemberNodeTemp
 
       const scoreMemberNodeNormalize = (scoreMemberNodeTemp - minScoreExtra)/(maxScoreExtra - minScoreExtra)
+      // const scoreMemberNodeNormalize = scoreMemberNodeTemp
 
       members[memberID].scoreMemberNodeNormalize = scoreMemberNodeNormalize
+
+      // printC(scoreMemberNodeTemp, "1", "scoreMemberNodeTemp", "b")
+      // printC(scoreMemberNodeNormalize, "1", "scoreMemberNodeNormalize", "b")
     }
+
+    // f1
 
   }
   // ------------- Normalize the Scores -------------
@@ -1292,13 +1312,17 @@ const rankBasedOnNodeInputFunc = async (data) => {
       let scoreNode = 0
       if (nodeInputDict[nodeInputID].members[memberID] && nodeInputDict[nodeInputID].members[memberID].scoreMemberNodeNormalize){
         scoreNode = nodeInputDict[nodeInputID].members[memberID].scoreMemberNodeNormalize
+        scoreNodeReal = nodeInputDict[nodeInputID].members[memberID].scoreMemberNodeTemp
       }
 
       if (membersDict[memberID].nodeInput[nodeInputID] && membersDict[memberID].nodeInput[nodeInputID].scoreNode){
         membersDict[memberID].nodeInput[nodeInputID].scoreNode = scoreNode // save this score that we found before on the membersDict
+        membersDict[memberID].nodeInput[nodeInputID].scoreNodeReal = scoreNodeReal // save this score that we found before on the membersDict
+
       } else {
         membersDict[memberID].nodeInput[nodeInputID] = {}
         membersDict[memberID].nodeInput[nodeInputID].scoreNode = scoreNode
+        membersDict[memberID].nodeInput[nodeInputID].scoreNodeReal = scoreNodeReal
       }
 
       scoreEuclideanAllNodes += Math.pow(scoreNode,2)
@@ -1326,7 +1350,8 @@ const rankBasedOnNodeInputFunc = async (data) => {
     if (Object.keys(membersDict).length == 1) {
       scoreMemberEuclNormalize = membersDict[memberID].scoreMemberEuclNormalize = scoreMemberEucl;
     } else {
-      scoreMemberEuclNormalize = (scoreMemberEucl - minEuclScore)/(maxEuclScore - minEuclScore)
+      // scoreMemberEuclNormalize = (scoreMemberEucl - minEuclScore)/(maxEuclScore - minEuclScore)
+      scoreMemberEuclNormalize = scoreMemberEucl
     }
     
     membersDict[memberID].scoreMember = scoreMemberEuclNormalize
@@ -1347,7 +1372,7 @@ const rankBasedOnNodeInputFunc = async (data) => {
 
 const orderedMembersFunc = async (data) => {
 
-  const {membersDict,pageSize,pageNumber,neighborNodeMaxSize} = data;
+  const {membersDict,pageSize,pageNumber,neighborNodeMaxSize,scoreCardMaxSize} = data;
   
 
   // ------------- transform dictionary into ordered array for members and nodeInput ---------
@@ -1388,32 +1413,48 @@ const orderedMembersFunc = async (data) => {
 
       for (let key in nodeInputDictTemp.cardMemoryOutput) {
 
-        if (cardMemoryOutput.length < neighborNodeMaxSize){
+        // if (cardMemoryOutput.length < neighborNodeMaxSize){
 
           let scoreCardTotal = nodeInputDictTemp.cardMemoryOutput[key].scoreCardTotal
           let scoreCardTotalNum = nodeInputDictTemp.cardMemoryOutput[key].scoreCardTotalNum
+          
+          
+          scoreCardTotal = parseFloat((scoreCardTotal / scoreCardTotalNum).toFixed(2))
+          
+          
+          let nodeOutputTemp = nodeInputDictTemp.cardMemoryOutput[key].nodeOutput
 
-          scoreCardTotal = parseFloat((scoreCardTotal / scoreCardTotalNum).toFixed(2)),
-  
+          let nodeOutputOrdered = nodeOutputTemp.sort((a, b) => b.scoreTotal - a.scoreTotal)
+
+
+          // Slice the nodeOutput array to neighborNodeMaxSize length
+          nodeOutputOrdered = nodeOutputOrdered.slice(0, neighborNodeMaxSize);
+
           cardMemoryOutput.push({
             scoreCardTotal: scoreCardTotal,
             cardMemoryID: key,
-            nodeOutput: nodeInputDictTemp.cardMemoryOutput[key].nodeOutput.slice(0, neighborNodeMaxSize),
+            nodeOutput: nodeOutputOrdered,
           });
-        }
+        // }
       }
+
+      // Sort cardMemoryOutput array based on scoreCardTotal
+      cardMemoryOutput.sort((a, b) => b.scoreCardTotal - a.scoreCardTotal);
+      // Cut cardMemoryOutput array to neighborNodeMaxSize length
+      cardMemoryOutput = cardMemoryOutput.slice(0, scoreCardMaxSize);
 
 
       nodeInputArray.push({
         neighborNodeWithMem,
         score: parseFloat(membersDict[memberID].nodeInput[nodeInputID].scoreNode.toFixed(2)),
+        scoreReal: membersDict[memberID].nodeInput[nodeInputID].scoreNodeReal,
         nodeInputID: nodeInputID,
         cardMemoryOutput: cardMemoryOutput,
       });
 
 
     }
-    nodeInputArray.sort((a, b) => b.scoreNode - a.scoreNode); // sort input from best to worst score
+    nodeInputArray.sort((a, b) => b.score - a.score); // sort input from best to worst score
 
     membersArray[membersArray.length - 1].nodeInput = nodeInputArray;
   }

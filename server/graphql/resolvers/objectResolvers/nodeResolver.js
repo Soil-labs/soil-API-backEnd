@@ -459,7 +459,7 @@ module.exports = {
       }
     },
   },
-  PrimitiveCardInput: {
+  PrimitiveCardType: {
     nodeInput: async (parent, args, context, info) => {
 
       try {

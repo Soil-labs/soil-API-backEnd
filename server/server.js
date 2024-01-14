@@ -17,7 +17,7 @@ const { stripeRoutes, stripeWebhookRoutes } = require("./stripe");
 const { storageRoutes } = require("./storage");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
-const twilio = require("twilio");
+const originAuth = require("./middleware/geoip");
 
 require("dotenv").config();
 
@@ -34,6 +34,8 @@ async function main() {
       max: 100, // Limit each IP to 100 requests per windowMs
     })
   );
+
+  app.use(originAuth);
 
   const httpServer = createServer(app);
 

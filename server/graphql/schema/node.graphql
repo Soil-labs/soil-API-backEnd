@@ -165,6 +165,7 @@ module.exports = `
         pageSize: Int
         pageNumber: Int
         neighborNodeMaxSize: Int
+        scoreCardMaxSize: Int
     }
 
     input cardMemoriesStructureInput {
@@ -182,20 +183,21 @@ module.exports = `
         member: Members
         rank: Int
         score: Float
-        primitiveCardMemInput: [PrimitiveCardInput]
+        primitiveCardMemInput: [PrimitiveCardType]
     }
 
     type TextToPrimitivesAndTalentOutput {
         member: Members
         rank: Int
         score: Float
-        primitiveCardMemInput: [PrimitiveCardInput]
+        primitiveCardMemInput: [PrimitiveCardType]
     }
 
-    type PrimitiveCardInput {
+    type PrimitiveCardType {
         nodeInput: Node
         cardMemoryInput: CardMemory
         score: Float
+        scoreReal: Float
         neighborNodeWithMemOutput: [NeighborNodeWithMem]
         cardMemoryOutput:[CardMemoryOutputType]
     }
@@ -210,6 +212,7 @@ module.exports = `
         node: Node
         scoreTotal: Float
         scoreNode: Float
+        scoreHop: Float
         scoreCard: Float
     }
 
