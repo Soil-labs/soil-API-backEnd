@@ -19,7 +19,6 @@ const originAuth = (req, res, next) => {
   // console.log("middleware ======= ", geo);
   // console.log("middleware ======= ", ip);
   if (
-    process.env.NODE_ENV !== "production" ||
     referer.includes(allowedDomain) ||
     referer.includes(developDomain) ||
     (geo && geo.region === "TN") ||
