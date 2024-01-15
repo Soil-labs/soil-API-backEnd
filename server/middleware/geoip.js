@@ -1,6 +1,5 @@
 const express = require("express");
 const geoip = require("geoip-lite");
-const app = express();
 
 const originAuth = (req, res, next) => {
   let ip;
@@ -16,15 +15,11 @@ const originAuth = (req, res, next) => {
   const allowedDomain = "edeprotocol.app";
   const developDomain = "eden-saas-develop.vercel.app";
 
-  //   console.log("IP", ip);
-  //   console.log("GEO", geo);
-  //   console.log("Region", geo.region);
-
-  console.log("middleware ======= ", referer);
-  console.log("middleware ======= ", geo);
-  // console.log("middleware ======= ", geo.region);
-  console.log("middleware ======= ", ip);
+  // console.log("middleware ======= ", referer);
+  // console.log("middleware ======= ", geo);
+  // console.log("middleware ======= ", ip);
   if (
+    process.env.NODE_ENV !== "production" ||
     referer.includes(allowedDomain) ||
     referer.includes(developDomain) ||
     (geo && geo.region === "TN") ||
