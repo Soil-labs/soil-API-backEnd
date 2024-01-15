@@ -197,6 +197,7 @@ module.exports = `
         nodeInput: Node
         cardMemoryInput: CardMemory
         score: Float
+        scoreReal: Float
         neighborNodeWithMemOutput: [NeighborNodeWithMem]
         cardMemoryOutput:[CardMemoryOutputType]
     }
