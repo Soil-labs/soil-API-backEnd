@@ -19,6 +19,7 @@ const originAuth = (req, res, next) => {
   // console.log("middleware ======= ", geo);
   // console.log("middleware ======= ", ip);
   if (
+    ip === "::1" || // this has to change
     referer.includes(allowedDomain) ||
     referer.includes(developDomain) ||
     (geo && geo.region === "TN") ||
