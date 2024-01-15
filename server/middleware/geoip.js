@@ -11,23 +11,23 @@ const originAuth = (req, res, next) => {
   }
   const geo = geoip.lookup(ip);
   const referer = req.headers.referer || "";
-  const allowedDomain = "edeprotocol.app";
+  const allowedDomain = "edenprotocol.app";
   const developDomain = "eden-saas-develop.vercel.app";
 
   console.log("middleware ======= ", referer);
   console.log("middleware ======= ", geo);
   console.log("middleware ======= ", ip);
-  // if (
-  //   ip === "::1" || // this has to change
-  //   referer.includes(allowedDomain) ||
-  //   referer.includes(developDomain) ||
-  //   (geo && geo.region === "TN") ||
-  //   (geo && geo.country === "ES")
-  // ) {
-  next();
-  // } else {
-  //   res.status(403).send("Access Denied.");
-  // }
+  if (
+    ip === "::1" || // this has to change
+    referer.includes(allowedDomain) ||
+    referer.includes(developDomain) ||
+    (geo && geo.region === "TN") ||
+    (geo && geo.country === "ES")
+  ) {
+    next();
+  } else {
+    res.status(403).send("Access Denied.");
+  }
 };
 
 module.exports = originAuth;
