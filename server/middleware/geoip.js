@@ -1,4 +1,3 @@
-const express = require("express");
 const geoip = require("geoip-lite");
 
 const originAuth = (req, res, next) => {
@@ -15,20 +14,20 @@ const originAuth = (req, res, next) => {
   const allowedDomain = "edeprotocol.app";
   const developDomain = "eden-saas-develop.vercel.app";
 
-  // console.log("middleware ======= ", referer);
-  // console.log("middleware ======= ", geo);
-  // console.log("middleware ======= ", ip);
-  if (
-    ip === "::1" || // this has to change
-    referer.includes(allowedDomain) ||
-    referer.includes(developDomain) ||
-    (geo && geo.region === "TN") ||
-    (geo && geo.country === "ES")
-  ) {
-    next();
-  } else {
-    res.status(403).send("Access Denied.");
-  }
+  console.log("middleware ======= ", referer);
+  console.log("middleware ======= ", geo);
+  console.log("middleware ======= ", ip);
+  // if (
+  //   ip === "::1" || // this has to change
+  //   referer.includes(allowedDomain) ||
+  //   referer.includes(developDomain) ||
+  //   (geo && geo.region === "TN") ||
+  //   (geo && geo.country === "ES")
+  // ) {
+  next();
+  // } else {
+  //   res.status(403).send("Access Denied.");
+  // }
 };
 
 module.exports = originAuth;
