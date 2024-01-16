@@ -14,7 +14,7 @@ const msg = {
       },
     },
   ],
-  template_id: "d-b0fed05d5d334e60b63776e0149e81b8",
+  template_id: "d-2b594070083b47048247c9893bb06ff5",
 };
 
 const sendMailCandidateAcceptedFunc = async (msgData) => {
