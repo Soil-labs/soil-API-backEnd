@@ -13,7 +13,7 @@ const msg = {
       },
     },
   ],
-  template_id: "d-b0fed05d5d334e60b63776e0149e81b8",
+  template_id: "d-de6919280c4242c3958a044807fcce5d",
 };
 
 const sendMailCandidateRejectedFunc = async (msgData) => {

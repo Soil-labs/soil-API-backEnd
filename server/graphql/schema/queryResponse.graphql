@@ -43,6 +43,7 @@ module.exports = `
         answer: String
         conversationID: ID
         category: categoryQueryResponseEnum
+        scheduleInterviewUrl: String
     }
 
     input respondToQueryInput {

@@ -9,12 +9,16 @@ const { Members } = require("../../../models/membersModel");
 const { addToFilter } = require("../utils/queryResponseModules");
 
 const { PubSub,withFilter } = require("graphql-subscriptions");
+const sendMailCandidateRejectedFunc = require("../../../utils/email/sendMailCandidateRejectedFunc");
+const sendMailCandidateAcceptedFunc = require("../../../utils/email/sendMailCandidateAcceptedFunc");
+const { Position } = require("../../../models/positionModel");
+const { Company } = require("../../../models/companyModel");
 const pubsub = new PubSub();
 
 
 module.exports = {
   updateQueryResponse: async (parent, args, context, info) => {
-    const { _id,phase,sentFlag,senderID,senderType,responderID,responderType,question,conversationID,answer,category } = args.fields;
+    const { _id,phase,sentFlag,senderID,senderType,responderID,responderType,question,conversationID,answer,category,url,scheduleInterviewUrl } = args.fields;
     console.log("Mutation > updateQueryResponse > args.fields = ", args.fields);
 
     try {
@@ -60,11 +64,13 @@ module.exports = {
       "ASK_CANDIDATE": true, 
       "PITCH_POSITION_CANDIDATE": true,
      }
+     let memberData;
+
      if (filter.category && acceptedCategories[filter.category]){
 
       if (responderType == "USER" && responderID){
 
-        memberData = await Members.findOne({ _id: responderID }).select('_id discordName stateEdenChat');
+        memberData = await Members.findOne({ _id: responderID }).select('_id discordName stateEdenChat conduct');
 
         if (memberData) {
           memberData.stateEdenChat.categoryChat = filter.category;
@@ -90,6 +96,36 @@ module.exports = {
      pubsub.publish("QUERY_RESPONSE_UPDATED", {
         queryResponseUpdated: queryResponseData,
       });
+
+      if (category === "ACCEPT_CANDIDATE") {
+        const position = await Position.findOne({ _id: senderID }).select('_id name companyID');
+        const company = await Company.findOne({ _id: position.companyID }).select('_id name');
+
+        if (memberData.conduct.email) {
+          sendMailCandidateAcceptedFunc({
+            mailTo: memberData.conduct.email,
+            candidateName: memberData.discordName, 
+            jobTitle: position.name, 
+            companyName: company.name, 
+            message: question, 
+            url: scheduleInterviewUrl
+          })
+        }
+      }
+      else if (category === "REJECT_CANDIDATE") {
+        const position = await Position.findOne({ _id: senderID }).select('_id name companyID');
+        const company = await Company.findOne({ _id: position.companyID }).select('_id name');
+
+        if (memberData?.conduct?.email) {
+          sendMailCandidateRejectedFunc({
+            mailTo: memberData.conduct.email,
+            candidateName: memberData.discordName, 
+            jobTitle: position.name, 
+            companyName: company.name, 
+            message: question, 
+          })
+        }
+      }
 
       return queryResponseData;
     } catch (err) {
