@@ -12,7 +12,7 @@ const originAuth = (req, res, next) => {
   const geo = geoip.lookup(ip);
   const referer = req.headers.referer || "";
   const allowedDomain = "edenprotocol.app";
-  const developDomain = "eden-saas-develop.vercel.app";
+  const developDomain = "eden-saas-staging.vercel.app";
 
   console.log("middleware ======= ", referer);
   console.log("middleware ======= ", geo);

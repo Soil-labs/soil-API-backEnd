@@ -17,7 +17,7 @@ const { stripeRoutes, stripeWebhookRoutes } = require("./stripe");
 const { storageRoutes } = require("./storage");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
-const originAuth = require("./middleware/geoip");
+// const originAuth = require("./middleware/geoip");
 
 require("dotenv").config();
 
@@ -35,7 +35,7 @@ async function main() {
     })
   );
 
-  app.use(originAuth);
+  // app.use(originAuth);
 
   const httpServer = createServer(app);
 
@@ -57,8 +57,10 @@ async function main() {
 
   const server = new ApolloServer({
     schema,
-    introspection: process.env.NODE_ENV !== "production",
-    playground: process.env.NODE_ENV !== "production",
+    introspection: true,
+    playground: true,
+    // introspection: process.env.NODE_ENV !== "production",
+    // playground: process.env.NODE_ENV !== "production",
     plugins: [
       {
         async serverWillStart() {
