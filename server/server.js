@@ -58,9 +58,9 @@ async function main() {
   const server = new ApolloServer({
     schema,
     introspection: true,
-    playground: true,
+    // playground: true,
     // introspection: process.env.NODE_ENV !== "production",
-    // playground: process.env.NODE_ENV !== "production",
+    playground: process.env.NODE_ENV !== "production",
     plugins: [
       {
         async serverWillStart() {
