@@ -16,10 +16,14 @@ const token = async ({ body }, res) => {
     console.log("start accessing the token here ", accessToken);
     console.log("process.env.GOOGLE_CLIENT_ID ", process.env.GOOGLE_CLIENT_ID);
     // Verify the token from Google and extract user information
-    const ticket = await client.verifyIdToken({
-      idToken: accessToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    const ticket = await client
+      .verifyIdToken({
+        idToken: accessToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      })
+      .catch((err) => {
+        console.log(err);
+      });
     // console.log("the ticket is ", ticket);
 
     if (!accessToken) throw new Error("Invalid Token supplied");
@@ -86,6 +90,7 @@ const token = async ({ body }, res) => {
       process.env.JWT_SECRET || "",
       {
         expiresIn: "7d",
+        // expiresIn: "60s",
       }
     );
 

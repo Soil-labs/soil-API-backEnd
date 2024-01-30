@@ -34,6 +34,11 @@ const storeCv = async (req, res) => {
         res.status(200).send("Success");
       });
 
+      blobStream.on("error", (error) => {
+        console.error("BlobStream error:", error);
+        res.status(500).send({ error: "Error storing CV" });
+      });
+
       blobStream.end(req.file.buffer);
     }
   } catch (error) {
