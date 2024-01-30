@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@dynamic-labs/passport-dynamic": "^0.0.9",
     "@elastic/elasticsearch": "^8.1.0",
     "@google-cloud/storage": "^7.3.0",
     "@graphql-tools/schema": "^9.0.1",
@@ -50,6 +51,7 @@
     "node-fetch": "^2.6.9",
     "numeric": "^1.2.6",
     "openai": "^4.19.1",
+    "passport": "^0.7.0",
     "qs": "^6.11.0",
     "short-uuid": "^4.1.0",
     "stripe": "^13.4.0",
