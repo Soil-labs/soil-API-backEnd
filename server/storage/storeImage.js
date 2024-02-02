@@ -30,14 +30,13 @@ const storeCv = async (req, res) => {
       const blob = bucket.file(req.file.originalname);
       const blobStream = blob.createWriteStream();
 
-      // blobStream.on("error", (err) => {
-      //   console.log(err);
-      //   blobStream.end(req.file.buffer);
-      //   throw new Error(err);
-      // });
-
       blobStream.on("finish", () => {
         res.status(200).send("Success");
+      });
+
+      blobStream.on("error", (error) => {
+        console.error("BlobStream error:", error);
+        res.status(500).send({ error: "Error storing image" });
       });
 
       blobStream.end(req.file.buffer);

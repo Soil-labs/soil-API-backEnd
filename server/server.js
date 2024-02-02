@@ -13,6 +13,7 @@ const { cronFunctionToUpdateAvatar } = require("./utils/getDiscordAvatar");
 const { cronJobToUpdateServerIcon } = require("./utils/getDiscordGuildAvatar");
 const contextResolver = require("./auth/contextResolvers");
 const authRoutes = require("./auth");
+const authDynamicRoutes = require("./auth-dynamic");
 const { stripeRoutes, stripeWebhookRoutes } = require("./stripe");
 const { storageRoutes } = require("./storage");
 const cors = require("cors");
@@ -116,10 +117,18 @@ async function main() {
   app.use(express.urlencoded({ extended: false }));
 
   app.use(cors());
+  require("./config/passport");
+  // app.use(passport.initialize());
+  // app.use(passport.session());
+
   app.use("/auth", authRoutes());
+  app.use("/auth-dynamic", authDynamicRoutes());
   app.use("/stripe", stripeRoutes());
   app.use("/storage", storageRoutes());
   app.use("/mail-service", mailServiceRoutes());
+  app.use((req, res, next) => {
+    console.log(req);
+  });
 
   if (
     process.env.NODE_ENV &&
