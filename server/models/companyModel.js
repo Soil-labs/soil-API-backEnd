@@ -7,6 +7,7 @@ const companyModel = mongoose.Schema({
   slug: String,
   imageUrl: String,
   description: String,
+  approvedEmails: [String],
   employees: [
     new mongoose.Schema(
       {

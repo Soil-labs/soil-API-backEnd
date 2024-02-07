@@ -7,6 +7,7 @@ module.exports = `
         url: String
         slug: String
         description: String,
+        approvedEmails: [String]
         employees: [EmployeeType]
         positions: [Position]
         communitySubscribers: [communitySubscribersType]
@@ -86,6 +87,7 @@ module.exports = `
         addCompanySubscribersID: [ID]
         addPositionSubscribersID: [ID]
         communitiesSubscribedID: [ID]
+        approvedEmails: [String]
     }
     
     input updateCompanyDetailsInput {
