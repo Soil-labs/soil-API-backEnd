@@ -15,6 +15,7 @@ module.exports = {
       addCompanySubscribersID,
       addPositionSubscribersID,
       communitiesSubscribedID,
+      approvedEmails,
     } = args.fields;
     console.log("Mutation > updateCompany > args.fields = ", args.fields);
 
@@ -72,7 +73,7 @@ module.exports = {
         if (addPositionSubscribersID)
           companyData.communitySubscribers = communitySubscribers;
         if (description) companyData.description = description;
-        if (description) companyData.description = description;
+        if (approvedEmails) companyData.approvedEmails = approvedEmails;
       } else {
         const companyWithSameSlug = await Company.findOne({ slug: slug });
         if (companyWithSameSlug) {
@@ -289,7 +290,7 @@ module.exports = {
   addEmployeesCompany:
     // combineResolvers(
     async (parent, args, context, info) => {
-      const { companyID, positionID,slug, employees } = args.fields;
+      const { companyID, positionID, slug, employees } = args.fields;
       console.log(
         "Mutation > addEmployeesCompany > args.fields = ",
         args.fields
@@ -305,11 +306,10 @@ module.exports = {
           component: "companyMutation > addEmployeesCompany",
         });
 
-      if (companyID){
+      if (companyID) {
         companyData = await Company.findOne({ _id: companyID });
-      } else if (slug)  {
+      } else if (slug) {
         companyData = await Company.findOne({ slug: slug });
-
       }
 
       if (!companyData)
