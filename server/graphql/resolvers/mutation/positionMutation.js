@@ -1624,22 +1624,14 @@ module.exports = {
         "conduct.email": { $ne: null },
       }).select("conduct.email discordName");
 
-      employeesArr.forEach((_employee) => {
-        console.log({
-          mailTo: _employee.conduct.email,
-          hiringManagerName: _employee.discordName,
-          jobTitle: positionData.name,
-          candidateName: userData.discordName,
-          dashboardUrl: `https://edenprotocol.app/${companyData.slug}/dashboard/${positionID}`,
-        });
+      const mailList = employeesArr.map((_employee) => _employee.conduct.email);
+      console.log("Send New application mail to", mailList);
 
-        // sendNewApplicantMailFunc({
-        //   mailTo: _employee.conduct.email,
-        //   hiringManagerName: _employee.discordName,
-        //   jobTitle: positionData.name,
-        //   candidateName: userData.discordName,
-        //   dashboardUrl: `https://edenprotocol.app/${companyData.slug}/dashboard/${positionID}`,
-        // });
+      sendNewApplicantMailFunc({
+        mailTo: [...new Set(mailList)], // this filters duplicated values
+        jobTitle: positionData.name,
+        candidateName: userData.discordName,
+        dashboardUrl: `https://edenprotocol.app/${companyData.slug}/dashboard/${positionID}`,
       });
 
       console.log("send confirmation mail =====>", {
