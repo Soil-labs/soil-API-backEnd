@@ -6,7 +6,7 @@ const msg = {
     {
       to: [{ email: "" }],
       dynamic_template_data: {
-        hiringManagerName: "",
+        // hiringManagerName: "",
         jobTitle: "",
         candidateName: "",
         dashboardUrl: "",
@@ -18,8 +18,7 @@ const msg = {
 
 const sendNewApplicantMailFunc = async (msgData) => {
   try {
-    const { mailTo, hiringManagerName, jobTitle, candidateName, dashboardUrl } =
-      msgData;
+    const { mailTo, jobTitle, candidateName, dashboardUrl } = msgData;
 
     const mailToArray =
       typeof mailTo === "string"
@@ -32,7 +31,7 @@ const sendNewApplicantMailFunc = async (msgData) => {
         {
           to: mailToArray,
           dynamic_template_data: {
-            hiringManagerName: hiringManagerName,
+            // hiringManagerName: hiringManagerName,
             jobTitle: jobTitle,
             candidateName: candidateName,
             dashboardUrl: dashboardUrl,
