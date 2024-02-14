@@ -467,6 +467,14 @@ const connectCardMemoryAndNode = async (data) => {
     })
     await cardMemory.save();
   }
+
+  if (cardMemory.primitives.length == 0){
+    cardMemory.primitives.push({
+      nodeID: "65cd370ff891aa604249dd0d", // the empty skill
+      score: 0,
+    })
+    await cardMemory.save();
+  }
   // -------------- Add Node to cardMemory --------------
 
 
