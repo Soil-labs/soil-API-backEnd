@@ -572,12 +572,9 @@ module.exports = {
         }
 
         noPrimitivesCardsData = await CardMemory.find({ 
-          "primitives": { $exists: false },
+          $or: [{"primitives": { $exists: false }}, {"primitives": { $size: 0 }}],
           "authorCard.category": category,
         }).select("_id authorCard")
-
-        printC(noPrimitivesCardsData,"1", "noPrimitivesCardsData", "g")
-        f1
 
 
         if (noPrimitivesCardsData.length > 0) {
