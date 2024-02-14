@@ -55,6 +55,8 @@ const {
   connectNeighborNodesKG,
   showMembersConnectedToNodes,
   textToPrimitivesAndTalent,
+  createNeo4jDatabaseFromMongoNodes,
+  autoSuggestTalentForPosition,
   createNodeCategoryGroup,
 } = require("./mutation/nodeMutation");
 
@@ -265,6 +267,8 @@ module.exports = {
     connectNeighborNodesKG,
     showMembersConnectedToNodes,
     textToPrimitivesAndTalent,
+    createNeo4jDatabaseFromMongoNodes,
+    autoSuggestTalentForPosition,
     createNodeCategoryGroup,
 
     // ------------- CONVERSATION MUTATION -----------------

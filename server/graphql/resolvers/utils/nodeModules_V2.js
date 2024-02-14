@@ -80,7 +80,7 @@ const createNodeFunc = async (data) => {
 
 const memoryToPrimitivesFun = async (data) => {
 
-  let {memory} = data;
+  let {memory,hardCodePrimitives} = data;
 
 
 
@@ -103,17 +103,31 @@ const memoryToPrimitivesFun = async (data) => {
   Example of primitives: 
   Javascript, leader, marketing, manager`
 
-  let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT)
-  // resGPTFunc = {
-  //   content: null,
-  //   function_call: {functionName: "memory_primitives",
-  //     primitive_1: "marketing",score_1: 8,primitive_2: "react",score_2: 7},
-  //     // primitive_1: "react",score_1: 8,primitive_2: "marketing",score_2: 7},
-  //     // primitive_1: "react",score_1: 8,},
-  //     // primitive_1: "marketing",score_1: 8,},
-  // }
+  let resGPTFunc = {}
 
-  printC(resGPTFunc, "1", "resGPTFunc", "b")
+  if (hardCodePrimitives){
+    resGPTFunc = {
+      content: null,
+      function_call: {functionName: "memory_primitives",
+        // primitive_1: "marketing",score_1: 8,primitive_2: "react",score_2: 7},
+        // primitive_1: "react",score_1: 8,primitive_2: "marketing",score_2: 7},
+        // primitive_1: "react",score_1: 8,},
+        // primitive_1: "marketing",score_1: 8,},
+      },
+    }
+
+    for (let i = 0; i < hardCodePrimitives.length; i++) {
+      const element = hardCodePrimitives[i];
+      resGPTFunc.function_call[`primitive_${i+1}`] = element
+      resGPTFunc.function_call[`score_${i+1}`] = 8
+    }
+
+  } else {
+    resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT)
+  }
+  
+  printC(resGPTFunc, "2", "resGPTFunc", "b")
+
   // ---------------- Memory to Primitives using GPT ----------------
 
 
@@ -861,6 +875,87 @@ const findNeighborNodesFunc = async (data) => {
   
 };
 
+const createCategoryDict = async (data) => {
+
+  let {nodeInputToCardMemoryInputDict,} = data;
+
+  let categoryToNodeInputDict = {}
+
+  let cardInputDict = {}
+
+  try {
+
+    for (let [nodeInputID, value] of Object.entries(nodeInputToCardMemoryInputDict)) {
+
+      let cardData = value.cardData
+
+      let category = cardData.type
+
+      cardInputDict[cardData._id] = cardData
+
+
+
+      if (categoryToNodeInputDict[category]) {
+          
+          if (categoryToNodeInputDict[category].cardMemoryInput[cardData._id]) {
+
+
+            if (categoryToNodeInputDict[category].cardMemoryInput[cardData._id].nodeInputID.includes(nodeInputID)){
+              continue;
+            } else {
+              categoryToNodeInputDict[category].cardMemoryInput[cardData._id].nodeInputID.push(nodeInputID)
+
+              nodeInputToCardMemoryInputDict[nodeInputID].category = category
+            }
+
+            
+
+          } else {
+
+            categoryToNodeInputDict[category].cardMemoryInput[cardData._id] = {
+              nodeInputID: [nodeInputID],
+            }
+          }
+        
+      } else {
+
+        categoryToNodeInputDict[category] = {
+          cardMemoryInput: {},
+        }
+
+        categoryToNodeInputDict[category].cardMemoryInput[cardData._id] = {
+          nodeInputID: [nodeInputID],
+        }
+
+        nodeInputToCardMemoryInputDict[nodeInputID].category = category
+
+      }
+        
+    }
+
+    // printC(nodeInputToCardMemoryInputDict, "1", "nodeInputToCardMemoryInputDict", "b")
+
+    // printC(categoryToNodeInputDict, "1", "categoryToNodeInputDict", "b")
+    // printC(categoryToNodeInputDict['INDUSTRY_KNOWLEDGE'], "1", "categoryToNodeInputDict", "b")
+    // printC(categoryToNodeInputDict['INDUSTRY_KNOWLEDGE'].cardMemoryInput, "1", "categoryToNodeInputDict", "b")
+
+    return {
+      nodeInputToCardMemoryInputDict,
+      categoryToNodeInputDict,
+      cardInputDict,
+    }
+
+
+  } catch (err) {
+    printC(err, "-1", "err", "r")
+    return {
+      err: err
+    }
+    
+  }
+  
+};
+
 const findCardMemoriesAndMembersFromNodes = async (data) => {
 
   const {neighborsDict,neighborsNodeIDs} = data;
@@ -1177,7 +1272,154 @@ const findCardMemoriesAndMembersFromNodes = async (data) => {
   return {
     membersDict,
     nodeInputDict,
+    cardMemoriesData,
   }
+  
+
+}
+
+const createMembersCategoryDict = async (data) => {
+
+  const {neighborsDict,neighborsNodeIDs,cardMemoriesData,categoryToNodeInputDict,nodeInputToCardMemoryInputDict} = data;
+  
+
+  // ------------- Organize the members -------------
+  let membersCardCategoryDict = {}
+  let membersIDs = []
+  let key
+  for (let i = 0; i < cardMemoriesData.length; i++) {
+    const cardMemory = cardMemoriesData[i];
+
+    const cardMemoryID = cardMemory._id
+
+    const memberID = cardMemory.authorCard.userID
+
+    
+    const cardsData = cardMemoriesDict[cardMemoryID]
+
+    for (let j=0; j < cardsData.length; j++) {
+      const cardData = cardsData[j];
+      const neighborNodeID = cardData.neighborNodeID
+
+      const scoreCard = cardData.scoreCard
+      const neighborNodeInfo = cardData.neighborNodeInfo
+
+      for (let k=0; k < neighborNodeInfo.length; k++) {
+       
+        const scoreNeighbor = neighborNodeInfo[k].score
+        const scoreHop = neighborNodeInfo[k].hopN
+        const nodeInputID = neighborNodeInfo[k].nodeInputID
+
+        // printC(nodeInputID, "1", "nodeInputID", "b")
+
+        let category = nodeInputToCardMemoryInputDict[nodeInputID].category
+        let cardMemoryInput = nodeInputToCardMemoryInputDict[nodeInputID].cardData._id
+
+        // printC(category, "1", "category", "b")
+        // printC(cardMemoryInput, "1", "cardMemoryInput", "b")
+
+        // printC(cardMemoryID, "1", "cardMemoryID", "b")
+
+        
+        // --------------- create membersCardCategoryDict ---------------
+        if (membersCardCategoryDict[memberID]) {
+
+          if (membersCardCategoryDict[memberID].categoryScoreCard[category]){
+            if (membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput]) {
+
+              if (membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].cardMemoryOutput[cardMemoryID]) {
+                continue;
+              } else {
+
+                membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].score += scoreNeighbor*scoreCard*0.1
+                membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].scoreNum += 1
+              
+
+                membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].cardMemoryOutput[cardMemoryID] = {
+                  cardMemoryID: cardMemoryID,
+                  scoreCardTotal: scoreNeighbor*scoreCard*0.1,
+                  scoreCardTotalNum: 1,
+                }
+              }
+            } else {
+              membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput] = {
+                score: 0,
+                scoreNum: 0,
+                cardMemoryOutput: {}
+              }
+
+              membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].score += scoreNeighbor*scoreCard*0.1
+              membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].scoreNum += 1
+
+              membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].cardMemoryOutput[cardMemoryID] = {
+                cardMemoryID: cardMemoryID,
+                scoreCardTotal: scoreNeighbor*scoreCard*0.1,
+                scoreCardTotalNum: 1,
+              }
+            }
+          } else {
+            membersCardCategoryDict[memberID].categoryScoreCard[category] = {
+              score: 0,
+              scoreNum: 0,
+              scoreCardInput: {}
+            }
+            membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput] = {
+              score: 0,
+              scoreNum: 0,
+              cardMemoryOutput: {}
+            }
+
+            membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].score += scoreNeighbor*scoreCard*0.1
+            membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].scoreNum += 1
+
+            membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].cardMemoryOutput[cardMemoryID] = {
+              cardMemoryID: cardMemoryID,
+              scoreCardTotal: scoreNeighbor*scoreCard*0.1,
+              scoreCardTotalNum: 1,
+            }
+          }
+        } else {
+          membersCardCategoryDict[memberID] = {
+            score: 0,
+            scoreNum: 0,
+            categoryScoreCard: {}
+          }
+          membersCardCategoryDict[memberID].categoryScoreCard[category] = {
+            score: 0,
+            scoreNum: 0,
+            scoreCardInput: {}
+          }
+          membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput] = {
+            score: 0,
+            scoreNum: 0,
+            cardMemoryOutput: {}
+          }
+
+          membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].score += scoreNeighbor*scoreCard*0.1
+          membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].scoreNum += 1
+          
+          membersCardCategoryDict[memberID].categoryScoreCard[category].scoreCardInput[cardMemoryInput].cardMemoryOutput[cardMemoryID] = {
+            cardMemoryID: cardMemoryID,
+            scoreCardTotal: scoreNeighbor*scoreCard*0.1,
+            scoreCardTotalNum: 1,
+          }
+        }
+      }
+    }
+  }
+  // ------------- Organize the members -------------
+
+  // printC(membersCardCategoryDict, "1", "membersCardCategoryDict", "b")
+  // printC(membersCardCategoryDict['106687126440283720518'], "1", "membersCardCategoryDict", "b")
+  // printC(membersCardCategoryDict['106687126440283720518'].categoryScoreCard["TECHNICAL_SKILLS"], "1", "membersCardCategoryDict", "b")
+  // printC(membersCardCategoryDict['106687126440283720518'].categoryScoreCard["TECHNICAL_SKILLS"].scoreCardInput['65314c45c8bb84830c0061af'], "1", "membersCardCategoryDict", "b")
+  // f1
+
+
+  return {
+    membersCardCategoryDict,
+  }
+  
   
 
 }
@@ -1308,6 +1550,12 @@ const rankBasedOnNodeInputFunc = async (data) => {
     scoreEuclideanAllNodes = 0
     for (let i = 0; i<nodesID.length; i++) { // Take each nodeInput separately
       const nodeInputID = nodesID[i];
+      
+
+      // printC(nodeInputDict[nodeInputID], "1", "nodeInputDict[nodeInputID]", "b")
+
+      if (!nodeInputDict[nodeInputID]) 
+        continue;
 
       let scoreNode = 0
       if (nodeInputDict[nodeInputID].members[memberID] && nodeInputDict[nodeInputID].members[memberID].scoreMemberNodeNormalize){
@@ -1377,14 +1625,8 @@ const orderedMembersFunc = async (data) => {
 
   // ------------- transform dictionary into ordered array for members and nodeInput ---------
   let membersArray = []
-  let membersArrayCardMemArray = []
   for (let memberID in membersDict) {
     membersArray.push({
-      ...membersDict[memberID],
-      score: parseFloat(membersDict[memberID].scoreMember.toFixed(2)),
-      memberID: memberID,
-    });
-    membersArrayCardMemArray.push({
       ...membersDict[memberID],
       score: parseFloat(membersDict[memberID].scoreMember.toFixed(2)),
       memberID: memberID,
@@ -1476,6 +1718,238 @@ const orderedMembersFunc = async (data) => {
     membersArray,
   }
 
+
+}
+
+
+const createMembersCategoryArrayFun = async (data) => {
+
+  const {membersArray,categoryToNodeInputDict,nodeInputToCardMemoryInputDict,pageSize,pageNumber,neighborNodeMaxSize,scoreCardMaxSize} = data;
+
+  try {
+
+    let membersCategoryDict = []
+
+    for (let i = 0; i < membersArray.length; i++) {
+      const memberData = membersArray[i];
+
+      // -------- Add the member -------
+      membersCategoryDict.push({
+        scoreMember: memberData.scoreMember,
+        scoreCardTotal: {
+          score: memberData.score,
+        },
+        userID: memberData.memberID,
+        score: memberData.score,
+        memberID: memberData.memberID,
+        categoryScoreCard: {},
+      });
+      // -------- Add the member -------
+
+      const nodeInput = memberData.nodeInput
+
+      for (let j = 0; j < nodeInput.length; j++) {
+        const nodeInputData = nodeInput[j];
+        const nodeInputID = nodeInputData.nodeInputID
+        const category = nodeInputToCardMemoryInputDict[nodeInputID].category
+
+        if (!category) {
+          continue;
+        }
+
+        const cardMemoryInputID = nodeInputToCardMemoryInputDict[nodeInputID].cardData._id
+
+        // printC(nodeInputToCardMemoryInputDict[nodeInputID], "1", "nodeInputToCardMemoryInputDict[nodeInputID]", "b")
+        // f1
+
+        if (!membersCategoryDict[i].categoryScoreCard[category]) { 
+          membersCategoryDict[i].categoryScoreCard[category] = { score: 0, scoreNum: 0, scoreCardInput: {}} 
+        } 
+
+        if (!membersCategoryDict[i].categoryScoreCard[category].scoreCardInput[cardMemoryInputID]) { 
+          membersCategoryDict[i].categoryScoreCard[category].scoreCardInput[cardMemoryInputID] = { score: 0, scoreNum: 0, cardMemoryOutput: {}} 
+        }
+
+
+        for (let k = 0; k < nodeInputData.cardMemoryOutput.length; k++) {
+          const cardMemoryOutputData = nodeInputData.cardMemoryOutput[k];
+          const cardMemoryID = cardMemoryOutputData.cardMemoryID
+
+          membersCategoryDict[i].categoryScoreCard[category].scoreCardInput[cardMemoryInputID].cardMemoryOutput[cardMemoryID] = {
+            cardMemoryID: cardMemoryID,
+            scoreCardTotal: cardMemoryOutputData.scoreCardTotal,
+          }
+
+          membersCategoryDict[i].categoryScoreCard[category].scoreCardInput[cardMemoryInputID].score += cardMemoryOutputData.scoreCardTotal
+          membersCategoryDict[i].categoryScoreCard[category].scoreCardInput[cardMemoryInputID].scoreNum += 1
+
+          // printC(cardMemoryOutputData, "1", "cardMemoryOutputData", "b")
+          // f1
+        }
+
+        // printC(category, "1", "category", "y")
+        // printC(nodeInputData, "1", "nodeInputData", "b")
+
+
+        // if (categoryToNodeInputDict[category]) {
+        //   printC(categoryToNodeInputDict[category], "1", "categoryToNodeInputDict[category]", "g")
+        // }
+
+        // f1
+      }
+
+      // const nodeInput = memberData.primitiveCardMemInput
+
+    }
+
+    // ------------ Find all averages for easy results -------------
+    for (let i = 0; i < membersCategoryDict.length; i++) {
+      const memberData = membersCategoryDict[i];
+      for (let category in memberData.categoryScoreCard) {
+        const categoryData = memberData.categoryScoreCard[category];
+        for (let nodeInputID in categoryData.scoreCardInput) {
+          const nodeInputData = categoryData.scoreCardInput[nodeInputID];
+
+          if (nodeInputData.scoreNum == 0) { nodeInputData.avgScore = 0} else {
+            nodeInputData.avgScore = parseFloat((nodeInputData.score/nodeInputData.scoreNum).toFixed(2))
+          }
+
+
+          categoryData.score += nodeInputData.avgScore
+          categoryData.scoreNum += 1
+        }
+
+        if (categoryData.scoreNum == 0) { categoryData.avgScore = 0} else {
+          categoryData.avgScore = parseFloat((categoryData.score/categoryData.scoreNum).toFixed(2))
+        }
+      }
+    }
+    // ------------ Find all averages for easy results -------------
+
+
+    printC(membersCategoryDict, "1", "membersCategoryDict", "b")
+    printC(membersCategoryDict[0], "1", "membersCategoryDict", "b")
+    // printC(membersCategoryDict[0].categoryScoreCard['TECHNICAL_SKILLS'], "1", "categoryScoreCard", "b")
+    // printC(membersCategoryDict[0].categoryScoreCard['TECHNICAL_SKILLS'].scoreCardInput['65847fb7182115721db30a17'], "1", "scoreCardInput", "b")
+    // f1
+
+
+  // ------------- transform dictionary into ordered array for members and nodeInput ---------
+  let membersArrayFinal = []
+  for (let i = 0; i < membersCategoryDict.length; i++) {
+    const memberData = membersCategoryDict[i];
+    const memberID = memberData.memberID
+
+    membersArrayFinal.push({
+      ...membersCategoryDict[i],
+      score: parseFloat(membersCategoryDict[i].score.toFixed(2)),
+      memberID: memberID,
+    });
+    let nodeInputArray = [];
+
+    let categoryScoreCardArray = []
+
+    for (let categoryScoreCardID in memberData.categoryScoreCard) {
+
+      let categoryScoreCard = memberData.categoryScoreCard[categoryScoreCardID]
+
+      categoryScoreCardArray.push({
+        category: categoryScoreCardID,
+        score: categoryScoreCard.avgScore,
+      });
+
+      scoreCardInputArray = []
+
+      for (let scoreCardInputID in categoryScoreCard.scoreCardInput) {
+        let scoreCardInput = categoryScoreCard.scoreCardInput[scoreCardInputID]
+
+        // printC(scoreCardInput, "1", "scoreCardInput", "b")
+        // printC(scoreCardInputID, "1", "scoreCardInputID", "b")
+        // f1
+
+        scoreCardInputArray.push({
+          nodeInputID: scoreCardInputID,
+          cardID: scoreCardInputID,
+          score: scoreCardInput.avgScore,
+        });
+
+        cardMemoryOutputArray = []
+
+
+        for (let cardMemoryOutputID in scoreCardInput.cardMemoryOutput) {
+          let cardMemoryOutput = scoreCardInput.cardMemoryOutput[cardMemoryOutputID]
+
+          cardMemoryOutputArray.push({
+            cardMemoryID: cardMemoryOutput.cardMemoryID,
+            cardID: cardMemoryOutput.cardMemoryID,
+            scoreAlignment: cardMemoryOutput.scoreCardTotal,
+          });
+
+          
+        }
+        cardMemoryOutputArray.sort((a, b) => b.scoreAlignment - a.scoreAlignment); // sort input from best to worst score
+        scoreCardInputArray[scoreCardInputArray.length - 1].scoreCardsCandidate = cardMemoryOutputArray;
+
+
+      }
+      scoreCardInputArray.sort((a, b) => b.score - a.score); // sort members
+      categoryScoreCardArray[categoryScoreCardArray.length - 1].scoreCardsPosition = scoreCardInputArray;
+  
+    }
+    categoryScoreCardArray.sort((a, b) => b.score - a.score); // sort members
+    membersArrayFinal[membersArrayFinal.length - 1].categoryScoreCard = categoryScoreCardArray;
+    membersArrayFinal[membersArrayFinal.length - 1].scoreCardCategoryMemories = categoryScoreCardArray;
+    // membersArrayFinal[membersArrayFinal.length - 1].scoreCardCategoryMemories = 
+  }
+
+  // ------------- transform dictionary into ordered array for members and nodeInput ---------
+
+
+  // printC(membersArrayFinal, "1", "membersArrayFinal", "b")
+  // printC(membersArrayFinal[0].scoreCardCategoryMemories, "1", "scoreCardCategoryMemories", "b")
+  membersArrayFinal.forEach(member => {
+    member.scoreCardCategoryMemories.forEach(categoryMemory => {
+      console.log("Category: ", categoryMemory.category);
+      console.log("Score: ", categoryMemory.score);
+      if (categoryMemory.scoreCardInput) {
+        categoryMemory.scoreCardInput.forEach(input => {
+          console.log(" - Node Input ID: ", input.nodeInputID);
+          console.log(" - Score: ", input.score);
+          if (input.cardMemoryOutput) {
+            input.cardMemoryOutput.forEach(output => {
+              console.log("  ---  Card Memory ID: ", output.cardMemoryID);
+              console.log("  ---  Score: ", output.score);
+            });
+          }
+        });
+      }
+    });
+  });
+  // printC(membersArrayFinal[0].categoryScoreCard[0].scoreCardInput, "1", "scoreCardInput", "b")
+  // printC(membersArrayFinal[0].categoryScoreCard[0].scoreCardInput[0].cardMemoryOutput, "1", "cardMemoryOutput", "b")
+  // f1
+
+  // ------------- Pagination -------------
+  const startIndex = (pageNumber - 1) * pageSize;
+  const endIndex = pageNumber * pageSize;
+
+
+  membersArrayFinal = membersArrayFinal.slice(startIndex, endIndex);
+  // ------------- Pagination -------------
+
+
+    return {
+      membersArrayFinal
+    }
+
+  } catch (err) {
+    printC(err, "-1", "err", "r")
+    return {
+      err: err
+    }
+    
+  }
+  
 
 }
 
@@ -1593,8 +2067,11 @@ module.exports = {
     connectNeighborNodesKGFunc,
     findNeighborNodesFunc,
     findCardMemoriesAndMembersFromNodes,
+    createMembersCategoryDict,
     rankMembersFunc,
     rankBasedOnNodeInputFunc,
     orderedMembersFunc,
     memoryToPrimitivesFun,
+    createCategoryDict,
+    createMembersCategoryArrayFun,
   };
