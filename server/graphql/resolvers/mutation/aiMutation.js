@@ -1286,19 +1286,24 @@ module.exports = {
           let nodesN;
           try {
             nodesN = await MessageMapKG_V4APICallF(textForMapping);
+
+            printC(nodesN, "3", "nodesN", "b");
+
+            if (nodesN && nodesN.length > 0) {
+              nodeSave = nodesN.map((obj) => {
+                return {
+                  _id: obj.nodeID,
+                };
+              });
+
+              nodeIDs = nodeSave.map((obj) => obj._id);
+            }
+
           } catch (err) {
             console.log("Map Nodes err = ", err);
           }
 
-          printC(nodesN, "3", "nodesN", "b");
-
-          nodeSave = nodesN.map((obj) => {
-            return {
-              _id: obj.nodeID,
-            };
-          });
-
-          nodeIDs = nodeSave.map((obj) => obj._id);
+          
 
           // await addNodesToMemberFunc(userData._id, nodeIDs);
 
