@@ -75,6 +75,9 @@ module.exports = `
         connectNeighborNodesKG(fields:connectNeighborNodesKGInput): [Node]
         showMembersConnectedToNodes(fields:showMembersConnectedToNodesInput): [ShowMembersConnectedToNodesOutput]
         textToPrimitivesAndTalent(fields:textToPrimitivesAndTalentInput): [ShowMembersConnectedToNodesOutput]
+        createNeo4jDatabaseFromMongoNodes(fields:createNeo4jDatabaseFromMongoNodesInput): [Node]
+        # autoSuggestTalentForPosition(fields:autoSuggestTalentForPositionInput): [ShowMembersConnectedToNodesOutput]
+        autoSuggestTalentForPosition(fields:autoSuggestTalentForPositionInput): [CandidateType]
         createNodeCategoryGroup(fields:createNodeCategoryGroupInput): Node
 
 

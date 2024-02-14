@@ -486,7 +486,7 @@ module.exports = {
     
     positionsData = await Position.find({
       cardsPositionCalculated: { $ne: true }, 
-      prioritiesPositionCalculated: true ,
+      // prioritiesPositionCalculated: true ,
       "positionsRequirements.originalContent": { $exists: true, $ne: "" } 
     }).select('_id cardsPositionCalculated prioritiesPositionCalculated');
     printC(positionsData.length, "3", "Number of Positions to go ", "p")
@@ -841,6 +841,7 @@ module.exports = {
           .select('_id prioritiesPositionCalculated positionsRequirements questionsToAsk');
 
         printC(positionsData.length, "3", "Number of Positions to go ", "p")
+        // f1
 
         if (positionsData.length == 0) return {}
         positionData = positionsData[0]

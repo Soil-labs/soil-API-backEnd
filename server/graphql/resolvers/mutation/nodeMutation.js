@@ -1,4 +1,6 @@
 const { Node } = require("../../../models/nodeModal");
+const { Position } = require("../../../models/positionModel");
+
 const { ServerTemplate } = require("../../../models/serverModel");
 const { ApolloError } = require("apollo-server-express");
 const {
@@ -22,9 +24,9 @@ const { CardMemory } = require("../../../models/cardMemoryModel");
 const { printC } = require("../../../printModule");
 
 const { createNodeFunc,memoriesToKnowledgeGraphFunc,connectNeighborNodesKGFunc,
-  findNeighborNodesFunc,findCardMemoriesAndMembersFromNodes,
-  rankMembersFunc,orderedMembersFunc,memoryToPrimitivesFun,
-  rankBasedOnNodeInputFunc } = require("../utils/nodeModules_V2");
+  findNeighborNodesFunc,findCardMemoriesAndMembersFromNodes,createMembersCategoryDict,
+  rankMembersFunc,orderedMembersFunc,memoryToPrimitivesFun,createMembersCategoryArrayFun,
+  rankBasedOnNodeInputFunc,createCategoryDict } = require("../utils/nodeModules_V2");
 
 async function findOrCreateNode(node,nodeID,nodeName,serverID) {
   let nodeData;
@@ -575,7 +577,7 @@ module.exports = {
         }).select("_id authorCard")
 
         printC(noPrimitivesCardsData,"1", "noPrimitivesCardsData", "g")
-
+        f1
 
 
         if (noPrimitivesCardsData.length > 0) {
@@ -726,6 +728,111 @@ module.exports = {
         );
       }
     },
+    createNeo4jDatabaseFromMongoNodes: async (parent, args, context, info) => {
+      console.log("Mutation > textToPrimitivesAndTalent > args.fields = ", args.fields);
+
+      
+      let nodesData = await Node.find({ }).select("_id name existNeo4j connectedNodes");
+
+
+      nodesDict = {}
+      for (let i = 0; i < nodesData.length; i++) {
+
+        if (nodesDict[nodesData[i]._id]) continue
+
+        nodesDict[nodesData[i]._id] = nodesData[i]
+
+        // add also the position on nodesData
+        nodesDict[nodesData[i]._id] = {
+          ...nodesDict[nodesData[i]._id],
+          position: i
+        }
+        
+      }
+
+      // nodesDataTemp = nodesData.slice(0, 30);
+      nodesDataTemp = nodesData;
+
+      
+
+      try {
+
+
+        for (let i = 0; i < nodesDataTemp.length; i++) {
+          // for (let i = 0; i < 1; i++) {
+
+
+          // if the node don't exist on neo4j then create them
+          if (!nodesDataTemp[i].existNeo4j) {
+            let resCreateNode_neo4j = await createNode_neo4j({
+              node: "Skill",
+              id: nodesDataTemp[i]._id,
+              name: nodesDataTemp[i].name,
+            })
+            nodesDict[nodesDataTemp[i]._id].existNeo4j = true
+          } else {
+            continue;
+          }
+
+
+          for (let j = 0; j < nodesDataTemp[i].connectedNodes.length; j++) {
+            let nodeID = nodesDataTemp[i].connectedNodes[j].nodeID;
+
+            if (!nodesDict[nodeID]) continue
+
+
+
+            if (!nodesDict[nodeID].existNeo4j) {
+              let resCreateNode_neo4j = await createNode_neo4j({
+                node: "Skill",
+                id: nodeID,
+                name: nodesDict[nodeID]._doc.name,
+              })
+              nodesDict[nodeID].existNeo4j = true
+            }
+
+
+            let resMakeConnection_neo4j = await makeConnection_neo4j({
+              node: ["Skill", "Skill"],
+              id: [nodesDataTemp[i]._id, nodeID],
+              connection: "related",
+              weight: nodesDataTemp[i].connectedNodes[j].score,
+            })
+
+          }
+
+          nodesDataTemp[i].existNeo4j = true
+          nodesDataTemp[i].save()
+
+
+
+        }
+
+        // // save the nodesDict 
+        // // loop the dictionary nodesDict
+        // for (let key in nodesDict) {
+        //   let nodeData = nodesDict[key]
+
+        //   if (nodeData.existNeo4j == true) {
+        //     nodesData[nodesDict[key].position].existNeo4j = true
+
+        //     nodesData[nodesDict[key].position].save()
+        //   }
+        // }
+            
+
+
+
+        return nodesData;
+      } catch (err) {
+        printC(err, "-1", "err", "r");
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "nodeMutation > textToPrimitivesAndTalent" }
+        );
+      }
+    },
     textToPrimitivesAndTalent: async (parent, args, context, info) => {
       const { text } = args.fields;
       let {pageSize, pageNumber,neighborNodeMaxSize,scoreCardMaxSize} = args.fields;
@@ -819,6 +926,203 @@ module.exports = {
           err.message,
           err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
           { component: "nodeMutation > textToPrimitivesAndTalent" }
+        );
+      }
+    },
+    autoSuggestTalentForPosition: async (parent, args, context, info) => {
+      const { positionID } = args.fields;
+      let {pageSize, pageNumber,neighborNodeMaxSize,scoreCardMaxSize,maxScoreCardsCheck} = args.fields;
+      console.log("Mutation > autoSuggestTalentForPosition > args.fields = ", args.fields);
+
+      if (!pageSize) pageSize = 10
+      if (!pageNumber) pageNumber = 1
+      if (pageNumber == 0) throw new ApolloError("pageNumber can't be 0, starts form 1 ");
+
+      if (!neighborNodeMaxSize) neighborNodeMaxSize = 3
+      if (!scoreCardMaxSize) scoreCardMaxSize = 6
+
+      
+      
+      
+      try {
+        // ---------------- Find position and cards of the position ----------------
+        positionData = await Position.findOne({ _id: positionID }).select("_id cardsPositionCalculated prioritiesPositionCalculated")
+  
+        let cardMemoriesData = await CardMemory.find({ "authorCard.positionID": positionID  }).select('_id content type');
+
+        if (cardMemoriesData.length == 0) throw new ApolloError("No cardMemoriesData found for this positionID");
+
+        // printC(cardMemoriesData,"1", "cardMemoriesData", "p")
+        // f1
+        // ---------------- Find position and cards of the position ----------------
+
+
+        // ---------------- Memory to Primitives -------------
+        flagTEST = true
+
+        primitives = []
+        nodesData = []
+        nodesID = []
+        let nodeInputToCardMemoryInputDict = {}
+
+        if (flagTEST == true){
+          hardCodePrimitives = [
+            ["marketing","react"],
+            ["node.js","web3"],
+            ["blockchain","solidity"],
+            ["python","django"],
+            ["javascript","typescript"],
+            ["react","angular"],
+            ["angular","vue"],
+            // ["vue","react"],
+            ["react","react-native"],
+            // ["react-native","flutter"],
+            // ["flutter","react-native"],
+            // ["react-native","react
+          ]
+
+          
+
+          for (let i = 0; i < hardCodePrimitives.length; i++) {
+            let resMemoryToPrimitivesFun = await memoryToPrimitivesFun({
+              memory: "tst",
+              hardCodePrimitives: hardCodePrimitives[i]
+            })
+
+            primitives = primitives.concat(resMemoryToPrimitivesFun.primitives)
+            nodesData = nodesData.concat(resMemoryToPrimitivesFun.nodesData)
+            nodesID = nodesID.concat(resMemoryToPrimitivesFun.nodesID)
+            
+
+            for (let j = 0; j < resMemoryToPrimitivesFun.nodesID.length; j++) {
+              let nodeID = resMemoryToPrimitivesFun.nodesID[j];
+              nodeInputToCardMemoryInputDict[nodeID] = {
+                _id: cardMemoriesData[i]._id,
+                cardData: cardMemoriesData[i]
+              }
+            }
+          }
+        } else {
+
+          if (!maxScoreCardsCheck) maxScoreCardsCheck = cardMemoriesData.length
+
+          if (maxScoreCardsCheck > cardMemoriesData.length) maxScoreCardsCheck = cardMemoriesData.length
+
+          for (let i = 0; i < maxScoreCardsCheck; i++) {
+            let cardMemoryData = cardMemoriesData[i];
+            printC(cardMemoryData.content,"1", "cardMemoryData.content", "p")
+            let resMemoryToPrimitivesFun = await memoryToPrimitivesFun({
+              memory: cardMemoryData.content,
+            })
+            primitives = primitives.concat(resMemoryToPrimitivesFun.primitives)
+            nodesData = nodesData.concat(resMemoryToPrimitivesFun.nodesData)
+            nodesID = nodesID.concat(resMemoryToPrimitivesFun.nodesID)
+
+            for (let j = 0; j < resMemoryToPrimitivesFun.nodesID.length; j++) {
+              let nodeID = resMemoryToPrimitivesFun.nodesID[j];
+              nodeInputToCardMemoryInputDict[nodeID] = {
+                _id: cardMemoryData._id,
+                cardData: cardMemoryData
+              }
+            }
+          }
+
+        }
+        // ---------------- Memory to Primitives --------------
+
+        printC(primitives,"1", "primitives", "p")
+        // afs
+
+        // ---------------- Create Category Dictionary --------------
+        let resCreateCategoryDict = await createCategoryDict({
+          nodeInputToCardMemoryInputDict: nodeInputToCardMemoryInputDict,
+        })
+        let categoryToNodeInputDict = resCreateCategoryDict.categoryToNodeInputDict
+        nodeInputToCardMemoryInputDict = resCreateCategoryDict.nodeInputToCardMemoryInputDict
+        cardInputDict = resCreateCategoryDict.cardInputDict
+
+        // printC(categoryToNodeInputDict,"1", "categoryDict", "p")
+        // printC(nodeInputToCardMemoryInputDict,"1", "nodeInputToCardMemoryInputDict", "p")
+        // f1
+        // ---------------- Create Category Dictionary --------------
+
+
+        // ---------------- Find Members based on the nodes ----------------
+        let resFindNeighborNodesFunc = await findNeighborNodesFunc({
+          nodesData,
+        })
+        let neighborsDict = resFindNeighborNodesFunc.neighborsDict
+        let neighborsNodeIDs = resFindNeighborNodesFunc.neighborsNodeIDs
+        
+
+        let resFindCardMemoriesAndMembersFromNodes = await findCardMemoriesAndMembersFromNodes({
+          neighborsDict,
+          neighborsNodeIDs,
+        })
+        let membersDict = resFindCardMemoriesAndMembersFromNodes.membersDict
+        let nodeInputDict = resFindCardMemoriesAndMembersFromNodes.nodeInputDict
+        cardMemoriesData = resFindCardMemoriesAndMembersFromNodes.cardMemoriesData
+
+
+        // let resCreateMembersCategoryDict = await createMembersCategoryDict({
+        //   neighborsDict,
+        //   neighborsNodeIDs,
+        //   cardMemoriesData,
+        //   categoryToNodeInputDict,
+        //   nodeInputToCardMemoryInputDict,
+        // })
+        // let membersCardCategoryDict = resCreateMembersCategoryDict.membersCardCategoryDict
+        
+        
+
+        let resRankBasedOnNodeInputFunc = await rankBasedOnNodeInputFunc({
+          nodeInputDict,
+          membersDict,
+          nodesID,
+        })
+        membersDict = resRankBasedOnNodeInputFunc.membersDict
+        nodeInputDict = resRankBasedOnNodeInputFunc.nodeInputDict
+
+
+        let resRankMembersFunc = await orderedMembersFunc({
+          membersDict,
+          pageSize,
+          pageNumber,
+          neighborNodeMaxSize,
+          scoreCardMaxSize,
+        })
+        let membersArray = resRankMembersFunc.membersArray
+
+
+        let resCreateMembersCategoryArrayFun = await createMembersCategoryArrayFun({
+          membersArray,
+          categoryToNodeInputDict,
+          nodeInputToCardMemoryInputDict,
+          cardInputDict,
+          pageSize,
+          pageNumber,
+          neighborNodeMaxSize,
+          scoreCardMaxSize,
+        })
+        let membersArrayFinal = resCreateMembersCategoryArrayFun.membersArrayFinal
+
+        printC(membersArrayFinal,"1", "membersCategoryArray", "p")
+        // f2
+
+        // ---------------- Find Members based on the nodes ----------------
+
+        
+
+        return membersArrayFinal;
+
+        
+
+      } catch (err) {
+        printC(err, "-1", "err", "r");
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+          { component: "nodeMutation > autoSuggestTalentForPosition" }
         );
       }
     },
