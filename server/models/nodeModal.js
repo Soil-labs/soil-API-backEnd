@@ -101,6 +101,8 @@ const nodeSchema = mongoose.Schema({
     },
   ],
 
+  existNeo4j: Boolean, // if this node exists on the Neo4j database
+
   registeredAt: Date,
 });
 

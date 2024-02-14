@@ -21,6 +21,7 @@ const {
   matchPrepareAnything_AI4_neo4j,
   matchPrepareAnything_neo4j_old,
   matchPrepareSkillToProjectRoles_neo4j,
+  ping_neo4j,
 } = require("../../../neo4j/func_neo4j");
 
 const { ApolloError } = require("apollo-server-express");
@@ -457,6 +458,31 @@ module.exports = {
 
       return matchMembers;
       // return [{}]
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "DATABASE_FIND_TWEET_ERROR",
+        { component: "tmemberQuery > findMember" }
+      );
+    }
+  },
+  pingNeo4j: async (parent, args, context, info) => {
+    console.log(
+      "Query > matchPrepareSkillToMembers > args.fields = ",
+      args.fields
+    );
+    try {
+
+      nodeID = await ping_neo4j();
+
+      // find node
+
+      nodeData = await Node.findOne({ _id: nodeID });
+
+      console.log("nodeID = ", nodeID);
+
+      return nodeData
+
     } catch (err) {
       throw new ApolloError(
         err.message,
