@@ -1631,7 +1631,7 @@ module.exports = {
         mailTo: [...new Set(mailList)], // this filters duplicated values
         jobTitle: positionData.name,
         candidateName: userData.discordName,
-        dashboardUrl: `https://edenprotocol.app/${companyData.slug}/dashboard/${positionID}`,
+        dashboardUrl: `https://developer-dao.joineden.ai/dashboard/${companyData.slug}/${positionID}`,
       });
 
       console.log("send confirmation mail =====>", {
@@ -1639,7 +1639,7 @@ module.exports = {
         candidateName: userData.discordName,
         jobTitle: positionData.name,
         companyName: companyData.name,
-        applicationSubmittedUrl: `https://edenprotocol.app/interview/${positionID}/submitted`,
+        applicationSubmittedUrl: `https://developer-dao.joineden.ai/interview/${positionID}/submitted`,
       });
 
       if (userData.conduct && userData.conduct.email) {
@@ -1648,7 +1648,7 @@ module.exports = {
           candidateName: userData.discordName,
           jobTitle: positionData.name,
           companyName: companyData.name,
-          applicationSubmittedUrl: `https://edenprotocol.app/interview/${positionID}/submitted`,
+          applicationSubmittedUrl: `https://developer-dao.joineden.ai/interview/${positionID}/submitted`,
         });
       }
 
