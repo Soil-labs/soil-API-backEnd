@@ -17,7 +17,7 @@ const authDynamicRoutes = require("./auth-dynamic");
 const { stripeRoutes, stripeWebhookRoutes } = require("./stripe");
 const { storageRoutes } = require("./storage");
 const cors = require("cors");
-const rateLimit = require("express-rate-limit");
+// const rateLimit = require("express-rate-limit");
 // const originAuth = require("./middleware/geoip");
 
 require("dotenv").config();
@@ -29,12 +29,12 @@ const { mailServiceRoutes } = require("./mail-service");
 async function main() {
   const app = express();
 
-  app.use(
-    rateLimit({
-      windowMs: 60 * 1000, // 1 minute
-      max: 100, // Limit each IP to 100 requests per windowMs
-    })
-  );
+  // app.use(
+  //   rateLimit({
+  //     windowMs: 60 * 1000, // 1 minute
+  //     max: 100, // Limit each IP to 100 requests per windowMs
+  //   })
+  // );
 
   // app.use(originAuth);
 
