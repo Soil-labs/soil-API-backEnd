@@ -460,6 +460,10 @@ module.exports = `
         serverID: [String]
     }
 
+    input pingNeo4jInput {
+        test: Boolean
+    }
+
     input matchPrepareNodeInput {
         nodeID: ID
         serverID: [String]
