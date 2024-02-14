@@ -65,10 +65,6 @@ module.exports = {
         (candidate) => candidate.userID.toString() == userID.toString()
       );
 
-      console.log("candidateData = ", candidateData);
-      console.log("scoreCardsPosition = ", candidateData.scoreCardCategoryMemories[0].scoreCardsPosition);
-      f1
-
       return candidateData;
     } catch (err) {
       throw new ApolloError(
