@@ -24,6 +24,7 @@ module.exports = `
             matchMembersToProject(fields:matchMembersToProjectInput): [matchMembersToProjectOutput]
             matchMembersToProjectRole(fields:matchMembersToProjectRoleInput): [matchMembersToProjectRoleOutput]
             matchPrepareSkillToMembers(fields:matchPrepareSkillToMembersInput): Skills
+            pingNeo4j(fields:pingNeo4jInput): Node
             matchPrepareNode(fields:matchPrepareNodeInput): Node
             matchPrepareNode_AI4(fields:matchPrepareNode_AI4Input): Node
             matchPrepareNode_old(fields:matchPrepareNodeInput): Node
