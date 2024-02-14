@@ -805,6 +805,7 @@ module.exports = {
     const { nodeID, node, serverID, find } = req;
 
     matchRelativePosition = {};
+    
 
     let member_oneHopeMatch = await findMatch_translateArray_path(
       `
@@ -887,6 +888,40 @@ module.exports = {
 
     // return [member_oneHopeMatch, member_twoHopeMatch, member_threeHopeMatch];
     // return [member_oneHopeMatch];
+  },
+  ping_neo4j: async (req, res) => {
+
+    matchRelativePosition = {};
+
+    const session = driver.session({ database: "neo4j" });
+
+
+    result_threeHopeMatch = await session.writeTransaction((tx) =>
+      tx.run(`//Find the main nodes of KG
+      MATCH (n)-[r]-()
+      WITH n, COUNT(r) AS numConnections
+      ORDER BY numConnections DESC
+      RETURN n, numConnections
+      LIMIT 1`)
+    );
+    let names_threeHopeMatch = result_threeHopeMatch.records.map((row) => {
+      return row;
+    });
+
+    session.close();
+
+    // console.log("names_threeHopeMatch = ", names_threeHopeMatch);
+    // console.log("names_threeHopeMatch = ", names_threeHopeMatch[0]._fields[0]);
+
+    if (names_threeHopeMatch.length > 0 && names_threeHopeMatch[0]._fields[0] && names_threeHopeMatch[0]._fields[0].properties) {
+      nodeID = names_threeHopeMatch[0]._fields[0].properties._id;
+
+      // find node 
+      return nodeID;
+    }
+    return "no node found";
+
+
   },
   matchPrepareAnything_neo4j: async (req, res) => {
     const { nodeID, node, serverID, find, weightSkills } = req;
