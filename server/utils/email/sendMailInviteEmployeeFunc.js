@@ -6,6 +6,7 @@ const msg = {
     {
       to: [{ email: "" }],
       dynamic_template_data: {
+        userInviting: "",
         companyName: "",
         inviteUrl: "",
       },
@@ -16,7 +17,7 @@ const msg = {
 
 const sendMailInviteEmployeeFunc = async (msgData) => {
   try {
-    const { mailTo, companyName, inviteUrl } = msgData;
+    const { mailTo, companyName, inviteUrl, userInviting } = msgData;
 
     const mailToArray =
       typeof mailTo === "string"
@@ -29,6 +30,7 @@ const sendMailInviteEmployeeFunc = async (msgData) => {
         {
           to: mailToArray,
           dynamic_template_data: {
+            userInviting: userInviting,
             companyName: companyName,
             inviteUrl: inviteUrl,
           },
