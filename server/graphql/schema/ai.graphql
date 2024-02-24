@@ -477,6 +477,16 @@ module.exports = `
         # keywords: [String]
     }
 
+    input askEdenToSearchTalentInput {
+        message: String
+        conversation: [messageChat]
+    }
+
+     type askEdenToSearchTalentOutput {
+        reply: String
+        # keywords: [String]
+    }
+
     input askEdenUserPositionGPTFuncInput {
         userID: ID
         positionID: ID
