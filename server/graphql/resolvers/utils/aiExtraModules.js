@@ -88,10 +88,17 @@ async function useGPTchat(
   // only keep role and content
 
   discussion = discussion.map((item) => {
-    return {
-      role: item.role,
-      content: item.content,
-    };
+    if (item.content != undefined) {
+      return {
+        role: item.role,
+        content: item.content,
+      };
+    } else {
+      return {
+        role: item.role,
+        content: "",
+      };
+    }
   });
 
   discussion.unshift({
@@ -576,6 +583,8 @@ async function summarizeOldConversationMessages(conversation) {
 
 
 
+  // printC(discussionTemp, "1", "discussionTemp", "b")
+  // f1
 
   summaryNow = await useGPTchat(systemPrompt,discussionTemp,systemPrompt)
   // summaryNow = await useGPT4chat( systemPrompt,discussionTemp,systemPrompt);

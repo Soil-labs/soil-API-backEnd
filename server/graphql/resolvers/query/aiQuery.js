@@ -3889,6 +3889,11 @@ module.exports = {
     let discussionT
 
     let cardMemoriesUsed = []
+
+
+    
+
+
     
     try {
       // ------------ Find conversation, put the summaries to optimize, calculate summary if overflow ------
@@ -3896,6 +3901,12 @@ module.exports = {
         conversationData = await Conversation.findOne({
           _id: conversationID,
         })
+
+        conversationData.conversation.forEach(item => {
+          if (item.content === undefined) {
+            item.content = ""; // Fix undefined content by setting it to an empty string
+          }
+        });
 
         conversation = await summarizeConv(conversationData,positionID,userID)
 
@@ -3914,7 +3925,6 @@ module.exports = {
 
 
 
-      
 
 
       // -------------- GPT ----------
@@ -3950,6 +3960,7 @@ module.exports = {
       `
 
 
+      
 
       let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,{},0)
       printC(resGPTFunc, "1", "First GPT ", "b");
@@ -4477,6 +4488,42 @@ module.exports = {
         err.extensions?.code || "edenGPTreplyChatAPI",
         {
           component: "aiQuery > edenGPTreplyChatAPI",
+        }
+      );
+    }
+  },
+  askEdenToSearchTalent: async (parent, args, context, info) => {
+    const { message } = args.fields;
+    let {  conversation } = args.fields;
+    console.log("Query > askEdenToSearchTalent > args.fields = ", args.fields);
+    try {
+      // ----- ORIGINAL ------
+      systemPrompt = `You are a recruiter and you need to make a conversation with the hiring manager in order to deeply understand what skills, qualifications they are looking for in a talent. You need to ask only one question at a time. You can't write more than one to three sentences at a time. You need to be right, short, and concise. You need to be always to the point and help. If the hiring manager needs help to think of skills and stuff like that, you need to help him to do that too.`;
+      // ----- ORIGINAL ------
+
+      if (conversation == undefined) {
+        conversation = [];
+      }
+
+      responseGPTchat = await useGPTchat(
+        message,
+        conversation,
+        systemPrompt,
+        "",
+        0.7,
+        "API 1",
+        "chatGPT4"
+      );
+
+      return {
+        reply: responseGPTchat,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "askEdenToSearchTalent",
+        {
+          component: "aiQuery > askEdenToSearchTalent",
         }
       );
     }

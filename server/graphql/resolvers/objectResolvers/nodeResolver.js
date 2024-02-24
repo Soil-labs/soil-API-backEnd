@@ -422,6 +422,28 @@ module.exports = {
 
     }
   },
+  PrimitiveStateType: {
+    nodeInput: async (parent, args, context, info) => {
+
+      try {
+        const nodeID = parent.nodeID;
+        
+        nodeData = await Node.findOne({ _id: nodeID })        
+        console.log("nodeData = ", nodeData)
+
+        return nodeData;
+      } catch (err) {
+        throw new ApolloError(
+          err.message,
+          err.extensions?.code || "DATABASE_SEARCH_ERROR",
+          {
+            component: "nodeResolver > members",
+            user: context.req.user?._id,
+          }
+        );
+      }
+    },
+  },
   ShowMembersConnectedToNodesOutput: {
     member: async (parent, args, context, info) => {
 
