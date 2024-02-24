@@ -4493,10 +4493,16 @@ module.exports = {
     }
   },
   askEdenToSearchTalent: async (parent, args, context, info) => {
-    const { message } = args.fields;
+    // const { message } = args.fields;
     let {  conversation } = args.fields;
     console.log("Query > askEdenToSearchTalent > args.fields = ", args.fields);
     try {
+
+      let message = conversation[conversation.length - 1].content;
+
+      // take out the last message of the conversation
+      conversation.pop();
+
       // ----- ORIGINAL ------
       systemPrompt = `You are a recruiter and you need to make a conversation with the hiring manager in order to deeply understand what skills, qualifications they are looking for in a talent. You need to ask only one question at a time. You can't write more than one to three sentences at a time. You need to be right, short, and concise. You need to be always to the point and help. If the hiring manager needs help to think of skills and stuff like that, you need to help him to do that too.`;
       // ----- ORIGINAL ------

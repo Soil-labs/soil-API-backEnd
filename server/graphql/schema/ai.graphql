@@ -478,7 +478,6 @@ module.exports = `
     }
 
     input askEdenToSearchTalentInput {
-        message: String
         conversation: [messageChat]
     }
 
