@@ -74,7 +74,7 @@ module.exports = `
         connectMemoriesToKnowledgeGraph_V2(fields:connectMemoriesToKnowledgeGraph_V2Input): ConnectMemoriesToKnowledgeGraph_V2Output
         connectNeighborNodesKG(fields:connectNeighborNodesKGInput): [Node]
         showMembersConnectedToNodes(fields:showMembersConnectedToNodesInput): [ShowMembersConnectedToNodesOutput]
-        textToPrimitivesAndTalent(fields:textToPrimitivesAndTalentInput): [ShowMembersConnectedToNodesOutput]
+        textToPrimitivesAndTalent(fields:textToPrimitivesAndTalentInput): TextToPrimitivesAndTalentOutput
         createNeo4jDatabaseFromMongoNodes(fields:createNeo4jDatabaseFromMongoNodesInput): [Node]
         # autoSuggestTalentForPosition(fields:autoSuggestTalentForPositionInput): [ShowMembersConnectedToNodesOutput]
         autoSuggestTalentForPosition(fields:autoSuggestTalentForPositionInput): [CandidateType]
