@@ -153,6 +153,8 @@ async function useGPTchat(
 ) {
   let discussion = [...discussionOld];
 
+  
+
   discussion.unshift({
     role: "system",
     content: systemPrompt,
@@ -163,10 +165,17 @@ async function useGPTchat(
     content: userNewMessage + "\n" + userQuestion,
   });
 
+  // take out the dates
+  discussion = discussion.map((item) => {
+    return {
+      role: item.role,
+      content: item.content,
+    };
+  });
+
   // console.log("userQuestion = " , userQuestion)
 
-  // console.log("discussion = ", discussion);
-  // sdf
+  
 
   let model = "gpt-3.5-turbo";
   if (useMode == "chatGPT") {
@@ -181,7 +190,7 @@ async function useGPTchat(
     "https://api.openai.com/v1/chat/completions",
     {
       messages: discussion,
-      model: "gpt-3.5-turbo",
+      model: model,
       temperature: temperature,
     },
     {
@@ -4518,7 +4527,7 @@ module.exports = {
         "",
         0.7,
         "API 1",
-        "chatGPT4"
+        "chatGPT"
       );
 
       return {
