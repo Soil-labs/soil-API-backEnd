@@ -146,7 +146,7 @@ const memoryToPrimitivesFun = async (data) => {
     }
 
   } else {
-    resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT)
+    resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,{},0.7,"API 1",[],"gpt-4-1106-preview")
   }
  
   // ---------------- Memory to Primitives using GPT ----------------
