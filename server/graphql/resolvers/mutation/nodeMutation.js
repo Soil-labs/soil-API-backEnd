@@ -990,6 +990,7 @@ module.exports = {
           for (let i = 0; i < hardCodePrimitives.length; i++) {
             let resMemoryToPrimitivesFun = await memoryToPrimitivesFun({
               memory: "tst",
+              primitiveState: [],
               hardCodePrimitives: hardCodePrimitives[i]
             })
 
