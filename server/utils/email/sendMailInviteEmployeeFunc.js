@@ -1,7 +1,7 @@
 const sendEmailUtil = require("./sendEmail");
 
 const msg = {
-  from: { email: "eloi@joineden.ai", name: "Eden" },
+  from: { email: "notifications@joineden.xyz", name: "Eden" },
   personalizations: [
     {
       to: [{ email: "" }],
