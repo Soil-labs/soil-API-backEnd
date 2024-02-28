@@ -459,10 +459,9 @@ async function summarizeConv(conversationData,positionID,userID) {
       }
     })
 
-
+    // printC(conversation, "1", "conversation", "r");
+    // f1
     summaryNow = await summarizeOldConversationMessages(conversation)
-
-    printC(summaryNow, "1", "summaryNow", "r")
 
 
     conversationData.lastMsgSummed = conversationData.lastMsgSummed - numberMessageToSum 

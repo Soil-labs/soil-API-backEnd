@@ -164,10 +164,16 @@ module.exports = `
 
     input textToPrimitivesAndTalentInput {
         text: String,
+        primitiveState: [PrimitiveStateInput]
         pageSize: Int
         pageNumber: Int
         neighborNodeMaxSize: Int
-        scoreCardMaxSize: Int
+        scoreCardMaxSize: Int   
+    }
+
+    input PrimitiveStateInput {
+        nodeID: ID
+        score: Float
     }
 
     input createNeo4jDatabaseFromMongoNodesInput {
@@ -202,11 +208,22 @@ module.exports = `
     }
 
     type TextToPrimitivesAndTalentOutput {
+        primitiveState: [PrimitiveStateType]
+        memberScoreAndPrimitiveCardType: [ShowMembersConnectedToNodesOutput]
+    }
+
+    type memberScoreAndPrimitiveCardType {
         member: Members
         rank: Int
         score: Float
         primitiveCardMemInput: [PrimitiveCardType]
     }
+
+    type PrimitiveStateType {
+        nodeInput: Node
+        score: Float
+    }
+    
 
     type PrimitiveCardType {
         nodeInput: Node

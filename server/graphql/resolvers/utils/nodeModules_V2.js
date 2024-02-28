@@ -80,9 +80,28 @@ const createNodeFunc = async (data) => {
 
 const memoryToPrimitivesFun = async (data) => {
 
-  let {memory,hardCodePrimitives} = data;
+  let {memory,primitiveState,hardCodePrimitives} = data;
 
 
+  // --------------- Prepare the primitiveState --------------
+  primitiveNodeIDs = primitiveState.map(primitive => primitive.nodeID);
+  primitiveStateDataTemp = await Node.find({ _id: primitiveNodeIDs });
+
+
+  primitiveStateData = []
+  if (primitiveState) {
+    for (let i = 0; i < primitiveState.length; i++) {
+      printC(primitiveState[i], "1", "primitiveState[i]", "b")
+      const element = primitiveState[i];
+      primitiveStateData.push({
+        name: primitiveStateDataTemp[i].name,
+        score: element.score,
+        nodeID: element.nodeID,
+        nodeData: primitiveStateDataTemp[i],
+      })
+    }
+  }
+  // --------------- Prepare the primitiveState --------------
 
   // ---------------- Memory to Primitives using GPT ----------------
   let discussionT = [{
@@ -94,12 +113,16 @@ const memoryToPrimitivesFun = async (data) => {
   functionsUseGPT = ["memory_primitives"]
 
 
+  // const systemPrompt = `Your job is to take memories and split them up into the primitives together with score for this memory,
+  // - you need to focus on finding a job, job descriptions and CVs of people and anything related to matching people with jobs 
+  // - Always use memory_primitives function
+  // Example of primitives: 
+  // Javascript, leader, marketing, manager`
+
   const systemPrompt = `Your job is to take memories and split them up into the primitives together with score for this memory,
-
-  - you need to focus on finding a job, job descriptions and CVs of people and anything related to matching people with jobs 
-
+  - primitives should be related to matching people with jobs 
   - Always use memory_primitives function
-  
+  - Based on the sentence structure and the word position used, put the score of the primitives! Put really low score if something doesn't seem Important
   Example of primitives: 
   Javascript, leader, marketing, manager`
 
@@ -123,11 +146,9 @@ const memoryToPrimitivesFun = async (data) => {
     }
 
   } else {
-    resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT)
+    resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,{},0.7,"API 1",[],"gpt-4-1106-preview")
   }
-  
-  printC(resGPTFunc, "2", "resGPTFunc", "b")
-
+ 
   // ---------------- Memory to Primitives using GPT ----------------
 
 
@@ -160,6 +181,7 @@ const memoryToPrimitivesFun = async (data) => {
         primitives.push({
           name: value,
           score: score,
+          nodeID: resCheckPrimitive.nodeData._id,
           nodeData: resCheckPrimitive.nodeData,
         })
         nodesData.push(resCheckPrimitive.nodeData)
@@ -170,6 +192,15 @@ const memoryToPrimitivesFun = async (data) => {
     }
   }
   // ---------------- Organize primitives and scores ----------------
+
+  // ---------------- add the primitiveState ----------------
+  for (let i = 0; i < primitiveStateData.length; i++) {
+    const element = primitiveStateData[i];
+    primitives.push(element)
+    nodesData.push(element.nodeData)
+    nodesID.push(element.nodeData._id)
+  }
+  // ---------------- add the primitiveState ----------------
 
 
   return {

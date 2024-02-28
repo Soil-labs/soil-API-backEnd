@@ -685,6 +685,7 @@ module.exports = {
 
       if (positionsData.length == 0) return null
 
+
       let posIdx = -1
       let companyData
       let userIDchanged = ""
@@ -695,6 +696,8 @@ module.exports = {
         const companyID = positionsData[i].companyID;
 
         companyData = await Company.findOne({ _id: companyID }).select('_id slug');
+
+        printC(companyData, "3", "companyData", "p")
 
         
         if (companyData == null || companyData.slug == null) {
@@ -718,8 +721,6 @@ module.exports = {
               $and: [positionF, { userID: candidate.userID }],
             }).select("_id conversation");
 
-            // printC(convData, "3", "convData", "p")
-            // f1
       
             if (!convData) {
               // check if he applied more than an hour ago 
@@ -727,14 +728,19 @@ module.exports = {
               let currentTime = new Date();
               let timeDifference = (currentTime - dateApply) / (1000 * 60 * 60); // time difference in hours
 
-              if (timeDifference > 1) {
+              // console.log("timeDifference = ", timeDifference,currentTime,dateApply)
+
+              if (timeDifference > 1 || dateApply == undefined) {
                 // you can make the candidateScoreCardCalculated true
                 positionData.candidates[j].candidateScoreCardCalculated = true;
                 await positionData.save();
               };
 
+              // f1
               continue;
             };
+
+
 
             let updatedAtConv = convData.updatedAt;
             let currentTime = new Date();
@@ -787,6 +793,7 @@ module.exports = {
         }
 
       }
+
 
       if (posIdx == -1) return null
 

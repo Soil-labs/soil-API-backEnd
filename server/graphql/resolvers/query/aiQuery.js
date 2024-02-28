@@ -153,6 +153,8 @@ async function useGPTchat(
 ) {
   let discussion = [...discussionOld];
 
+  
+
   discussion.unshift({
     role: "system",
     content: systemPrompt,
@@ -163,10 +165,17 @@ async function useGPTchat(
     content: userNewMessage + "\n" + userQuestion,
   });
 
+  // take out the dates
+  discussion = discussion.map((item) => {
+    return {
+      role: item.role,
+      content: item.content,
+    };
+  });
+
   // console.log("userQuestion = " , userQuestion)
 
-  // console.log("discussion = ", discussion);
-  // sdf
+  
 
   let model = "gpt-3.5-turbo";
   if (useMode == "chatGPT") {
@@ -181,7 +190,7 @@ async function useGPTchat(
     "https://api.openai.com/v1/chat/completions",
     {
       messages: discussion,
-      model: "gpt-3.5-turbo",
+      model: model,
       temperature: temperature,
     },
     {
@@ -3889,6 +3898,11 @@ module.exports = {
     let discussionT
 
     let cardMemoriesUsed = []
+
+
+    
+
+
     
     try {
       // ------------ Find conversation, put the summaries to optimize, calculate summary if overflow ------
@@ -3896,6 +3910,12 @@ module.exports = {
         conversationData = await Conversation.findOne({
           _id: conversationID,
         })
+
+        conversationData.conversation.forEach(item => {
+          if (item.content === undefined) {
+            item.content = ""; // Fix undefined content by setting it to an empty string
+          }
+        });
 
         conversation = await summarizeConv(conversationData,positionID,userID)
 
@@ -3914,7 +3934,6 @@ module.exports = {
 
 
 
-      
 
 
       // -------------- GPT ----------
@@ -3950,6 +3969,7 @@ module.exports = {
       `
 
 
+      
 
       let resGPTFunc = await useGPTFunc(discussionT,systemPrompt,functionsUseGPT,{},0)
       printC(resGPTFunc, "1", "First GPT ", "b");
@@ -4477,6 +4497,48 @@ module.exports = {
         err.extensions?.code || "edenGPTreplyChatAPI",
         {
           component: "aiQuery > edenGPTreplyChatAPI",
+        }
+      );
+    }
+  },
+  askEdenToSearchTalent: async (parent, args, context, info) => {
+    // const { message } = args.fields;
+    let {  conversation } = args.fields;
+    console.log("Query > askEdenToSearchTalent > args.fields = ", args.fields);
+    try {
+
+      let message = conversation[conversation.length - 1].content;
+
+      // take out the last message of the conversation
+      conversation.pop();
+
+      // ----- ORIGINAL ------
+      systemPrompt = `You are a recruiter and you need to make a conversation with the hiring manager in order to deeply understand what skills, qualifications they are looking for in a talent. You need to ask only one question at a time. You can't write more than one to three sentences at a time. You need to be right, short, and concise. You need to be always to the point and help. If the hiring manager needs help to think of skills and stuff like that, you need to help him to do that too.`;
+      // ----- ORIGINAL ------
+
+      if (conversation == undefined) {
+        conversation = [];
+      }
+
+      responseGPTchat = await useGPTchat(
+        message,
+        conversation,
+        systemPrompt,
+        "",
+        0.7,
+        "API 1",
+        "chatGPT"
+      );
+
+      return {
+        reply: responseGPTchat,
+      };
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "askEdenToSearchTalent",
+        {
+          component: "aiQuery > askEdenToSearchTalent",
         }
       );
     }

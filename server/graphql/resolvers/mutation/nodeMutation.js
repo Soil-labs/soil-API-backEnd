@@ -577,6 +577,9 @@ module.exports = {
         }).select("_id authorCard")
 
 
+        printC(noPrimitivesCardsData.length,"1", "noPrimitivesCardsData.length", "p")
+
+
         if (noPrimitivesCardsData.length > 0) {
           const firstCard = noPrimitivesCardsData[0];
           if (runAuto == "MEMBER") {
@@ -831,7 +834,7 @@ module.exports = {
       }
     },
     textToPrimitivesAndTalent: async (parent, args, context, info) => {
-      const { text } = args.fields;
+      const { text,primitiveState } = args.fields;
       let {pageSize, pageNumber,neighborNodeMaxSize,scoreCardMaxSize} = args.fields;
       console.log("Mutation > textToPrimitivesAndTalent > args.fields = ", args.fields);
 
@@ -849,6 +852,7 @@ module.exports = {
         // ---------------- Memory to Primitives --------------
         let resMemoryToPrimitivesFun = await memoryToPrimitivesFun({
           memory: text,
+          primitiveState: primitiveState,
         })
         let primitives = resMemoryToPrimitivesFun.primitives
         let nodesData = resMemoryToPrimitivesFun.nodesData
@@ -913,7 +917,10 @@ module.exports = {
 
         
 
-        return membersArray;
+        return {
+          primitiveState: primitives,
+          memberScoreAndPrimitiveCardType: membersArray,
+        };
 
         
 
@@ -983,6 +990,7 @@ module.exports = {
           for (let i = 0; i < hardCodePrimitives.length; i++) {
             let resMemoryToPrimitivesFun = await memoryToPrimitivesFun({
               memory: "tst",
+              primitiveState: [],
               hardCodePrimitives: hardCodePrimitives[i]
             })
 
