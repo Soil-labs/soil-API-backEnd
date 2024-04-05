@@ -20,6 +20,10 @@ const memberSchema = mongoose.Schema({
   bio: String,
   oneLiner: String,
 
+  walletAddress: {
+    type: String,
+  },
+
   memory: {
     core: String,
   },

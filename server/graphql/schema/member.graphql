@@ -10,6 +10,8 @@ module.exports = `
         discriminator: String
         bio: String
         oneLiner: String
+        
+        walletAddress: String
 
         memory: memoryMemberType
 
