@@ -12,7 +12,14 @@ const mapUserFromCredentials = (tokenData) => {
 
   let user;
 
-  if (
+  if (credentials.find((cred) => cred.format === "email")) {
+    user = {
+      id: tokenData.sub,
+      email: tokenData.email,
+      name: tokenData.email.split("@")[0],
+      picture: null,
+    };
+  } else if (
     credentials.find(
       (cred) => cred.format === "oauth" && cred.oauth_provider === "google"
     )
@@ -26,16 +33,12 @@ const mapUserFromCredentials = (tokenData) => {
       name: _cred.oauth_display_name,
       picture: _cred.oauth_account_photos[0] || null,
     };
-  } else if (credentials.find((cred) => cred.format === "email")) {
-    user = {
-      id: tokenData.sub,
-      email: tokenData.email,
-      name: tokenData.email.split("@")[0],
-      picture: null,
-    };
   } else {
     throw new Error("Could not map user from credentials");
   }
+
+  user.walletAddress =
+    credentials.find((_cred) => _cred.format === "blockchain")?.address || null;
 
   return user;
 };
@@ -71,7 +74,10 @@ const token = async ({ body }, res) => {
 
     // Find if user is in database
     let dbUser = await Members.findOne({ _id: user.id });
-    // console.log("user", user);
+
+    if (!dbUser) {
+      dbUser = await Members.findOne({ "conduct.email": user.email });
+    }
 
     // if user is not in database, save user to database
     let firstTimeLogin = false;
@@ -81,6 +87,7 @@ const token = async ({ body }, res) => {
         _id: user.id,
         discordName: user.name,
         discordAvatar: user.picture,
+        walletAddress: user.walletAddress,
         //discriminator: user.discriminator,
         registeredAt: new Date(),
         conduct: { email: user.email },
@@ -96,6 +103,26 @@ const token = async ({ body }, res) => {
       //   serverID: [],
       // });
       firstTimeLogin = true;
+    } else if (dbUser && !dbUser.walletAddress) {
+      dbUser.walletAddress = user.walletAddress;
+      dbUser.save();
+    }
+
+    if (dbUser._id !== user.id) {
+      // this replaces old users without wallet address with new users schema
+      // it won't work if a unique field is added to the schema
+      const newUser = {
+        ...dbUser._doc,
+        _id: user.id,
+        conduct: dbUser.conduct ? dbUser.conduct : { email: user.email },
+        walletAddress: user.walletAddress,
+      };
+
+      await Members.insertMany([newUser]);
+
+      await Members.findByIdAndRemove(dbUser._id);
+
+      dbUser = newUser;
     }
 
     //await retrieveAndMergeServersUserIsIn(accessToken, dbUser);
