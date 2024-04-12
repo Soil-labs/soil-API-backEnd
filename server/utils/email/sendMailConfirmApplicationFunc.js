@@ -23,6 +23,7 @@ const sendNewApplicantMailFunc = async (msgData) => {
       candidateName,
       jobTitle,
       companyName,
+      recommendUrl,
       applicationSubmittedUrl,
     } = msgData;
 
@@ -35,6 +36,7 @@ const sendNewApplicantMailFunc = async (msgData) => {
             candidateName: candidateName,
             jobTitle: jobTitle,
             companyName: companyName,
+            recommendUrl: recommendUrl,
             applicationSubmittedUrl: applicationSubmittedUrl,
           },
         },

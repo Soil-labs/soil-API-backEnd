@@ -1639,6 +1639,7 @@ module.exports = {
         candidateName: userData.discordName,
         jobTitle: positionData.name,
         companyName: companyData.name,
+        recommendUrl: `https://${companyData.slug}.joineden.ai/recommend?user=${userData._id}`,
         applicationSubmittedUrl: `https://developer-dao.joineden.ai/interview/${positionID}/submitted`,
       });
 
@@ -1648,6 +1649,7 @@ module.exports = {
           candidateName: userData.discordName,
           jobTitle: positionData.name,
           companyName: companyData.name,
+          recommendUrl: `https://${companyData.slug}.joineden.ai/recommend?user=${userData._id}`,
           applicationSubmittedUrl: `https://developer-dao.joineden.ai/interview/${positionID}/submitted`,
         });
       }
