@@ -49,6 +49,7 @@ const {
 } = require("../utils/cardMemoryModules");
 
 const { arrayToObj } = require("../utils/endorsementModules");
+const e = require("express");
 
 module.exports = {
   updatePosition: async (parent, args, context, info) => {
@@ -1994,6 +1995,52 @@ module.exports = {
       }
 
       return positionsData;
+    } catch (err) {
+      printC(err, "-1", "err", "r");
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "updateAnalysisEdenAICandidates",
+        { component: "positionMutation > updateAnalysisEdenAICandidates" }
+      );
+    }
+  },
+
+  updateCandidateNotes: async (parent, args, context, info) => {
+    const { positionID, userID } = args.fields;
+    console.log(
+      "Mutation > updateCandidateNotes > args.fields = ",
+      args.fields
+    );
+
+    let positionData;
+
+    if (positionID) {
+      positionData = await Position.findOne({
+        _id: positionID,
+        // candidatesFlagAnalysisCreated: { $ne: true } // SOS 🆘 - uncomment!!!
+      });
+    } else {
+      throw new ApolloError("Position ID is required", "updateCandidateNotes", {
+        component: "positionMutation > updateCandidateNotes",
+      });
+    }
+
+    let index_candPos = positionData.candidates.findIndex(
+      (x) => x.userID.toString() == userID.toString()
+    );
+
+    if (index_candPos != -1) {
+      positionData.candidates[index_candPos].notes = args.fields.notes;
+    } else {
+      throw new ApolloError("Candidate not found", "updateCandidateNotes", {
+        component: "positionMutation > updateCandidateNotes",
+      });
+    }
+
+    try {
+      const res = await positionData.save({ new: true });
+
+      return res;
     } catch (err) {
       printC(err, "-1", "err", "r");
       throw new ApolloError(

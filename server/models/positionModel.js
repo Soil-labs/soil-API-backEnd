@@ -144,6 +144,7 @@ const positionModel = mongoose.Schema({
       candidateScoreCardCalculated: Boolean,
       dateApply: Date,
       submitted: { type: Boolean, default: false },
+      notes: [String] | null,
       scoreCardTotal: {
         score: Number,
         scoreCardCalculated: Boolean,

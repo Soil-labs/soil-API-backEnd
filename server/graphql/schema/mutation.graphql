@@ -110,6 +110,7 @@ module.exports = `
         deletePositionCandidate(fields:deletePositionCandidateInput): [CandidateType]
         addConvRecruiterToPosition(fields:addConvRecruiterToPositionInput): Position
         updatePositionUserAnswers(fields:updatePositionUserAnswersInput): [Position]
+        updateCandidateNotes(fields:updateCandidateNotesInput): Position
         updateAnalysisEdenAICandidates(fields:updateAnalysisEdenAICandidatesInput): [Position]
         updatePositionConvRecruiter(fields:updatePositionConvRecruiterInput): [Position]
         createTalentListPosition(fields:createTalentListPositionInput): Position
