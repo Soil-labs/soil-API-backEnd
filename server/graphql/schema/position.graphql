@@ -128,6 +128,7 @@ module.exports = `
         cvID: String
         positionID: ID
         submitted: Boolean
+        notes: [String]
     }
 
     type scoreCardTotalType {
@@ -424,6 +425,12 @@ module.exports = `
 
     input updatePositionUserAnswersInput {
         positionIDs: [ID]
+    }
+
+    input updateCandidateNotesInput {
+        positionID: ID
+        userID: ID
+        notes: [String]
     }
 
     input updateAnalysisEdenAICandidatesInput {
