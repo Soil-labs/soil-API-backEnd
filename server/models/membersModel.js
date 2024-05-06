@@ -24,6 +24,20 @@ const memberSchema = mongoose.Schema({
     type: String,
   },
 
+  referrers: [
+    {
+      name: String,
+      email: String,
+      walletAddress: String,
+      createdAt: Date,
+      currentOccupation: String,
+      relationship: String,
+      favQualities: String,
+      areasOfImprovement: String,
+      canContact: Boolean,
+    },
+  ],
+
   memory: {
     core: String,
   },

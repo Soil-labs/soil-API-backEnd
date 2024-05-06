@@ -62,7 +62,6 @@ const pubsub = new PubSub();
 function chooseAPIkey() {
   openAI_keys = [process.env.REACT_APP_OPENAI_1];
 
-
   // randomly choose one of the keys
   let randomIndex = Math.floor(Math.random() * openAI_keys.length);
   let key = openAI_keys[randomIndex];
@@ -145,7 +144,7 @@ async function generate12DigitID(inputString) {
 //   const pinecone = new PineconeClient();
 //   await pinecone.init({
 //     environment: "us-east1-gcp",
-    // apiKey: process.env.PINECONE_API_KEY,
+// apiKey: process.env.PINECONE_API_KEY,
 //   });
 
 //   const index = await pinecone.Index("profile-eden-information");
@@ -300,7 +299,7 @@ module.exports = {
   ),
   updateMember:
     // combineResolvers(
-      // IsAuthenticated,
+    // IsAuthenticated,
     async (parent, args, { user }, info) => {
       const {
         discordName,
@@ -2317,53 +2316,117 @@ module.exports = {
       );
     }
   },
+  addReferrer: async (parent, args, context, info) => {
+    const {
+      memberID,
+      name,
+      email,
+      walletAddress,
+      createdAt,
+      currentOccupation,
+      relationship,
+      favQualities,
+      areasOfImprovement,
+      canContact,
+    } = args.fields;
+    console.log("Mutation > addReferrer > args.fields = ", args.fields);
+
+    if (!memberID) throw new Error("The memberID is required🔥");
+
+    try {
+      let memberData = await Members.findOne({ _id: memberID }).select(
+        "_id referrers"
+      );
+
+      if (!memberData)
+        throw new Error("The memberID is not valid🔥 can't find member");
+
+      printC(memberData, "1", "memberData", "b");
+
+      // update all the fields
+      if (
+        memberData.referrers.includes(
+          (_ref) => _ref.walletAddress == walletAddress
+        )
+      ) {
+        throw new Error("The memberID is not valid🔥 can't find member");
+      } else {
+        memberData.referrers.push({
+          name: name,
+          email: email,
+          walletAddress: walletAddress,
+          createdAt: createdAt,
+          currentOccupation: currentOccupation,
+          relationship: relationship,
+          favQualities: favQualities,
+          areasOfImprovement: areasOfImprovement,
+          canContact: canContact,
+        });
+      }
+
+      // save the member
+      memberData = await memberData.save();
+
+      printC(memberData, "2", "memberData", "b");
+
+      return memberData;
+    } catch (err) {
+      throw new ApolloError(
+        err.message,
+        err.extensions?.code || "addReferrer",
+        { component: "memberMutation > addReferrer" }
+      );
+    }
+  },
   updateStateEdenChat: async (parent, args, context, info) => {
-    const { userID,chatID_TG,positionIDs,categoryChat  } = args.fields;
+    const { userID, chatID_TG, positionIDs, categoryChat } = args.fields;
     console.log("Mutation > updateStateEdenChat > args.fields = ", args.fields);
 
-    if (userID && chatID_TG) throw new Error("You can't have both userID and chatID_TG 🔥");
+    if (userID && chatID_TG)
+      throw new Error("You can't have both userID and chatID_TG 🔥");
 
-    let filter = {}
+    let filter = {};
 
-    if (chatID_TG){
+    if (chatID_TG) {
       filter = {
-        "conduct.telegramChatID": chatID_TG
-      }
+        "conduct.telegramChatID": chatID_TG,
+      };
     } else if (userID) {
       filter = {
-        _id: userID
-      }
+        _id: userID,
+      };
     } else {
       throw new Error("The userID or chatID_TG is required 🔥");
     }
 
     try {
+      let memberData = await Members.findOne(filter).select(
+        "_id discordName conduct stateEdenChat"
+      );
 
-      let memberData = await Members.findOne(filter).select('_id discordName conduct stateEdenChat');
-
-      if (!memberData) throw new Error("The userID or chatID_TG is not valid🔥 can't find member");
-
+      if (!memberData)
+        throw new Error(
+          "The userID or chatID_TG is not valid🔥 can't find member"
+        );
 
       if (positionIDs) {
         memberData.stateEdenChat = {
           ...memberData.stateEdenChat,
           positionIDs: positionIDs,
-        }
+        };
       }
 
       if (categoryChat) {
         memberData.stateEdenChat = {
           ...memberData.stateEdenChat,
           categoryChat: categoryChat,
-        }
+        };
       }
 
       // save the member
-      memberData = await memberData.save()
-
+      memberData = await memberData.save();
 
       return memberData;
-
     } catch (err) {
       throw new ApolloError(
         err.message,
@@ -2525,14 +2588,10 @@ module.exports = {
     }).select("_id discordName conduct ");
     let memberData = membersData[membersData.length - 1];
 
-
-
     let positionsData = await Position.find({
       "conduct.telegramConnectionCode": authNumberTGMessage,
     }).select("_id name conduct ");
     let positionData = positionsData[positionsData.length - 1];
-
-    
 
     if (!memberData && !positionData)
       throw new Error(
