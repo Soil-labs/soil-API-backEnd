@@ -13,6 +13,8 @@ module.exports = `
         
         walletAddress: String
 
+        referrers: [referrerType]
+
         memory: memoryMemberType
 
         conduct: conductType
@@ -104,6 +106,18 @@ module.exports = `
     type companyType {
         company: Company
         typeT: employeeRole
+    }
+    
+    type referrerType {
+        name: ID
+        email: String
+        walletAddress: String
+        createdAt: String
+        currentOccupation: String
+        relationship: String
+        favQualities: String
+        areasOfImprovement: String
+        canContact: Boolean
     }
 
     type positionsAppliedType {
@@ -826,6 +840,19 @@ module.exports = `
 
         totalIncome: Float
         completedOpportunities: Int
+    }
+
+    input addReferrerInput {
+        memberID: ID
+        name: String
+        email: String
+        walletAddress: String
+        createdAt: String
+        currentOccupation: String
+        relationship: String
+        favQualities: String
+        areasOfImprovement: String
+        canContact: Boolean
     }
 
     input updateStateEdenChatInput {
